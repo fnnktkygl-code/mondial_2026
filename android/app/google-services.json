@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1106243131",
+    "project_id": "mondial-2026-challenge-8f",
+    "storage_bucket": "mondial-2026-challenge-8f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1106243131:android:50eddfb373cd45e10df61e",
+        "android_client_info": {
+          "package_name": "com.mondial2026.mondial_2026"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDC6LAqpL3-dg7bDt5NX2_zW2RJ_qNvzoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
