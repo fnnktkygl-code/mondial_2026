@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.resource.data.username is string
+                   && request.resource.data.username.size() > 0
+                   && request.resource.data.username.size() <= 30
+                   && (request.resource.data.supportedTeam == null || (request.resource.data.supportedTeam is string && request.resource.data.supportedTeam.size() == 2))
+                   && request.resource.data.points is int
+                   && request.resource.data.points >= 0
+                   && (!('streak' in request.resource.data) || request.resource.data.streak is int)
+                   && (!('guruCount' in request.resource.data) || request.resource.data.guruCount is int);
+    }
+  }
+}
