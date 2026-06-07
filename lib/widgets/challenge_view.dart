@@ -7,6 +7,7 @@ import '../services/prediction_service.dart';
 import '../services/firebase_service.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
+import 'team_flag.dart';
 
 class ChallengeViewWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
@@ -81,22 +82,11 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       points: totalPoints,
       streak: streak,
       guruCount: guruCount,
+      avatar: _userPreds.avatar,
     );
   }
 
-  Future<void> _saveUsername() async {
-    final name = _nameController.text.trim();
-    if (name.isNotEmpty) {
-      _userPreds.username = name;
-      await PredictionService.savePredictionData(_userPreds);
-      
-      final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
-      await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, name);
 
-      await _loadData();
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'pseudoUpdated'));
-    }
-  }
 
   Future<void> _updateMatchPred(String matchId, int t1Offset, int t2Offset) async {
     final existing = _userPreds.matchPredictions[matchId];
@@ -111,49 +101,66 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       new2 = t2Offset.clamp(0, 9);
     }
 
-    _userPreds.matchPredictions[matchId] = MatchPrediction(
-      matchId: matchId,
-      t1Score: new1,
-      t2Score: new2,
-    );
+    // Clear ET/PK predictions if the new 90-min score is no longer a draw
+    String? etWinner = existing?.extraTimeWinner;
+    bool? pkWinner = existing?.penaltyWinner;
+    if (new1 != new2) {
+      etWinner = null;
+      pkWinner = null;
+    }
+
+    setState(() {
+      _userPreds.matchPredictions[matchId] = MatchPrediction(
+        matchId: matchId,
+        t1Score: new1,
+        t2Score: new2,
+        extraTimeWinner: etWinner,
+        penaltyWinner: pkWinner,
+      );
+    });
 
     await PredictionService.savePredictionData(_userPreds);
-    
     final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
     await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
 
     // Reload group scores dynamically
     final groups = await PredictionService.loadChallengeGroups(_userPreds, widget.matches);
+    if (mounted) {
+      setState(() {
+        _groups = groups;
+      });
+    }
+  }
+
+  /// Saves the ET/PK winner prediction for a knockout match without touching the score.
+  Future<void> _updateKnockoutExtras(String matchId, String? etWinner, bool? pkWinner) async {
+    final existing = _userPreds.matchPredictions[matchId];
+    if (existing == null) return;
+
     setState(() {
-      _groups = groups;
+      _userPreds.matchPredictions[matchId] = MatchPrediction(
+        matchId: matchId,
+        t1Score: existing.t1Score,
+        t2Score: existing.t2Score,
+        extraTimeWinner: etWinner,
+        penaltyWinner: pkWinner,
+      );
     });
-  }
 
-  Future<void> _saveBonusChampion(String? teamCode) async {
-    if (teamCode != null) {
-      _userPreds.championCode = teamCode;
-      await PredictionService.savePredictionData(_userPreds);
-      
-      final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
-      await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
-
-      setState(() {});
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'championSaved'));
+    await PredictionService.savePredictionData(_userPreds);
+    final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
+    await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
+    final groups = await PredictionService.loadChallengeGroups(_userPreds, widget.matches);
+    if (mounted) {
+      setState(() {
+        _groups = groups;
+      });
     }
   }
 
-  Future<void> _saveBonusScorer(String name) async {
-    if (name.trim().isNotEmpty) {
-      _userPreds.goldenBootPlayer = name.trim();
-      await PredictionService.savePredictionData(_userPreds);
-      
-      final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
-      await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
 
-      setState(() {});
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'scorerSaved'));
-    }
-  }
+
+
 
   Future<void> _createNewGroup() async {
     final name = _newGroupController.text.trim();
@@ -224,6 +231,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   Widget _buildProfileBanner(int points, Map<String, dynamic> xp) {
     final streak = PredictionService.calculateActiveStreak(_userPreds, widget.matches);
     final guruCount = PredictionService.calculateExactGuessesCount(_userPreds, widget.matches);
+    final hasAvatar = _userPreds.avatar.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -233,20 +241,53 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       ),
       child: Row(
         children: [
-          // XP badge icon
-          Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.accent, width: 1.5),
-            ),
-            child: Text(
-              'L${xp['level']}',
-              style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 18),
-            ),
+          // Avatar / XP badge
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.accent, width: 1.5),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: hasAvatar
+                    ? Image.asset(
+                        _userPreds.avatar,
+                        width: 52,
+                        height: 52,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.textDim, size: 28),
+                      )
+                    : Text(
+                        'L${xp['level']}',
+                        style: const TextStyle(
+                            color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+              ),
+              if (hasAvatar)
+                Positioned(
+                  bottom: -5,
+                  right: -5,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.surface, width: 1.5),
+                    ),
+                    child: Text(
+                      'L${xp['level']}',
+                      style: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold, fontSize: 9),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(width: 16),
 
@@ -255,25 +296,18 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _userPreds.username,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: AppColors.textDim, size: 16),
-                      onPressed: _showUsernameEditDialog,
-                    ),
-                  ],
+                Text(
+                  _userPreds.username.isEmpty
+                      ? (widget.lang == 'fr' ? 'Joueur' : 'Player')
+                      : _userPreds.username,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 4),
                 Text(
                   '${xp['rankName']}',
-                  style: const TextStyle(color: AppColors.rankGold, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.rankGold, fontSize: 13, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
 
@@ -305,11 +339,11 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   children: [
                     Text(
                       '${xp['xp']} / ${xp['nextLevelXp']} XP',
-                      style: const TextStyle(color: AppColors.textDim, fontSize: 9),
+                      style: const TextStyle(color: AppColors.textDim, fontSize: 12),
                     ),
                     Text(
                       '$points pts',
-                      style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 10),
+                      style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ],
                 ),
@@ -320,11 +354,30 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     const SizedBox(width: 4),
                     Text(
                       AppTranslations.get(widget.lang, 'favTeamLabel'),
-                      style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildSupportedTeamDropdown(),
+                      child: _userPreds.supportedTeam == null
+                          ? Text(
+                              widget.lang == 'fr' ? 'Aucune' : (widget.lang == 'es' ? 'Ninguno' : 'None'),
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 13, fontStyle: FontStyle.italic),
+                            )
+                          : Row(
+                              children: [
+                                TeamFlagWidget(
+                                  code: _userPreds.supportedTeam!,
+                                  width: 24,
+                                  height: 16,
+                                  borderRadius: 4,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppTranslations.getTeam(widget.lang, _userPreds.supportedTeam!),
+                                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                     ),
                   ],
                 ),
@@ -372,71 +425,20 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  Widget _buildSupportedTeamDropdown() {
-    final Set<String> teamCodes = {};
-    for (final m in widget.matches) {
-      if (m.t1.length == 2) teamCodes.add(m.t1);
-      if (m.t2.length == 2) teamCodes.add(m.t2);
-    }
-    final List<String> sortedTeams = teamCodes.toList()
-      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
-          .compareTo(AppTranslations.getTeam(widget.lang, b)));
 
-    return DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: _userPreds.supportedTeam,
-        hint: Text(
-          AppTranslations.get(widget.lang, 'chooseTeam'),
-          style: const TextStyle(color: AppColors.textDim, fontSize: 11),
-        ),
-        dropdownColor: AppColors.card,
-        isDense: true,
-        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-        icon: const Icon(Icons.arrow_drop_down, color: AppColors.accent, size: 16),
-        onChanged: (newTeamCode) async {
-          if (newTeamCode != null) {
-            setState(() {
-              _userPreds.supportedTeam = newTeamCode;
-            });
-            await PredictionService.savePredictionData(_userPreds);
-            
-            final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
-            await _syncProfileWithStats(totalPoints, newTeamCode, _userPreds.username);
-            
-            // Notify parent of supported team change
-            widget.onSupportedTeamChanged(newTeamCode);
-            
-            widget.showSnackBar(AppTranslations.get(widget.lang, 'teamUpdated'));
-          }
-        },
-        items: sortedTeams.map((code) {
-          final name = AppTranslations.getTeam(widget.lang, code);
-          final emblem = AppTranslations.getTeamWithEmblem(widget.lang, code).split(' ').first;
-          return DropdownMenuItem<String>(
-            value: code,
-            child: Text(
-              '$emblem $name',
-              style: const TextStyle(color: Colors.white, fontSize: 11),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
 
   Widget _buildSubTabSelector() {
+    final l = widget.lang;
     return Container(
       color: AppColors.background,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Row(
         children: [
-          _buildSubTabButton('preds', widget.lang == 'fr' ? 'Pronos' : 'Preds', Icons.sports_soccer),
-          const SizedBox(width: 4),
-          _buildSubTabButton('groups', widget.lang == 'fr' ? 'Groupes' : 'Groups', Icons.groups),
-          const SizedBox(width: 4),
-          _buildSubTabButton('leaderboard', widget.lang == 'fr' ? 'Classement' : 'Leaderboard', Icons.emoji_events),
-          const SizedBox(width: 4),
-          _buildSubTabButton('bonus', widget.lang == 'fr' ? 'Bonus' : 'Bonus', Icons.star),
+          _buildSubTabButton('preds',       l == 'fr' ? 'Pronos'    : (l == 'es' ? 'Pronos'    : 'Preds'),    Icons.sports_soccer),
+          const SizedBox(width: 6),
+          _buildSubTabButton('groups',      l == 'fr' ? 'Groupes'   : (l == 'es' ? 'Grupos'    : 'Groups'),   Icons.groups),
+          const SizedBox(width: 6),
+          _buildSubTabButton('leaderboard', l == 'fr' ? 'Classement': (l == 'es' ? 'Ranking'   : 'Rankings'), Icons.emoji_events),
         ],
       ),
     );
@@ -447,7 +449,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     return Expanded(
       child: ElevatedButton.icon(
         icon: Icon(icon, size: 14, color: isSelected ? Colors.black : AppColors.textMuted),
-        label: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+        label: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
         style: ElevatedButton.styleFrom(
           foregroundColor: isSelected ? Colors.black : Colors.white,
           backgroundColor: isSelected ? AppColors.accent : AppColors.card,
@@ -504,15 +506,15 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             final username = data['username'] as String? ?? 'Joueur';
             final points = data['points'] as int? ?? 0;
             final supportedTeam = data['supportedTeam'] as String?;
+            final storedAvatar = data['avatar'] as String? ?? '';
             final isMe = docs[index].id == _myUserId;
 
-            String teamDisplay = '';
-            if (supportedTeam != null && supportedTeam.isNotEmpty) {
+            // Determine emblem: use stored avatar first, then fall back to team flag emoji
+            String emblem = storedAvatar;
+            if (emblem.isEmpty && supportedTeam != null && supportedTeam.isNotEmpty) {
               final emblemName = AppTranslations.getTeamWithEmblem(widget.lang, supportedTeam);
               final parts = emblemName.split(' ');
-              if (parts.isNotEmpty) {
-                teamDisplay = parts.first;
-              }
+              if (parts.isNotEmpty) emblem = parts.first;
             }
 
             final rank = index + 1;
@@ -548,8 +550,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 children: [
                   rankWidget,
                   const SizedBox(width: 12),
-                  if (teamDisplay.isNotEmpty) ...[
-                    Text(teamDisplay, style: const TextStyle(fontSize: 16)),
+                  if (emblem.isNotEmpty) ...[
+                    _buildEmblemWidget(emblem, size: 24),
                     const SizedBox(width: 8),
                   ],
                   Expanded(
@@ -586,10 +588,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       return _buildPredictionsTab();
     } else if (_subTab == 'groups') {
       return _buildGroupsTab();
-    } else if (_subTab == 'leaderboard') {
-      return _buildLeaderboardTab();
     } else {
-      return _buildBonusTab();
+      return _buildLeaderboardTab();
     }
   }
 
@@ -604,9 +604,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
     return Column(
       children: [
-        // Sub-filter
+        // Points breakdown info panel (collapsible)
+        _buildPointsInfoPanel(),
+
+        // Sub-filter chips
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
             children: [
               _buildFilterButton('group', AppTranslations.get(widget.lang, 'predGroupStage')),
@@ -616,15 +619,15 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           ),
         ),
 
-        // List
+        // Match list — bonus summary card appended as last item
         Expanded(
           child: ListView.separated(
-            padding: const EdgeInsets.all(16.0),
-            itemCount: activeList.length,
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            itemCount: activeList.length + 1,
             separatorBuilder: (c, i) => const SizedBox(height: 12),
             itemBuilder: (c, i) {
-              final m = activeList[i];
-              return _buildPredictionCard(m);
+              if (i == activeList.length) return _buildBonusSummaryCard();
+              return _buildPredictionCard(activeList[i]);
             },
           ),
         ),
@@ -635,7 +638,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   Widget _buildFilterButton(String filter, String label) {
     final isSelected = _predsFilter == filter;
     return ChoiceChip(
-      label: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+      label: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
       selected: isSelected,
       selectedColor: AppColors.accent.withValues(alpha: 0.2),
       backgroundColor: AppColors.card,
@@ -664,6 +667,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     final p1Val = pred?.t1Score ?? 0;
     final p2Val = pred?.t2Score ?? 0;
 
+    final bool isMatchStarted = m.date.isBefore(DateTime.now());
+    final bool isLocked = m.isPlayed || isMatchStarted;
+
     int pointsEarned = 0;
     if (m.isPlayed && hasPred) {
       pointsEarned = PredictionService.evaluatePoints(m, pred);
@@ -678,7 +684,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: m.isPlayed ? AppColors.border : AppColors.borderMid,
+          color: isLocked ? AppColors.border : AppColors.borderMid,
           width: 1.5,
         ),
       ),
@@ -692,123 +698,103 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 children: [
                   Text(
                     m.isKnockout ? AppTranslations.get(widget.lang, m.stage ?? '') : '${AppTranslations.get(widget.lang, 'group')} ${m.group}',
-                    style: const TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                   if (_userPreds.boosterMatchId == m.id) ...[
                     const SizedBox(width: 6),
-                    const Icon(Icons.rocket_launch, size: 12, color: AppColors.warning),
+                    const Icon(Icons.rocket_launch, size: 14, color: AppColors.warning),
                   ],
                 ],
               ),
               Text(
                 m.getFormattedDate(widget.lang),
-                style: const TextStyle(color: AppColors.textDim, fontSize: 10),
+                style: const TextStyle(color: AppColors.textDim, fontSize: 12),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
-          // Score Prediction Interface
+          // Redesigned Stack Score Prediction Interface
+          // Team 1 Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Team 1 Logo & Name
+              TeamFlagWidget(
+                code: m.t1,
+                width: 32,
+                height: 22,
+                borderRadius: 6,
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: Image.network(
-                        'https://flagcdn.com/w40/${m.t1 == 'en' ? 'gb-eng' : m.t1}.png',
-                        width: 20,
-                        height: 12,
-                        fit: BoxFit.cover,
-                        errorBuilder: (c, e, s) => Container(width: 20, height: 12, color: Colors.grey),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        t1EmblemName,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  AppTranslations.getTeam(widget.lang, m.t1),
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-
-              // Inputs (+ / - buttons)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildIncrementButton(m.id, -1, 0, m.isPlayed),
+                  _buildIncrementButton(m.id, -1, 0, isLocked),
                   Container(
-                    width: 32,
+                    width: 36,
                     alignment: Alignment.center,
                     child: Text(
                       hasPred ? '$p1Val' : '-',
                       style: TextStyle(
                         color: hasPred ? Colors.white : AppColors.textDim,
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  _buildIncrementButton(m.id, 1, 0, m.isPlayed),
-                  const Padding(
-                     padding: EdgeInsets.symmetric(horizontal: 4),
-                     child: Text(':', style: TextStyle(color: AppColors.textDim, fontSize: 16)),
-                  ),
-                  _buildIncrementButton(m.id, 0, -1, m.isPlayed),
+                  _buildIncrementButton(m.id, 1, 0, isLocked),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Team 2 Row
+          Row(
+            children: [
+              TeamFlagWidget(
+                code: m.t2,
+                width: 32,
+                height: 22,
+                borderRadius: 6,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppTranslations.getTeam(widget.lang, m.t2),
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildIncrementButton(m.id, 0, -1, isLocked),
                   Container(
-                    width: 32,
+                    width: 36,
                     alignment: Alignment.center,
                     child: Text(
                       hasPred ? '$p2Val' : '-',
                       style: TextStyle(
                         color: hasPred ? Colors.white : AppColors.textDim,
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  _buildIncrementButton(m.id, 0, 1, m.isPlayed),
+                  _buildIncrementButton(m.id, 0, 1, isLocked),
                 ],
-              ),
-
-              // Team 2 Name & Logo
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        t2EmblemName,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.end,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: Image.network(
-                        'https://flagcdn.com/w40/${m.t2 == 'en' ? 'gb-eng' : m.t2}.png',
-                        width: 20,
-                        height: 12,
-                        fit: BoxFit.cover,
-                        errorBuilder: (c, e, s) => Container(width: 20, height: 12, color: Colors.grey),
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // Actual match result & Points badge
           if (m.isPlayed)
@@ -817,7 +803,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               children: [
                 Text(
                   '${AppTranslations.get(widget.lang, 'stats')}: ${m.t1Score} - ${m.t2Score}',
-                  style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                  style: const TextStyle(color: AppColors.textDim, fontSize: 13),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -834,15 +820,24 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     style: TextStyle(
                       color: pointsEarned > 0 ? AppColors.accent : AppColors.danger,
                       fontWeight: FontWeight.bold,
-                      fontSize: 10,
+                      fontSize: 12,
                     ),
                   ),
                 ),
               ],
             ),
 
+          // ── ET/PK prediction ────────────────────────────────────────────────────────────
+          // Show ET/PK picker when user predicts a draw in a knockout match
+          if (m.isKnockout && hasPred && !m.isPlayed && pred!.t1Score == pred.t2Score)
+            _buildETPKPicker(m, pred, isLocked),
+
+          // Show ET/PK actual result after a knockout that went to extra time
+          if (m.isKnockout && m.isPlayed && (m.wentToET ?? false))
+            _buildETPKResultRow(m, pred),
+
           // Booster selector for unplayed matches
-          if (!m.isPlayed) ...[
+          if (!isLocked) ...[
             const Divider(color: AppColors.border, height: 1),
             const SizedBox(height: 10),
             Row(
@@ -917,17 +912,17 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   }
 
   Widget _buildIncrementButton(String matchId, int t1Offset, int t2Offset, bool isMatchPlayed) {
-    if (isMatchPlayed) return const SizedBox(width: 24);
+    if (isMatchPlayed) return const SizedBox(width: 36);
 
     return SizedBox(
-      width: 26,
-      height: 26,
+      width: 36,
+      height: 36,
       child: IconButton(
         padding: EdgeInsets.zero,
         icon: Icon(
           (t1Offset > 0 || t2Offset > 0) ? Icons.add_circle : Icons.remove_circle,
           color: AppColors.accent,
-          size: 20,
+          size: 28,
         ),
         onPressed: () => _updateMatchPred(matchId, t1Offset, t2Offset),
       ),
@@ -1040,10 +1035,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               child: Row(
                 children: [
                   // Avatar/emblem
-                  Text(
-                    member.emblem,
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                  _buildEmblemWidget(member.emblem, size: 24),
                   const SizedBox(width: 12),
 
                   // Name
@@ -1076,153 +1068,348 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ================= BONUS TAB =================
-  Widget _buildBonusTab() {
-    // Unique list of all teams for the dropdown
-    final Set<String> teamCodes = {};
-    for (final m in widget.matches) {
-      if (m.t1.length == 2) teamCodes.add(m.t1);
-      if (m.t2.length == 2) teamCodes.add(m.t2);
-    }
-    final List<String> sortedTeams = teamCodes.toList()
-      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
-          .compareTo(AppTranslations.getTeam(widget.lang, b)));
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Helper widgets for the Pronos tab (points panel, bonus card, ET/PK)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Collapsible points breakdown panel shown at the top of the Pronos tab.
+  Widget _buildPointsInfoPanel() {
+    final lang = widget.lang;
+    final rows = [
+      ('🎯', AppTranslations.get(lang, 'exactGroupPts')),
+      ('✅', AppTranslations.get(lang, 'outcomeGroupPts')),
+      ('⚽', AppTranslations.get(lang, 'exactKnockoutPts')),
+      ('✅', AppTranslations.get(lang, 'outcomeKnockoutPts')),
+      ('⚡', AppTranslations.get(lang, 'etBonusPts')),
+      ('🥅', AppTranslations.get(lang, 'pkBonusPts')),
+      ('🏆', AppTranslations.get(lang, 'championBonusLabel')),
+      ('👟', AppTranslations.get(lang, 'goldenBootBonusLabel')),
+      ('🚀', AppTranslations.get(lang, 'jokerBonusLabel')),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            leading: const Icon(Icons.info_outline, color: AppColors.accent, size: 16),
+            title: Text(
+              AppTranslations.get(lang, 'pointsInfoTitle'),
+              style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            iconColor: AppColors.accent,
+            collapsedIconColor: AppColors.textDim,
+            tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+            childrenPadding: const EdgeInsets.fromLTRB(14, 4, 14, 12),
+            children: rows.map((row) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.5),
+              child: Row(
+                children: [
+                  Text(row.$1, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      row.$2,
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Compact locked-predictions card appended at the end of the match list.
+  Widget _buildBonusSummaryCard() {
+    final lang = widget.lang;
+    final champion = _userPreds.championCode;
+    final scorer   = _userPreds.goldenBootPlayer;
+
+    if (champion == null && scorer == null) {
+      return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(children: [
+          const Icon(Icons.account_circle, color: AppColors.textDim, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              lang == 'fr'
+                  ? 'Verrouillez votre champion et votre buteur dans votre profil ↗'
+                  : (lang == 'es'
+                      ? 'Bloquea tu campeón y goleador en tu perfil ↗'
+                      : 'Lock your champion & top scorer in your profile ↗'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
+          ),
+        ]),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.4), width: 1.5),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Predict Champion
-          Text(
-            AppTranslations.get(widget.lang, 'predictChampion'),
-            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13),
-          ),
-          const SizedBox(height: 8),
-
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 1.5),
+          Row(children: [
+            const Icon(Icons.lock, color: AppColors.warning, size: 13),
+            const SizedBox(width: 6),
+            Text(
+              lang == 'fr' ? 'Pronostics verrouillés' : (lang == 'es' ? 'Pronósticos bloqueados' : 'Locked predictions'),
+              style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
             ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _userPreds.championCode,
-                hint: Text(
-                  AppTranslations.get(widget.lang, 'selectWinner'),
-                  style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+          ]),
+          if (champion != null) ...[
+            const SizedBox(height: 10),
+            Row(children: [
+              const Text('🏆', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 8),
+              TeamFlagWidget(code: champion, width: 20, height: 13, borderRadius: 2),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppTranslations.getTeam(lang, champion),
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
-                dropdownColor: AppColors.card,
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppColors.accent),
-                onChanged: _saveBonusChampion,
-                items: sortedTeams.map((code) {
-                  final name = AppTranslations.getTeam(widget.lang, code);
-                  final emblem = AppTranslations.getTeamWithEmblem(widget.lang, code).split(' ').first;
-                  return DropdownMenuItem<String>(
-                    value: code,
-                    child: Text(
-                      '$emblem $name',
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                  );
-                }).toList(),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // 2. Predict Top Scorer
-          Text(
-            AppTranslations.get(widget.lang, 'predictScorer'),
-            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13),
-          ),
-          const SizedBox(height: 8),
-
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 1.5),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _codeController,
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: _userPreds.goldenBootPlayer ?? 'Kylian Mbappé / Harry Kane...',
-                      hintStyle: TextStyle(
-                        color: _userPreds.goldenBootPlayer != null ? Colors.white : AppColors.textDim,
-                        fontSize: 13,
-                        fontWeight: _userPreds.goldenBootPlayer != null ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  onPressed: () {
-                    _saveBonusScorer(_codeController.text);
-                    _codeController.clear();
-                    FocusScope.of(context).unfocus();
-                  },
-                  child: Text(AppTranslations.get(widget.lang, 'save'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                child: const Text('+100 pts', style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ]),
+          ],
+          if (scorer != null) ...[
+            const SizedBox(height: 8),
+            Row(children: [
+              const Text('👟', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 8),
+              const Icon(Icons.sports_soccer, color: AppColors.textDim, size: 14),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  scorer,
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
-              ],
-            ),
-          ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('+50 pts', style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ]),
+          ],
         ],
       ),
     );
   }
 
-  // ================= DIALOGS =================
-  void _showUsernameEditDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.card,
-          title: Text(
-            AppTranslations.get(widget.lang, 'enterName'),
-            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+  /// ET/PK team picker shown on knockout cards when user predicts a draw.
+  Widget _buildETPKPicker(WorldCupMatch m, MatchPrediction pred, bool isLocked) {
+    final etWinner = pred.extraTimeWinner;
+    final goesToPK = pred.penaltyWinner != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(color: AppColors.border, height: 20),
+        Row(children: [
+          const Icon(Icons.access_time, size: 12, color: AppColors.accent),
+          const SizedBox(width: 6),
+          Text(
+            AppTranslations.get(widget.lang, 'whoWinsET'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.bold),
           ),
-          content: TextField(
-            controller: _nameController,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(6),
             ),
+            child: const Text('+20 pts', style: TextStyle(color: AppColors.accent, fontSize: 9, fontWeight: FontWeight.bold)),
           ),
-          actions: [
-            TextButton(
-              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
-              child: Text(AppTranslations.get(widget.lang, 'save'), style: const TextStyle(color: Colors.black)),
-              onPressed: () {
-                _saveUsername();
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          _buildETTeamChip(m, m.t1, etWinner, isLocked),
+          const SizedBox(width: 8),
+          _buildETTeamChip(m, m.t2, etWinner, isLocked),
+        ]),
+        if (etWinner != null) ...[
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(children: [
+                Icon(Icons.sports_score, size: 12,
+                    color: goesToPK ? AppColors.warning : AppColors.borderStrong),
+                const SizedBox(width: 6),
+                Text(
+                  AppTranslations.get(widget.lang, 'penaltiesLabel'),
+                  style: TextStyle(
+                    color: goesToPK ? AppColors.warning : AppColors.borderStrong,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text('+25 pts', style: TextStyle(color: AppColors.borderStrong, fontSize: 9)),
+              ]),
+              Switch(
+                value: goesToPK,
+                activeThumbColor: AppColors.warning,
+                activeTrackColor: AppColors.warning.withValues(alpha: 0.2),
+                inactiveThumbColor: AppColors.borderStrong,
+                inactiveTrackColor: AppColors.border,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onChanged: isLocked ? null : (val) => _updateKnockoutExtras(
+                  m.id,
+                  etWinner,
+                  val ? (etWinner == m.t1) : null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
+
+  Widget _buildETTeamChip(WorldCupMatch m, String teamCode, String? selected, bool isLocked) {
+    final isSelected = selected == teamCode;
+    return Expanded(
+      child: GestureDetector(
+        onTap: isLocked ? null : () => _updateKnockoutExtras(m.id, teamCode, null),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? AppColors.accent : AppColors.border,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TeamFlagWidget(code: teamCode, width: 16, height: 10, borderRadius: 2),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  AppTranslations.getTeam(widget.lang, teamCode),
+                  style: TextStyle(
+                    color: isSelected ? AppColors.accent : AppColors.textDim,
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Displays the actual ET/PK result and whether the user's prediction was correct.
+  Widget _buildETPKResultRow(WorldCupMatch m, MatchPrediction? pred) {
+    if (m.etWinner == null) return const SizedBox.shrink();
+
+    final predictedET = pred?.extraTimeWinner?.toLowerCase();
+    final predictedPK = pred?.penaltyWinner;
+    final actualET    = m.etWinner!.toLowerCase();
+    final actualPK    = m.pkWinner?.toLowerCase();
+
+    final etCorrect = predictedET != null && predictedET == actualET;
+    final pkCorrect = m.wentToPK == true &&
+        actualPK != null &&
+        predictedPK != null &&
+        ((predictedPK == true  && actualPK == m.t1.toLowerCase()) ||
+         (predictedPK == false && actualPK == m.t2.toLowerCase()));
+
+    Widget chip(bool correct, String label) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: (correct ? AppColors.accent : AppColors.danger).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(correct ? Icons.check : Icons.close, size: 9,
+              color: correct ? AppColors.accent : AppColors.danger),
+          const SizedBox(width: 3),
+          Text(label, style: TextStyle(
+            color: correct ? AppColors.accent : AppColors.danger,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+          )),
+        ]),
+      );
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Divider(color: AppColors.border, height: 20),
+      Row(children: [
+        const Icon(Icons.access_time, size: 11, color: AppColors.textDim),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            '${AppTranslations.get(widget.lang, 'extraTimeLabel')}: '
+            '${AppTranslations.getTeam(widget.lang, m.etWinner!)}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+          ),
+        ),
+        if (pred?.extraTimeWinner != null) chip(etCorrect, etCorrect ? '+20' : '0 pts'),
+      ]),
+      if (m.wentToPK == true && m.pkWinner != null) ...[
+        const SizedBox(height: 4),
+        Row(children: [
+          const Icon(Icons.sports_score, size: 11, color: AppColors.textDim),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              '${AppTranslations.get(widget.lang, 'penaltiesLabel')}: '
+              '${AppTranslations.getTeam(widget.lang, m.pkWinner!)}',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+            ),
+          ),
+          if (pred?.penaltyWinner != null) chip(pkCorrect, pkCorrect ? '+25' : '0 pts'),
+        ]),
+      ],
+    ]);
+  }
+
+
 
   void _showCreateGroupDialog() {
     showDialog(
@@ -1296,5 +1483,30 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       },
     );
   }
-}
 
+  Widget _buildEmblemWidget(String emblem, {double size = 24}) {
+    if (emblem.startsWith('assets/avatars/') || emblem.contains('.png')) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.border, width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.asset(
+          emblem,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Icon(Icons.person, size: size * 0.6, color: AppColors.textDim),
+        ),
+      );
+    } else {
+      return Text(
+        emblem,
+        style: TextStyle(fontSize: size * 0.7),
+      );
+    }
+  }
+}

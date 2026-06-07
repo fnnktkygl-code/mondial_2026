@@ -1,58 +1,16 @@
 class AppTranslations {
-  static const Map<String, String> _emblems = {
-    'mx': '🦅', // El Tri / Aigle
-    'co': '☕', // Cafeteros
-    'cm': '🦁', // Lions Indomptables
-    'kr': '🐯', // Guerriers Taeguk / Tigres
-    'us': '🦅', // Stars & Stripes
-    'en': '🦁', // Three Lions
-    'ng': '🦅', // Super Eagles
-    'jp': '🦅', // Blue Samurai
-    'ca': '🍁', // Maple Leafs
-    'fr': '🐓', // Le Coq gaulois
-    'sn': '🦁', // Lions de la Téranga
-    'de': '🦅', // Mannschaft
-    'br': '🐆', // Jaguar / Seleção
-    'ar': '☀️', // Albiceleste
-    'ma': '🦁', // Lions de l'Atlas
-    'es': '🐂', // Toro / La Roja
-    'it': '🐺', // Azzurri / Loup
-    'pt': '🛡️', // Quinas / Navigateurs
-    'nl': '🦁', // Lion / Oranje
-    'be': '😈', // Diables Rouges
-    'hr': '🐆', // Vatreni
-    'uy': '☀️', // Celeste
-    'se': '🛡️', // Blågult
-    'ch': '⛰️', // Nati
-    'dk': '🛡️', // Danish Dynamite
-    'pl': '🦅', // Aigles Blancs
-    'ua': '🌻', // Sbirna
-    'dz': '🦊', // Fennecs
-    'eg': '🦅', // Pharaons
-    'tn': '🦅', // Aigles de Carthage
-    'gh': '🌟', // Black Stars
-    'ci': '🐘', // Éléphants
-    'cl': '⛰️', // La Roja
-    'pe': '🦙', // La Blanquirroja
-    'ec': '🦅', // La Tri
-    've': '🦜', // La Vinotinto
-    'au': '🦘', // Socceroos
-    'nz': '🥝', // All Whites / Kiwis
-    'sa': '🌴', // Faucons Verts
-    'ir': '🐆', // Guépards Perses
-    'tr': '🌙', // Bizim Çocuklar
-    'gr': '🛡️', // Bateau Pirate
-    'cz': '🦁', // Narodak
-    'at': '🦅', // Das Team
-    'ro': '🦅', // Tricolorii
-    'hu': '🦅', // Magyars
-    'bg': '🦁', // Lions Bulgare
-    'rs': '🦅', // Aigles Serbe
-  };
 
   static const Map<String, Map<String, dynamic>> _data = {
     'fr': {
-      'appTitle': 'Mondial 2026',
+      'profileTitle': 'Mon Profil',
+      'confirmWinnerTitle': 'Confirmer le vainqueur',
+      'confirmWinnerMsg': 'Attention, ce choix est définitif et ne pourra plus être modifié. Êtes-vous sûr de votre pronostic ?',
+      'lockedLabel': 'Verrouillé',
+      'winnerPredLabel': 'Pronostic Vainqueur',
+      'pseudoLabel': 'Pseudo',
+      'favoriteTeamLabel': 'Équipe favorite',
+      'saveSuccess': 'Profil mis à jour avec succès !',
+      'appTitle': 'Prono Challenge',
       'allMatches': 'Tous les matchs',
       'myAlerts': 'Mes alertes',
       'group': 'Groupe',
@@ -102,6 +60,9 @@ class AppTranslations {
       'sf': 'Demi-finales',
       'f': 'Finale',
       'groupsTab': 'Groupes',
+      'oddsTab': 'Cotes',
+      'oddsTitle': 'Cote de Titre',
+      'eliminated': 'Éliminé',
       'scorersTab': 'Buteurs',
       'assistsTab': 'Passeurs',
       'teamStatsTab': 'Stats Équipe',
@@ -153,6 +114,10 @@ class AppTranslations {
       'groupStage':       'Phase de Poules',
       'knockoutStage':    'Phase Finale',
       'youSuffix':        ' (Vous)',
+      'anthemsTitle':     'Hymnes Nationaux',
+      'searchTeams':      'Rechercher une équipe...',
+      'volume':           'Volume',
+      'noAnthemPlaying':  'Aucun hymne en cours',
       // ── Match detail sheet ────────────────────────────────────────────────
       'crowdPredictions': 'PRONOSTICS DU PUBLIC',
       'drawLabel':        'Nul',
@@ -164,6 +129,22 @@ class AppTranslations {
       'knockoutFilter':   'Phase Finale',
       'predGroupStage':   'Phase de Poules',
       'predKnockout':     'Phase Finale',
+      // ── Points info panel ──────────────────────────────────────────────────
+      'pointsInfoTitle':     'Barème des points',
+      'exactGroupPts':       'Score exact (poule) : +30 pts',
+      'outcomeGroupPts':     'Résultat correct (poule) : +10 pts',
+      'exactKnockoutPts':    'Score exact (phase finale) : +40 pts',
+      'outcomeKnockoutPts':  'Résultat correct (ph. finale) : +15 pts',
+      'etBonusPts':          'Bon vainqueur en prolong. : +20 pts',
+      'pkBonusPts':          'Bon vainqueur aux tirs au but : +25 pts',
+      'championBonusLabel':  'Champion du monde exact : +100 pts',
+      'goldenBootBonusLabel':'Meilleur buteur exact : +50 pts',
+      'jokerBonusLabel':     'Joker (x2 sur un match)',
+      // ── ET / PK prediction UI ──────────────────────────────────────────────
+      'extraTimeLabel':  'Prolongations',
+      'penaltiesLabel':  'Tirs au but',
+      'whoWinsET':       'Qui gagne en prolongations ?',
+      'whoWinsPK':       'Qui gagne aux tirs au but ?',
       'jokes': {
         'default': 'Un match qui s\'annonce spectaculaire ! Préparez le pop-corn. 🍿⚽',
         'mx_de': 'Attention aux secousses sismiques à Mexico ! Rappelez-vous 2018... 🇲🇽⚡🇩🇪',
@@ -191,6 +172,10 @@ class AppTranslations {
         'au': 'Australie', 'nz': 'Nouvelle-Zélande', 'sa': 'Arabie Saoudite', 'ir': 'Iran',
         'tr': 'Turquie', 'gr': 'Grèce', 'cz': 'République Tchèque', 'at': 'Autriche',
         'ro': 'Roumanie', 'hu': 'Hongrie', 'bg': 'Bulgarie', 'rs': 'Serbie',
+        'za': 'Afrique du Sud', 'ba': 'Bosnie-Herzégovine', 'cd': 'RD Congo',
+        'cw': 'Curaçao', 'cv': 'Cap-Vert', 'sco': 'Écosse', 'ht': 'Haïti',
+        'iq': 'Irak', 'jo': 'Jordanie', 'no': 'Norvège', 'pa': 'Panama',
+        'py': 'Paraguay', 'qa': 'Qatar', 'uz': 'Ouzbékistan',
         '1A': '1er Groupe A', '2B': '2e Groupe B',
         '1C': '1er Groupe C', '2D': '2e Groupe D',
         'w49': 'Vainqueur M49', 'w50': 'Vainqueur M50',
@@ -199,7 +184,15 @@ class AppTranslations {
       }
     },
     'en': {
-      'appTitle': 'World Cup 2026',
+      'profileTitle': 'My Profile',
+      'confirmWinnerTitle': 'Confirm Winner',
+      'confirmWinnerMsg': 'Warning: this choice is final and cannot be modified. Are you sure of your prediction?',
+      'lockedLabel': 'Locked',
+      'winnerPredLabel': 'Winner Prediction',
+      'pseudoLabel': 'Nickname',
+      'favoriteTeamLabel': 'Favorite Team',
+      'saveSuccess': 'Profile updated successfully!',
+      'appTitle': 'Prono Challenge',
       'allMatches': 'All matches',
       'myAlerts': 'My alerts',
       'group': 'Group',
@@ -249,6 +242,9 @@ class AppTranslations {
       'sf': 'Semi-Finals',
       'f': 'Final',
       'groupsTab': 'Groups',
+      'oddsTab': 'Odds',
+      'oddsTitle': 'Title Odds',
+      'eliminated': 'Eliminated',
       'scorersTab': 'Scorers',
       'assistsTab': 'Assists',
       'teamStatsTab': 'Team Stats',
@@ -300,6 +296,10 @@ class AppTranslations {
       'groupStage':       'Group Stage',
       'knockoutStage':    'Knockout Stage',
       'youSuffix':        ' (You)',
+      'anthemsTitle':     'National Anthems',
+      'searchTeams':      'Search teams...',
+      'volume':           'Volume',
+      'noAnthemPlaying':  'No anthem playing',
       // ── Match detail sheet ────────────────────────────────────────────────
       'crowdPredictions': 'CROWD PREDICTIONS',
       'drawLabel':        'Draw',
@@ -311,6 +311,22 @@ class AppTranslations {
       'knockoutFilter':   'Knockout Stage',
       'predGroupStage':   'Group Stage',
       'predKnockout':     'Knockout Stage',
+      // ── Points info panel ──────────────────────────────────────────────────
+      'pointsInfoTitle':     'Points breakdown',
+      'exactGroupPts':       'Exact score (group stage): +30 pts',
+      'outcomeGroupPts':     'Correct result (group stage): +10 pts',
+      'exactKnockoutPts':    'Exact score (knockout): +40 pts',
+      'outcomeKnockoutPts':  'Correct result (knockout): +15 pts',
+      'etBonusPts':          'Correct ET winner: +20 pts',
+      'pkBonusPts':          'Correct PK winner: +25 pts',
+      'championBonusLabel':  'World champion correct: +100 pts',
+      'goldenBootBonusLabel':'Golden Boot correct: +50 pts',
+      'jokerBonusLabel':     'Joker (×2 on one match)',
+      // ── ET / PK prediction UI ──────────────────────────────────────────────
+      'extraTimeLabel':  'Extra Time',
+      'penaltiesLabel':  'Penalty Shootout',
+      'whoWinsET':       'Who wins in extra time?',
+      'whoWinsPK':       'Who wins on penalties?',
       'jokes': {
         'default': 'A match that promises to be spectacular! Grab your popcorn. 🍿⚽',
         'mx_de': 'Watch out for seismic activity in Mexico! Remember 2018... 🇲🇽⚡🇩🇪',
@@ -338,6 +354,10 @@ class AppTranslations {
         'au': 'Australia', 'nz': 'New Zealand', 'sa': 'Saudi Arabia', 'ir': 'Iran',
         'tr': 'Turkey', 'gr': 'Greece', 'cz': 'Czechia', 'at': 'Austria',
         'ro': 'Romania', 'hu': 'Hungary', 'bg': 'Bulgaria', 'rs': 'Serbia',
+        'za': 'South Africa', 'ba': 'Bosnia and Herzegovina', 'cd': 'DR Congo',
+        'cu': 'Curaçao', 'cv': 'Cabo Verde', 'sco': 'Scotland', 'ht': 'Haiti',
+        'iq': 'Iraq', 'jo': 'Jordan', 'no': 'Norway', 'pa': 'Panama',
+        'py': 'Paraguay', 'qa': 'Qatar', 'uz': 'Uzbekistan',
         '1A': 'Winner Group A', '2B': 'Runner-up Group B',
         '1C': 'Winner Group C', '2D': 'Runner-up Group D',
         'w49': 'Winner M49', 'w50': 'Winner M50',
@@ -346,7 +366,15 @@ class AppTranslations {
       }
     },
     'es': {
-      'appTitle': 'Mundial 2026',
+      'profileTitle': 'Mi Perfil',
+      'confirmWinnerTitle': 'Confirmar Ganador',
+      'confirmWinnerMsg': 'Atención: esta elección es definitiva y no se podrá modificar. ¿Estás seguro de tu predicción?',
+      'lockedLabel': 'Bloqueado',
+      'winnerPredLabel': 'Predicción del Ganador',
+      'pseudoLabel': 'Apodo',
+      'favoriteTeamLabel': 'Equipo favorito',
+      'saveSuccess': '¡Perfil actualizado con éxito!',
+      'appTitle': 'Prono Challenge',
       'allMatches': 'Todos los partidos',
       'myAlerts': 'Mis alertas',
       'group': 'Grupo',
@@ -396,6 +424,9 @@ class AppTranslations {
       'sf': 'Semifinales',
       'f': 'Final',
       'groupsTab': 'Grupos',
+      'oddsTab': 'Cuotas',
+      'oddsTitle': 'Cuota de Título',
+      'eliminated': 'Eliminado',
       'scorersTab': 'Goleadores',
       'assistsTab': 'Asistentes',
       'teamStatsTab': 'Stats Equipo',
@@ -447,6 +478,10 @@ class AppTranslations {
       'groupStage':       'Fase de Grupos',
       'knockoutStage':    'Fase Final',
       'youSuffix':        ' (Tú)',
+      'anthemsTitle':     'Himnos Nacionales',
+      'searchTeams':      'Buscar equipos...',
+      'volume':           'Volumen',
+      'noAnthemPlaying':  'Ningún himno en reproducción',
       // ── Match detail sheet ────────────────────────────────────────────────
       'crowdPredictions': 'PRONÓSTICOS DEL PÚBLICO',
       'drawLabel':        'Empate',
@@ -458,6 +493,22 @@ class AppTranslations {
       'knockoutFilter':   'Fase Final',
       'predGroupStage':   'Fase de Grupos',
       'predKnockout':     'Fase Final',
+      // ── Points info panel ──────────────────────────────────────────────────
+      'pointsInfoTitle':     'Distribución de puntos',
+      'exactGroupPts':       'Marcador exacto (grupos): +30 pts',
+      'outcomeGroupPts':     'Resultado correcto (grupos): +10 pts',
+      'exactKnockoutPts':    'Marcador exacto (eliminat.): +40 pts',
+      'outcomeKnockoutPts':  'Resultado correcto (eliminat.): +15 pts',
+      'etBonusPts':          'Ganador en prórroga correcto: +20 pts',
+      'pkBonusPts':          'Ganador en penaltis correcto: +25 pts',
+      'championBonusLabel':  'Campeón mundial correcto: +100 pts',
+      'goldenBootBonusLabel':'Bota de Oro correcta: +50 pts',
+      'jokerBonusLabel':     'Joker (×2 en un partido)',
+      // ── ET / PK prediction UI ──────────────────────────────────────────────
+      'extraTimeLabel':  'Prórroga',
+      'penaltiesLabel':  'Penaltis',
+      'whoWinsET':       '¿Quién gana en la prórroga?',
+      'whoWinsPK':       '¿Quién gana en la tanda de penaltis?',
       'jokes': {
         'default': '¡Un partido que promete ser espectacular! Prepara las palomitas. 🍿⚽',
         'mx_de': '¡Cuidado con la actividad sísmica en CDMX! Recuerden el 2018... 🇲🇽⚡🇩🇪',
@@ -485,6 +536,10 @@ class AppTranslations {
         'au': 'Australia', 'nz': 'Nueva Zelanda', 'sa': 'Arabia Saudita', 'ir': 'Irán',
         'tr': 'Turquía', 'gr': 'Grecia', 'cz': 'República Checa', 'at': 'Austria',
         'ro': 'Rumanía', 'hu': 'Hungría', 'bg': 'Bulgaria', 'rs': 'Serbia',
+        'za': 'Sudáfrica', 'ba': 'Bosnia y Herzegovina', 'cd': 'RD Congo',
+        'cu': 'Curaçao', 'cv': 'Cabo Verde', 'sco': 'Escocia', 'ht': 'Haití',
+        'iq': 'Irak', 'jo': 'Jordania', 'no': 'Noruega', 'pa': 'Panamá',
+        'py': 'Paraguay', 'qa': 'Catar', 'uz': 'Uzbekistán',
         '1A': '1ro Grupo A', '2B': '2do Grupo B',
         '1C': '1ro Grupo C', '2D': '2do Grupo D',
         'w49': 'Ganador M49', 'w50': 'Ganador M50',
@@ -504,9 +559,7 @@ class AppTranslations {
   }
 
   static String getTeamWithEmblem(String lang, String code) {
-    final name = getTeam(lang, code);
-    final emblem = _emblems[code.toLowerCase()];
-    return emblem != null ? '$emblem $name' : name;
+    return getTeam(lang, code);
   }
 
   static String getJoke(String lang, String t1, String t2, {bool isKnockout = false}) {

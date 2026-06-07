@@ -21,7 +21,7 @@ const OUTPUT_PATH = path.join(__dirname, '..', 'assets', 'initial_matches.json')
 const TLA_TO_ISO = {
   MEX: 'mx', RSA: 'za', KOR: 'kr', CZE: 'cz', CAN: 'ca', BIH: 'ba',
   USA: 'us', PAR: 'py', QAT: 'qa', SUI: 'ch', BRA: 'br', MAR: 'ma',
-  HAI: 'ht', SCO: 'gb-sct', AUS: 'au', TUR: 'tr', GER: 'de', CUW: 'cw',
+  HAI: 'ht', SCO: 'sco', AUS: 'au', TUR: 'tr', GER: 'de', CUW: 'cw',
   NED: 'nl', JPN: 'jp', CIV: 'ci', ECU: 'ec', SWE: 'se', TUN: 'tn',
   ESP: 'es', CPV: 'cv', BEL: 'be', EGY: 'eg', KSA: 'sa', URY: 'uy',
   IRN: 'ir', NZL: 'nz', FRA: 'fr', SEN: 'sn', IRQ: 'iq', NOR: 'no',
