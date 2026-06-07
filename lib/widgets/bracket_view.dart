@@ -10,6 +10,9 @@ class BracketViewWidget extends StatelessWidget {
   final Function(WorldCupMatch match) onMatchTap;
   final String? supportedTeamCode;
 
+  static final Map<String, int> _idCache = {};
+  static final RegExp _digitRegex = RegExp(r'\d+');
+
   const BracketViewWidget({
     super.key,
     required this.matches,
@@ -17,6 +20,12 @@ class BracketViewWidget extends StatelessWidget {
     required this.onMatchTap,
     this.supportedTeamCode,
   });
+
+  static int _getParsedId(String id) {
+    return _idCache.putIfAbsent(id, () {
+      return int.tryParse(_digitRegex.firstMatch(id)?.group(0) ?? '0') ?? 0;
+    });
+  }
 
   List<WorldCupMatch> _getMatchesForStage(String stageName) {
     return matches.where((m) => m.stage == stageName).toList()
@@ -36,32 +45,32 @@ class BracketViewWidget extends StatelessWidget {
     // Left side: m49 to m56 (R32), m65 to m68 (R16), m73 to m74 (QF), m77 (SF)
     // Right side: m57 to m64 (R32), m69 to m72 (R16), m75 to m76 (QF), m78 (SF)
     final leftR32 = r32Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+      final idNum = _getParsedId(m.id);
       return idNum >= 49 && idNum <= 56;
     }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
     final rightR32 = r32Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+      final idNum = _getParsedId(m.id);
       return idNum >= 57 && idNum <= 64;
     }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
     final leftR16 = r16Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+      final idNum = _getParsedId(m.id);
       return idNum >= 65 && idNum <= 68;
     }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
     final rightR16 = r16Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+      final idNum = _getParsedId(m.id);
       return idNum >= 69 && idNum <= 72;
     }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
     final leftQF = qfMatches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+      final idNum = _getParsedId(m.id);
       return idNum >= 73 && idNum <= 74;
     }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
     final rightQF = qfMatches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+      final idNum = _getParsedId(m.id);
       return idNum >= 75 && idNum <= 76;
     }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
