@@ -1305,6 +1305,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     final isSelected = selected == teamCode;
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: isLocked ? null : () => _updateKnockoutExtras(m.id, teamCode, null),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
