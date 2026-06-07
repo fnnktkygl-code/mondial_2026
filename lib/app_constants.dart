@@ -18,6 +18,7 @@ const int kPenaltyShootoutBonusPoints= 25;  // Correct penalty-shootout winner
 // Tournament-wide bonus predictions
 const int kChampionBonusPoints       = 100; // Correctly predicted tournament champion
 const int kGoldenBootBonusPoints     = 50;  // Correctly predicted top scorer
+const int kTopAssisterBonusPoints    = 50;  // Correctly predicted top assister
 
 // ─── XP / Level thresholds ───────────────────────────────────────────────────
 /// Each entry is [minXp, maxXp (exclusive), level, rankNameKey, nextLevelXp].
@@ -41,6 +42,8 @@ const int    kGroupMatchMaxIndex = 72;     // Group stage matches are m1..m72
 const Duration kLivePulseDuration = Duration(milliseconds: 900);
 const double   kLivePulseMin      = 0.25;
 const double   kLivePulseMax      = 1.0;
+
+const bool kIsLiveMode = true;
 
 // ─── API / Network ───────────────────────────────────────────────────────────
 /// Points to the GitHub raw file updated by GitHub Actions every 15 min.

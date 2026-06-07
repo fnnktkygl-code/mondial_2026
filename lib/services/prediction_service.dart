@@ -52,10 +52,13 @@ class PredictionData {
   String? championCode;
   String? goldenBootPlayer; // user's locked prediction of top scorer name
   String? goldenBootWinner; // set when official top scorer is confirmed
+  String? topAssisterPlayer; // user's locked prediction of top assister name
+  String? topAssisterWinner; // set when official top assister is confirmed
   String? supportedTeam;
   String? boosterMatchId;
   DateTime? championPredictedAt;
   DateTime? goldenBootPredictedAt;
+  DateTime? topAssisterPredictedAt;
   Map<String, MatchPrediction> matchPredictions;
 
   PredictionData({
@@ -64,10 +67,13 @@ class PredictionData {
     this.championCode,
     this.goldenBootPlayer,
     this.goldenBootWinner,
+    this.topAssisterPlayer,
+    this.topAssisterWinner,
     this.supportedTeam,
     this.boosterMatchId,
     this.championPredictedAt,
     this.goldenBootPredictedAt,
+    this.topAssisterPredictedAt,
     Map<String, MatchPrediction>? matchPredictions,
   }) : matchPredictions = matchPredictions ?? {};
 
@@ -86,10 +92,13 @@ class PredictionData {
       championCode: json['championCode'] as String?,
       goldenBootPlayer: json['goldenBootPlayer'] as String?,
       goldenBootWinner: json['goldenBootWinner'] as String?,
+      topAssisterPlayer: json['topAssisterPlayer'] as String?,
+      topAssisterWinner: json['topAssisterWinner'] as String?,
       supportedTeam: json['supportedTeam'] as String?,
       boosterMatchId: json['boosterMatchId'] as String?,
       championPredictedAt: json['championPredictedAt'] != null ? DateTime.tryParse(json['championPredictedAt'] as String) : null,
       goldenBootPredictedAt: json['goldenBootPredictedAt'] != null ? DateTime.tryParse(json['goldenBootPredictedAt'] as String) : null,
+      topAssisterPredictedAt: json['topAssisterPredictedAt'] != null ? DateTime.tryParse(json['topAssisterPredictedAt'] as String) : null,
       matchPredictions: preds,
     );
   }
@@ -106,10 +115,13 @@ class PredictionData {
       'championCode': championCode,
       'goldenBootPlayer': goldenBootPlayer,
       'goldenBootWinner': goldenBootWinner,
+      'topAssisterPlayer': topAssisterPlayer,
+      'topAssisterWinner': topAssisterWinner,
       'supportedTeam': supportedTeam,
       'boosterMatchId': boosterMatchId,
       if (championPredictedAt != null) 'championPredictedAt': championPredictedAt!.toIso8601String(),
       if (goldenBootPredictedAt != null) 'goldenBootPredictedAt': goldenBootPredictedAt!.toIso8601String(),
+      if (topAssisterPredictedAt != null) 'topAssisterPredictedAt': topAssisterPredictedAt!.toIso8601String(),
       'preds': predsJson,
     };
   }
@@ -335,6 +347,12 @@ class PredictionService {
     return (kGoldenBootBonusPoints * mult).round();
   }
 
+  static int getPotentialTopAssisterPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
+    final starts = getStageStartTimes(matches);
+    final mult = getPenaltyMultiplier(predictedAt, starts);
+    return (kTopAssisterBonusPoints * mult).round();
+  }
+
   /// Calculate user's total points across all matches (including bonus predictions).
   static int calculateTotalPoints(PredictionData userPreds, List<WorldCupMatch> matches) {
     int score = 0;
@@ -376,6 +394,19 @@ class PredictionService {
           goldenBootWinner.trim().toLowerCase()) {
         final mult = getPenaltyMultiplier(userPreds.goldenBootPredictedAt, starts);
         score += (kGoldenBootBonusPoints * mult).round();
+      }
+    }
+
+    // Bonus: correct top assister prediction
+    final topAssisterWinner = userPreds.topAssisterWinner;
+    if (topAssisterWinner != null &&
+        topAssisterWinner.isNotEmpty &&
+        userPreds.topAssisterPlayer != null &&
+        userPreds.topAssisterPlayer!.isNotEmpty) {
+      if (userPreds.topAssisterPlayer!.trim().toLowerCase() ==
+          topAssisterWinner.trim().toLowerCase()) {
+        final mult = getPenaltyMultiplier(userPreds.topAssisterPredictedAt, starts);
+        score += (kTopAssisterBonusPoints * mult).round();
       }
     }
 

@@ -12,6 +12,7 @@ import 'team_flag.dart';
 class ChallengeViewWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
   final String lang;
+  final bool isLiveMode;
   final Function(String message) showSnackBar;
   final Function(Map<String, String> alerts) onAlertsChanged;
   final Function(String? teamCode) onSupportedTeamChanged;
@@ -20,6 +21,7 @@ class ChallengeViewWidget extends StatefulWidget {
     super.key,
     required this.matches,
     required this.lang,
+    this.isLiveMode = true,
     required this.showSnackBar,
     required this.onAlertsChanged,
     required this.onSupportedTeamChanged,
@@ -519,14 +521,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             final storedAvatar = data['avatar'] as String? ?? '';
             final isMe = docs[index].id == _myUserId;
 
-            // Determine emblem: use stored avatar first, then fall back to team flag emoji
-            String emblem = storedAvatar;
-            if (emblem.isEmpty && supportedTeam != null && supportedTeam.isNotEmpty) {
-              final emblemName = AppTranslations.getTeamWithEmblem(widget.lang, supportedTeam);
-              final parts = emblemName.split(' ');
-              if (parts.isNotEmpty) emblem = parts.first;
-            }
-
             final rank = index + 1;
             Widget rankWidget;
             if (rank == 1) {
@@ -560,8 +554,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 children: [
                   rankWidget,
                   const SizedBox(width: 12),
-                  if (emblem.isNotEmpty) ...[
-                    _buildEmblemWidget(emblem, size: 24),
+                  if (storedAvatar.isNotEmpty) ...[
+                    _buildEmblemWidget(storedAvatar, size: 24),
                     const SizedBox(width: 8),
                   ],
                   Expanded(
@@ -678,7 +672,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     final p2Val = pred?.t2Score ?? 0;
 
     final bool isMatchStarted = m.date.isBefore(DateTime.now());
-    final bool isLocked = m.isPlayed || isMatchStarted;
+    final bool isLocked = widget.isLiveMode && (m.isPlayed || isMatchStarted);
 
     int pointsEarned = 0;
     if (m.isPlayed && hasPred) {
@@ -726,83 +720,89 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
           // Redesigned Stack Score Prediction Interface
           // Team 1 Row
-          Row(
-            children: [
-              TeamFlagWidget(
-                code: m.t1,
-                width: 32,
-                height: 22,
-                borderRadius: 6,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  AppTranslations.getTeam(widget.lang, m.t1),
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          GestureDetector(
+            onTap: isLocked ? null : () => _updateMatchPred(m.id, p1Val == 0 && p2Val == 0 ? 1 : (p1Val < 9 ? 1 : 0), 0),
+            child: Row(
+              children: [
+                TeamFlagWidget(
+                  code: m.t1,
+                  width: 32,
+                  height: 22,
+                  borderRadius: 6,
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildIncrementButton(m.id, -1, 0, isLocked),
-                  Container(
-                    width: 36,
-                    alignment: Alignment.center,
-                    child: Text(
-                      hasPred ? '$p1Val' : '-',
-                      style: TextStyle(
-                        color: hasPred ? Colors.white : AppColors.textDim,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    AppTranslations.getTeam(widget.lang, m.t1),
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildIncrementButton(m.id, -1, 0, isLocked),
+                    Container(
+                      width: 36,
+                      alignment: Alignment.center,
+                      child: Text(
+                        hasPred ? '$p1Val' : '-',
+                        style: TextStyle(
+                          color: hasPred ? Colors.white : AppColors.textDim,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  _buildIncrementButton(m.id, 1, 0, isLocked),
-                ],
-              ),
-            ],
+                    _buildIncrementButton(m.id, 1, 0, isLocked),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           // Team 2 Row
-          Row(
-            children: [
-              TeamFlagWidget(
-                code: m.t2,
-                width: 32,
-                height: 22,
-                borderRadius: 6,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  AppTranslations.getTeam(widget.lang, m.t2),
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          GestureDetector(
+            onTap: isLocked ? null : () => _updateMatchPred(m.id, 0, p1Val == 0 && p2Val == 0 ? 1 : (p2Val < 9 ? 1 : 0)),
+            child: Row(
+              children: [
+                TeamFlagWidget(
+                  code: m.t2,
+                  width: 32,
+                  height: 22,
+                  borderRadius: 6,
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildIncrementButton(m.id, 0, -1, isLocked),
-                  Container(
-                    width: 36,
-                    alignment: Alignment.center,
-                    child: Text(
-                      hasPred ? '$p2Val' : '-',
-                      style: TextStyle(
-                        color: hasPred ? Colors.white : AppColors.textDim,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    AppTranslations.getTeam(widget.lang, m.t2),
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildIncrementButton(m.id, 0, -1, isLocked),
+                    Container(
+                      width: 36,
+                      alignment: Alignment.center,
+                      child: Text(
+                        hasPred ? '$p2Val' : '-',
+                        style: TextStyle(
+                          color: hasPred ? Colors.white : AppColors.textDim,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  _buildIncrementButton(m.id, 0, 1, isLocked),
-                ],
-              ),
-            ],
+                    _buildIncrementButton(m.id, 0, 1, isLocked),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
 

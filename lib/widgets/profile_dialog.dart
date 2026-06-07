@@ -40,6 +40,7 @@ class UserProfileDialog extends StatefulWidget {
 class _UserProfileDialogState extends State<UserProfileDialog> {
   late TextEditingController _nameController;
   late TextEditingController _scorerController;
+  late TextEditingController _assisterController;
   String? _supportedTeam;
   String? _championCode;
   String _avatar = '';
@@ -47,12 +48,14 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   bool _isHidden = false;
   List<String> _scorerSuggestions = [];
   final FocusNode _scorerFocusNode = FocusNode();
+  final FocusNode _assisterFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.userPreds.username);
     _scorerController = TextEditingController(text: widget.userPreds.goldenBootPlayer ?? '');
+    _assisterController = TextEditingController(text: widget.userPreds.topAssisterPlayer ?? '');
     _supportedTeam = widget.userPreds.supportedTeam;
     _championCode = widget.userPreds.championCode;
     _avatar = widget.userPreds.avatar;
@@ -172,7 +175,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   void dispose() {
     _nameController.dispose();
     _scorerController.dispose();
+    _assisterController.dispose();
     _scorerFocusNode.dispose();
+    _assisterFocusNode.dispose();
     super.dispose();
   }
 
@@ -364,17 +369,24 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final scorerInput = _scorerController.text.trim();
     final bool isNewScorer = widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
 
+    final assisterInput = _assisterController.text.trim();
+    final bool isNewAssister = widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty;
+
     // Validate that the player is in the official FIFA list
     if (isNewScorer && !kWC2026Players.contains(scorerInput)) {
       widget.showSnackBar(widget.lang == 'fr'
-          ? 'Joueur introuvable dans la liste officielle FIFA. Veuillez en sélectionner un dans la liste.'
-          : (widget.lang == 'es'
-          ? 'Jugador no encontrado en la lista oficial de la FIFA. Por favor selecciona uno de la lista.'
-          : 'Player not found in the official FIFA list. Please select one from the list.'));
+          ? 'Buteur introuvable dans la liste officielle FIFA.'
+          : 'Scorer not found in the official FIFA list.');
+      return;
+    }
+    if (isNewAssister && !kWC2026Players.contains(assisterInput)) {
+      widget.showSnackBar(widget.lang == 'fr'
+          ? 'Passeur introuvable dans la liste officielle FIFA.'
+          : 'Assister not found in the official FIFA list.');
       return;
     }
 
-    if (isNewScorer) {
+    if (isNewScorer || isNewAssister) {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
@@ -382,24 +394,19 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             backgroundColor: AppColors.card,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
             title: Text(
-              widget.lang == 'fr' ? 'Confirmer le meilleur buteur' : (widget.lang == 'es' ? 'Confirmar máximo goleador' : 'Confirm Golden Boot Scorer'),
+              widget.lang == 'fr' ? 'Confirmer les pronostics' : 'Confirm predictions',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             content: Text(
               widget.lang == 'fr'
-                  ? 'Attention, votre pronostic pour le meilleur buteur ($scorerInput) ne pourra plus être modifié par la suite.'
-                  : (widget.lang == 'es'
-                  ? 'Atención, su pronóstico para el máximo goleador ($scorerInput) no podrá ser modificado después.'
-                  : 'Attention, your prediction for the top scorer ($scorerInput) cannot be modified after this.'),
+                  ? 'Attention, vos pronostics pour le meilleur buteur et/ou passeur ne pourront plus être modifiés.'
+                  : 'Attention, your predictions for top scorer and/or assister cannot be modified after this.',
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  AppTranslations.get(widget.lang, 'cancel'),
-                  style: const TextStyle(color: AppColors.textDim),
-                ),
+                child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
@@ -417,10 +424,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           );
         },
       );
-
-      if (confirmed != true) {
-        return;
-      }
+      if (confirmed != true) return;
     }
 
     setState(() {
@@ -440,6 +444,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       if (widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty) {
         widget.userPreds.goldenBootPlayer = scorerInput;
         widget.userPreds.goldenBootPredictedAt = DateTime.now();
+      }
+
+      if (widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty) {
+        widget.userPreds.topAssisterPlayer = assisterInput;
+        widget.userPreds.topAssisterPredictedAt = DateTime.now();
       }
 
       await PredictionService.savePredictionData(widget.userPreds);
@@ -480,11 +489,15 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final sortedTeams = _getSortedTeams();
     final potentialChampPts = PredictionService.getPotentialChampionPoints(DateTime.now(), widget.matches);
     final potentialScorerPts = PredictionService.getPotentialGoldenBootPoints(DateTime.now(), widget.matches);
+    final potentialAssisterPts = PredictionService.getPotentialTopAssisterPoints(DateTime.now(), widget.matches);
     final lockedChampPts = widget.userPreds.championCode != null
         ? PredictionService.getPotentialChampionPoints(widget.userPreds.championPredictedAt, widget.matches)
         : null;
     final lockedScorerPts = widget.userPreds.goldenBootPlayer != null
         ? PredictionService.getPotentialGoldenBootPoints(widget.userPreds.goldenBootPredictedAt, widget.matches)
+        : null;
+    final lockedAssisterPts = widget.userPreds.topAssisterPlayer != null
+        ? PredictionService.getPotentialTopAssisterPoints(widget.userPreds.topAssisterPredictedAt, widget.matches)
         : null;
 
     return Dialog(
@@ -877,26 +890,18 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Autocomplete depuis la liste officielle FIFA ──
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
                       final query = textEditingValue.text.toLowerCase();
-                      return kWC2026Players.where(
-                            (player) => player.toLowerCase().contains(query),
-                      );
+                      return kWC2026Players.where((p) => p.toLowerCase().contains(query));
                     },
-                    onSelected: (String selection) {
-                      _scorerController.text = selection;
-                    },
+                    onSelected: (selection) => _scorerController.text = selection,
                     fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      // Sync our controller with the Autocomplete internal controller
                       if (_scorerController.text.isNotEmpty && controller.text.isEmpty) {
                         controller.text = _scorerController.text;
                       }
-                      controller.addListener(() {
-                        _scorerController.text = controller.text;
-                      });
+                      controller.addListener(() => _scorerController.text = controller.text);
                       return TextField(
                         controller: controller,
                         focusNode: focusNode,
@@ -905,10 +910,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         decoration: InputDecoration(
                           fillColor: AppColors.surface,
                           filled: true,
-                          hintText: widget.lang == 'fr'
-                              ? 'Rechercher un joueur...'
-                              : (widget.lang == 'es' ? 'Buscar un jugador...' : 'Search a player...'),
-                          hintStyle: const TextStyle(color: AppColors.textDim),
+                          hintText: widget.lang == 'fr' ? 'Rechercher le buteur...' : 'Search scorer...',
                           prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           enabledBorder: OutlineInputBorder(
@@ -953,29 +955,88 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       );
                     },
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.lang == 'fr'
-                        ? '${kWC2026Players.length} joueurs officiels — liste FIFA Coupe du Monde 2026'
-                        : (widget.lang == 'es'
-                        ? '${kWC2026Players.length} jugadores oficiales — lista FIFA Copa del Mundo 2026'
-                        : '${kWC2026Players.length} official players — FIFA World Cup 2026 list'),
-                    style: const TextStyle(color: AppColors.textDim, fontSize: 10),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: AppColors.warning, size: 14),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          widget.lang == 'fr'
-                              ? 'Ce choix sera définitif après enregistrement.'
-                              : (widget.lang == 'es' ? 'Esta elección será definitiva después de guardar.' : 'This choice will be final after saving.'),
-                          style: const TextStyle(color: AppColors.warning, fontSize: 11),
-                        ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+              Text(
+                (widget.lang == 'fr' ? 'Meilleur Passeur' : 'Top Assister') +
+                    (widget.userPreds.topAssisterPlayer != null
+                        ? ' (+$lockedAssisterPts pts max)'
+                        : ' (Actuel : +$potentialAssisterPts pts max)'),
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+
+              widget.userPreds.topAssisterPlayer != null
+                  ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border, width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        widget.userPreds.topAssisterPlayer!,
+                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                    ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.lock, color: AppColors.warning, size: 12),
+                          const SizedBox(width: 4),
+                          Text(
+                            '+$lockedAssisterPts pts',
+                            style: const TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+                  : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Autocomplete<String>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
+                      final query = textEditingValue.text.toLowerCase();
+                      return kWC2026Players.where((p) => p.toLowerCase().contains(query));
+                    },
+                    onSelected: (selection) => _assisterController.text = selection,
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      if (_assisterController.text.isNotEmpty && controller.text.isEmpty) {
+                        controller.text = _assisterController.text;
+                      }
+                      controller.addListener(() => _assisterController.text = controller.text);
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: InputDecoration(
+                          fillColor: AppColors.surface,
+                          filled: true,
+                          hintText: widget.lang == 'fr' ? 'Rechercher le passeur...' : 'Search assister...',
+                          prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.accent)),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

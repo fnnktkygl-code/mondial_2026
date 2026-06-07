@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,7 +18,6 @@ import 'widgets/bracket_view.dart';
 import 'widgets/stats_view.dart';
 import 'widgets/challenge_view.dart';
 import 'widgets/profile_dialog.dart';
-import 'widgets/team_selector.dart';
 import 'widgets/anthem_player_sheet.dart';
 import 'services/prediction_service.dart';
 import 'services/firebase_service.dart';
@@ -125,10 +123,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _lang = 'fr';
-  String _activeTab = 'matches'; // 'matches', 'standings', 'bracket', 'challenge', 'simulator'
+  String _activeTab = 'matches'; // 'matches', 'standings', 'bracket', 'challenge'
   String _standingsSubTab = 'groups'; // 'groups', 'scorers', 'assists', 'team'
   String _matchFilter = 'all'; // 'all', 'alerts'
   String _viewMode = 'list'; // 'list', 'calendar'
+  
   List<WorldCupMatch> _rawMatches = [];
   List<WorldCupMatch> _resolvedMatches = [];
   Map<String, String> _alerts = {};
@@ -165,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Map<String, String> loadedAlerts = await AlertService.loadAlerts();
-    final loadedMatches = await ApiService.loadMatches(forceRefresh: true);
+    final loadedMatches = await ApiService.loadMatches(forceRefresh: kIsLiveMode);
 
     String? supportedTeam;
     PredictionData? userPreds;
@@ -173,12 +172,17 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       userPreds = await PredictionService.loadPredictionData();
       final totalPoints = PredictionService.calculateTotalPoints(userPreds, loadedMatches);
+      final streak = PredictionService.calculateActiveStreak(userPreds, loadedMatches);
+      final guruCount = PredictionService.calculateExactGuessesCount(userPreds, loadedMatches);
       supportedTeam = userPreds.supportedTeam;
       
       await WCFirebaseService.syncUserProfile(
         username: userPreds.username,
         supportedTeam: userPreds.supportedTeam,
         points: totalPoints,
+        streak: streak,
+        guruCount: guruCount,
+        avatar: userPreds.avatar,
       );
     } catch (e) {
       debugPrint("Firebase initial sync error: $e");
@@ -281,8 +285,10 @@ class _MyHomePageState extends State<MyHomePage> {
             final freshPreds = await PredictionService.loadPredictionData();
             setState(() {
               _userPreds = freshPreds;
+              _supportedTeam = freshPreds.supportedTeam;
               _challengeViewKey = UniqueKey();
             });
+            _updateTournamentOddsAndCheckNotifications();
           },
         );
       },
@@ -566,49 +572,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  String _getRandomPlayerName(String teamCode, {required bool isScorer, String? excludeName}) {
-    final rand = Random();
-    final code = teamCode.toLowerCase();
-
-    final Map<String, List<String>> squadPlayers = {
-      'sn': ['S. Mané', 'I. Sarr', 'B. Dia', 'P. Gueye', 'K. Koulibaly', 'N. Mendy', 'F. Diedhiou', 'K. Diatta', 'P. Sarr', 'M. Niang'],
-      'fr': ['K. Mbappé', 'A. Griezmann', 'O. Dembélé', 'M. Thuram', 'K. Coman', 'A. Tchouaméni', 'A. Rabiot', 'E. Camavinga', 'W. Saliba', 'D. Upamecano'],
-      'ar': ['L. Messi', 'J. Álvarez', 'L. Martínez', 'A. Di María', 'E. Fernández', 'A. Mac Allister', 'R. De Paul', 'N. Molina', 'C. Romero', 'N. Otamendi'],
-      'br': ['Vinícius Jr.', 'Neymar Jr.', 'Rodrygo', 'Raphinha', 'Richarlison', 'G. Martinelli', 'Casemiro', 'Bruno G.', 'Marquinhos', 'Éder Militão'],
-      'es': ['Alvaro Morata', 'Lamine Yamal', 'Nico Williams', 'Dani Olmo', 'Pedri', 'Gavi', 'Rodri', 'Fabián Ruiz', 'Dani Carvajal', 'Robin Le Normand'],
-      'de': ['Kai Havertz', 'J. Musiala', 'Florian Wirtz', 'L. Sané', 'S. Gnabry', 'Ilkay Gündogan', 'Leon Goretzka', 'Joshua Kimmich', 'Antonio Rüdiger', 'Jonathan Tah'],
-      'pt': ['C. Ronaldo', 'Bruno Fernandes', 'Bernardo Silva', 'Rafael Leão', 'João Félix', 'Gonçalo Ramos', 'Vitinha', 'Rúben Neves', 'Rúben Dias', 'João Cancelo'],
-      'en': ['Harry Kane', 'Jude Bellingham', 'Bukayo Saka', 'Phil Foden', 'Marcus Rashford', 'Declan Rice', 'J. Maddison', 'Kieran Trippier', 'John Stones', 'Kyle Walker'],
-      'it': ['F. Chiesa', 'C. Immobile', 'G. Scamacca', 'G. Raspadori', 'N. Barella', 'L. Pellegrini', 'Manuel Locatelli', 'F. Dimarco', 'A. Bastoni', 'G. Di Lorenzo'],
-      'nl': ['Memphis Depay', 'Cody Gakpo', 'D. Malen', 'Xavi Simons', 'F. de Jong', 'T. Reijnders', 'Virgil van Dijk', 'Nathan Aké', 'D. Dumfries', 'Matthijs de Ligt'],
-      'be': ['R. Lukaku', 'J. Doku', 'L. Trossard', 'K. De Bruyne', 'Y. Tielemans', 'Amadou Onana', 'Wout Faes', 'Timothy Castagne', 'Jan Vertonghen', 'Zeno Debast'],
-      'uy': ['Darwin Núñez', 'Luis Suárez', 'F. Valverde', 'R. Bentancur', 'N. De La Cruz', 'M. Araujo', 'Ronald Araújo', 'Josema Giménez', 'M. Olivera'],
-      'mx': ['S. Giménez', 'H. Lozano', 'U. Antuna', 'Luis Chávez', 'E. Álvarez', 'J. Sánchez', 'C. Montes', 'J. Gallardo'],
-      'us': ['C. Pulisic', 'T. Weah', 'F. Balogun', 'W. McKennie', 'Y. Musah', 'T. Adams', 'A. Robinson', 'S. Dest'],
-      'ca': ['Jonathan David', 'Alphonso Davies', 'Cyle Larin', 'Tajon Buchanan', 'Stephen Eustáquio', 'Ismaël Koné', 'Alistair Johnston'],
-      'ma': ['Y. En-Nesyri', 'A. El Kaabi', 'Hakim Ziyech', 'Sofiane Boufal', 'A. Ounahi', 'Sofyan Amrabat', 'Achraf Hakimi', 'Nayef Aguerd'],
-      'jp': ['K. Mitoma', 'Ayase Ueda', 'Ritsu Doan', 'Takefusa Kubo', 'Daichi Kamada', 'Wataru Endo', 'Hiroki Ito', 'Ko Itakura'],
-      'kr': ['Son Heung-min', 'Hwang Hee-chan', 'Cho Gue-sung', 'Lee Kang-in', 'Hwang In-beom', 'Kim Min-jae', 'Seol Young-woo'],
-    };
-
-    List<String> pool = squadPlayers[code] ?? [];
-    if (pool.isEmpty) {
-      final genericSurnames = [
-        'Silva', 'Santos', 'Gomez', 'Rodriguez', 'Smith', 'Jones', 'Johnson', 'Müller',
-        'Schmidt', 'Dubois', 'Martin', 'Russo', 'Bianchi', 'Jovanovic', 'Petrovic',
-        'Kovac', 'Nguyen', 'Tanaka', 'Sato', 'Kim', 'Park', 'Al-Sayed', 'Al-Harbi',
-        'Diallo', 'Traoré', 'Koné', 'Mensah', 'Ayew'
-      ];
-      final genericFirstnames = ['J.', 'M.', 'A.', 'D.', 'S.', 'L.', 'H.', 'R.', 'K.', 'E.', 'G.'];
-      pool = List.generate(15, (_) => '${genericFirstnames[rand.nextInt(genericFirstnames.length)]} ${genericSurnames[rand.nextInt(genericSurnames.length)]}');
-    }
-
-    final filtered = pool.where((name) => name != excludeName).toList();
-    if (filtered.isEmpty) {
-      return pool[rand.nextInt(pool.length)];
-    }
-    return filtered[rand.nextInt(filtered.length)];
-  }
 
 
   Future<void> _saveAlert(String matchId, String alertType) async {
@@ -692,67 +655,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-  // Reset tournament database
-  Future<void> _resetTournament() async {
-    setState(() => _isLoading = true);
-    final resetMatches = await ApiService.resetCache();
-    setState(() {
-      _rawMatches = resetMatches;
-      _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
-      _isLoading = false;
-    });
-    _updateTournamentOddsAndCheckNotifications();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Database reset to defaults successfully.'),
-      ),
-    );
-  }
 
-  // Reset everything to factory settings
-  Future<void> _resetToFactorySettings() async {
-    setState(() => _isLoading = true);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // clears all predictions, groups, alerts, first_profile_shown flag, etc.
-    try {
-      await WCNotificationService.cancelAll();
-    } catch (_) {}
-    try {
-      WCAudioService.instance.stop();
-    } catch (_) {}
-
-    // Reset API matches cache
-    final resetMatches = await ApiService.resetCache();
-
-    // Reset local state fields
-    _alerts = {};
-    _supportedTeam = null;
-
-    // Reload prediction data (will generate new empty prediction data)
-    final freshPreds = await PredictionService.loadPredictionData();
-
-    setState(() {
-      _userPreds = freshPreds;
-      _rawMatches = resetMatches;
-      _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
-      _activeTab = 'matches'; // go to match tab
-      _challengeViewKey = UniqueKey();
-      _isLoading = false;
-    });
-    _updateTournamentOddsAndCheckNotifications();
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_lang == 'fr' 
-            ? 'Application réinitialisée avec succès en version usine.' 
-            : 'Application successfully reset to factory settings.'),
-        backgroundColor: AppColors.accent,
-      ),
-    );
-    _showProfileModal();
-  }
 
   void _updateTournamentOddsAndCheckNotifications() {
     final newOdds = WCOddsService.calculateOdds(_resolvedMatches);
@@ -826,32 +729,6 @@ class _MyHomePageState extends State<MyHomePage> {
       'dk': '🇩🇰',
     };
     return flags[countryCode.toLowerCase()] ?? '🏳️';
-  }
-
-  Widget _buildLanguageFlagButton(String langCode, String flagCountryCode) {
-    final isSelected = _lang == langCode;
-    return GestureDetector(
-      onTap: () => setState(() => _lang = langCode),
-      child: Container(
-        width: 30,
-        height: 30,
-        margin: const EdgeInsets.only(left: 8),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? AppColors.accent : AppColors.borderMid,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: ClipOval(
-          child: Image.network(
-            '$kLanguageFlagUrl$flagCountryCode.png',
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
