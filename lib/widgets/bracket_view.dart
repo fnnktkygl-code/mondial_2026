@@ -32,6 +32,17 @@ class BracketViewWidget extends StatelessWidget {
       ..sort((a, b) => a.id.compareTo(b.id));
   }
 
+  int _fastParseId(String id) {
+    for (int i = 0; i < id.length; i++) {
+      final code = id.codeUnitAt(i);
+      if (code >= 48 && code <= 57) {
+        // ASCII '0'-'9'
+        return int.tryParse(id.substring(i)) ?? 0;
+      }
+    }
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Stage matches
@@ -93,7 +104,9 @@ class BracketViewWidget extends StatelessWidget {
       thirdPlaceMatch = matches.firstWhere((m) => m.id == 'm79');
     } catch (_) {
       try {
-        thirdPlaceMatch = matches.firstWhere((m) => m.stage == 'Play-off for third place');
+        thirdPlaceMatch = matches.firstWhere(
+          (m) => m.stage == 'Play-off for third place',
+        );
       } catch (_) {
         thirdPlaceMatch = null;
       }
@@ -121,7 +134,11 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight,
               cardHeight: cardHeight,
             ),
-            _buildColumnConnector(leftR32.length, r32BlockHeight, isLeftHandSide: true),
+            _buildColumnConnector(
+              leftR32.length,
+              r32BlockHeight,
+              isLeftHandSide: true,
+            ),
 
             // Left Round of 16 (4 matches)
             _buildBracketColumn(
@@ -130,7 +147,11 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight * 2,
               cardHeight: cardHeight,
             ),
-            _buildColumnConnector(leftR16.length, r32BlockHeight * 2, isLeftHandSide: true),
+            _buildColumnConnector(
+              leftR16.length,
+              r32BlockHeight * 2,
+              isLeftHandSide: true,
+            ),
 
             // Left Quarter Finals (2 matches)
             _buildBracketColumn(
@@ -139,7 +160,11 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight * 4,
               cardHeight: cardHeight,
             ),
-            _buildColumnConnector(leftQF.length, r32BlockHeight * 4, isLeftHandSide: true),
+            _buildColumnConnector(
+              leftQF.length,
+              r32BlockHeight * 4,
+              isLeftHandSide: true,
+            ),
 
             // Left Semi Finals (1 match)
             _buildBracketColumn(
@@ -148,8 +173,9 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight * 8,
               cardHeight: cardHeight,
             ),
-            _buildStraightConnector(r32BlockHeight * 4), // center of the 960px block is 480.0
-
+            _buildStraightConnector(
+              r32BlockHeight * 4,
+            ), // center of the 960px block is 480.0
             // ================= CENTER FINAL =================
             _buildCenterColumn(
               finalTitle: AppTranslations.get(lang, 'f'),
@@ -161,7 +187,6 @@ class BracketViewWidget extends StatelessWidget {
 
             // ================= RIGHT SIDE OF BRACKET =================
             _buildStraightConnector(r32BlockHeight * 4), // center is 480.0
-
             // Right Semi Finals (1 match)
             _buildBracketColumn(
               title: AppTranslations.get(lang, 'sf'),
@@ -169,8 +194,11 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight * 8,
               cardHeight: cardHeight,
             ),
-            _buildColumnConnector(rightQF.length, r32BlockHeight * 4, isLeftHandSide: false), // connects Right QF to SF
-
+            _buildColumnConnector(
+              rightQF.length,
+              r32BlockHeight * 4,
+              isLeftHandSide: false,
+            ), // connects Right QF to SF
             // Right Quarter Finals (2 matches)
             _buildBracketColumn(
               title: AppTranslations.get(lang, 'qf'),
@@ -178,8 +206,11 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight * 4,
               cardHeight: cardHeight,
             ),
-            _buildColumnConnector(rightR16.length, r32BlockHeight * 2, isLeftHandSide: false), // connects Right R16 to QF
-
+            _buildColumnConnector(
+              rightR16.length,
+              r32BlockHeight * 2,
+              isLeftHandSide: false,
+            ), // connects Right R16 to QF
             // Right Round of 16 (4 matches)
             _buildBracketColumn(
               title: AppTranslations.get(lang, 'r16'),
@@ -187,8 +218,11 @@ class BracketViewWidget extends StatelessWidget {
               blockHeight: r32BlockHeight * 2,
               cardHeight: cardHeight,
             ),
-            _buildColumnConnector(rightR32.length, r32BlockHeight, isLeftHandSide: false), // connects Right R32 to R16
-
+            _buildColumnConnector(
+              rightR32.length,
+              r32BlockHeight,
+              isLeftHandSide: false,
+            ), // connects Right R32 to R16
             // Right Round of 32 (8 matches)
             _buildBracketColumn(
               title: AppTranslations.get(lang, 'r32'),
@@ -218,7 +252,10 @@ class BracketViewWidget extends StatelessWidget {
             height: 30,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(8),
@@ -242,9 +279,7 @@ class BracketViewWidget extends StatelessWidget {
           ...matches.map((m) {
             return SizedBox(
               height: blockHeight,
-              child: Center(
-                child: _buildBracketCard(m, cardHeight),
-              ),
+              child: Center(child: _buildBracketCard(m, cardHeight)),
             );
           }),
         ],
@@ -269,7 +304,10 @@ class BracketViewWidget extends StatelessWidget {
             height: 30,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(8),
@@ -301,10 +339,7 @@ class BracketViewWidget extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: const Center(
-                    child: Text(
-                      '🏆',
-                      style: TextStyle(fontSize: 24),
-                    ),
+                    child: Text('🏆', style: TextStyle(fontSize: 24)),
                   ),
                 ),
 
@@ -330,8 +365,8 @@ class BracketViewWidget extends StatelessWidget {
                           lang == 'fr'
                               ? 'Match 3e place'
                               : lang == 'es'
-                                  ? 'Tercer Puesto'
-                                  : '3rd Place Match',
+                              ? 'Tercer Puesto'
+                              : '3rd Place Match',
                           style: const TextStyle(
                             color: AppColors.textDim,
                             fontWeight: FontWeight.bold,
@@ -358,9 +393,10 @@ class BracketViewWidget extends StatelessWidget {
     final isT1Winner = m.isPlayed && (m.t1Score! > m.t2Score!);
     final isT2Winner = m.isPlayed && (m.t2Score! > m.t1Score!);
 
-    final bool isUserTeamMatch = supportedTeamCode != null &&
+    final bool isUserTeamMatch =
+        supportedTeamCode != null &&
         (m.t1.toLowerCase() == supportedTeamCode!.toLowerCase() ||
-         m.t2.toLowerCase() == supportedTeamCode!.toLowerCase());
+            m.t2.toLowerCase() == supportedTeamCode!.toLowerCase());
 
     return GestureDetector(
       onTap: () => onMatchTap(m),
@@ -401,10 +437,7 @@ class BracketViewWidget extends StatelessWidget {
               isLoser: m.isPlayed && !isT1Winner,
             ),
             // Divider
-            Container(
-              height: 1.5,
-              color: AppColors.border,
-            ),
+            Container(height: 1.5, color: AppColors.border),
             // Team 2 Row
             _buildBracketTeamRow(
               code: m.t2,
@@ -430,7 +463,9 @@ class BracketViewWidget extends StatelessWidget {
 
     return Expanded(
       child: Container(
-        color: isWinner ? AppColors.accent.withOpacity(0.06) : Colors.transparent,
+        color: isWinner
+            ? AppColors.accent.withOpacity(0.06)
+            : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -448,11 +483,13 @@ class BracketViewWidget extends StatelessWidget {
                         color: isPlaceholder
                             ? AppColors.textDim
                             : isWinner
-                                ? Colors.white
-                                : isLoser
-                                    ? AppColors.borderStrong
-                                    : AppColors.textSecondary,
-                        fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
+                            ? Colors.white
+                            : isLoser
+                            ? AppColors.borderStrong
+                            : AppColors.textSecondary,
+                        fontWeight: isWinner
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         fontSize: 11,
                       ),
                       maxLines: 1,
@@ -483,8 +520,9 @@ class BracketViewWidget extends StatelessWidget {
     );
   }
 
-Widget _buildMiniFlag(String code) {
-    if ((code.length > 2 && code.toLowerCase() != 'sco') || code.toLowerCase() == 'tbd') {
+  Widget _buildMiniFlag(String code) {
+    if ((code.length > 2 && code.toLowerCase() != 'sco') ||
+        code.toLowerCase() == 'tbd') {
       return Container(
         width: 18,
         height: 12,
@@ -496,19 +534,22 @@ Widget _buildMiniFlag(String code) {
         alignment: Alignment.center,
         child: const Text(
           'F',
-          style: TextStyle(color: Colors.grey, fontSize: 7, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 7,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       );
     }
-    return TeamFlagWidget(
-      code: code,
-      width: 18,
-      height: 12,
-      borderRadius: 2,
-    );
+    return TeamFlagWidget(code: code, width: 18, height: 12, borderRadius: 2);
   }
 
-  Widget _buildColumnConnector(int itemsCount, double blockHeight, {required bool isLeftHandSide}) {
+  Widget _buildColumnConnector(
+    int itemsCount,
+    double blockHeight, {
+    required bool isLeftHandSide,
+  }) {
     return Container(
       width: 30,
       height: itemsCount * blockHeight,
@@ -529,9 +570,7 @@ Widget _buildMiniFlag(String code) {
       height: 960.0,
       margin: const EdgeInsets.only(top: 60), // aligns with the matches
       child: CustomPaint(
-        painter: StraightConnectorPainter(
-          yPosition: yPosition,
-        ),
+        painter: StraightConnectorPainter(yPosition: yPosition),
       ),
     );
   }
@@ -569,13 +608,33 @@ class BracketConnectorPainter extends CustomPainter {
         // Feeders on Left, Recipient on Right
         canvas.drawLine(Offset(0, y1), Offset(size.width / 2, y1), paint);
         canvas.drawLine(Offset(0, y2), Offset(size.width / 2, y2), paint);
-        canvas.drawLine(Offset(size.width / 2, y1), Offset(size.width / 2, y2), paint);
-        canvas.drawLine(Offset(size.width / 2, yMid), Offset(size.width, yMid), paint);
+        canvas.drawLine(
+          Offset(size.width / 2, y1),
+          Offset(size.width / 2, y2),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(size.width / 2, yMid),
+          Offset(size.width, yMid),
+          paint,
+        );
       } else {
         // Feeders on Right, Recipient on Left
-        canvas.drawLine(Offset(size.width, y1), Offset(size.width / 2, y1), paint);
-        canvas.drawLine(Offset(size.width, y2), Offset(size.width / 2, y2), paint);
-        canvas.drawLine(Offset(size.width / 2, y1), Offset(size.width / 2, y2), paint);
+        canvas.drawLine(
+          Offset(size.width, y1),
+          Offset(size.width / 2, y1),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(size.width, y2),
+          Offset(size.width / 2, y2),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(size.width / 2, y1),
+          Offset(size.width / 2, y2),
+          paint,
+        );
         canvas.drawLine(Offset(size.width / 2, yMid), Offset(0, yMid), paint);
       }
     }
