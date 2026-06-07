@@ -1,0 +1,3 @@
+## 2024-05-18 - Missing Tooltips on IconButtons
+**Learning:** Found that multiple icon-only `IconButton`s in the app (like the alert bell and view toggles) were lacking tooltips, which makes them inaccessible for screen readers and harder to understand for mouse users.
+**Action:** Added the `tooltip` property utilizing localized strings to ensure these buttons are properly described across all supported languages. Next time, always check `IconButton` for a `tooltip` or `Semantics` label when the icon itself isn't completely self-explanatory or text isn't present.
