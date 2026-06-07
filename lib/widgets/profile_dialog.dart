@@ -43,6 +43,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   String? _championCode;
   String _avatar = '';
   bool _isSaving = false;
+  bool _isHidden = false;
   List<String> _scorerSuggestions = [];
   final FocusNode _scorerFocusNode = FocusNode();
 
@@ -54,6 +55,116 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     _supportedTeam = widget.userPreds.supportedTeam;
     _championCode = widget.userPreds.championCode;
     _avatar = widget.userPreds.avatar;
+    _loadVisibility();
+  }
+
+  Future<void> _loadVisibility() async {
+    final hidden = await WCFirebaseService.getProfileVisibility();
+    if (mounted) {
+      setState(() {
+        _isHidden = hidden;
+      });
+    }
+  }
+
+  Future<void> _resetProfile() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.card,
+          title: Text(AppTranslations.get(widget.lang, 'resetProfile') ?? 'Reset Profile', style: const TextStyle(color: Colors.white)),
+          content: Text(
+            widget.lang == 'fr'
+            ? 'Êtes-vous sûr de vouloir réinitialiser toutes vos prédictions ? Les matchs déjà joués ne pourront pas être pronostiqués de nouveau et vous perdrez tous vos points.'
+            : 'Are you sure you want to reset all your predictions? Played matches cannot be predicted again, and you will lose all points.',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(AppTranslations.get(widget.lang, 'reset') ?? 'Reset', style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      widget.userPreds.matchPredictions.clear();
+      widget.userPreds.championCode = null;
+      widget.userPreds.goldenBootPlayer = null;
+      widget.userPreds.goldenBootWinner = null;
+      widget.userPreds.boosterMatchId = null;
+      await PredictionService.savePredictionData(widget.userPreds);
+
+      await WCFirebaseService.syncUserProfile(
+        username: widget.userPreds.username,
+        supportedTeam: widget.userPreds.supportedTeam,
+        points: 0,
+        streak: 0,
+        guruCount: 0,
+        avatar: widget.userPreds.avatar,
+        isHidden: _isHidden,
+      );
+
+      if (mounted) {
+        widget.onSaved();
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  Future<void> _deleteProfile() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.card,
+          title: Text(AppTranslations.get(widget.lang, 'deleteProfile') ?? 'Delete Profile', style: const TextStyle(color: Colors.white)),
+          content: Text(
+            widget.lang == 'fr'
+            ? 'Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.'
+            : 'Are you sure you want to permanently delete your account? This action cannot be undone.',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(AppTranslations.get(widget.lang, 'delete') ?? 'Delete', style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      widget.userPreds.matchPredictions.clear();
+      widget.userPreds.championCode = null;
+      widget.userPreds.goldenBootPlayer = null;
+      widget.userPreds.goldenBootWinner = null;
+      widget.userPreds.boosterMatchId = null;
+      widget.userPreds.username = '';
+      widget.userPreds.avatar = '';
+      await PredictionService.savePredictionData(widget.userPreds);
+
+      await WCFirebaseService.deleteUserProfile();
+
+      if (mounted) {
+        widget.onSaved();
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   @override
@@ -343,6 +454,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         streak: streak,
         guruCount: guruCount,
         avatar: _avatar,
+        isHidden: _isHidden,
       );
 
       if (!mounted) return;
@@ -867,6 +979,49 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 ],
               ),
 
+              const SizedBox(height: 24),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.lang == 'fr' ? 'Masquer du classement global' : 'Hide from global leaderboard',
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                  Switch(
+                    value: _isHidden,
+                    activeColor: AppColors.accent,
+                    onChanged: (val) {
+                      setState(() {
+                        _isHidden = val;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    onPressed: _resetProfile,
+                    icon: const Icon(Icons.refresh, color: AppColors.danger, size: 16),
+                    label: Text(
+                      AppTranslations.get(widget.lang, 'reset') ?? 'Reset',
+                      style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _deleteProfile,
+                    icon: const Icon(Icons.delete, color: AppColors.danger, size: 16),
+                    label: Text(
+                      AppTranslations.get(widget.lang, 'delete') ?? 'Delete',
+                      style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
               ElevatedButton(
