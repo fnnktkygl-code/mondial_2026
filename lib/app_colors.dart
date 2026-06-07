@@ -26,7 +26,7 @@ class AppColors {
   static const Color textSecondary  = Color(0xFFE2E8F0); // Body text
   static const Color textBody       = Color(0xFFCBD5E1); // Secondary body
   static const Color textMuted      = Color(0xFF94A3B8); // Dimmed labels
-  static const Color textDim        = Color(0xFF64748B); // Very dim / placeholder
+  static const Color textDim        = Color(0xFF8A99AD); // Very dim / placeholder / captions
 
   // ─── Semantic ───────────────────────────────────────────────────────────────
   static const Color danger         = Color(0xFFEF4444); // Errors / streak red

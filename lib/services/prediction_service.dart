@@ -8,11 +8,18 @@ class MatchPrediction {
   final String matchId;
   final int t1Score;
   final int t2Score;
+  /// For knockout matches where the user predicts a draw at 90 min:
+  /// which team code they predict wins in extra time.
+  final String? extraTimeWinner;
+  /// For knockout matches: true if the user predicts it goes to penalties.
+  final bool? penaltyWinner;
 
   MatchPrediction({
     required this.matchId,
     required this.t1Score,
     required this.t2Score,
+    this.extraTimeWinner,
+    this.penaltyWinner,
   });
 
   factory MatchPrediction.fromJson(Map<String, dynamic> json) {
@@ -20,6 +27,8 @@ class MatchPrediction {
       matchId: json['matchId'] as String,
       t1Score: json['t1Score'] as int,
       t2Score: json['t2Score'] as int,
+      extraTimeWinner: json['extraTimeWinner'] as String?,
+      penaltyWinner: json['penaltyWinner'] as bool?,
     );
   }
 
@@ -28,24 +37,34 @@ class MatchPrediction {
       'matchId': matchId,
       't1Score': t1Score,
       't2Score': t2Score,
+      if (extraTimeWinner != null) 'extraTimeWinner': extraTimeWinner,
+      if (penaltyWinner != null) 'penaltyWinner': penaltyWinner,
     };
   }
 }
 
 class PredictionData {
   String username;
+  String avatar; // emoji avatar chosen by user
   String? championCode;
-  String? goldenBootPlayer;
+  String? goldenBootPlayer; // user's locked prediction of top scorer name
+  String? goldenBootWinner; // set when official top scorer is confirmed
   String? supportedTeam;
   String? boosterMatchId;
+  DateTime? championPredictedAt;
+  DateTime? goldenBootPredictedAt;
   Map<String, MatchPrediction> matchPredictions;
 
   PredictionData({
     this.username = kDefaultUsername,
+    this.avatar = '',
     this.championCode,
     this.goldenBootPlayer,
+    this.goldenBootWinner,
     this.supportedTeam,
     this.boosterMatchId,
+    this.championPredictedAt,
+    this.goldenBootPredictedAt,
     Map<String, MatchPrediction>? matchPredictions,
   }) : matchPredictions = matchPredictions ?? {};
 
@@ -60,10 +79,14 @@ class PredictionData {
 
     return PredictionData(
       username: json['username'] as String? ?? kDefaultUsername,
+      avatar: json['avatar'] as String? ?? '',
       championCode: json['championCode'] as String?,
       goldenBootPlayer: json['goldenBootPlayer'] as String?,
+      goldenBootWinner: json['goldenBootWinner'] as String?,
       supportedTeam: json['supportedTeam'] as String?,
       boosterMatchId: json['boosterMatchId'] as String?,
+      championPredictedAt: json['championPredictedAt'] != null ? DateTime.tryParse(json['championPredictedAt'] as String) : null,
+      goldenBootPredictedAt: json['goldenBootPredictedAt'] != null ? DateTime.tryParse(json['goldenBootPredictedAt'] as String) : null,
       matchPredictions: preds,
     );
   }
@@ -76,10 +99,14 @@ class PredictionData {
 
     return {
       'username': username,
+      'avatar': avatar,
       'championCode': championCode,
       'goldenBootPlayer': goldenBootPlayer,
+      'goldenBootWinner': goldenBootWinner,
       'supportedTeam': supportedTeam,
       'boosterMatchId': boosterMatchId,
+      if (championPredictedAt != null) 'championPredictedAt': championPredictedAt!.toIso8601String(),
+      if (goldenBootPredictedAt != null) 'goldenBootPredictedAt': goldenBootPredictedAt!.toIso8601String(),
       'preds': predsJson,
     };
   }
@@ -166,7 +193,13 @@ class PredictionService {
     return PredictionData();
   }
 
-  /// Evaluate user prediction score for a single match
+  /// Evaluate user prediction score for a single match.
+  ///
+  /// Scoring tiers:
+  ///  Group stage  → exact=30, correct outcome=10
+  ///  Knockout 90' → exact=40, correct outcome=15
+  ///  Correct ET winner (cumulative)  → +20
+  ///  Correct PK winner (cumulative)  → +25
   static int evaluatePoints(WorldCupMatch match, MatchPrediction pred) {
     if (!match.isPlayed) return 0;
 
@@ -175,18 +208,126 @@ class PredictionService {
     final pred1   = pred.t1Score;
     final pred2   = pred.t2Score;
 
-    // Exact score → full bonus
-    if (actual1 == pred1 && actual2 == pred2) return kExactScorePoints;
+    if (!match.isKnockout) {
+      // ── Group stage ──────────────────────────────────────────────────────
+      if (actual1 == pred1 && actual2 == pred2) return kExactScorePoints;
+      final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+      final predOutcome   = pred1   > pred2   ? 1 : (pred1   < pred2   ? -1 : 0);
+      if (actualOutcome == predOutcome) return kCorrectOutcomePoints;
+      return 0;
+    }
 
-    // Correct outcome → partial bonus
-    final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-    final predOutcome   = pred1   > pred2   ? 1 : (pred1   < pred2   ? -1 : 0);
-    if (actualOutcome == predOutcome) return kCorrectOutcomePoints;
+    // ── Knockout stage ───────────────────────────────────────────────────────
+    // Exact 90-min scoreline
+    if (actual1 == pred1 && actual2 == pred2) {
+      int pts = kExactScoreKnockoutPoints;
+      // Also credit ET/PK bonus if applicable
+      pts += _evalKnockoutBeyond90(match, pred);
+      return pts;
+    }
+
+    // Correct 90-min outcome (including "drew at 90 min" which then went to ET)
+    final actual90Outcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+    final pred90Outcome   = pred1   > pred2   ? 1 : (pred1   < pred2   ? -1 : 0);
+    if (actual90Outcome == pred90Outcome) {
+      int pts = kCorrectOutcomeKnockoutPts;
+      pts += _evalKnockoutBeyond90(match, pred);
+      return pts;
+    }
 
     return 0;
   }
 
-  /// Calculate user's total points across all matches
+  /// Calculates bonus points for correct ET / PK winner prediction.
+  /// Called only when the 90-min outcome was correctly predicted.
+  static int _evalKnockoutBeyond90(WorldCupMatch match, MatchPrediction pred) {
+    int bonus = 0;
+
+    // Extra time
+    if (match.wentToET == true && match.etWinner != null) {
+      if (pred.extraTimeWinner != null &&
+          pred.extraTimeWinner!.toLowerCase() == match.etWinner!.toLowerCase()) {
+        bonus += kExtraTimeBonusPoints;
+      }
+    }
+
+    // Penalty shootout (independent bonus on top of ET bonus)
+    if (match.wentToPK == true && match.pkWinner != null) {
+      if (pred.penaltyWinner == true &&
+          match.pkWinner!.toLowerCase() == match.t1.toLowerCase()) {
+        bonus += kPenaltyShootoutBonusPoints;
+      } else if (pred.penaltyWinner == false &&
+          match.pkWinner!.toLowerCase() == match.t2.toLowerCase()) {
+        bonus += kPenaltyShootoutBonusPoints;
+      }
+    }
+
+    return bonus;
+  }
+
+  static Map<String, DateTime> getStageStartTimes(List<WorldCupMatch> matches) {
+    DateTime? kickoff;
+    DateTime? r32;
+    DateTime? r16;
+    DateTime? qf;
+    DateTime? sf;
+    
+    for (final m in matches) {
+      final d = m.date;
+      if (kickoff == null || d.isBefore(kickoff)) kickoff = d;
+      
+      final stg = m.stage ?? '';
+      if (stg == 'Round of 32') {
+        if (r32 == null || d.isBefore(r32)) r32 = d;
+      } else if (stg == 'Round of 16') {
+        if (r16 == null || d.isBefore(r16)) r16 = d;
+      } else if (stg == 'Quarter-Final') {
+        if (qf == null || d.isBefore(qf)) qf = d;
+      } else if (stg == 'Semi-Final') {
+        if (sf == null || d.isBefore(sf)) sf = d;
+      }
+    }
+    
+    return {
+      'kickoff': kickoff ?? DateTime(2026, 6, 11, 20, 0),
+      'r32': r32 ?? DateTime(2026, 6, 25, 18, 0),
+      'r16': r16 ?? DateTime(2026, 6, 29, 18, 0),
+      'qf': qf ?? DateTime(2026, 7, 4, 18, 0),
+      'sf': sf ?? DateTime(2026, 7, 8, 20, 0),
+    };
+  }
+
+  static double getPenaltyMultiplier(DateTime? predictedAt, Map<String, DateTime> starts) {
+    if (predictedAt == null) return 1.0;
+    
+    if (predictedAt.isBefore(starts['kickoff']!)) {
+      return 1.0;
+    } else if (predictedAt.isBefore(starts['r32']!)) {
+      return 0.8;
+    } else if (predictedAt.isBefore(starts['r16']!)) {
+      return 0.6;
+    } else if (predictedAt.isBefore(starts['qf']!)) {
+      return 0.4;
+    } else if (predictedAt.isBefore(starts['sf']!)) {
+      return 0.2;
+    } else {
+      return 0.0;
+    }
+  }
+
+  static int getPotentialChampionPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
+    final starts = getStageStartTimes(matches);
+    final mult = getPenaltyMultiplier(predictedAt, starts);
+    return (kChampionBonusPoints * mult).round();
+  }
+
+  static int getPotentialGoldenBootPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
+    final starts = getStageStartTimes(matches);
+    final mult = getPenaltyMultiplier(predictedAt, starts);
+    return (kGoldenBootBonusPoints * mult).round();
+  }
+
+  /// Calculate user's total points across all matches (including bonus predictions).
   static int calculateTotalPoints(PredictionData userPreds, List<WorldCupMatch> matches) {
     int score = 0;
     for (final match in matches) {
@@ -200,7 +341,9 @@ class PredictionService {
       }
     }
 
-    // Bonus for correct champion prediction
+    final starts = getStageStartTimes(matches);
+
+    // Bonus: correct champion prediction
     final finalMatch = matches.firstWhere(
       (m) => m.id == kFinalMatchId,
       orElse: () => matches[0],
@@ -210,7 +353,21 @@ class PredictionService {
           ? finalMatch.t1
           : finalMatch.t2;
       if (actualChampion.toLowerCase() == userPreds.championCode!.toLowerCase()) {
-        score += kChampionBonusPoints;
+        final mult = getPenaltyMultiplier(userPreds.championPredictedAt, starts);
+        score += (kChampionBonusPoints * mult).round();
+      }
+    }
+
+    // Bonus: correct golden boot prediction (awarded when goldenBootWinner is set)
+    final goldenBootWinner = userPreds.goldenBootWinner;
+    if (goldenBootWinner != null &&
+        goldenBootWinner.isNotEmpty &&
+        userPreds.goldenBootPlayer != null &&
+        userPreds.goldenBootPlayer!.isNotEmpty) {
+      if (userPreds.goldenBootPlayer!.trim().toLowerCase() ==
+          goldenBootWinner.trim().toLowerCase()) {
+        final mult = getPenaltyMultiplier(userPreds.goldenBootPredictedAt, starts);
+        score += (kGoldenBootBonusPoints * mult).round();
       }
     }
 
@@ -386,10 +543,11 @@ class PredictionService {
 
     final List<FriendGroup> groups = [];
     final userPoints = calculateTotalPoints(userData, matches);
+    final userEmblem = userData.avatar.isNotEmpty ? userData.avatar : kUserEmblem;
 
     // 1. Default global group
     final globalMembers = <FriendScore>[
-      FriendScore(name: userData.username, points: userPoints, emblem: kUserEmblem, isUser: true),
+      FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true),
       ...kSimulatedFriends.map((f) => FriendScore(
         name: f['name']!,
         points: _calculateFriendPoints(f['name']!, matches, null),
@@ -418,7 +576,7 @@ class PredictionService {
         }
 
         final members = <FriendScore>[
-          FriendScore(name: userData.username, points: userPoints, emblem: kUserEmblem, isUser: true),
+          FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true),
         ];
 
         if (friendData != null && friendName != null) {

@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
+import 'team_flag.dart';
 
 class BracketViewWidget extends StatelessWidget {
   final List<WorldCupMatch> matches;
   final String lang;
   final Function(WorldCupMatch match) onMatchTap;
+  final String? supportedTeamCode;
 
   const BracketViewWidget({
     super.key,
     required this.matches,
     required this.lang,
     required this.onMatchTap,
+    this.supportedTeamCode,
   });
 
   List<WorldCupMatch> _getMatchesForStage(String stageName) {
@@ -346,18 +349,35 @@ class BracketViewWidget extends StatelessWidget {
     final isT1Winner = m.isPlayed && (m.t1Score! > m.t2Score!);
     final isT2Winner = m.isPlayed && (m.t2Score! > m.t1Score!);
 
+    final bool isUserTeamMatch = supportedTeamCode != null &&
+        (m.t1.toLowerCase() == supportedTeamCode!.toLowerCase() ||
+         m.t2.toLowerCase() == supportedTeamCode!.toLowerCase());
+
     return GestureDetector(
       onTap: () => onMatchTap(m),
       child: Container(
         width: 170,
         height: height,
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: isUserTeamMatch
+              ? AppColors.accent.withValues(alpha: 0.08)
+              : AppColors.card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: m.isPlayed ? AppColors.border : AppColors.borderMid,
-            width: 1.5,
+            color: isUserTeamMatch
+                ? AppColors.accent
+                : (m.isPlayed ? AppColors.border : AppColors.borderMid),
+            width: isUserTeamMatch ? 2.2 : 1.5,
           ),
+          boxShadow: isUserTeamMatch
+              ? [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -454,8 +474,8 @@ class BracketViewWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniFlag(String code) {
-    if (code.length > 2 || code == 'tbd') {
+Widget _buildMiniFlag(String code) {
+    if ((code.length > 2 && code.toLowerCase() != 'sco') || code.toLowerCase() == 'tbd') {
       return Container(
         width: 18,
         height: 12,
@@ -471,20 +491,11 @@ class BracketViewWidget extends StatelessWidget {
         ),
       );
     }
-    final flagCode = code == 'en' ? 'gb-eng' : code;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(2),
-      child: Image.network(
-        'https://flagcdn.com/w40/$flagCode.png',
-        width: 18,
-        height: 12,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: 18,
-          height: 12,
-          color: Colors.grey,
-        ),
-      ),
+    return TeamFlagWidget(
+      code: code,
+      width: 18,
+      height: 12,
+      borderRadius: 2,
     );
   }
 

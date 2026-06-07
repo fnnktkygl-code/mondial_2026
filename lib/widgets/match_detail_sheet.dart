@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
+import '../services/audio_service.dart';
+import 'team_flag.dart';
+import 'team_profile_dialog.dart';
 
 class MatchDetailSheet extends StatelessWidget {
   final WorldCupMatch match;
@@ -42,7 +46,6 @@ class MatchDetailSheet extends StatelessWidget {
       );
     }
 
-    final flagCode = code == 'en' ? 'gb-eng' : code;
     return Container(
       width: size * 1.4,
       height: size,
@@ -56,19 +59,11 @@ class MatchDetailSheet extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.network(
-          '${kFlagCdnUrl}$flagCode.png',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppColors.border,
-              alignment: Alignment.center,
-              child: Text(code.toUpperCase()),
-            );
-          },
-        ),
+      child: TeamFlagWidget(
+        code: code,
+        width: size * 1.4,
+        height: size,
+        borderRadius: 10,
       ),
     );
   }
@@ -179,7 +174,6 @@ class MatchDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final t1EmblemName = AppTranslations.getTeamWithEmblem(lang, match.t1);
     final t2EmblemName = AppTranslations.getTeamWithEmblem(lang, match.t2);
-    final matchJoke = AppTranslations.getJoke(lang, match.t1, match.t2, isKnockout: match.isKnockout);
     final localizedDateTimeStr = DateFormat.yMMMMEEEEd(lang).add_Hm().format(match.date);
 
     return Container(
@@ -210,20 +204,27 @@ class MatchDetailSheet extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Column(
-                    children: [
-                      _buildFlag(match.t1, 48),
-                      const SizedBox(height: 10),
-                      Text(
-                        t1EmblemName,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      WCTeamProfileDialog.show(context, match.t1, lang);
+                    },
+                    child: Column(
+                      children: [
+                        _buildFlag(match.t1, 48),
+                        const SizedBox(height: 10),
+                        Text(
+                          t1EmblemName,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                        _buildAnthemPlayButton(match.t1),
+                      ],
+                    ),
                   ),
                 ),
                 Container(
@@ -248,20 +249,27 @@ class MatchDetailSheet extends StatelessWidget {
                         ),
                 ),
                 Expanded(
-                  child: Column(
-                    children: [
-                      _buildFlag(match.t2, 48),
-                      const SizedBox(height: 10),
-                      Text(
-                        t2EmblemName,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      WCTeamProfileDialog.show(context, match.t2, lang);
+                    },
+                    child: Column(
+                      children: [
+                        _buildFlag(match.t2, 48),
+                        const SizedBox(height: 10),
+                        Text(
+                          t2EmblemName,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                        _buildAnthemPlayButton(match.t2),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -331,11 +339,11 @@ class MatchDetailSheet extends StatelessWidget {
                       ),
                       child: Stack(
                         children: [
-                          const Positioned(
-                            top: 8,
-                            bottom: 8,
-                            left: 100,
-                            child: VerticalDivider(color: AppColors.borderMid, width: 2),
+                          const Positioned.fill(
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: VerticalDivider(color: AppColors.borderMid, width: 2),
+                            ),
                           ),
                           Column(
                             children: match.goals.map((g) {
@@ -345,61 +353,83 @@ class MatchDetailSheet extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 child: Row(
                                   children: [
-                                    SizedBox(
-                                      width: 90,
+                                    // Left side: T1 Scorer & Minute
+                                    Expanded(
                                       child: isT1Goal
-                                          ? Text(
-                                              g.scorer + assistText,
-                                              textAlign: TextAlign.right,
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 11,
-                                              ),
+                                          ? Row(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    g.scorer + assistText,
+                                                    textAlign: TextAlign.right,
+                                                    style: const TextStyle(
+                                                      color: AppColors.textPrimary,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 11,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  "${g.minute}'",
+                                                  style: const TextStyle(
+                                                    color: AppColors.accent,
+                                                    fontSize: 11,
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                              ],
                                             )
-                                          : const SizedBox(),
+                                          : const SizedBox.shrink(),
                                     ),
-                                    const SizedBox(width: 5),
-                                    SizedBox(
-                                      width: 14,
-                                      child: Center(
-                                        child: Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: BoxDecoration(
-                                            color: isT1Goal ? AppColors.accent : AppColors.info,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(color: AppColors.surface, width: 1.5),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
+                                    
+                                    // Center dot container
                                     Container(
-                                      width: 35,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        "${g.minute}'",
-                                        style: TextStyle(
+                                      width: 30,
+                                      alignment: Alignment.center,
+                                      child: Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
                                           color: isT1Goal ? AppColors.accent : AppColors.info,
-                                          fontSize: 11,
-                                          fontFamily: 'monospace',
-                                          fontWeight: FontWeight.w900,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: AppColors.surface, width: 1.5),
                                         ),
                                       ),
                                     ),
+                                    
+                                    // Right side: T2 Scorer & Minute
                                     Expanded(
                                       child: !isT1Goal
-                                          ? Text(
-                                              g.scorer + assistText,
-                                              textAlign: TextAlign.start,
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 11,
-                                              ),
+                                          ? Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "${g.minute}'",
+                                                  style: const TextStyle(
+                                                    color: AppColors.info,
+                                                    fontSize: 11,
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    g.scorer + assistText,
+                                                    textAlign: TextAlign.left,
+                                                    style: const TextStyle(
+                                                      color: AppColors.textPrimary,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 11,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             )
-                                          : const SizedBox(),
+                                          : const SizedBox.shrink(),
                                     ),
                                   ],
                                 ),
@@ -474,46 +504,7 @@ class MatchDetailSheet extends StatelessWidget {
                     const SizedBox(height: 20),
                   ],
 
-                  // Trivia / Joke box
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Text('🍿', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 6),
-                            Text(
-                              AppTranslations.get(lang, 'triviaTitle'),
-                              style: const TextStyle(
-                                color: AppColors.rankGold,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          matchJoke,
-                          style: const TextStyle(
-                            color: AppColors.textBody,
-                            fontSize: 12,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+
 
                   // Alert section header
                   Text(
@@ -704,6 +695,79 @@ class MatchDetailSheet extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnthemPlayButton(String teamCode) {
+    final audioService = WCAudioService.instance;
+    if (!audioService.isValidCountry(teamCode)) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: ValueListenableBuilder<String?>(
+        valueListenable: audioService.currentPlayingTeamCode,
+        builder: (context, playingCode, _) {
+          final isThis = playingCode == teamCode.toLowerCase().replaceAll('g_', '');
+          return ValueListenableBuilder<PlayerState>(
+            valueListenable: audioService.playerState,
+            builder: (context, state, _) {
+              final isPlaying = isThis && state == PlayerState.playing;
+              return ValueListenableBuilder<bool>(
+                valueListenable: audioService.isLoading,
+                builder: (context, loading, _) {
+                  if (isThis && loading) {
+                    return const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                      ),
+                    );
+                  }
+
+                  return InkWell(
+                    onTap: () => audioService.playAnthem(teamCode),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isThis ? AppColors.accent.withValues(alpha: 0.1) : AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isThis ? AppColors.accent : AppColors.border,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                            color: isThis ? AppColors.accent : AppColors.textMuted,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isPlaying ? "Pause" : "Hymn",
+                            style: TextStyle(
+                              color: isThis ? AppColors.accent : AppColors.textMuted,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }

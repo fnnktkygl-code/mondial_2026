@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
+import '../services/team_profile_service.dart';
+import 'team_flag.dart';
+import 'team_selector.dart';
 
 class PlayerStat {
   final String name;
@@ -115,8 +118,6 @@ class ScorersLeaderboardWidget extends StatelessWidget {
 
   Widget _buildStatRow(BuildContext context, int index, PlayerStat item, String suffixIcon) {
     final teamName = AppTranslations.getTeam(lang, item.teamCode);
-    final emblem = AppTranslations.getTeamWithEmblem(lang, item.teamCode).split(' ').first;
-    final flagCode = item.teamCode == 'en' ? 'gb-eng' : item.teamCode;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -160,19 +161,11 @@ class ScorersLeaderboardWidget extends StatelessWidget {
           const SizedBox(width: 12),
 
           // Flag Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2),
-            child: Image.network(
-              'https://flagcdn.com/w40/${flagCode.toLowerCase()}.png',
-              width: 22,
-              height: 14,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 22,
-                height: 14,
-                color: Colors.grey,
-              ),
-            ),
+          TeamFlagWidget(
+            code: item.teamCode,
+            width: 22,
+            height: 14,
+            borderRadius: 2,
           ),
           const SizedBox(width: 12),
 
@@ -191,7 +184,7 @@ class ScorersLeaderboardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$emblem $teamName',
+                  teamName,
                   style: const TextStyle(
                     color: AppColors.textDim,
                     fontSize: 11,
@@ -306,13 +299,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Collect all unique team codes in the tournament
-    final Set<String> teamCodes = {};
-    for (final m in widget.matches) {
-      if (m.t1.length == 2) teamCodes.add(m.t1);
-      if (m.t2.length == 2) teamCodes.add(m.t2);
-    }
-    final List<String> sortedTeams = teamCodes.toList()
+    final List<String> sortedTeams = WCTeamProfileService.allTeams
       ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
           .compareTo(AppTranslations.getTeam(widget.lang, b)));
 
@@ -353,7 +340,6 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
     final teamAssists = stats.assists.where((p) => p.teamCode == currentTeam).toList();
 
     final teamEmblemName = AppTranslations.getTeamWithEmblem(widget.lang, currentTeam);
-    final flagCode = currentTeam == 'en' ? 'gb-eng' : currentTeam;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -361,52 +347,44 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 1. Selector Dropdown
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 1.5),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: currentTeam,
-                dropdownColor: AppColors.card,
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppColors.accent),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedTeam = val;
-                    });
-                  }
+          GestureDetector(
+            onTap: () {
+              TeamSelectorBottomSheet.show(
+                context: context,
+                lang: widget.lang,
+                title: widget.lang == 'fr' ? 'Sélectionner une équipe' : 'Select a team',
+                selectedTeamCode: currentTeam,
+                teamCodes: sortedTeams,
+                onTeamSelected: (val) {
+                  setState(() {
+                    _selectedTeam = val;
+                  });
                 },
-                items: sortedTeams.map((code) {
-                  final name = AppTranslations.getTeam(widget.lang, code);
-                  final emblem = AppTranslations.getTeamWithEmblem(widget.lang, code).split(' ').first;
-                  return DropdownMenuItem<String>(
-                    value: code,
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
-                          child: Image.network(
-                            'https://flagcdn.com/w40/${code == 'en' ? 'gb-eng' : code}.png',
-                            width: 20,
-                            height: 12,
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => Container(width: 20, height: 12, color: Colors.grey),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '$emblem $name',
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  TeamFlagWidget(
+                    code: currentTeam,
+                    width: 32,
+                    height: 22,
+                    borderRadius: 6,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    AppTranslations.getTeam(widget.lang, currentTeam),
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textDim, size: 16),
+                ],
               ),
             ),
           ),
@@ -422,15 +400,11 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             ),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Image.network(
-                    'https://flagcdn.com/w80/${flagCode.toLowerCase()}.png',
-                    width: 52,
-                    height: 32,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(width: 52, height: 32, color: Colors.grey),
-                  ),
+                TeamFlagWidget(
+                  code: currentTeam,
+                  width: 52,
+                  height: 32,
+                  borderRadius: 4,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -664,15 +638,11 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
         child: Row(
           children: [
             // Team 1 flag
-            ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: Image.network(
-                'https://flagcdn.com/w40/${m.t1 == 'en' ? 'gb-eng' : m.t1}.png',
-                width: 18,
-                height: 12,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(width: 18, height: 12, color: Colors.grey),
-              ),
+            TeamFlagWidget(
+              code: m.t1,
+              width: 18,
+              height: 12,
+              borderRadius: 2,
             ),
             const SizedBox(width: 8),
 
@@ -724,15 +694,11 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             const SizedBox(width: 8),
 
             // Team 2 flag
-            ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: Image.network(
-                'https://flagcdn.com/w40/${m.t2 == 'en' ? 'gb-eng' : m.t2}.png',
-                width: 18,
-                height: 12,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(width: 18, height: 12, color: Colors.grey),
-              ),
+            TeamFlagWidget(
+              code: m.t2,
+              width: 18,
+              height: 12,
+              borderRadius: 2,
             ),
             const SizedBox(width: 12),
 

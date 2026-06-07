@@ -3,9 +3,21 @@
 library app_constants;
 
 // ─── Scoring ─────────────────────────────────────────────────────────────────
-const int kExactScorePoints     = 30;   // Points for predicting the exact scoreline
-const int kCorrectOutcomePoints = 10;   // Points for predicting the correct match result
-const int kChampionBonusPoints  = 100;  // Bonus for correctly predicting the tournament winner
+// Group stage
+const int kExactScorePoints          = 30;  // Exact scoreline – group stage
+const int kCorrectOutcomePoints      = 10;  // Correct result (win/draw/loss) – group stage
+
+// Knockout stage – 90 minutes
+const int kExactScoreKnockoutPoints  = 40;  // Exact scoreline – knockout (90 min)
+const int kCorrectOutcomeKnockoutPts = 15;  // Correct 90-min outcome – knockout
+
+// Knockout stage – beyond 90 minutes (cumulative on top of outcome points)
+const int kExtraTimeBonusPoints      = 20;  // Correct extra-time winner
+const int kPenaltyShootoutBonusPoints= 25;  // Correct penalty-shootout winner
+
+// Tournament-wide bonus predictions
+const int kChampionBonusPoints       = 100; // Correctly predicted tournament champion
+const int kGoldenBootBonusPoints     = 50;  // Correctly predicted top scorer
 
 // ─── XP / Level thresholds ───────────────────────────────────────────────────
 /// Each entry is [minXp, maxXp (exclusive), level, rankNameKey, nextLevelXp].
@@ -33,8 +45,18 @@ const double   kLivePulseMax      = 1.0;
 // ─── API / Network ───────────────────────────────────────────────────────────
 /// Points to the GitHub raw file updated by GitHub Actions every 15 min.
 const String kApiUrl        = 'https://raw.githubusercontent.com/fnnktkygl-code/mondial_2026/main/assets/initial_matches.json';
-const String kFlagCdnUrl    = 'https://flagcdn.com/w80/'; // Append "{countryCode}.png"
-const String kFlagCdnSmUrl  = 'https://flagcdn.com/w40/'; // Small size variant
+const String kLanguageFlagUrl   = 'https://flagcdn.com/w40/'; // For language buttons only
+
+String getTeamLogoPath(String code) {
+  final cleanCode = code.toLowerCase().replaceAll('g_', '');
+  if (cleanCode == 'en') {
+    return 'assets/logos/gb.png';
+  } else if (cleanCode == 'sco') {
+    return 'assets/logos/sco.png';
+  }
+  return 'assets/logos/$cleanCode.png';
+}
+
 const Duration kApiTimeout            = Duration(seconds: 8);
 const Duration kCacheRefreshInterval  = Duration(minutes: 5); // Re-fetch remote data after this
 

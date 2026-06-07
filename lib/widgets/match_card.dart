@@ -3,6 +3,8 @@ import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
+import 'team_flag.dart';
+import 'team_profile_dialog.dart';
 
 class MatchCard extends StatefulWidget {
   final WorldCupMatch match;
@@ -11,6 +13,7 @@ class MatchCard extends StatefulWidget {
   final String? alertType;
   final VoidCallback onAlertToggle;
   final VoidCallback onTap;
+  final String? supportedTeamCode;
 
   const MatchCard({
     super.key,
@@ -20,6 +23,7 @@ class MatchCard extends StatefulWidget {
     this.alertType,
     required this.onAlertToggle,
     required this.onTap,
+    this.supportedTeamCode,
   });
 
   @override
@@ -67,8 +71,8 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  Widget _buildFlag(String code, double size) {
-    if (code.length > 2 || code == 'tbd') {
+Widget _buildFlag(String code, double size) {
+    if ((code.length > 2 && code.toLowerCase() != 'sco') || code.toLowerCase() == 'tbd') {
       return Container(
         width: size * 1.4,
         height: size,
@@ -89,8 +93,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
         ),
       );
     }
-
-    final flagCode = code == 'en' ? 'gb-eng' : code;
+    
     return Container(
       width: size * 1.4,
       height: size,
@@ -104,19 +107,11 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          '${kFlagCdnUrl}$flagCode.png',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppColors.border,
-              alignment: Alignment.center,
-              child: Text(code.toUpperCase()),
-            );
-          },
-        ),
+      child: TeamFlagWidget(
+        code: code,
+        width: size * 1.4,
+        height: size,
+        borderRadius: 8,
       ),
     );
   }
@@ -127,30 +122,41 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
     final live = _isLive;
 
+    // Check if user's team is playing in this match
+    final isUserTeam = widget.supportedTeamCode != null &&
+        (widget.match.t1.toLowerCase() == widget.supportedTeamCode!.toLowerCase() ||
+         widget.match.t2.toLowerCase() == widget.supportedTeamCode!.toLowerCase());
+
     final String stageText = widget.match.isKnockout
         ? (widget.match.stage ?? '')
         : '${AppTranslations.get(widget.lang, 'group')} ${widget.match.group ?? ''}';
-
+ 
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: isUserTeam
+                ? AppColors.accent.withValues(alpha: 0.06)
+                : AppColors.card,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: live
                   ? AppColors.accent.withValues(alpha: _pulseAnimation.value)
-                  : widget.hasAlert
-                      ? AppColors.accent.withValues(alpha: 0.4)
-                      : AppColors.border,
-              width: live ? 2.0 : 1.5,
+                  : isUserTeam
+                      ? AppColors.accent
+                      : widget.hasAlert
+                          ? AppColors.accent.withValues(alpha: 0.4)
+                          : AppColors.border,
+              width: (live || isUserTeam) ? 2.0 : 1.5,
             ),
-            boxShadow: live
+            boxShadow: (live || isUserTeam)
                 ? [
                     BoxShadow(
-                      color: AppColors.accent.withValues(alpha: _pulseAnimation.value * 0.35),
+                      color: AppColors.accent.withValues(
+                        alpha: (live ? _pulseAnimation.value : 0.4) * 0.35,
+                      ),
                       blurRadius: 16,
                       spreadRadius: 1,
                     ),
@@ -245,23 +251,29 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                 Row(
                   children: [
                     Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildFlag(widget.match.t1, 40),
-                          const SizedBox(height: 8),
-                          Text(
-                            t1Name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          WCTeamProfileDialog.show(context, widget.match.t1, widget.lang);
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildFlag(widget.match.t1, 40),
+                            const SizedBox(height: 8),
+                            Text(
+                              t1Name,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
 
@@ -337,23 +349,29 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     ),
 
                     Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildFlag(widget.match.t2, 40),
-                          const SizedBox(height: 8),
-                          Text(
-                            t2Name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          WCTeamProfileDialog.show(context, widget.match.t2, widget.lang);
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildFlag(widget.match.t2, 40),
+                            const SizedBox(height: 8),
+                            Text(
+                              t2Name,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
