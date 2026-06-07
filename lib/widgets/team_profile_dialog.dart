@@ -860,7 +860,22 @@ class _WCEmbeddedWebViewState extends State<WCEmbeddedWebView> {
                   Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
                 },
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
-                  return NavigationActionPolicy.ALLOW;
+                  final uri = navigationAction.request.url;
+                  if (uri == null) return NavigationActionPolicy.CANCEL;
+
+                  // 1. Only allow http/https
+                  if (uri.scheme != 'http' && uri.scheme != 'https') {
+                    return NavigationActionPolicy.CANCEL;
+                  }
+
+                  // 2. Whitelist intended domains
+                  final host = uri.host.toLowerCase();
+                  if (host == 'fifa.com' || host.endsWith('.fifa.com')) {
+                    return NavigationActionPolicy.ALLOW;
+                  }
+
+                  // 3. Deny everything else
+                  return NavigationActionPolicy.CANCEL;
                 },
                 onWebViewCreated: (controller) {
                   _webViewController = controller;

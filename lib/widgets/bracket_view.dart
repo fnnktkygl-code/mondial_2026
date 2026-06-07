@@ -10,6 +10,9 @@ class BracketViewWidget extends StatelessWidget {
   final Function(WorldCupMatch match) onMatchTap;
   final String? supportedTeamCode;
 
+  static final Map<String, int> _idCache = {};
+  static final RegExp _digitRegex = RegExp(r'\d+');
+
   const BracketViewWidget({
     super.key,
     required this.matches,
@@ -17,6 +20,12 @@ class BracketViewWidget extends StatelessWidget {
     required this.onMatchTap,
     this.supportedTeamCode,
   });
+
+  static int _getParsedId(String id) {
+    return _idCache.putIfAbsent(id, () {
+      return int.tryParse(_digitRegex.firstMatch(id)?.group(0) ?? '0') ?? 0;
+    });
+  }
 
   List<WorldCupMatch> _getMatchesForStage(String stageName) {
     return matches.where((m) => m.stage == stageName).toList()
@@ -46,50 +55,38 @@ class BracketViewWidget extends StatelessWidget {
     // Split Left and Right sides of the bracket
     // Left side: m49 to m56 (R32), m65 to m68 (R16), m73 to m74 (QF), m77 (SF)
     // Right side: m57 to m64 (R32), m69 to m72 (R16), m75 to m76 (QF), m78 (SF)
+    final leftR32 = r32Matches.where((m) {
+      final idNum = _getParsedId(m.id);
+      return idNum >= 49 && idNum <= 56;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
-    final List<WorldCupMatch> leftR32 = [];
-    final List<WorldCupMatch> rightR32 = [];
-    for (final m in r32Matches) {
-      final idNum = _fastParseId(m.id);
-      if (idNum >= 49 && idNum <= 56) {
-        leftR32.add(m);
-      } else if (idNum >= 57 && idNum <= 64) {
-        rightR32.add(m);
-      }
-    }
+    final rightR32 = r32Matches.where((m) {
+      final idNum = _getParsedId(m.id);
+      return idNum >= 57 && idNum <= 64;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
-    final List<WorldCupMatch> leftR16 = [];
-    final List<WorldCupMatch> rightR16 = [];
-    for (final m in r16Matches) {
-      final idNum = _fastParseId(m.id);
-      if (idNum >= 65 && idNum <= 68) {
-        leftR16.add(m);
-      } else if (idNum >= 69 && idNum <= 72) {
-        rightR16.add(m);
-      }
-    }
+    final leftR16 = r16Matches.where((m) {
+      final idNum = _getParsedId(m.id);
+      return idNum >= 65 && idNum <= 68;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
-    final List<WorldCupMatch> leftQF = [];
-    final List<WorldCupMatch> rightQF = [];
-    for (final m in qfMatches) {
-      final idNum = _fastParseId(m.id);
-      if (idNum >= 73 && idNum <= 74) {
-        leftQF.add(m);
-      } else if (idNum >= 75 && idNum <= 76) {
-        rightQF.add(m);
-      }
-    }
+    final rightR16 = r16Matches.where((m) {
+      final idNum = _getParsedId(m.id);
+      return idNum >= 69 && idNum <= 72;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
 
-    final List<WorldCupMatch> leftSF = [];
-    final List<WorldCupMatch> rightSF = [];
-    for (final m in sfMatches) {
-      final idNum = _fastParseId(m.id);
-      if (idNum == 77) {
-        leftSF.add(m);
-      } else if (idNum == 78) {
-        rightSF.add(m);
-      }
-    }
+    final leftQF = qfMatches.where((m) {
+      final idNum = _getParsedId(m.id);
+      return idNum >= 73 && idNum <= 74;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+
+    final rightQF = qfMatches.where((m) {
+      final idNum = _getParsedId(m.id);
+      return idNum >= 75 && idNum <= 76;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+
+    final leftSF = sfMatches.where((m) => m.id == 'm77').toList();
+    final rightSF = sfMatches.where((m) => m.id == 'm78').toList();
 
     WorldCupMatch? finalMatch;
     try {
