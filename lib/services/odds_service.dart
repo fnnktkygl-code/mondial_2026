@@ -81,16 +81,28 @@ class WCOddsService {
         final grp = m.group!;
         groupStandings.putIfAbsent(grp, () => []);
         final list = groupStandings[grp]!;
-        if (!list.any((e) => e.teamCode.toLowerCase() == m.t1.toLowerCase())) {
-          list.add(TeamGroupStats(m.t1.toLowerCase()));
+
+        final t1Lower = m.t1.toLowerCase();
+        final t2Lower = m.t2.toLowerCase();
+
+        TeamGroupStats? t1Entry;
+        TeamGroupStats? t2Entry;
+
+        for (final e in list) {
+          if (e.teamCode == t1Lower) t1Entry = e;
+          else if (e.teamCode == t2Lower) t2Entry = e;
         }
-        if (!list.any((e) => e.teamCode.toLowerCase() == m.t2.toLowerCase())) {
-          list.add(TeamGroupStats(m.t2.toLowerCase()));
+
+        if (t1Entry == null) {
+          t1Entry = TeamGroupStats(t1Lower);
+          list.add(t1Entry);
+        }
+        if (t2Entry == null) {
+          t2Entry = TeamGroupStats(t2Lower);
+          list.add(t2Entry);
         }
 
         if (m.isPlayed) {
-          final t1Entry = list.firstWhere((e) => e.teamCode.toLowerCase() == m.t1.toLowerCase());
-          final t2Entry = list.firstWhere((e) => e.teamCode.toLowerCase() == m.t2.toLowerCase());
           t1Entry.played++;
           t2Entry.played++;
           t1Entry.goalsFor += m.t1Score!;
