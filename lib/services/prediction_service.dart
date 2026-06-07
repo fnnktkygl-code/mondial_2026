@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import '../models/match.dart';
 import '../app_constants.dart';
 import '../l10n/translations.dart';
+import 'firebase_service.dart';
 
 class MatchPrediction {
   final String matchId;
@@ -117,12 +120,14 @@ class FriendScore {
   final int points;
   final String emblem;
   final bool isUser;
+  final String? userId;
 
   FriendScore({
     required this.name,
     required this.points,
     required this.emblem,
     this.isUser = false,
+    this.userId,
   });
 }
 
@@ -130,17 +135,20 @@ class FriendGroup {
   final String name;
   final String code;
   final List<FriendScore> members;
+  final String? inviteToken;
+  final String? creatorId;
 
   FriendGroup({
     required this.name,
     required this.code,
     required this.members,
+    this.inviteToken,
+    this.creatorId,
   });
 }
 
 class PredictionService {
   static const String _prefsKey       = kPredictionsKey;
-  static const String _groupsPrefsKey = kGroupsKey;
 
   /// Save predictions to local storage
   static Future<void> savePredictionData(PredictionData data) async {
@@ -483,21 +491,19 @@ class PredictionService {
     };
   }
 
-  /// Fetch user-created/joined challenge groups with simulated members.
+  /// Fetch user-created/joined challenge groups from Firestore.
   static Future<List<FriendGroup>> loadChallengeGroups(
     PredictionData userData,
     List<WorldCupMatch> matches,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> rawGroups = prefs.getStringList(_groupsPrefsKey) ?? [];
-
     final List<FriendGroup> groups = [];
     final userPoints = calculateTotalPoints(userData, matches);
     final userEmblem = userData.avatar.isNotEmpty ? userData.avatar : kUserEmblem;
 
-    // 1. Default global group
+    // 1. Default global group (placeholder, UI fetches actual from Firestore stream if needed,
+    //    or we can keep it local for just the user and let the leaderboard handle global)
     final globalMembers = <FriendScore>[
-      FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true),
+      FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true, userId: await WCFirebaseService.getOrCreateUserId()),
     ]..sort((a, b) => b.points.compareTo(a.points));
 
     groups.add(FriendGroup(
@@ -506,37 +512,54 @@ class PredictionService {
       members: globalMembers,
     ));
 
-    // 2. Custom groups
-    for (final raw in rawGroups) {
-      try {
-        final Map<String, dynamic> map = jsonDecode(raw) as Map<String, dynamic>;
-        final String name = map['name'] as String;
-        final String code = map['code'] as String;
+    // 2. Fetch custom groups from Firestore
+    final uid = await WCFirebaseService.getOrCreateUserId();
+    final firestore = FirebaseFirestore.instance;
+    final groupsSnapshot = await firestore.collection('groups')
+        .where('members', arrayContains: uid)
+        .get();
 
-        PredictionData? friendData;
-        String? friendName;
-        if (map['friendData'] != null) {
-          friendData = PredictionData.fromJson(map['friendData'] as Map<String, dynamic>);
-          friendName = map['friendName'] as String? ?? 'Ami';
+    for (final doc in groupsSnapshot.docs) {
+      final data = doc.data();
+      final name = data['name'] as String;
+      final id = doc.id;
+      final inviteToken = data['inviteToken'] as String? ?? '';
+      final creatorId = data['creatorId'] as String? ?? '';
+
+      final List<dynamic> memberIds = data['members'] ?? [];
+      final List<FriendScore> members = [];
+
+      // Fetch each member's points from the users collection
+      for (final memberId in memberIds) {
+        final isUser = memberId == uid;
+        int points = 0;
+        String mName = 'Unknown';
+        String mEmblem = '👤';
+
+        if (isUser) {
+          points = userPoints;
+          mName = userData.username;
+          mEmblem = userEmblem;
+        } else {
+          final userDoc = await firestore.collection('users').doc(memberId as String).get();
+          if (userDoc.exists) {
+            final uData = userDoc.data()!;
+            points = uData['points'] as int? ?? 0;
+            mName = uData['username'] as String? ?? 'Unknown';
+            mEmblem = uData['avatar'] as String? ?? '👤';
+          }
         }
-
-        final members = <FriendScore>[
-          FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true),
-        ];
-
-        if (friendData != null && friendName != null) {
-          members.add(FriendScore(
-            name: '$friendName 👥',
-            points: _calculateFriendPoints(friendName, matches, friendData),
-            emblem: '🦁',
-          ));
-        }
-
-        members.sort((a, b) => b.points.compareTo(a.points));
-        groups.add(FriendGroup(name: name, code: code, members: members));
-      } catch (_) {
-        // Skip corrupted entries
+        members.add(FriendScore(name: mName, points: points, emblem: mEmblem, isUser: isUser, userId: memberId as String));
       }
+
+      members.sort((a, b) => b.points.compareTo(a.points));
+      groups.add(FriendGroup(
+        name: name,
+        code: id, // use Firestore ID as the base code
+        members: members,
+        inviteToken: inviteToken,
+        creatorId: creatorId,
+      ));
     }
 
     return groups;
@@ -544,77 +567,89 @@ class PredictionService {
 
   /// Create a new custom prediction group
   static Future<void> createCustomGroup(String groupName) async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> rawGroups = prefs.getStringList(_groupsPrefsKey) ?? [];
+    final uid = await WCFirebaseService.getOrCreateUserId();
+    final firestore = FirebaseFirestore.instance;
 
-    final randomCode = 'GRP-${(groupName.hashCode.abs() % 10000).toString().padLeft(4, '0')}';
-    rawGroups.add(jsonEncode({'name': groupName, 'code': randomCode}));
-    await prefs.setStringList(_groupsPrefsKey, rawGroups);
+    final token = const Uuid().v4().substring(0, 8); // secure invite token
+
+    await firestore.collection('groups').add({
+      'name': groupName,
+      'creatorId': uid,
+      'members': [uid],
+      'inviteToken': token,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 
-  /// Join/Import a group using a Base64 invite code or a raw GRP-XXXX code
-  static Future<bool> joinCustomGroup(String codeOrLink) async {
-    final cleanCode = codeOrLink.trim();
-    if (cleanCode.isEmpty) return false;
+  /// Edit a custom prediction group
+  static Future<void> editCustomGroup(String groupId, String newName) async {
+    final firestore = FirebaseFirestore.instance;
+    await firestore.collection('groups').doc(groupId).update({'name': newName});
+  }
 
-    // Base64 payload (invite links)
-    if (cleanCode.startsWith('eyJ') || cleanCode.length > 20) {
-      try {
-        final decodedStr = utf8.decode(base64Decode(cleanCode));
-        final Map<String, dynamic> data = jsonDecode(decodedStr) as Map<String, dynamic>;
+  /// Delete a custom prediction group
+  static Future<void> deleteCustomGroup(String groupId) async {
+    final firestore = FirebaseFirestore.instance;
+    await firestore.collection('groups').doc(groupId).delete();
+  }
 
-        final String name = data['name'] as String? ?? 'Groupe Partagé';
-        final String code = data['code'] as String? ?? 'SHR-${(name.hashCode.abs() % 1000)}';
+  /// Leave a custom prediction group
+  static Future<void> leaveCustomGroup(String groupId) async {
+    final uid = await WCFirebaseService.getOrCreateUserId();
+    final firestore = FirebaseFirestore.instance;
+    await firestore.collection('groups').doc(groupId).update({
+      'members': FieldValue.arrayRemove([uid])
+    });
+  }
 
-        final prefs = await SharedPreferences.getInstance();
-        final List<String> rawGroups = prefs.getStringList(_groupsPrefsKey) ?? [];
+  /// Join a group using an invite string (format: groupId_token)
+  static Future<bool> joinCustomGroup(String inviteCode) async {
+    final parts = inviteCode.trim().split('_');
+    if (parts.length != 2) return false;
 
-        final hasDuplicate = rawGroups.any((g) {
-          final map = jsonDecode(g) as Map<String, dynamic>;
-          return map['code'] == code;
-        });
+    final groupId = parts[0];
+    final token = parts[1];
 
-        if (!hasDuplicate) {
-          rawGroups.add(jsonEncode({
-            'name': name,
-            'code': code,
-            'friendName': data['username'] as String? ?? 'Ami',
-            'friendData': data['predictions'] as Map<String, dynamic>,
-          }));
-          await prefs.setStringList(_groupsPrefsKey, rawGroups);
+    final uid = await WCFirebaseService.getOrCreateUserId();
+    final firestore = FirebaseFirestore.instance;
+
+    final docRef = firestore.collection('groups').doc(groupId);
+    final docSnap = await docRef.get();
+
+    if (docSnap.exists) {
+      final data = docSnap.data()!;
+      if (data['inviteToken'] == token) {
+        final List<dynamic> members = data['members'] ?? [];
+        if (!members.contains(uid)) {
+          await docRef.update({
+            'members': FieldValue.arrayUnion([uid])
+          });
+
+          // Notify creator and other members
+          final creatorId = data['creatorId'] as String;
+          final groupName = data['name'] as String;
+          final userDoc = await firestore.collection('users').doc(uid).get();
+          final username = userDoc.data()?['username'] ?? 'Someone';
+
+          for (final memberId in members) {
+             if (memberId != uid) {
+                 await firestore.collection('users').doc(memberId as String).collection('notifications').add({
+                     'title': 'New Group Member',
+                     'body': '$username joined $groupName!',
+                     'createdAt': FieldValue.serverTimestamp(),
+                     'read': false,
+                 });
+             }
+          }
           return true;
         }
-      } catch (_) {
-        return false;
       }
     }
-
-    // Plain code fallback
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> rawGroups = prefs.getStringList(_groupsPrefsKey) ?? [];
-
-    final hasDuplicate = rawGroups.any((g) {
-      final map = jsonDecode(g) as Map<String, dynamic>;
-      return map['code'] == cleanCode;
-    });
-
-    if (!hasDuplicate) {
-      rawGroups.add(jsonEncode({'name': 'Groupe $cleanCode', 'code': cleanCode}));
-      await prefs.setStringList(_groupsPrefsKey, rawGroups);
-      return true;
-    }
-
     return false;
   }
 
-  /// Serialize the user's predictions into a shareable Base64 string
-  static String generateSharePayload(String groupName, PredictionData userData) {
-    final payload = {
-      'name': groupName,
-      'code': 'GRP-${(groupName.hashCode.abs() % 10000).toString().padLeft(4, '0')}',
-      'username': userData.username,
-      'predictions': userData.toJson(),
-    };
-    return base64Encode(utf8.encode(jsonEncode(payload)));
+  /// Serialize a shareable invite link
+  static String generateSharePayload(String groupId, String inviteToken) {
+    return '${groupId}_$inviteToken';
   }
 }

@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/match.dart';
 import '../services/team_profile_service.dart';
+import '../services/firebase_service.dart';
 import '../l10n/translations.dart';
 
 class WCNotificationService {
@@ -69,9 +71,36 @@ class WCNotificationService {
         settings: initSettings,
         onDidReceiveNotificationResponse: (NotificationResponse _) {},
       );
+
+      _startFirestoreListener();
     } catch (e) {
       debugPrint('Error initializing notifications: $e');
     }
+  }
+
+  static void _startFirestoreListener() async {
+    final uid = await WCFirebaseService.getOrCreateUserId();
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('notifications')
+        .where('read', isEqualTo: false)
+        .snapshots()
+        .listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data();
+          if (data != null) {
+            final title = data['title'] as String? ?? 'Notification';
+            final body = data['body'] as String? ?? '';
+            showInstantNotification(id: change.doc.id, title: title, body: body);
+
+            // Mark as read so we don't show it again
+            change.doc.reference.update({'read': true});
+          }
+        }
+      }
+    });
   }
 
   static Future<bool> requestPermissions() async {
