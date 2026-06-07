@@ -251,7 +251,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.accent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(kCardRadius),
                   border: Border.all(color: AppColors.accent, width: 1.5),
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -456,7 +456,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(kButtonRadius),
             side: BorderSide(color: isSelected ? AppColors.accent : AppColors.border),
           ),
         ),
@@ -540,7 +540,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: isMe ? AppColors.border : AppColors.card,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(kButtonRadius),
                 border: Border.all(
                   color: isMe ? AppColors.accent : AppColors.border,
                   width: isMe ? 1.5 : 1.0,
@@ -644,7 +644,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       backgroundColor: AppColors.card,
       labelStyle: TextStyle(color: isSelected ? AppColors.accent : AppColors.textDim),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(kButtonRadius),
         side: BorderSide(color: isSelected ? AppColors.accent : AppColors.border),
       ),
       onSelected: (val) {
@@ -682,7 +682,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(
           color: isLocked ? AppColors.border : AppColors.borderMid,
           width: 1.5,
@@ -811,7 +811,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     color: pointsEarned > 0
                         ? AppColors.accent.withValues(alpha: 0.15)
                         : AppColors.danger.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(kButtonRadius),
                   ),
                   child: Text(
                     pointsEarned > 0
@@ -946,7 +946,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     backgroundColor: AppColors.accent,
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
                   ),
                   onPressed: _showCreateGroupDialog,
                 ),
@@ -961,7 +961,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(kButtonRadius),
                       side: const BorderSide(color: AppColors.border),
                     ),
                   ),
@@ -993,7 +993,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
       child: Column(
@@ -1093,7 +1093,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.card,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(kCardRadius),
           border: Border.all(color: AppColors.border),
         ),
         child: Theme(
@@ -1140,7 +1140,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.card,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(kCardRadius),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(children: [
@@ -1164,7 +1164,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: AppColors.warning.withValues(alpha: 0.4), width: 1.5),
       ),
       child: Column(
@@ -1311,7 +1311,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surface,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(kButtonRadius),
             border: Border.all(
               color: isSelected ? AppColors.accent : AppColors.border,
               width: isSelected ? 1.5 : 1,
