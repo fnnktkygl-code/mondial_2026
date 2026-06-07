@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId
                    && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() > 0 && request.resource.data.username.size() <= 30))
                    && (!('supportedTeam' in request.resource.data) || request.resource.data.supportedTeam == null || (request.resource.data.supportedTeam is string && request.resource.data.supportedTeam.size() == 2))
