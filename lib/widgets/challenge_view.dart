@@ -556,7 +556,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   ],
                   Expanded(
                     child: Text(
-                      username + AppTranslations.get(widget.lang, isMe ? 'youSuffix' : 'pointsSuffix').replaceAll(' pts', '').replaceAll(' (Vous)', isMe ? AppTranslations.get(widget.lang, 'youSuffix') : ''),
+                      isMe ? '$username ${AppTranslations.get(widget.lang, 'youSuffix')}' : username,
                       style: TextStyle(
                         color: isMe ? AppColors.accent : Colors.white,
                         fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
