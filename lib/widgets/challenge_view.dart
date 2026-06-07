@@ -189,7 +189,10 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   }
 
   void _shareGroup(FriendGroup grp) {
-    final payload = PredictionService.generateSharePayload(grp.name, _userPreds);
+    final token = grp.inviteToken;
+    if (token == null || token.isEmpty) return; // Cannot share global group
+
+    final payload = PredictionService.generateSharePayload(grp.code, token);
     final inviteMessage = widget.lang == 'fr'
         ? "🏆 Rejoins mon groupe de pronos '${grp.name}' sur Mondial 2026! Entre mon code de défi pour comparer nos scores:\n\n$payload"
         : "🏆 Join my prediction group '${grp.name}' on World Cup 2026! Paste my challenge code to compare our scores:\n\n$payload";
@@ -487,7 +490,14 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           );
         }
 
-        final docs = snapshot.data?.docs ?? [];
+        final allDocs = snapshot.data?.docs ?? [];
+        final docs = allDocs.where((doc) {
+          final data = doc.data();
+          final isHidden = data['isHidden'] as bool? ?? false;
+          final isMe = doc.id == _myUserId;
+          return !isHidden || isMe;
+        }).take(50).toList();
+
         if (docs.isEmpty) {
           return Center(
             child: Text(
@@ -1019,11 +1029,39 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   ],
                 ),
               ),
-              if (grp.code != 'GLOBAL-2026')
+              if (grp.code != 'GLOBAL-2026') ...[
                 IconButton(
                   icon: const Icon(Icons.share, color: AppColors.accent, size: 18),
                   onPressed: () => _shareGroup(grp),
                 ),
+                if (grp.creatorId == _myUserId && _myUserId != null && _myUserId!.isNotEmpty)
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: AppColors.textDim, size: 18),
+                    color: AppColors.card,
+                    onSelected: (val) {
+                      if (val == 'edit') {
+                        _showEditGroupDialog(grp);
+                      } else if (val == 'delete') {
+                        _showDeleteGroupDialog(grp);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(AppTranslations.get(widget.lang, 'edit') ?? 'Edit', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(AppTranslations.get(widget.lang, 'delete') ?? 'Delete', style: const TextStyle(color: AppColors.danger, fontSize: 13)),
+                      ),
+                    ],
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.exit_to_app, color: AppColors.danger, size: 18),
+                    onPressed: () => _showLeaveGroupDialog(grp),
+                  ),
+              ],
             ],
           ),
           const Divider(color: AppColors.border, height: 24),
@@ -1410,6 +1448,114 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   }
 
 
+
+  void _showEditGroupDialog(FriendGroup grp) {
+    final editController = TextEditingController(text: grp.name);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.card,
+          title: Text(AppTranslations.get(widget.lang, 'edit') ?? 'Edit Group', style: const TextStyle(color: Colors.white, fontSize: 14)),
+          content: TextField(
+            controller: editController,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: AppTranslations.get(widget.lang, 'groupName'),
+              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
+              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
+              onPressed: () async {
+                final newName = editController.text.trim();
+                if (newName.isNotEmpty) {
+                  await PredictionService.editCustomGroup(grp.code, newName);
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                    await _loadData();
+                  }
+                }
+              },
+              child: Text(AppTranslations.get(widget.lang, 'save'), style: const TextStyle(color: Colors.black)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteGroupDialog(FriendGroup grp) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.card,
+          title: Text(AppTranslations.get(widget.lang, 'delete') ?? 'Delete Group', style: const TextStyle(color: Colors.white, fontSize: 14)),
+          content: Text(
+            widget.lang == 'fr' ? 'Êtes-vous sûr de vouloir supprimer ce groupe pour tout le monde ?' : 'Are you sure you want to delete this group for everyone?',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () async {
+                await PredictionService.deleteCustomGroup(grp.code);
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  await _loadData();
+                }
+              },
+              child: Text(AppTranslations.get(widget.lang, 'delete') ?? 'Delete', style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLeaveGroupDialog(FriendGroup grp) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.card,
+          title: Text(widget.lang == 'fr' ? 'Quitter le groupe' : 'Leave Group', style: const TextStyle(color: Colors.white, fontSize: 14)),
+          content: Text(
+            widget.lang == 'fr' ? 'Voulez-vous vraiment quitter ce groupe ?' : 'Are you sure you want to leave this group?',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () async {
+                await PredictionService.leaveCustomGroup(grp.code);
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  await _loadData();
+                }
+              },
+              child: Text(widget.lang == 'fr' ? 'Quitter' : 'Leave', style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _showCreateGroupDialog() {
     showDialog(
