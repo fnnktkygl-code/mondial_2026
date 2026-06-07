@@ -414,82 +414,32 @@ class PredictionService {
     return count;
   }
 
-  /// Generate deterministic predictions for a simulated friend
-  static MatchPrediction _generateFriendPrediction(
-    String friendName,
-    String matchId,
-    WorldCupMatch match,
-  ) {
-    final int hash = (friendName.hashCode + matchId.hashCode).abs();
 
-    int pred1;
-    int pred2;
-
-    // Each simulated friend has a play style based on index in kSimulatedFriends
-    final idx = kSimulatedFriends.indexWhere((f) => f['name'] == friendName);
-    switch (idx) {
-      case 0: // Marie – home-team optimist
-        pred1 = (hash % 3) + 1;
-        pred2 = hash % 2;
-        break;
-      case 1: // Thomas – high scoring
-        pred1 = (hash % 3) + 1;
-        pred2 = hash % 4;
-        break;
-      case 2: // Lucas – defensive / low scoring
-        pred1 = hash % 2;
-        pred2 = (hash >> 1) % 2;
-        break;
-      default:
-        pred1 = hash % 3;
-        pred2 = (hash >> 1) % 3;
-    }
-
-    // Knockout matches should not end in a draw
-    if (match.isKnockout && pred1 == pred2) {
-      (hash % 2 == 0) ? pred1++ : pred2++;
-    }
-
-    return MatchPrediction(matchId: matchId, t1Score: pred1, t2Score: pred2);
-  }
 
   /// Calculate total points for a friend (real or simulated)
   static int _calculateFriendPoints(
     String name,
     List<WorldCupMatch> matches,
-    PredictionData? creatorData,
+    PredictionData creatorData,
   ) {
-    // If we have the real creator's data, score using their actual predictions
-    if (creatorData != null) {
-      int points = 0;
-      for (final match in matches) {
-        if (match.isPlayed) {
-          final pred = creatorData.matchPredictions[match.id];
-          if (pred != null) points += evaluatePoints(match, pred);
-        }
-      }
-      // Champion bonus
-      final finalMatch = matches.firstWhere(
-        (m) => m.id == kFinalMatchId,
-        orElse: () => matches[0],
-      );
-      if (finalMatch.isPlayed && creatorData.championCode != null) {
-        final actualChampion = finalMatch.t1Score! > finalMatch.t2Score!
-            ? finalMatch.t1
-            : finalMatch.t2;
-        if (actualChampion.toLowerCase() == creatorData.championCode!.toLowerCase()) {
-          points += kChampionBonusPoints;
-        }
-      }
-      return points;
-    }
-
-    // Simulated friend
     int points = 0;
     for (final match in matches) {
       if (match.isPlayed) {
-        final pred = _generateFriendPrediction(name, match.id, match);
-        points += evaluatePoints(match, pred);
+        final pred = creatorData.matchPredictions[match.id];
+        if (pred != null) points += evaluatePoints(match, pred);
+      }
+    }
+    // Champion bonus
+    final finalMatch = matches.firstWhere(
+      (m) => m.id == kFinalMatchId,
+      orElse: () => matches[0],
+    );
+    if (finalMatch.isPlayed && creatorData.championCode != null) {
+      final actualChampion = finalMatch.t1Score! > finalMatch.t2Score!
+          ? finalMatch.t1
+          : finalMatch.t2;
+      if (actualChampion.toLowerCase() == creatorData.championCode!.toLowerCase()) {
+        points += kChampionBonusPoints;
       }
     }
     return points;
@@ -548,11 +498,6 @@ class PredictionService {
     // 1. Default global group
     final globalMembers = <FriendScore>[
       FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true),
-      ...kSimulatedFriends.map((f) => FriendScore(
-        name: f['name']!,
-        points: _calculateFriendPoints(f['name']!, matches, null),
-        emblem: f['emblem']!,
-      )),
     ]..sort((a, b) => b.points.compareTo(a.points));
 
     groups.add(FriendGroup(
@@ -584,15 +529,6 @@ class PredictionService {
             name: '$friendName 👥',
             points: _calculateFriendPoints(friendName, matches, friendData),
             emblem: '🦁',
-          ));
-        }
-
-        // Add simulated rivals
-        for (final f in kSimulatedFriends.take(2)) {
-          members.add(FriendScore(
-            name: f['name']!,
-            points: _calculateFriendPoints(f['name']!, matches, null),
-            emblem: f['emblem']!,
           ));
         }
 
