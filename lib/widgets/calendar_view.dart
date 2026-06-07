@@ -213,19 +213,21 @@ Widget _buildFlag(String code) {
                       ),
 
                       // Day columns
-                      ...List.generate(7, (dayIdx) {
-                        final date = weekDates[dayIdx];
-                        final dateStr = DateFormat('yyyy-MM-dd').format(date);
-                        final localizedDayLabel =
-                            DateFormat('E d MMM', widget.lang).format(date);
+                      ...(() {
+                        final localizedFormatter = DateFormat('E d MMM', widget.lang);
+                        return List.generate(7, (dayIdx) {
+                          final date = weekDates[dayIdx];
+                          final localizedDayLabel = localizedFormatter.format(date);
 
-                        // Day's matches
-                        final dayMatches = weekMatches.where((m) {
-                          return DateFormat('yyyy-MM-dd').format(m.date) == dateStr;
-                        }).toList();
+                          // Day's matches
+                          final dayMatches = weekMatches.where((m) {
+                            return m.date.year == date.year &&
+                                m.date.month == date.month &&
+                                m.date.day == date.day;
+                          }).toList();
 
-                        return Expanded(
-                          child: Container(
+                          return Expanded(
+                            child: Container(
                             decoration: const BoxDecoration(
                               border: Border(
                                 right: BorderSide(color: AppColors.border, width: 1),
@@ -411,7 +413,8 @@ Widget _buildFlag(String code) {
                             ),
                           ),
                         );
-                      }),
+                      });
+                    })(),
                     ],
                   ),
                 ),
