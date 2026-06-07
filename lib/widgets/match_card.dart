@@ -226,6 +226,7 @@ Widget _buildFlag(String code, double size) {
                     ),
                     // Alert Bell
                     IconButton(
+                      tooltip: AppTranslations.get(widget.lang, 'toggleAlertTooltip'),
                       icon: Icon(
                         widget.hasAlert
                             ? Icons.notifications_active
