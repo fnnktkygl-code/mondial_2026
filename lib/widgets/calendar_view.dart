@@ -82,6 +82,10 @@ Widget _buildFlag(String code) {
     const double rowHeight = 90.0;
     const double matchDuration = 1.75; // Matches last 1.75 hours roughly (105 mins)
 
+    // Cache DateFormat instances to prevent repeated instantiation in loops
+    final dayFormat = DateFormat('yyyy-MM-dd');
+    final localizedDayFormat = DateFormat('E d MMM', widget.lang);
+
     // Calculate dates of the visible week (Monday to Sunday)
     final weekDates = List.generate(7, (i) {
       return _currentWeekStart.add(Duration(days: i));
@@ -213,18 +217,15 @@ Widget _buildFlag(String code) {
                       ),
 
                       // Day columns
-                      ...(() {
-                        final localizedFormatter = DateFormat('E d MMM', widget.lang);
-                        return List.generate(7, (dayIdx) {
-                          final date = weekDates[dayIdx];
-                          final localizedDayLabel = localizedFormatter.format(date);
+                      ...List.generate(7, (dayIdx) {
+                        final date = weekDates[dayIdx];
+                        final dateStr = dayFormat.format(date);
+                        final localizedDayLabel = localizedDayFormat.format(date);
 
-                          // Day's matches
-                          final dayMatches = weekMatches.where((m) {
-                            return m.date.year == date.year &&
-                                m.date.month == date.month &&
-                                m.date.day == date.day;
-                          }).toList();
+                        // Day's matches
+                        final dayMatches = weekMatches.where((m) {
+                          return dayFormat.format(m.date) == dateStr;
+                        }).toList();
 
                           return Expanded(
                             child: Container(

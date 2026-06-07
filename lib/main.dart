@@ -1004,6 +1004,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               child: Row(
                                 children: [
                                   IconButton(
+                                    tooltip: AppTranslations.get(_lang, 'listView'),
                                     icon: const Icon(
                                       Icons.list_alt,
                                       size: 20,
@@ -1022,6 +1023,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   const SizedBox(width: 4),
                                   IconButton(
+                                    tooltip: AppTranslations.get(_lang, 'calendarView'),
                                     icon: const Icon(
                                       Icons.calendar_today_outlined,
                                       size: 20,

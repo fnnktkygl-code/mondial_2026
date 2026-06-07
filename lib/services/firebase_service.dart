@@ -46,6 +46,7 @@ class WCFirebaseService {
     int streak = 0,
     int guruCount = 0,
     String avatar = '',
+    bool isHidden = false,
   }) async {
     final uid = await getOrCreateUserId();
 
@@ -57,8 +58,53 @@ class WCFirebaseService {
       'streak': streak,
       'guruCount': guruCount,
       'avatar': avatar,
+      'isHidden': isHidden,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  /// Delete the user profile from Firestore.
+  static Future<void> deleteUserProfile() async {
+    final uid = await getOrCreateUserId();
+
+    // Attempt to delete user doc and its subcollections (simplified clean up)
+    try {
+      final sub = await _firestore.collection('users').doc(uid).collection('notifications').get();
+      for (final doc in sub.docs) {
+        await doc.reference.delete();
+      }
+      await _firestore.collection('users').doc(uid).delete();
+    } catch (_) {}
+
+    // Attempt to delete user from Firebase Auth
+    if (_auth.currentUser != null) {
+      try {
+        await _auth.currentUser!.delete();
+      } catch (_) {}
+    }
+
+    // Clear local prefs related to ID
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_uidKey);
+  }
+
+  /// Set the profile visibility
+  static Future<void> setProfileVisibility(bool isHidden) async {
+    final uid = await getOrCreateUserId();
+    await _firestore.collection('users').doc(uid).set({
+      'isHidden': isHidden,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  /// Get the profile visibility
+  static Future<bool> getProfileVisibility() async {
+    final uid = await getOrCreateUserId();
+    final doc = await _firestore.collection('users').doc(uid).get();
+    if (doc.exists && doc.data() != null) {
+      return doc.data()!['isHidden'] as bool? ?? false;
+    }
+    return false;
   }
 
   /// Fetch leaderboard stream.
@@ -66,7 +112,7 @@ class WCFirebaseService {
     return _firestore
         .collection('users')
         .orderBy('points', descending: true)
-        .limit(50)
+        .limit(100) // Increase limit since we filter client side
         .snapshots();
   }
 }
