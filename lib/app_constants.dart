@@ -69,14 +69,6 @@ const String kUserIdKey          = 'wc2026_anon_user_id';
 // ─── Default / fallback values ───────────────────────────────────────────────
 const String kDefaultUsername = ''; // Empty → user is prompted to enter a name
 
-// ─── Simulated friends ───────────────────────────────────────────────────────
-/// Virtual rivals that appear in local challenge groups.
-const List<Map<String, String>> kSimulatedFriends = [
-  {'name': 'Marie 🦄',  'emblem': '🦄'},
-  {'name': 'Thomas ⚡', 'emblem': '⚡'},
-  {'name': 'Lucas 🛡️', 'emblem': '🛡️'},
-];
-
 // ─── Global group ────────────────────────────────────────────────────────────
 const String kGlobalGroupName = 'Mondial Global Cup';
 const String kGlobalGroupCode = 'GLOBAL-2026';
