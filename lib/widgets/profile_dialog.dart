@@ -8,6 +8,7 @@ import '../services/audio_service.dart';
 import '../l10n/translations.dart';
 import '../services/team_profile_service.dart';
 import '../app_colors.dart';
+import '../app_constants.dart';
 import 'team_flag.dart';
 import 'team_selector.dart';
 
@@ -256,7 +257,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(kButtonRadius),
                 border: Border.all(color: AppColors.border),
               ),
               child: Row(
@@ -293,7 +294,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.card,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
           title: Text(
             AppTranslations.get(widget.lang, 'confirmWinnerTitle'),
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -332,7 +333,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
               ),
               child: Text(
                 widget.lang == 'fr' ? 'Confirmer' : (widget.lang == 'es' ? 'Confirmar' : 'Confirm'),
@@ -379,7 +380,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         builder: (BuildContext context) {
           return AlertDialog(
             backgroundColor: AppColors.card,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
             title: Text(
               widget.lang == 'fr' ? 'Confirmer le meilleur buteur' : (widget.lang == 'es' ? 'Confirmar máximo goleador' : 'Confirm Golden Boot Scorer'),
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -405,7 +406,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
                 ),
                 child: Text(
                   widget.lang == 'fr' ? 'Confirmer' : (widget.lang == 'es' ? 'Confirmar' : 'Confirm'),
@@ -488,7 +489,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
     return Dialog(
       backgroundColor: AppColors.card,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 450),
         padding: const EdgeInsets.all(24),
@@ -535,7 +536,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(kDialogRadius),
                     border: Border.all(color: AppColors.accent, width: 2),
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -574,7 +575,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                           color: isSelected
                               ? AppColors.accent.withValues(alpha: 0.15)
                               : AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(kCardRadius),
                           border: Border.all(
                             color: isSelected ? AppColors.accent : AppColors.border,
                             width: isSelected ? 2 : 1,
@@ -601,7 +602,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(kButtonRadius),
                   border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
                 ),
                 child: Row(
@@ -638,11 +639,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   hintStyle: const TextStyle(color: AppColors.textDim),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kButtonRadius),
                     borderSide: const BorderSide(color: AppColors.border, width: 1.5),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kButtonRadius),
                     borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
                   ),
                 ),
@@ -676,7 +677,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(kButtonRadius),
                           border: Border.all(color: AppColors.border, width: 1.5),
                         ),
                         child: Row(
@@ -727,7 +728,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(kButtonRadius),
                   border: Border.all(color: AppColors.border, width: 1.5),
                 ),
                 child: Row(
@@ -778,7 +779,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(kButtonRadius),
                           border: Border.all(
                             color: _championCode != null ? AppColors.accent.withValues(alpha: 0.5) : AppColors.border,
                             width: 1.5,
@@ -839,7 +840,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(kButtonRadius),
                   border: Border.all(color: AppColors.border, width: 1.5),
                 ),
                 child: Row(
@@ -911,11 +912,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                           prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(kButtonRadius),
                             borderSide: const BorderSide(color: AppColors.border, width: 1.5),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(kButtonRadius),
                             borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
                           ),
                         ),
@@ -927,7 +928,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         child: Material(
                           color: AppColors.card,
                           elevation: 4,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(kButtonRadius),
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxHeight: 200, maxWidth: 400),
                             child: ListView.builder(
@@ -1030,7 +1031,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
                   elevation: 0,
                 ),
                 child: _isSaving
@@ -1070,7 +1071,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                     height: 48,
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(kButtonRadius),
                       border: Border.all(color: AppColors.border, width: 1.5),
                     ),
                     alignment: Alignment.center,
@@ -1089,13 +1090,13 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => audioService.playAnthem(teamCode),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kButtonRadius),
                     child: Container(
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
                         color: isThis ? AppColors.accent.withValues(alpha: 0.1) : AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(kButtonRadius),
                         border: Border.all(
                           color: isThis ? AppColors.accent : AppColors.border,
                           width: 1.5,
