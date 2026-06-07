@@ -227,8 +227,8 @@ Widget _buildFlag(String code) {
                           return dayFormat.format(m.date) == dateStr;
                         }).toList();
 
-                        return Expanded(
-                          child: Container(
+                          return Expanded(
+                            child: Container(
                             decoration: const BoxDecoration(
                               border: Border(
                                 right: BorderSide(color: AppColors.border, width: 1),
@@ -414,7 +414,8 @@ Widget _buildFlag(String code) {
                             ),
                           ),
                         );
-                      }),
+                      });
+                    })(),
                     ],
                   ),
                 ),
