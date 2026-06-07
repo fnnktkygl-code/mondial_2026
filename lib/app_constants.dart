@@ -90,3 +90,13 @@ const Map<String, int> kTeamRatings = {
 
 // ─── Snackbar / UI ───────────────────────────────────────────────────────────
 const Duration kSnackBarDuration = Duration(seconds: 3);
+
+// ─── Radii & Padding ─────────────────────────────────────────────────────────
+const double kCardRadius   = 16.0;
+const double kButtonRadius = 12.0;
+const double kDialogRadius = 24.0;
+const double kBadgeRadius  = 8.0;
+
+const double kPaddingSmall = 8.0;
+const double kPaddingMedium = 16.0;
+const double kPaddingLarge = 24.0;

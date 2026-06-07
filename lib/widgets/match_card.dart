@@ -140,7 +140,7 @@ Widget _buildFlag(String code, double size) {
             color: isUserTeam
                 ? AppColors.accent.withValues(alpha: 0.06)
                 : AppColors.card,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(kCardRadius),
             border: Border.all(
               color: live
                   ? AppColors.accent.withValues(alpha: _pulseAnimation.value)
@@ -168,14 +168,14 @@ Widget _buildFlag(String code, double size) {
       },
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(kCardRadius),
         child: InkWell(
           onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(kCardRadius),
           splashColor: AppColors.accent.withValues(alpha: 0.05),
           highlightColor: AppColors.accent.withValues(alpha: 0.02),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(kPaddingMedium),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -380,7 +380,7 @@ Widget _buildFlag(String code, double size) {
 
                 // Footer: venue & alert badge
                 Container(
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.only(top: kPaddingSmall),
                   decoration: const BoxDecoration(
                     border: Border(top: BorderSide(color: AppColors.border, width: 1)),
                   ),
@@ -398,12 +398,12 @@ Widget _buildFlag(String code, double size) {
                       ),
 
                       if (widget.hasAlert && widget.alertType != null) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(width: kPaddingSmall),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: AppColors.accent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(kBadgeRadius),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -452,7 +452,7 @@ class _LiveBadge extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: AppColors.accent.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(kBadgeRadius),
             border: Border.all(
               color: AppColors.accent.withValues(alpha: animation.value),
               width: 1.5,
