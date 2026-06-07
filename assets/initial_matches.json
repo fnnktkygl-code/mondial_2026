@@ -99,7 +99,7 @@
     "id": "g_537340",
     "date": "2026-06-14T01:00:00Z",
     "t1": "ht",
-    "t2": "gb-sct",
+    "t2": "sco",
     "t1Score": null,
     "t2Score": null,
     "venue": null,
@@ -466,7 +466,7 @@
   {
     "id": "g_537342",
     "date": "2026-06-19T22:00:00Z",
-    "t1": "gb-sct",
+    "t1": "sco",
     "t2": "ma",
     "t1Score": null,
     "t2Score": null,
@@ -818,7 +818,7 @@
   {
     "id": "g_537343",
     "date": "2026-06-24T22:00:00Z",
-    "t1": "gb-sct",
+    "t1": "sco",
     "t2": "br",
     "t1Score": null,
     "t2Score": null,

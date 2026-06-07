@@ -126,6 +126,16 @@ class WorldCupMatch {
   final DateTime? lastUpdated;
   final bool? _isKnockoutOverride; // explicit override from JSON
 
+  // ── Extra-time / Penalty shootout result (knockout matches only) ──────────
+  /// True if the match was decided in extra time (regardless of penalties).
+  final bool? wentToET;
+  /// True if the match was decided by a penalty shootout.
+  final bool? wentToPK;
+  /// Team code of the extra-time winner (also set when PK follows ET).
+  final String? etWinner;
+  /// Team code of the penalty-shootout winner.
+  final String? pkWinner;
+
   WorldCupMatch({
     required this.id,
     required this.date,
@@ -141,6 +151,10 @@ class WorldCupMatch {
     this.status,
     this.lastUpdated,
     bool? isKnockoutOverride,
+    this.wentToET,
+    this.wentToPK,
+    this.etWinner,
+    this.pkWinner,
   }) : _isKnockoutOverride = isKnockoutOverride;
 
   factory WorldCupMatch.fromJson(Map<String, dynamic> json) {
@@ -170,6 +184,10 @@ class WorldCupMatch {
       status: json['status'] as String?,
       lastUpdated: lastUpd,
       isKnockoutOverride: json['isKnockout'] as bool?,
+      wentToET: json['wentToET'] as bool?,
+      wentToPK: json['wentToPK'] as bool?,
+      etWinner: json['etWinner'] as String?,
+      pkWinner: json['pkWinner'] as String?,
     );
   }
 
@@ -191,7 +209,10 @@ class WorldCupMatch {
     };
   }
 
-  bool get isPlayed => status == 'FINISHED' || (t1Score != null && t2Score != null);
+  // FIX: Only consider a match played if the scores are actually loaded and present! 
+  // Previously, this evaluated to true on `status == 'FINISHED'` alone, causing a 
+  // null assertion crash (`t1Score!`) in your standings loops.
+  bool get isPlayed => t1Score != null && t2Score != null;
 
   bool get isLive => status == 'IN_PLAY' || status == 'PAUSED';
 
@@ -243,6 +264,10 @@ class WorldCupMatch {
     String? status,
     DateTime? lastUpdated,
     bool? isKnockoutOverride,
+    bool? wentToET,
+    bool? wentToPK,
+    String? etWinner,
+    String? pkWinner,
   }) {
     return WorldCupMatch(
       id: id ?? this.id,
@@ -259,6 +284,10 @@ class WorldCupMatch {
       status: status ?? this.status,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       isKnockoutOverride: isKnockoutOverride ?? _isKnockoutOverride,
+      wentToET: wentToET ?? this.wentToET,
+      wentToPK: wentToPK ?? this.wentToPK,
+      etWinner: etWinner ?? this.etWinner,
+      pkWinner: pkWinner ?? this.pkWinner,
     );
   }
 }

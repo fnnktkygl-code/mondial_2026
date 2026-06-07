@@ -109,20 +109,43 @@ class ApiService {
 
   static List<WorldCupMatch> _parseMatchesJson(String jsonStr) {
     final List<dynamic> decoded = jsonDecode(jsonStr) as List<dynamic>;
+    int r32Count = 0;
+    int r16Count = 0;
+    int qfCount = 0;
+    int sfCount = 0;
+
     return decoded.map((item) {
       final map = Map<String, dynamic>.from(item as Map);
       final stage = map['stage'] as String?;
-      final isKnockoutFromJson = map['isKnockout'] as bool?;
+      final isKnockout = map['isKnockout'] as bool? ?? (stage != null && stage.isNotEmpty);
 
-      // Prefix group-stage matches with kGroupMatchIdPrefix to avoid ID collisions
-      // (only for old format without isKnockout field)
-      if (isKnockoutFromJson == null) {
-        if (stage == null || stage.isEmpty) {
-          final id = map['id'] as String;
-          if (!id.startsWith(kGroupMatchIdPrefix)) {
-            map['id'] = '$kGroupMatchIdPrefix$id';
-          }
+      if (isKnockout) {
+        String newId = map['id'] as String;
+        if (stage == 'Round of 32') {
+          newId = 'm${49 + r32Count}';
+          r32Count++;
+        } else if (stage == 'Round of 16') {
+          newId = 'm${65 + r16Count}';
+          r16Count++;
+        } else if (stage == 'Quarter-Final') {
+          newId = 'm${73 + qfCount}';
+          qfCount++;
+        } else if (stage == 'Semi-Final') {
+          newId = 'm${77 + sfCount}';
+          sfCount++;
+        } else if (stage == 'Play-off for third place') {
+          newId = 'm79';
+        } else if (stage == 'Final') {
+          newId = 'm80';
         }
+        map['id'] = newId;
+        map['isKnockout'] = true;
+      } else {
+        final id = map['id'] as String;
+        if (!id.startsWith(kGroupMatchIdPrefix)) {
+          map['id'] = '$kGroupMatchIdPrefix$id';
+        }
+        map['isKnockout'] = false;
       }
       return WorldCupMatch.fromJson(map);
     }).toList();

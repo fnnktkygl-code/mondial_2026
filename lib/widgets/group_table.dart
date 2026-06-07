@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
+import 'team_flag.dart';
+import 'team_profile_dialog.dart';
+import '../utils/fifa_rules.dart';
 
 class GroupEntry {
   final String teamCode;
@@ -11,6 +14,7 @@ class GroupEntry {
   int losses = 0;
   int goalsFor = 0;
   int goalsAgainst = 0;
+  int fairPlay = 0;
 
   int get points => wins * 3 + draws;
   int get goalDifference => goalsFor - goalsAgainst;
@@ -21,11 +25,13 @@ class GroupEntry {
 class GroupTableWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
   final String lang;
+  final String? supportedTeamCode;
 
   const GroupTableWidget({
     super.key,
     required this.matches,
     required this.lang,
+    this.supportedTeamCode,
   });
 
   @override
@@ -80,47 +86,253 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
         t1Entry.draws++;
         t2Entry.draws++;
       }
+
+      if (match.stats != null) {
+        t1Entry.fairPlay -= FIFARegulations.calculateDisciplinaryDeduction(
+          match.stats!.yellowCardsT1,
+          match.stats!.redCardsT1,
+        );
+        t2Entry.fairPlay -= FIFARegulations.calculateDisciplinaryDeduction(
+          match.stats!.yellowCardsT2,
+          match.stats!.redCardsT2,
+        );
+      }
     }
 
     // Sort teams inside each group
     standings.forEach((group, teamEntries) {
-      teamEntries.sort((a, b) {
-        // 1. Points
-        if (b.points != a.points) {
-          return b.points.compareTo(a.points);
-        }
-        // 2. Goal Difference
-        if (b.goalDifference != a.goalDifference) {
-          return b.goalDifference.compareTo(a.goalDifference);
-        }
-        // 3. Goals For
-        if (b.goalsFor != a.goalsFor) {
-          return b.goalsFor.compareTo(a.goalsFor);
-        }
-        // 4. Alphabetical code
-        return a.teamCode.compareTo(b.teamCode);
-      });
+      FIFARegulations.sortStandings(teamEntries, widget.matches);
     });
 
     return standings;
   }
 
   Widget _buildFlag(String code) {
-    if (code.length > 2) return const SizedBox.shrink();
-    final flagCode = code == 'en' ? 'gb-eng' : code;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: Image.network(
-        'https://flagcdn.com/w40/$flagCode.png',
-        width: 24,
-        height: 16,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: 24,
-          height: 16,
-          color: Colors.grey,
+    return TeamFlagWidget(
+      code: code,
+      width: 28,
+      height: 18,
+      borderRadius: 4,
+    );
+  }
+
+  Widget _buildMinimalistTable(List<GroupEntry> groupTeams, {bool compact = false}) {
+    final double posWidth = compact ? 24.0 : 36.0;
+    final double playedWidth = compact ? 28.0 : 36.0;
+    final double gdWidth = compact ? 36.0 : 44.0;
+    final double ptsWidth = compact ? 36.0 : 44.0;
+    final double fontSize = compact ? 11.0 : 14.0;
+    final double headerFontSize = compact ? 10.0 : 13.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Header row
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: compact ? 12.0 : 16.0, vertical: 8.0),
+          child: Row(
+            children: [
+              SizedBox(
+                width: posWidth,
+                child: Text(
+                  AppTranslations.get(widget.lang, 'pos'),
+                  style: TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: headerFontSize,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  AppTranslations.get(widget.lang, 'team'),
+                  style: TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: headerFontSize,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: playedWidth,
+                child: Text(
+                  AppTranslations.get(widget.lang, 'played'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: headerFontSize,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: gdWidth,
+                child: Text(
+                  AppTranslations.get(widget.lang, 'gd'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: headerFontSize,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: ptsWidth,
+                child: Text(
+                  AppTranslations.get(widget.lang, 'pts'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: headerFontSize,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        const Divider(color: AppColors.border, height: 1),
+        // Rows
+        ...List.generate(groupTeams.length, (idx) {
+          final entry = groupTeams[idx];
+          final teamName = AppTranslations.getTeam(widget.lang, entry.teamCode);
+          final isTopTwo = idx < 2;
+          final isUserSupported = widget.supportedTeamCode?.toLowerCase() == entry.teamCode.toLowerCase();
+
+          return Container(
+            decoration: BoxDecoration(
+              color: isUserSupported 
+                  ? AppColors.accent.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              border: isUserSupported
+                  ? const Border(
+                      left: BorderSide(color: AppColors.accent, width: 4),
+                    )
+                  : null,
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 12.0 : 16.0,
+                    vertical: compact ? 8.0 : 12.0,
+                  ),
+                  child: Row(
+                    children: [
+                      // Pos
+                      SizedBox(
+                        width: posWidth,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: compact ? 18.0 : 22.0,
+                            height: compact ? 18.0 : 22.0,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isTopTwo
+                                  ? AppColors.accent.withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${idx + 1}',
+                              style: TextStyle(
+                                color: isTopTwo ? AppColors.accent : AppColors.textMuted,
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSize - 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Flag + Team name
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            WCTeamProfileDialog.show(
+                              context,
+                              entry.teamCode,
+                              widget.lang,
+                            );
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildFlag(entry.teamCode),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  teamName,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: isUserSupported ? AppColors.accent : AppColors.textSecondary,
+                                    fontWeight: isUserSupported ? FontWeight.bold : FontWeight.w600,
+                                    fontSize: fontSize,
+                                  ),
+                                ),
+                              ),
+                              if (isUserSupported) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.star, color: AppColors.accent, size: 12),
+                              ]
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Played
+                      SizedBox(
+                        width: playedWidth,
+                        child: Text(
+                          '${entry.played}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: fontSize,
+                          ),
+                        ),
+                      ),
+                      // GD
+                      SizedBox(
+                        width: gdWidth,
+                        child: Text(
+                          (entry.goalDifference > 0 ? '+' : '') + '${entry.goalDifference}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: entry.goalDifference > 0
+                                ? AppColors.accent
+                                : entry.goalDifference < 0
+                                    ? AppColors.danger
+                                    : AppColors.textMuted,
+                            fontWeight: FontWeight.bold,
+                            fontSize: fontSize,
+                          ),
+                        ),
+                      ),
+                      // Pts
+                      SizedBox(
+                        width: ptsWidth,
+                        child: Text(
+                          '${entry.points}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isUserSupported ? AppColors.accent : AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: fontSize + 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (idx < groupTeams.length - 1)
+                  const Divider(color: AppColors.border, height: 1),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 
@@ -146,6 +358,24 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
       );
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth > 900) {
+      return _buildDesktopGrid(standings, groups, screenWidth);
+    }
+
+    String? favGroup;
+    if (widget.supportedTeamCode != null) {
+      final favCode = widget.supportedTeamCode!.toLowerCase();
+      for (final match in widget.matches) {
+        if (match.group != null && match.group!.isNotEmpty) {
+          if (match.t1.toLowerCase() == favCode || match.t2.toLowerCase() == favCode) {
+            favGroup = match.group;
+            break;
+          }
+        }
+      }
+    }
+
     final selectedGroupTeams = standings[_selectedGroup] ?? [];
 
     return Column(
@@ -159,16 +389,28 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
           child: Row(
             children: groups.map((g) {
               final isSelected = g == _selectedGroup;
+              final isFavGroup = g == favGroup;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: Text(
-                    '${AppTranslations.get(widget.lang, 'group')} $g',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textMuted,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${AppTranslations.get(widget.lang, 'group')} $g',
+                        style: TextStyle(
+                          color: isSelected 
+                              ? Colors.white 
+                              : (isFavGroup ? AppColors.accent : AppColors.textMuted),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      if (isFavGroup) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.star, color: Colors.amber, size: 12),
+                      ],
+                    ],
                   ),
                   selected: isSelected,
                   onSelected: (selected) {
@@ -184,8 +426,10 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: isSelected ? AppColors.accent : AppColors.border,
-                      width: 1.5,
+                      color: isSelected 
+                          ? AppColors.accent 
+                          : (isFavGroup ? Colors.amber.withValues(alpha: 0.6) : AppColors.border),
+                      width: isFavGroup || isSelected ? 2.0 : 1.5,
                     ),
                   ),
                   showCheckmark: false,
@@ -204,211 +448,83 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
             border: Border.all(color: AppColors.border, width: 1.5),
           ),
           clipBehavior: Clip.antiAlias,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 18,
-              horizontalMargin: 20,
-              headingRowColor: WidgetStateProperty.all(AppColors.cardDark),
-              headingRowHeight: 52,
-              dataRowMinHeight: 48,
-              dataRowMaxHeight: 56,
-              columns: [
-                DataColumn(
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'pos'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'team'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  numeric: true,
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'played'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  numeric: true,
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'wins'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  numeric: true,
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'draws'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  numeric: true,
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'losses'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  numeric: true,
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'gd'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  numeric: true,
-                  label: Text(
-                    AppTranslations.get(widget.lang, 'pts'),
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-              rows: List.generate(selectedGroupTeams.length, (idx) {
-                final entry = selectedGroupTeams[idx];
-                final teamName = AppTranslations.getTeam(widget.lang, entry.teamCode);
-                final isTopTwo = idx < 2;
-
-                return DataRow(
-                  cells: [
-                    // Pos
-                    DataCell(
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isTopTwo
-                              ? AppColors.accent.withOpacity(0.15)
-                              : Colors.transparent,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${idx + 1}',
-                          style: TextStyle(
-                            color: isTopTwo ? AppColors.accent : AppColors.textMuted,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Team Name with Flag
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildFlag(entry.teamCode),
-                          const SizedBox(width: 8),
-                          Text(
-                            teamName,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Played
-                    DataCell(
-                      Text(
-                        '${entry.played}',
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                      ),
-                    ),
-                    // W
-                    DataCell(
-                      Text(
-                        '${entry.wins}',
-                        style: const TextStyle(color: AppColors.textDim, fontSize: 13),
-                      ),
-                    ),
-                    // D
-                    DataCell(
-                      Text(
-                        '${entry.draws}',
-                        style: const TextStyle(color: AppColors.textDim, fontSize: 13),
-                      ),
-                    ),
-                    // L
-                    DataCell(
-                      Text(
-                        '${entry.losses}',
-                        style: const TextStyle(color: AppColors.textDim, fontSize: 13),
-                      ),
-                    ),
-                    // GD
-                    DataCell(
-                      Text(
-                        (entry.goalDifference > 0 ? '+' : '') + '${entry.goalDifference}',
-                        style: TextStyle(
-                          color: entry.goalDifference > 0
-                              ? AppColors.accent
-                              : entry.goalDifference < 0
-                                  ? AppColors.danger
-                                  : AppColors.textMuted,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    // PTS
-                    DataCell(
-                      Text(
-                        '${entry.points}',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: _buildMinimalistTable(selectedGroupTeams, compact: false),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDesktopGrid(Map<String, List<GroupEntry>> standings, List<String> groups, double screenWidth) {
+    final crossAxisCount = screenWidth > 1300 ? 3 : 2;
+    return GridView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        mainAxisExtent: 220,
+      ),
+      itemCount: groups.length,
+      itemBuilder: (context, index) {
+        final g = groups[index];
+        final groupTeams = standings[g] ?? [];
+        return _buildGroupCard(g, groupTeams);
+      },
+    );
+  }
+
+  Widget _buildGroupCard(String g, List<GroupEntry> groupTeams) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header: Group Name
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: AppColors.cardDark,
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${AppTranslations.get(widget.lang, 'group')} $g',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.border),
+          // Standings Table
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: _buildMinimalistTable(groupTeams, compact: true),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
+import 'team_flag.dart';
 
 class CalendarViewWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
@@ -51,8 +52,8 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     return '$startLabel - $endLabel';
   }
 
-  Widget _buildFlag(String code) {
-    if (code.length > 2 || code == 'tbd') {
+Widget _buildFlag(String code) {
+    if ((code.length > 2 && code.toLowerCase() != 'sco') || code.toLowerCase() == 'tbd') {
       return Container(
         width: 20,
         height: 14,
@@ -68,20 +69,11 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
         ),
       );
     }
-    final flagCode = code == 'en' ? 'gb-eng' : code;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(2),
-      child: Image.network(
-        'https://flagcdn.com/w40/$flagCode.png',
-        width: 20,
-        height: 14,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: 20,
-          height: 14,
-          color: Colors.grey,
-        ),
-      ),
+    return TeamFlagWidget(
+      code: code,
+      width: 20,
+      height: 14,
+      borderRadius: 2,
     );
   }
 
