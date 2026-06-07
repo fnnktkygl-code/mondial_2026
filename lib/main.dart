@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -63,7 +64,52 @@ class MyApp extends StatelessWidget {
           selectionColor: AppColors.accent,
           selectionHandleColor: AppColors.accent,
         ),
-        fontFamily: 'sans-serif',
+        textTheme: GoogleFonts.interTextTheme(
+          Theme.of(context).textTheme,
+        ).apply(
+          bodyColor: AppColors.textSecondary,
+          displayColor: AppColors.textPrimary,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          centerTitle: false,
+          iconTheme: IconThemeData(color: AppColors.textPrimary),
+          titleTextStyle: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: AppColors.card,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(kCardRadius),
+            side: const BorderSide(color: AppColors.border, width: 1),
+          ),
+          margin: const EdgeInsets.only(bottom: 12),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accent,
+            foregroundColor: AppColors.background,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: AppColors.background,
+          selectedItemColor: AppColors.accent,
+          unselectedItemColor: AppColors.textDim,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+        ),
       ),
       home: const MyHomePage(),
     );
@@ -936,7 +982,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 color: AppColors.card,
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(kCardRadius),
                                 border: Border.all(color: AppColors.border),
                               ),
                               child: Row(
@@ -949,7 +995,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         color: _matchFilter == 'all'
                                             ? AppColors.border
                                             : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(kButtonRadius),
                                       ),
                                       child: Text(
                                         AppTranslations.get(_lang, 'allMatches'),
@@ -971,7 +1017,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         color: _matchFilter == 'alerts'
                                             ? AppColors.border
                                             : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(kButtonRadius),
                                       ),
                                       child: Row(
                                         children: [
@@ -997,7 +1043,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Container(
                               decoration: BoxDecoration(
                                 color: AppColors.card,
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(kCardRadius),
                                 border: Border.all(color: AppColors.border),
                               ),
                               padding: const EdgeInsets.all(4),
@@ -1016,7 +1062,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                       minimumSize: Size.zero,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10)),
+                                          borderRadius: BorderRadius.circular(kButtonRadius)),
                                     ),
                                     onPressed: () => setState(() => _viewMode = 'list'),
                                   ),
@@ -1034,7 +1080,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                       minimumSize: Size.zero,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10)),
+                                          borderRadius: BorderRadius.circular(kButtonRadius)),
                                     ),
                                     onPressed: () => setState(() => _viewMode = 'calendar'),
                                   ),
@@ -1354,7 +1400,7 @@ void _showTestNotificationDialog() {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: AppColors.card,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
               title: Row(
                 children: [
                   const Icon(Icons.notifications_active, color: AppColors.accent),
@@ -1525,7 +1571,7 @@ void _showTestNotificationDialog() {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.border,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             onPressed: () {
@@ -1555,7 +1601,7 @@ void _showTestNotificationDialog() {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.accent,
                               foregroundColor: AppColors.surface,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             onPressed: () {
@@ -1613,7 +1659,7 @@ void _showTestNotificationDialog() {
           builder: (context, setDlgState) {
             return AlertDialog(
               backgroundColor: AppColors.card,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
               title: const Text('Add Goal Event', style: TextStyle(color: Colors.amber)),
               content: SingleChildScrollView(
                 child: Column(
