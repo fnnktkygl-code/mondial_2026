@@ -3,20 +3,27 @@ import 'package:intl/intl.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
+import '../app_constants.dart';
 import 'team_flag.dart';
 
 class CalendarViewWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
   final String lang;
   final bool Function(WorldCupMatch) hasAlert;
+  final bool Function(WorldCupMatch) hasPredicted;
+  final String? Function(WorldCupMatch)? alertType;
   final Function(WorldCupMatch match) onMatchTap;
+  final String? supportedTeamCode;
 
   const CalendarViewWidget({
     super.key,
     required this.matches,
     required this.lang,
     required this.hasAlert,
+    required this.hasPredicted,
+    this.alertType,
     required this.onMatchTap,
+    this.supportedTeamCode,
   });
 
   @override
@@ -26,23 +33,99 @@ class CalendarViewWidget extends StatefulWidget {
 class _CalendarViewWidgetState extends State<CalendarViewWidget> {
   final DateTime _tournamentStart = DateTime.parse('2026-06-08T00:00:00Z').toLocal();
   late DateTime _currentWeekStart;
+  DateTime? _targetMatchDate;
+  late ScrollController _verticalScrollController;
 
   @override
   void initState() {
     super.initState();
-    _currentWeekStart = _tournamentStart;
+    _verticalScrollController = ScrollController();
+    _setInitialWeekToNextMatch();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToFirstMatchOfTargetDay();
+    });
+  }
+
+  @override
+  void dispose() {
+    _verticalScrollController.dispose();
+    super.dispose();
+  }
+
+  void _setInitialWeekToNextMatch() {
+    final now = DateTime.now();
+    if (widget.matches.isEmpty) {
+      _currentWeekStart = _tournamentStart;
+      _targetMatchDate = _tournamentStart;
+      return;
+    }
+
+    WorldCupMatch? nextMatch;
+    try {
+      nextMatch = widget.matches.firstWhere((m) => !m.isPlayed && m.date.isAfter(now));
+    } catch (_) {
+      if (widget.matches.isNotEmpty) {
+        nextMatch = widget.matches.last;
+      }
+    }
+
+    final targetDate = nextMatch != null ? nextMatch.date : _tournamentStart;
+    _targetMatchDate = targetDate;
+
+    final daysSinceMonday = targetDate.weekday - DateTime.monday;
+    _currentWeekStart = DateTime(targetDate.year, targetDate.month, targetDate.day)
+        .subtract(Duration(days: daysSinceMonday));
+  }
+
+  void _scrollToFirstMatchOfTargetDay() {
+    if (_targetMatchDate == null || widget.matches.isEmpty || !_verticalScrollController.hasClients) return;
+
+    final now = DateTime.now();
+    final dayFormat = DateFormat('yyyy-MM-dd');
+    final targetDayStr = dayFormat.format(_targetMatchDate!);
+
+    final targetDayMatches = widget.matches.where((m) => dayFormat.format(m.date) == targetDayStr).toList();
+    if (targetDayMatches.isEmpty) return;
+
+    targetDayMatches.sort((a, b) => a.date.compareTo(b.date));
+    int targetHour = targetDayMatches.first.date.hour;
+
+    try {
+      final relevantMatch = targetDayMatches.firstWhere((m) {
+        final matchEndThreshold = m.date.add(const Duration(minutes: 105));
+        return !m.isPlayed && now.isBefore(matchEndThreshold);
+      });
+      targetHour = relevantMatch.date.hour;
+    } catch (_) {
+      targetHour = targetDayMatches.last.date.hour;
+    }
+
+    const double rowHeight = 110.0;
+    final hoursList = widget.matches.where((m) {
+      final end = _currentWeekStart.add(const Duration(days: 6));
+      return m.date.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) && m.date.isBefore(end.add(const Duration(days: 1)));
+    }).map((m) => m.date.hour).toList();
+
+    final currentMinHour = hoursList.isNotEmpty ? hoursList.reduce((a, b) => a < b ? a : b) - 1 : 10;
+    final int minHourClamped = currentMinHour.clamp(0, 23);
+
+    double scrollOffset = (targetHour - minHourClamped) * rowHeight;
+    final maxScroll = _verticalScrollController.position.maxScrollExtent;
+    scrollOffset = scrollOffset.clamp(0.0, maxScroll);
+
+    _verticalScrollController.animateTo(
+      scrollOffset,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   void _changeWeek(int days) {
     setState(() {
       _currentWeekStart = _currentWeekStart.add(Duration(days: days));
     });
-  }
-
-  void _resetToTournament() {
-    setState(() {
-      _currentWeekStart = _tournamentStart;
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToFirstMatchOfTargetDay());
   }
 
   String _getWeekLabel() {
@@ -52,65 +135,73 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     return '$startLabel - $endLabel';
   }
 
-Widget _buildFlag(String code) {
-    if ((code.length > 2 && code.toLowerCase() != 'sco') || code.toLowerCase() == 'tbd') {
-      return Container(
-        width: 20,
-        height: 14,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(2),
-          border: Border.all(color: AppColors.borderStrong, width: 0.5),
-        ),
-        alignment: Alignment.center,
-        child: const Text(
-          'F',
-          style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
-        ),
-      );
-    }
-    return TeamFlagWidget(
-      code: code,
-      width: 20,
-      height: 14,
-      borderRadius: 2,
+  Widget _buildFlag(String code) {
+    return TeamFlagWidget.flag(
+      code,
+      width: 24,
+      height: 16,
+      borderRadius: 4,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const double rowHeight = 90.0;
-    const double matchDuration = 1.75; // Matches last 1.75 hours roughly (105 mins)
+    final now = DateTime.now();
+    final duration = now.timeZoneOffset;
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60).abs();
+    final sign = duration.isNegative ? '-' : '+';
 
-    // Cache DateFormat instances to prevent repeated instantiation in loops
+    final String localTimeZoneLabel = hours == 0
+        ? 'GMT'
+        : 'GMT$sign${hours.abs()}:${minutes.toString().padLeft(2, '0')}';
+
+    // Label de fuseau horaire traduit pour l'en-tête
+    String tzSubtitle = 'HEURES EN $localTimeZoneLabel';
+    if (widget.lang == 'en') {
+      tzSubtitle = 'ALL TIMES IN $localTimeZoneLabel';
+    } else if (widget.lang == 'es') {
+      tzSubtitle = 'HORAS EN $localTimeZoneLabel';
+    }
+
+    const double rowHeight = 110.0;
+    const double colWidth = 175.0;
+    const double matchDuration = 1.6;
+
     final dayFormat = DateFormat('yyyy-MM-dd');
     final localizedDayFormat = DateFormat('E d MMM', widget.lang);
+    final targetMatchStr = _targetMatchDate != null ? dayFormat.format(_targetMatchDate!) : '';
 
-    // Calculate dates of the visible week (Monday to Sunday)
     final weekDates = List.generate(7, (i) {
       return _currentWeekStart.add(Duration(days: i));
     });
 
-    final weekEnd = _currentWeekStart.add(const Duration(days: 7)).subtract(const Duration(milliseconds: 1));
+    final weekEnd = _currentWeekStart
+        .add(const Duration(days: 7))
+        .subtract(const Duration(milliseconds: 1));
 
-    // Filter matches for the selected week
     final weekMatches = widget.matches.where((m) {
-      return m.date.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) &&
-          m.date.isBefore(weekEnd);
+      return m.date.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) && m.date.isBefore(weekEnd);
     }).toList();
 
-    // Determine hour boundaries to optimize space
     int minHour = 10;
     int maxHour = 22;
     if (weekMatches.isNotEmpty) {
-      final hours = weekMatches.map((m) => m.date.hour).toList();
-      final min = hours.reduce((a, b) => a < b ? a : b) - 1;
-      final max = hours.reduce((a, b) => a > b ? a : b) + 2;
+      final hoursList = weekMatches.map((m) => m.date.hour).toList();
+      final min = hoursList.reduce((a, b) => a < b ? a : b) - 1;
+      final max = hoursList.reduce((a, b) => a > b ? a : b) + 2;
       minHour = min.clamp(0, 23);
       maxHour = max.clamp(0, 23);
     }
     final int hoursCount = maxHour - minHour + 1;
     final double gridHeight = hoursCount * rowHeight;
+
+    double? timelineNowTop;
+    int? timelineNowDayIdx;
+    if (now.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) && now.isBefore(weekEnd)) {
+      timelineNowDayIdx = now.weekday - DateTime.monday;
+      timelineNowTop = ((now.hour - minHour) + (now.minute / 60)) * rowHeight;
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -121,10 +212,10 @@ Widget _buildFlag(String code) {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // Navigation Header
+          // ── Navigation Header (Statique & Information Complète) ──────────
           Container(
             color: AppColors.cardDark,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -137,6 +228,7 @@ Widget _buildFlag(String code) {
                   ),
                 ),
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       _getWeekLabel(),
@@ -145,18 +237,16 @@ Widget _buildFlag(String code) {
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 2),
-                    GestureDetector(
-                      onTap: _resetToTournament,
-                      child: Text(
-                        AppTranslations.get(widget.lang, 'today').toUpperCase(),
-                        style: const TextStyle(
-                          color: AppColors.accent,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
+                    Text(
+                      tzSubtitle,
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 9.5,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ],
@@ -173,252 +263,385 @@ Widget _buildFlag(String code) {
             ),
           ),
 
-          // Scrollable Grid Layout
+          // ── Scrollable Grid ──────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+              controller: _verticalScrollController,
+              scrollDirection: Axis.vertical,
               physics: const BouncingScrollPhysics(),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SizedBox(
-                  width: 960, // Width for columns
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Hours label column (Left sticky replacement)
-                      Container(
-                        width: 50,
-                        color: AppColors.surface.withOpacity(0.5),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 48), // Match Day header gap
-                            SizedBox(
-                              height: gridHeight,
-                              child: Stack(
-                                children: List.generate(hoursCount, (idx) {
-                                  final hr = minHour + idx;
-                                  return Positioned(
-                                    top: idx * rowHeight,
-                                    right: 6,
-                                    child: Text(
-                                      '${hr.toString().padLeft(2, '0')}:00',
-                                      style: const TextStyle(
-                                        color: AppColors.textDim,
-                                        fontFamily: 'monospace',
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Hour labels (Colonne fixe gauche) ──────────────────
+                  Container(
+                    width: 65,
+                    color: AppColors.surface,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 48,
+                          width: 65,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: AppColors.cardDark,
+                            border: Border(
+                              bottom: BorderSide(color: AppColors.border, width: 1.5),
+                              right: BorderSide(color: AppColors.border, width: 1.5),
                             ),
-                          ],
+                          ),
+                          child: const Icon(
+                            Icons.access_time_rounded,
+                            color: AppColors.textDim,
+                            size: 16,
+                          ),
                         ),
-                      ),
-
-                      // Day columns
-                      ...List.generate(7, (dayIdx) {
-                        final date = weekDates[dayIdx];
-                        final dateStr = dayFormat.format(date);
-                        final localizedDayLabel = localizedDayFormat.format(date);
-
-                        // Day's matches
-                        final dayMatches = weekMatches.where((m) {
-                          return dayFormat.format(m.date) == dateStr;
-                        }).toList();
-
-                          return Expanded(
-                            child: Container(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                right: BorderSide(color: AppColors.border, width: 1),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                // Day Header
-                                Container(
-                                  height: 48,
-                                  width: double.infinity,
-                                  color: dayMatches.isNotEmpty
-                                      ? AppColors.border.withOpacity(0.4)
-                                      : Colors.transparent,
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    localizedDayLabel,
-                                    style: TextStyle(
-                                      color: dayMatches.isNotEmpty
-                                          ? AppColors.accent
-                                          : AppColors.textDim,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
+                        SizedBox(
+                          height: gridHeight,
+                          width: 65,
+                          child: Stack(
+                            children: List.generate(hoursCount, (idx) {
+                              final hr = minHour + idx;
+                              return Positioned(
+                                top: idx * rowHeight + 8,
+                                right: 10,
+                                child: Text(
+                                  '${hr.toString().padLeft(2, '0')}:00',
+                                  style: const TextStyle(
+                                    color: AppColors.textDim,
+                                    fontFamily: 'monospace',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                                // Hours Grid Stack
-                                SizedBox(
-                                  height: gridHeight,
-                                  child: Stack(
-                                    children: [
-                                      // Hour separator lines
-                                      ...List.generate(hoursCount, (idx) {
-                                        return Positioned(
-                                          top: idx * rowHeight,
-                                          left: 0,
-                                          right: 0,
-                                          child: Container(
-                                            height: rowHeight,
-                                            decoration: const BoxDecoration(
-                                              border: Border(
-                                                bottom: BorderSide(
-                                                  color: AppColors.border,
-                                                  width: 0.5,
-                                                ),
+                  // ── Les colonnes de jours (Défilement horizontal) ─────────────────
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...List.generate(7, (dayIdx) {
+                            final date = weekDates[dayIdx];
+                            final dateStr = dayFormat.format(date);
+                            final localizedDayLabel = localizedDayFormat.format(date);
+                            final isTargetDay = dateStr == targetMatchStr;
+
+                            final dayMatches = widget.matches.where((m) => dayFormat.format(m.date) == dateStr).toList();
+
+                            return Container(
+                              width: colWidth,
+                              decoration: BoxDecoration(
+                                color: isTargetDay ? AppColors.accent.withOpacity(0.02) : Colors.transparent,
+                                border: Border(
+                                  right: BorderSide(
+                                    color: isTargetDay ? AppColors.accent.withOpacity(0.3) : AppColors.border,
+                                    width: isTargetDay ? 1.5 : 1,
+                                  ),
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Day header
+                                  Container(
+                                    height: 48,
+                                    width: colWidth,
+                                    decoration: BoxDecoration(
+                                      color: isTargetDay
+                                          ? AppColors.accent.withOpacity(0.08)
+                                          : (dayMatches.isNotEmpty ? AppColors.border.withOpacity(0.2) : Colors.transparent),
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: isTargetDay ? AppColors.accent : AppColors.border,
+                                          width: isTargetDay ? 2 : 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      localizedDayLabel,
+                                      style: TextStyle(
+                                        color: isTargetDay ? AppColors.accent : (dayMatches.isNotEmpty ? Colors.white : AppColors.textDim),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Grid + match blocks
+                                  SizedBox(
+                                    height: gridHeight,
+                                    width: colWidth,
+                                    child: Stack(
+                                      children: [
+                                        ...List.generate(hoursCount, (idx) {
+                                          return Positioned(
+                                            top: idx * rowHeight,
+                                            left: 0,
+                                            right: 0,
+                                            child: Container(
+                                              height: rowHeight,
+                                              decoration: const BoxDecoration(
+                                                border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      }),
+                                          );
+                                        }),
 
-                                      // Match Blocks
-                                      ...dayMatches.map((m) {
-                                        final double topOffset =
-                                            ((m.date.hour - minHour) +
-                                                    (m.date.minute / 60)) *
-                                                rowHeight;
-                                        final double blockHeight =
-                                            matchDuration * rowHeight;
+                                        ...dayMatches.map((m) {
+                                          final topOffset = ((m.date.hour - minHour) + (m.date.minute / 60)) * rowHeight;
+                                          final blockHeight = matchDuration * rowHeight;
+                                          final simultaneous = dayMatches.where((x) => x.date.hour == m.date.hour && x.date.minute == m.date.minute).toList();
+                                          final int totalSimultaneous = simultaneous.length;
+                                          final colIndex = simultaneous.indexWhere((x) => x.id == m.id);
 
-                                        // Resolve collision formatting
-                                        final simultaneous = dayMatches
-                                            .where((x) =>
-                                                x.date.hour == m.date.hour &&
-                                                x.date.minute == m.date.minute)
-                                            .toList();
-                                        final isCollision = simultaneous.length > 1;
-                                        final colIndex =
-                                            simultaneous.indexWhere((x) => x.id == m.id);
+                                          final widthFactor = (0.94 / totalSimultaneous);
+                                          final leftMargin = 0.03 + (colIndex * widthFactor);
 
-                                        final widthFactor = isCollision ? 0.48 : 0.94;
-                                        final leftMargin = isCollision
-                                            ? (colIndex == 0 ? 0.02 : 0.5)
-                                            : 0.03;
+                                          final hasAlert = widget.hasAlert(m);
+                                          final hasPredicted = widget.hasPredicted(m);
 
-                                        final hasAlert = widget.hasAlert(m);
+                                          // Même logique LIVE que MatchCard (limité à 105 min)
+                                          final live = !m.isPlayed &&
+                                              now.isAfter(m.date) &&
+                                              now.isBefore(m.date.add(const Duration(minutes: 105)));
 
-                                        return Positioned(
-                                          top: topOffset,
-                                          left: 130 * leftMargin,
-                                          width: 130 * widthFactor,
-                                          height: blockHeight - 4,
-                                          child: GestureDetector(
-                                            onTap: () => widget.onMatchTap(m),
-                                            child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: hasAlert
-                                                    ? const Color(0xFF0F2D21)
-                                                    : AppColors.border,
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: hasAlert
-                                                      ? AppColors.accent
-                                                      : AppColors.borderMid,
-                                                  width: 1.5,
-                                                ),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black.withOpacity(0.15),
-                                                    blurRadius: 4,
-                                                    offset: const Offset(0, 2),
+                                          // Mise en évidence équipe supportée — identique à MatchCard
+                                          final isUserTeam = widget.supportedTeamCode != null &&
+                                              (m.t1.toLowerCase() == widget.supportedTeamCode!.toLowerCase() ||
+                                                  m.t2.toLowerCase() == widget.supportedTeamCode!.toLowerCase());
+
+                                          // Phase — identique à MatchCard
+                                          final stageText = m.isKnockout
+                                              ? (m.stage ?? '')
+                                              : '${AppTranslations.get(widget.lang, 'group')} ${m.group ?? ''}';
+
+                                          // Icône pronostic avec états de résultat — identique à MatchCard
+                                          final IconData predIcon;
+                                          final Color predColor;
+                                          final String tooltipMessage;
+                                          if (m.isPlayed && hasPredicted) {
+                                            final predResult = widget.alertType?.call(m);
+                                            if (predResult == 'exact') {
+                                              predIcon = Icons.star_rounded;
+                                              predColor = Colors.amber;
+                                              tooltipMessage = widget.lang == 'fr' ? 'Score exact !' : (widget.lang == 'es' ? '¡Marcador exacto!' : 'Exact score!');
+                                            } else if (predResult == 'winner') {
+                                              predIcon = Icons.check_circle_rounded;
+                                              predColor = Colors.greenAccent;
+                                              tooltipMessage = widget.lang == 'fr' ? 'Bon vainqueur' : (widget.lang == 'es' ? 'Ganador correcto' : 'Correct winner');
+                                            } else {
+                                              predIcon = Icons.cancel_rounded;
+                                              predColor = Colors.redAccent;
+                                              tooltipMessage = widget.lang == 'fr' ? 'Pronostic raté' : (widget.lang == 'es' ? 'Pronóstico fallado' : 'Wrong prediction');
+                                            }
+                                          } else if (hasPredicted) {
+                                            predIcon = Icons.check_circle_rounded;
+                                            predColor = Colors.greenAccent;
+                                            tooltipMessage = widget.lang == 'fr' ? 'Pronostic enregistré' : (widget.lang == 'es' ? 'Pronóstico guardado' : 'Prediction saved');
+                                          } else {
+                                            predIcon = Icons.pending_actions_rounded;
+                                            predColor = Colors.orangeAccent;
+                                            tooltipMessage = widget.lang == 'fr' ? 'Pronostic en attente' : (widget.lang == 'es' ? 'Pronóstico pendiente' : 'Prediction pending');
+                                          }
+
+                                          // Couleurs du bloc — isUserTeam prioritaire, puis hasAlert, puis défaut
+                                          final blockColor = isUserTeam
+                                              ? AppColors.accent.withOpacity(0.06)
+                                              : (hasAlert ? const Color(0xFF0F2D21) : AppColors.border);
+                                          final borderColor = live
+                                              ? AppColors.accent
+                                              : (isUserTeam
+                                              ? AppColors.accent
+                                              : (hasAlert ? AppColors.accent : AppColors.borderMid));
+                                          final borderWidth = (live || isUserTeam) ? 2.0 : 1.5;
+
+                                          return Positioned(
+                                            top: topOffset + 2,
+                                            left: colWidth * leftMargin,
+                                            width: colWidth * (widthFactor - 0.02),
+                                            height: blockHeight - 4,
+                                            child: GestureDetector(
+                                              onTap: () => widget.onMatchTap(m),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: blockColor,
+                                                  borderRadius: BorderRadius.circular(14),
+                                                  border: Border.all(
+                                                    color: borderColor,
+                                                    width: borderWidth,
                                                   ),
-                                                ],
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.spaceBetween,
-                                                    children: [
+                                                ),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  children: [
+                                                    // Header : heure (ou LIVE) + icônes
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        if (live)
+                                                          const Text(
+                                                            '⚽ LIVE',
+                                                            style: TextStyle(
+                                                              color: AppColors.accent,
+                                                              fontSize: 9,
+                                                              fontWeight: FontWeight.w900,
+                                                              letterSpacing: 0.8,
+                                                            ),
+                                                          )
+                                                        else
+                                                          Text(
+                                                            m.getFormattedTime(),
+                                                            style: const TextStyle(
+                                                              color: AppColors.textMuted,
+                                                              fontSize: 10,
+                                                              fontFamily: 'monospace',
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                        Row(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          children: [
+                                                            Tooltip(
+                                                              message: tooltipMessage,
+                                                              triggerMode: TooltipTriggerMode.tap,
+                                                              preferBelow: false,
+                                                              child: Icon(predIcon, color: predColor, size: 12),
+                                                            ),
+                                                            if (hasAlert) ...[
+                                                              const SizedBox(width: 4),
+                                                              const Icon(Icons.notifications_active, color: AppColors.accent, size: 10),
+                                                            ],
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+
+                                                    // Phase (groupe ou knockout)
+                                                    if (stageText.isNotEmpty)
                                                       Text(
-                                                        m.getFormattedTime(),
+                                                        stageText,
                                                         style: const TextStyle(
                                                           color: AppColors.textMuted,
                                                           fontSize: 9,
-                                                          fontFamily: 'monospace',
-                                                          fontWeight: FontWeight.bold,
+                                                          fontWeight: FontWeight.w600,
                                                         ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        textAlign: TextAlign.center,
                                                       ),
-                                                      if (hasAlert)
-                                                        const Icon(
-                                                          Icons.notifications_active,
-                                                          color: AppColors.accent,
-                                                          size: 10,
-                                                        ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  // Team 1
-                                                  Row(
-                                                    children: [
-                                                      _buildFlag(m.t1),
-                                                      const SizedBox(width: 4),
-                                                      Expanded(
-                                                        child: Text(
-                                                          AppTranslations.getTeam(
-                                                              widget.lang, m.t1),
-                                                          style: const TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 10,
-                                                          ),
+
+                                                    // Équipe 1
+                                                    Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        _buildFlag(m.t1),
+                                                        const SizedBox(height: 2),
+                                                        Text(
+                                                          AppTranslations.getTeam(widget.lang, m.t1),
+                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, height: 1.1),
                                                           maxLines: 1,
                                                           overflow: TextOverflow.ellipsis,
+                                                          textAlign: TextAlign.center,
                                                         ),
+                                                      ],
+                                                    ),
+
+                                                    // Score ou VS
+                                                    m.isPlayed
+                                                        ? Text(
+                                                      '${m.t1Score} - ${m.t2Score}',
+                                                      style: const TextStyle(
+                                                        color: AppColors.accent,
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: 12,
                                                       ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  // Team 2
-                                                  Row(
-                                                    children: [
-                                                      _buildFlag(m.t2),
-                                                      const SizedBox(width: 4),
-                                                      Expanded(
-                                                        child: Text(
-                                                          AppTranslations.getTeam(
-                                                              widget.lang, m.t2),
-                                                          style: const TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 10,
-                                                          ),
+                                                      textAlign: TextAlign.center,
+                                                    )
+                                                        : Text(
+                                                      'VS',
+                                                      style: TextStyle(
+                                                        color: AppColors.accent.withOpacity(0.5),
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: 8.5,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+
+                                                    // Équipe 2
+                                                    Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        _buildFlag(m.t2),
+                                                        const SizedBox(height: 2),
+                                                        Text(
+                                                          AppTranslations.getTeam(widget.lang, m.t2),
+                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, height: 1.1),
                                                           maxLines: 1,
                                                           overflow: TextOverflow.ellipsis,
+                                                          textAlign: TextAlign.center,
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
+                                          );
+                                        }),
+
+                                        if (timelineNowTop != null && timelineNowDayIdx == dayIdx)
+                                          Positioned(
+                                            top: timelineNowTop,
+                                            left: 0,
+                                            right: 0,
+                                            child: Stack(
+                                              clipBehavior: Clip.none,
+                                              children: [
+                                                Container(
+                                                  height: 2,
+                                                  color: Colors.redAccent,
+                                                ),
+                                                Positioned(
+                                                  top: -4,
+                                                  left: -3,
+                                                  child: Container(
+                                                    width: 10,
+                                                    height: 10,
+                                                    decoration: const BoxDecoration(
+                                                      color: Colors.redAccent,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        );
-                                      }).toList(),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      });
-                    })(),
-                    ],
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),

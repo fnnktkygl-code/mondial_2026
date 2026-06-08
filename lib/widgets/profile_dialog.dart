@@ -46,7 +46,6 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   String _avatar = '';
   bool _isSaving = false;
   bool _isHidden = false;
-  List<String> _scorerSuggestions = [];
   final FocusNode _scorerFocusNode = FocusNode();
   final FocusNode _assisterFocusNode = FocusNode();
 
@@ -80,8 +79,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           title: Text(AppTranslations.get(widget.lang, 'resetProfile') ?? 'Reset Profile', style: const TextStyle(color: Colors.white)),
           content: Text(
             widget.lang == 'fr'
-            ? 'Êtes-vous sûr de vouloir réinitialiser toutes vos prédictions ? Les matchs déjà joués ne pourront pas être pronostiqués de nouveau et vous perdrez tous vos points.'
-            : 'Are you sure you want to reset all your predictions? Played matches cannot be predicted again, and you will lose all points.',
+                ? 'Êtes-vous sûr de vouloir réinitialiser toutes vos prédictions ? Les matchs déjà joués ne pourront pas être pronostiqués de nouveau et vous perdrez tous vos points.'
+                : 'Are you sure you want to reset all your predictions? Played matches cannot be predicted again, and you will lose all points.',
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -100,16 +99,26 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     );
 
     if (confirmed == true) {
+      print("[DEBUG RESET] Début du nettoyage du profil...");
       widget.userPreds.matchPredictions.clear();
       widget.userPreds.championCode = null;
       widget.userPreds.goldenBootPlayer = null;
       widget.userPreds.goldenBootWinner = null;
+      widget.userPreds.topAssisterPlayer = null;
       widget.userPreds.boosterMatchId = null;
+      widget.userPreds.supportedTeam = null;
       await PredictionService.savePredictionData(widget.userPreds);
+
+      setState(() {
+        _championCode = null;
+        _supportedTeam = null;
+        _scorerController.clear();
+        _assisterController.clear();
+      });
 
       await WCFirebaseService.syncUserProfile(
         username: widget.userPreds.username,
-        supportedTeam: widget.userPreds.supportedTeam,
+        supportedTeam: null,
         points: 0,
         streak: 0,
         guruCount: 0,
@@ -118,7 +127,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       );
 
       if (mounted) {
+        widget.onSupportedTeamChanged(null);
         widget.onSaved();
+        print("[DEBUG RESET] Profil réinitialisé localement et synchronisé sur Firebase.");
         Navigator.of(context).pop();
       }
     }
@@ -133,8 +144,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           title: Text(AppTranslations.get(widget.lang, 'deleteProfile') ?? 'Delete Profile', style: const TextStyle(color: Colors.white)),
           content: Text(
             widget.lang == 'fr'
-            ? 'Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.'
-            : 'Are you sure you want to permanently delete your account? This action cannot be undone.',
+                ? 'Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.'
+                : 'Are you sure you want to permanently delete your account? This action cannot be undone.',
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -153,19 +164,32 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     );
 
     if (confirmed == true) {
+      print("[DEBUG DELETE] Début de suppression du compte...");
       widget.userPreds.matchPredictions.clear();
       widget.userPreds.championCode = null;
       widget.userPreds.goldenBootPlayer = null;
       widget.userPreds.goldenBootWinner = null;
+      widget.userPreds.topAssisterPlayer = null;
       widget.userPreds.boosterMatchId = null;
       widget.userPreds.username = '';
       widget.userPreds.avatar = '';
+      widget.userPreds.supportedTeam = null;
       await PredictionService.savePredictionData(widget.userPreds);
+
+      setState(() {
+        _championCode = null;
+        _supportedTeam = null;
+        _nameController.clear();
+        _scorerController.clear();
+        _assisterController.clear();
+      });
 
       await WCFirebaseService.deleteUserProfile();
 
       if (mounted) {
+        widget.onSupportedTeamChanged(null);
         widget.onSaved();
+        print("[DEBUG DELETE] Compte supprimé et nettoyé.");
         Navigator.of(context).pop();
       }
     }
@@ -224,15 +248,13 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     }
 
     if (assetPath != null) {
-      final Widget img = Image.asset(
+      return Image.asset(
         assetPath,
         width: 16,
         height: 16,
         fit: BoxFit.contain,
         errorBuilder: (context, err, stack) => Icon(fallbackIcon, color: fallbackColor, size: 12),
       );
-
-      return img;
     }
 
     return Icon(fallbackIcon, color: fallbackColor, size: 12);
@@ -286,13 +308,30 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   }
 
   List<String> _getSortedTeams() {
-    final teams = WCTeamProfileService.allTeams;
-    return teams.toList()
+    final Set<String> qualifiedCodes = {};
+    for (final m in widget.matches) {
+      bool isValidCountryCode(String code) {
+        final c = code.toLowerCase();
+        if (c == 'tbd') return false;
+        if (c.contains(RegExp(r'[0-9]'))) return false;
+        if ((c.startsWith('w') || c.startsWith('l')) && c.length > 3) return false;
+        return true;
+      }
+
+      if (isValidCountryCode(m.t1)) qualifiedCodes.add(m.t1.toLowerCase());
+      if (isValidCountryCode(m.t2)) qualifiedCodes.add(m.t2.toLowerCase());
+    }
+
+    final resultList = qualifiedCodes.toList()
       ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
           .compareTo(AppTranslations.getTeam(widget.lang, b)));
+
+    print("[DEBUG TEAMS] _getSortedTeams généré avec succès. Nombre de pays qualifiés détectés : ${resultList.length}");
+    return resultList;
   }
 
   Future<void> _confirmChampionSelection(String selectedCode) async {
+    print("[DEBUG CONFIRM] Ouverture du dialogue de confirmation pour le code pays : $selectedCode");
     final teamName = AppTranslations.getTeam(widget.lang, selectedCode);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -327,14 +366,20 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () {
+                print("[DEBUG CONFIRM] Clic sur Annuler.");
+                Navigator.of(context).pop(false);
+              },
               child: Text(
                 AppTranslations.get(widget.lang, 'cancel'),
                 style: const TextStyle(color: AppColors.textDim),
               ),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () {
+                print("[DEBUG CONFIRM] Clic sur Confirmer.");
+                Navigator.of(context).pop(true);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.black,
@@ -350,16 +395,22 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       },
     );
 
+    print("[DEBUG CONFIRM] Fenêtre fermée. Résultat de la confirmation (confirmed) : $confirmed");
+
     if (!mounted) return;
 
     if (confirmed == true) {
       setState(() {
         _championCode = selectedCode;
+        print("[DEBUG STATE] _championCode mis à jour localement avec succès : $_championCode");
       });
     }
   }
 
   Future<void> _saveProfile() async {
+    FocusScope.of(context).unfocus();
+    print("[DEBUG SAVE] Bouton global Enregistrer cliqué.");
+
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       widget.showSnackBar(widget.lang == 'fr' ? 'Le pseudo ne peut pas être vide' : 'Nickname cannot be empty');
@@ -372,17 +423,12 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final assisterInput = _assisterController.text.trim();
     final bool isNewAssister = widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty;
 
-    // Validate that the player is in the official FIFA list
     if (isNewScorer && !kWC2026Players.contains(scorerInput)) {
-      widget.showSnackBar(widget.lang == 'fr'
-          ? 'Buteur introuvable dans la liste officielle FIFA.'
-          : 'Scorer not found in the official FIFA list.');
+      widget.showSnackBar(widget.lang == 'fr' ? 'Buteur introuvable dans la liste officielle.' : 'Scorer not found in the official list.');
       return;
     }
     if (isNewAssister && !kWC2026Players.contains(assisterInput)) {
-      widget.showSnackBar(widget.lang == 'fr'
-          ? 'Passeur introuvable dans la liste officielle FIFA.'
-          : 'Assister not found in the official FIFA list.');
+      widget.showSnackBar(widget.lang == 'fr' ? 'Passeur introuvable dans la liste officielle.' : 'Assister not found in the official list.');
       return;
     }
 
@@ -451,12 +497,14 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         widget.userPreds.topAssisterPredictedAt = DateTime.now();
       }
 
+      print("[DEBUG SAVE] Sauvegarde locale JSON via PredictionService...");
       await PredictionService.savePredictionData(widget.userPreds);
 
       final totalPoints = PredictionService.calculateTotalPoints(widget.userPreds, widget.matches);
       final streak = PredictionService.calculateActiveStreak(widget.userPreds, widget.matches);
       final guruCount = PredictionService.calculateExactGuessesCount(widget.userPreds, widget.matches);
 
+      print("[DEBUG SAVE] Envoi et synchronisation Firestore en cours...");
       await WCFirebaseService.syncUserProfile(
         username: name,
         supportedTeam: _supportedTeam,
@@ -472,8 +520,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       widget.onSupportedTeamChanged(_supportedTeam);
       widget.onSaved();
       widget.showSnackBar(AppTranslations.get(widget.lang, 'saveSuccess'));
+      print("[DEBUG SAVE] Sauvegarde terminée avec succès, fermeture de la boîte de dialogue.");
       Navigator.of(context).pop();
     } catch (e) {
+      print("[DEBUG SAVE ERROR] Échec lors de la sauvegarde : $e");
       widget.showSnackBar('Error saving profile: $e');
     } finally {
       if (mounted) {
@@ -486,7 +536,6 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final sortedTeams = _getSortedTeams();
     final potentialChampPts = PredictionService.getPotentialChampionPoints(DateTime.now(), widget.matches);
     final potentialScorerPts = PredictionService.getPotentialGoldenBootPoints(DateTime.now(), widget.matches);
     final potentialAssisterPts = PredictionService.getPotentialTopAssisterPoints(DateTime.now(), widget.matches);
@@ -516,11 +565,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 children: [
                   Text(
                     AppTranslations.get(widget.lang, 'profileTitle'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -532,13 +577,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
               const Divider(color: AppColors.border, height: 24),
 
               Text(
-                widget.lang == 'fr'
-                    ? 'Avatar'
-                    : (widget.lang == 'es' ? 'Avatar' : 'Avatar'),
-                style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold),
+                widget.lang == 'fr' ? 'Avatar' : 'Avatar',
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
 
@@ -585,14 +625,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.accent.withValues(alpha: 0.15)
-                              : AppColors.surface,
+                          color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : AppColors.surface,
                           borderRadius: BorderRadius.circular(kCardRadius),
-                          border: Border.all(
-                            color: isSelected ? AppColors.accent : AppColors.border,
-                            width: isSelected ? 2 : 1,
-                          ),
+                          border: Border.all(color: isSelected ? AppColors.accent : AppColors.border, width: isSelected ? 2 : 1),
                         ),
                         alignment: Alignment.center,
                         clipBehavior: Clip.antiAlias,
@@ -627,9 +662,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       child: Text(
                         widget.lang == 'fr'
                             ? '⚠️ Attention : Vainqueur et Meilleur Buteur sont définitifs après validation. Vous pouvez attendre, mais vos points potentiels diminuent avec le temps (100% avant le 1er match, puis 80% en poules, tombant à 0% en demi-finales).'
-                            : (widget.lang == 'es'
-                            ? '⚠️ Atención: El Ganador y el Máximo Goleador son definitivos una vez guardados. Puedes enviarlos más tarde, pero los puntos potenciales disminuyen con el tiempo (100% antes del partido 1, 80% en grupos, decayendo al 0% en semifinales).'
-                            : '⚠️ Warning: Winner and Top Scorer are locked once saved. You can submit them later, but potential points decrease over time (100% before match 1, 80% in groups, decaying to 0% in semi-finals).'),
+                            : '⚠️ Warning: Winner and Top Scorer are locked once saved. You can submit them later, but potential points decrease over time (100% before match 1, 80% in groups, decaying to 0% in semi-finals).',
                         style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.4),
                       ),
                     ),
@@ -651,14 +684,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   hintText: widget.lang == 'fr' ? 'Entrez votre pseudo...' : 'Enter your nickname...',
                   hintStyle: const TextStyle(color: AppColors.textDim),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(kButtonRadius),
-                    borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(kButtonRadius),
-                    borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
-                  ),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -671,47 +698,47 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () {
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        backgroundColor: AppColors.surface,
+                        side: const BorderSide(color: AppColors.border, width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+                      ),
+                      onPressed: () {
+                        print("[DEBUG BUTTON] Clic sur le bouton de sélection de l'Équipe Favorite.");
                         TeamSelectorBottomSheet.show(
                           context: context,
                           lang: widget.lang,
                           title: AppTranslations.get(widget.lang, 'chooseTeam'),
                           selectedTeamCode: _supportedTeam,
-                          teamCodes: sortedTeams,
+                          teamCodes: _getSortedTeams(),
                           onTeamSelected: (code) {
+                            print("[DEBUG BOTTOMSHEET] Équipe Favorite choisie dans le menu déroulant : $code");
                             setState(() {
                               _supportedTeam = code;
                             });
                           },
                         );
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(kButtonRadius),
-                          border: Border.all(color: AppColors.border, width: 1.5),
-                        ),
-                        child: Row(
-                          children: [
-                            if (_supportedTeam != null) ...[
-                              _buildFlag(_supportedTeam!),
-                              const SizedBox(width: 12),
-                              Text(
-                                AppTranslations.getTeam(widget.lang, _supportedTeam!),
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ] else ...[
-                              Text(
-                                AppTranslations.get(widget.lang, 'chooseTeam'),
-                                style: const TextStyle(color: AppColors.textDim, fontSize: 16),
-                              ),
-                            ],
-                            const Spacer(),
-                            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textDim, size: 16),
+                      child: Row(
+                        children: [
+                          if (_supportedTeam != null) ...[
+                            _buildFlag(_supportedTeam!),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppTranslations.getTeam(widget.lang, _supportedTeam!),
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ] else ...[
+                            Text(
+                              AppTranslations.get(widget.lang, 'chooseTeam'),
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 16),
+                            ),
                           ],
-                        ),
+                          const Spacer(),
+                          const Icon(Icons.arrow_drop_down, color: AppColors.textDim),
+                        ],
                       ),
                     ),
                   ),
@@ -775,50 +802,47 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   ],
                 ),
               )
-                  : GestureDetector(
-                      onTap: () {
-                        TeamSelectorBottomSheet.show(
-                          context: context,
-                          lang: widget.lang,
-                          title: AppTranslations.get(widget.lang, 'selectWinner'),
-                          selectedTeamCode: _championCode,
-                          teamCodes: sortedTeams,
-                          onTeamSelected: (code) {
-                            _confirmChampionSelection(code);
-                          },
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(kButtonRadius),
-                          border: Border.all(
-                            color: _championCode != null ? AppColors.accent.withValues(alpha: 0.5) : AppColors.border,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            if (_championCode != null) ...[
-                              _buildFlag(_championCode!),
-                              const SizedBox(width: 12),
-                              Text(
-                                AppTranslations.getTeam(widget.lang, _championCode!),
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ] else ...[
-                              Text(
-                                AppTranslations.get(widget.lang, 'selectWinner'),
-                                style: const TextStyle(color: AppColors.textDim, fontSize: 16),
-                              ),
-                            ],
-                            const Spacer(),
-                            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textDim, size: 16),
-                          ],
-                        ),
-                      ),
-                    ),
+                  : OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  backgroundColor: AppColors.surface,
+                  side: BorderSide(color: _championCode != null ? AppColors.accent : AppColors.border, width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+                ),
+                onPressed: () {
+                  print("[DEBUG BUTTON] Clic détecté sur le bouton du Vainqueur du tournoi.");
+                  TeamSelectorBottomSheet.show(
+                    context: context,
+                    lang: widget.lang,
+                    title: AppTranslations.get(widget.lang, 'selectWinner'),
+                    selectedTeamCode: _championCode,
+                    teamCodes: _getSortedTeams(),
+                    onTeamSelected: (code) {
+                      print("[DEBUG BOTTOMSHEET] Équipe gagnante sélectionnée dans la liste : $code");
+                      // Introduction d'un délai pour laisser le menu se fermer proprement
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        print("[DEBUG DELAY] Fin du délai d'attente de fermeture, appel du dialogue de confirmation.");
+                        _confirmChampionSelection(code);
+                      });
+                    },
+                  );
+                },
+                child: Row(
+                  children: [
+                    if (_championCode != null) ...[
+                      _buildFlag(_championCode!),
+                      const SizedBox(width: 12),
+                      Text(AppTranslations.getTeam(widget.lang, _championCode!),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ] else ...[
+                      Text(AppTranslations.get(widget.lang, 'selectWinner'),
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 16)),
+                    ],
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down, color: AppColors.textDim),
+                  ],
+                ),
+              ),
 
               if (_championCode != null) ...[
                 const SizedBox(height: 8),
@@ -830,7 +854,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       child: Text(
                         widget.lang == 'fr'
                             ? 'Ce choix sera définitif après enregistrement.'
-                            : (widget.lang == 'es' ? 'Esta elección será definitiva después de guardar.' : 'This choice will be final after saving.'),
+                            : 'This choice will be final after saving.',
                         style: const TextStyle(color: AppColors.warning, fontSize: 11),
                       ),
                     ),
@@ -840,7 +864,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
               const SizedBox(height: 20),
               Text(
-                (widget.lang == 'fr' ? 'Meilleur Buteur' : (widget.lang == 'es' ? 'Máximo Goleador' : 'Golden Boot Scorer')) +
+                (widget.lang == 'fr' ? 'Meilleur Buteur' : 'Golden Boot Scorer') +
                     (widget.userPreds.goldenBootPlayer != null
                         ? ' (+$lockedScorerPts pts max)'
                         : ' (Actuel : +$potentialScorerPts pts max)'),
@@ -913,14 +937,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                           hintText: widget.lang == 'fr' ? 'Rechercher le buteur...' : 'Search scorer...',
                           prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(kButtonRadius),
-                            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(kButtonRadius),
-                            borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
-                          ),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
                         ),
                       );
                     },
@@ -942,10 +960,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                                 return ListTile(
                                   dense: true,
                                   leading: const Icon(Icons.sports_soccer, color: AppColors.accent, size: 16),
-                                  title: Text(
-                                    option,
-                                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                                  ),
+                                  title: Text(option, style: const TextStyle(color: Colors.white, fontSize: 13)),
                                   onTap: () => onSelected(option),
                                 );
                               },
@@ -1096,15 +1111,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   elevation: 0,
                 ),
                 child: _isSaving
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.0),
-                )
-                    : Text(
-                  AppTranslations.get(widget.lang, 'save'),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.0))
+                    : Text(AppTranslations.get(widget.lang, 'save'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               ),
             ],
           ),
@@ -1158,16 +1166,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       decoration: BoxDecoration(
                         color: isThis ? AppColors.accent.withValues(alpha: 0.1) : AppColors.surface,
                         borderRadius: BorderRadius.circular(kButtonRadius),
-                        border: Border.all(
-                          color: isThis ? AppColors.accent : AppColors.border,
-                          width: 1.5,
-                        ),
+                        border: Border.all(color: isThis ? AppColors.accent : AppColors.border, width: 1.5),
                       ),
-                      child: Icon(
-                        isPlaying ? Icons.pause_rounded : Icons.music_note,
-                        color: isThis ? AppColors.accent : AppColors.textMuted,
-                        size: 26,
-                      ),
+                      child: Icon(isPlaying ? Icons.pause_rounded : Icons.music_note, color: isThis ? AppColors.accent : AppColors.textMuted, size: 26),
                     ),
                   ),
                 );

@@ -208,8 +208,8 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                   width: isPlayingThis ? 2.0 : 1.5,
                                 ),
                               ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
+                              child: GestureDetector( // Utilisation de GestureDetector pour une meilleure portée
+                                behavior: HitTestBehavior.opaque, // IMPORTANT : intercepte tout le rectangle
                                 onTap: () => _audioService.playAnthem(code),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12),
