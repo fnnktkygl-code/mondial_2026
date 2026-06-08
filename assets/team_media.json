@@ -6,19 +6,28 @@
   },
   "de": {
     "profile_url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/germany-team-profile-history",
-    "image_url": null
+    "media_url": null,
+    "image_url": "assets/team_profile_preview/de_preview.png"
   },
   "us": {
     "profile_url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/usa-team-profile-history",
-    "image_url": null
+    "media_url": null,
+    "image_url": "assets/team_profile_preview/us_preview.png"
   },
   "en": {
     "profile_url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/england-team-profile-history",
-    "image_url": null
+    "media_url": null,
+    "image_url": "assets/team_profile_preview/en_preview.png"
   },
   "ca": {
     "profile_url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/canada-team-profile-history",
-    "image_url": null
+    "media_url": null,
+    "image_url": "assets/team_profile_preview/ca_preview.png"
+  },
+  "fr": {
+    "profile_url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/france-team-profile-history",
+    "media_url": null,
+    "image_url": "assets/team_profile_preview/fr_preview.png"
   },
   "jp": {
     "profile_url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/japan-team-profile-history",
