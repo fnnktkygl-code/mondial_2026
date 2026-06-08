@@ -6,26 +6,26 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "mondial-2026-challenge-8f",
-          "appId": "1:1106243131:android:50eddfb373cd45e10df61e",
+          "projectId": "REDACTED_PROJECT_ID",
+          "appId": "1:REDACTED_PROJECT_NUMBER:android:REDACTED_APP_ID",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "macos": {
         "default": {
-          "projectId": "mondial-2026-challenge-8f",
-          "appId": "1:1106243131:ios:4e1979980f53f2c10df61e",
+          "projectId": "REDACTED_PROJECT_ID",
+          "appId": "1:REDACTED_PROJECT_NUMBER:ios:REDACTED_APP_ID",
           "uploadDebugSymbols": false,
           "fileOutput": "macos/Runner/GoogleService-Info.plist"
         }
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "mondial-2026-challenge-8f",
+          "projectId": "REDACTED_PROJECT_ID",
           "configurations": {
-            "android": "1:1106243131:android:50eddfb373cd45e10df61e",
-            "macos": "1:1106243131:ios:4e1979980f53f2c10df61e",
-            "web": "1:1106243131:web:e750b217aa5c11120df61e"
+            "android": "1:REDACTED_PROJECT_NUMBER:android:REDACTED_APP_ID",
+            "macos": "1:REDACTED_PROJECT_NUMBER:ios:REDACTED_APP_ID",
+            "web": "1:REDACTED_PROJECT_NUMBER:web:REDACTED_APP_ID"
           }
         }
       }

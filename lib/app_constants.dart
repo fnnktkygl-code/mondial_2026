@@ -44,7 +44,7 @@ const String kEndpointTeams      = '/teams';
 // ─── Legacy / Transitional API URL ───────────────────────────────────────────
 // Utilisé par ApiService pendant la migration vers API-Football.
 // À supprimer une fois ApiService entièrement migré.
-const String kApiUrl = 'https://raw.githubusercontent.com/fnnktkygl-code/mondial_2026/main/assets/initial_matches.json';
+const String kApiUrl = 'https://raw.githubusercontent.com/my-username/mondial_2026/main/assets/initial_matches.json';
 
 // ─── Hive box names ──────────────────────────────────────────────────────────
 const String kHiveBoxFixtures    = 'mondial_fixtures';
