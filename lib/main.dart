@@ -127,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _standingsSubTab = 'groups'; // 'groups', 'scorers', 'assists', 'team'
   String _matchFilter = 'all'; // 'all', 'alerts'
   String _viewMode = 'list'; // 'list', 'calendar'
-  
+
   List<WorldCupMatch> _rawMatches = [];
   List<WorldCupMatch> _resolvedMatches = [];
   Map<String, String> _alerts = {};
@@ -157,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
-    
+
     _userTimezone = DateTime.now().timeZoneName;
     if (_userTimezone.isEmpty) {
       _userTimezone = 'UTC';
@@ -168,14 +168,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     String? supportedTeam;
     PredictionData? userPreds;
-    // Firebase profile synchronization on launch using local UUID
     try {
       userPreds = await PredictionService.loadPredictionData();
       final totalPoints = PredictionService.calculateTotalPoints(userPreds, loadedMatches);
       final streak = PredictionService.calculateActiveStreak(userPreds, loadedMatches);
       final guruCount = PredictionService.calculateExactGuessesCount(userPreds, loadedMatches);
       supportedTeam = userPreds.supportedTeam;
-      
+
       await WCFirebaseService.syncUserProfile(
         username: userPreds.username,
         supportedTeam: userPreds.supportedTeam,
@@ -188,7 +187,6 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint("Firebase initial sync error: $e");
     }
 
-    // Try to parse shared prediction group from URL if on Web
     try {
       final queryParams = Uri.base.queryParameters;
       if (queryParams.containsKey('group')) {
@@ -198,9 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _activeTab = 'challenge';
         }
       }
-    } catch (_) {
-      // Ignore URL parsing exceptions
-    }
+    } catch (_) {}
 
     setState(() {
       _userPreds = userPreds;
@@ -295,7 +291,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
   bool _hasAlert(WorldCupMatch m) {
     final alertVal = _alerts[m.id];
     if (alertVal == 'none') {
@@ -310,10 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return alertVal != null;
   }
 
-  /// Resolve tournament bracket placeholders dynamically based on group standings
-  /// and played knockout match results.
   List<WorldCupMatch> _resolveMatchesPlaceholders(List<WorldCupMatch> rawMatches) {
-    // 1. Calculate group standings first
     final Map<String, List<GroupEntry>> groupStandings = {};
     for (final m in rawMatches) {
       if (m.group == null || m.group!.isEmpty) continue;
@@ -364,14 +356,12 @@ class _MyHomePageState extends State<MyHomePage> {
       FIFARegulations.sortStandings(teamEntries, rawMatches);
     });
 
-    // 2. Gather 3rd place teams from groups A to L and rank them
     final List<GroupEntry> thirdPlaces = [];
     groupStandings.forEach((g, list) {
       if (list.length >= 3) {
-        thirdPlaces.add(list[2]); // Index 2 is the 3rd placed team
+        thirdPlaces.add(list[2]);
       }
     });
-    // Sort 3rd places by points, then GD, then GF, then Fair Play, then FIFA ranking
     thirdPlaces.sort((a, b) {
       if (b.points != a.points) return b.points.compareTo(a.points);
       if (b.goalDifference != a.goalDifference) return b.goalDifference.compareTo(a.goalDifference);
@@ -383,13 +373,14 @@ class _MyHomePageState extends State<MyHomePage> {
       return a.teamCode.compareTo(b.teamCode);
     });
 
-    // 3. Iteratively resolve placeholders (up to 6 passes to handle R32 -> R16 -> QF -> SF -> Final chains)
+    final bool allGroupsComplete = groupStandings.isNotEmpty &&
+        groupStandings.values.every((list) => list.every((e) => e.played == 3));
+
     List<WorldCupMatch> resolved = List.from(rawMatches);
     final Map<String, String> matchWinners = {};
     final Map<String, String> matchLosers = {};
 
     for (int pass = 0; pass < 6; pass++) {
-      // Collect current winners and losers
       for (final m in resolved) {
         if (m.isPlayed) {
           if (m.t1Score! > m.t2Score!) {
@@ -399,7 +390,6 @@ class _MyHomePageState extends State<MyHomePage> {
             matchWinners[m.id] = m.t2;
             matchLosers[m.id] = m.t1;
           } else {
-            // Tie-break: default to team 1 winning
             matchWinners[m.id] = m.t1;
             matchLosers[m.id] = m.t2;
           }
@@ -411,7 +401,6 @@ class _MyHomePageState extends State<MyHomePage> {
         String newT1 = m.t1;
         String newT2 = m.t2;
 
-        // If knockout match and is currently TBD, initialize its placeholder
         if (m.isKnockout) {
           if (newT1.toLowerCase() == 'tbd') {
             newT1 = _getKnockoutPlaceholderT1(m.id);
@@ -421,15 +410,15 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
 
-        // Group Winners / Runners-up placeholders (e.g., "1A", "2B")
         if (newT1.length == 2 && (newT1.startsWith('1') || newT1.startsWith('2'))) {
           final pos = newT1.substring(0, 1);
           final grp = newT1.substring(1, 2);
           final groupList = groupStandings[grp];
           if (groupList != null && groupList.isNotEmpty) {
-            final idx = int.parse(pos) - 1;
-            if (idx < groupList.length) {
-              newT1 = groupList[idx].teamCode;
+            final isGroupComplete = groupList.every((e) => e.played == 3);
+            if (isGroupComplete) {
+              final idx = int.parse(pos) - 1;
+              if (idx < groupList.length) newT1 = groupList[idx].teamCode;
             }
           }
         }
@@ -438,53 +427,43 @@ class _MyHomePageState extends State<MyHomePage> {
           final grp = newT2.substring(1, 2);
           final groupList = groupStandings[grp];
           if (groupList != null && groupList.isNotEmpty) {
-            final idx = int.parse(pos) - 1;
-            if (idx < groupList.length) {
-              newT2 = groupList[idx].teamCode;
+            final isGroupComplete = groupList.every((e) => e.played == 3);
+            if (isGroupComplete) {
+              final idx = int.parse(pos) - 1;
+              if (idx < groupList.length) newT2 = groupList[idx].teamCode;
             }
           }
         }
 
-        // Best 3rd place placeholders (e.g., "3rd1" to "3rd8")
         if (newT1.startsWith('3rd') && newT1.length > 3) {
-          final idx = int.parse(newT1.substring(3)) - 1;
-          if (idx >= 0 && idx < thirdPlaces.length) {
-            newT1 = thirdPlaces[idx].teamCode;
+          if (allGroupsComplete) {
+            final idx = int.parse(newT1.substring(3)) - 1;
+            if (idx >= 0 && idx < thirdPlaces.length) newT1 = thirdPlaces[idx].teamCode;
           }
         }
         if (newT2.startsWith('3rd') && newT2.length > 3) {
-          final idx = int.parse(newT2.substring(3)) - 1;
-          if (idx >= 0 && idx < thirdPlaces.length) {
-            newT2 = thirdPlaces[idx].teamCode;
+          if (allGroupsComplete) {
+            final idx = int.parse(newT2.substring(3)) - 1;
+            if (idx >= 0 && idx < thirdPlaces.length) newT2 = thirdPlaces[idx].teamCode;
           }
         }
 
-        // Match Winner placeholders (e.g., "w49", "w50")
         if (newT1.startsWith('w') && newT1.length > 1) {
           final refId = 'm${newT1.substring(1)}';
-          if (matchWinners.containsKey(refId)) {
-            newT1 = matchWinners[refId]!;
-          }
+          if (matchWinners.containsKey(refId)) newT1 = matchWinners[refId]!;
         }
         if (newT2.startsWith('w') && newT2.length > 1) {
           final refId = 'm${newT2.substring(1)}';
-          if (matchWinners.containsKey(refId)) {
-            newT2 = matchWinners[refId]!;
-          }
+          if (matchWinners.containsKey(refId)) newT2 = matchWinners[refId]!;
         }
 
-        // Match Loser placeholders (e.g., "l77", "l78")
         if (newT1.startsWith('l') && newT1.length > 1) {
           final refId = 'm${newT1.substring(1)}';
-          if (matchLosers.containsKey(refId)) {
-            newT1 = matchLosers[refId]!;
-          }
+          if (matchLosers.containsKey(refId)) newT1 = matchLosers[refId]!;
         }
         if (newT2.startsWith('l') && newT2.length > 1) {
           final refId = 'm${newT2.substring(1)}';
-          if (matchLosers.containsKey(refId)) {
-            newT2 = matchLosers[refId]!;
-          }
+          if (matchLosers.containsKey(refId)) newT2 = matchLosers[refId]!;
         }
 
         if (newT1 != m.t1 || newT2 != m.t2) {
@@ -572,8 +551,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
-
   Future<void> _saveAlert(String matchId, String alertType) async {
     final updatedAlerts = await AlertService.saveAlert(matchId, alertType);
     setState(() {
@@ -586,23 +563,22 @@ class _MyHomePageState extends State<MyHomePage> {
       final match = _resolvedMatches.firstWhere((m) => m.id == matchId);
       final t1Name = AppTranslations.getTeam(_lang, match.t1);
       final t2Name = AppTranslations.getTeam(_lang, match.t2);
-      
-      // Calculate scheduled date (either at kickoff or 1 hour before)
+
       DateTime scheduledTime = match.date;
       if (alertType == '1h') {
         scheduledTime = match.date.subtract(const Duration(hours: 1));
       }
-      
+
       await WCNotificationService.scheduleMatchNotification(
         matchId: matchId,
-        title: _lang == 'fr' 
-            ? '⚽ Match imminent !' 
+        title: _lang == 'fr'
+            ? '⚽ Match imminent !'
             : (_lang == 'es' ? '⚽ ¡Partido inminente!' : '⚽ Match starting soon!'),
         body: _lang == 'fr'
             ? 'Le match $t1Name vs $t2Name commence bientôt !'
-            : (_lang == 'es' 
-                ? '¡El partido entre $t1Name y $t2Name comienza pronto!' 
-                : 'The match $t1Name vs $t2Name is starting soon!'),
+            : (_lang == 'es'
+            ? '¡El partido entre $t1Name y $t2Name comienza pronto!'
+            : 'The match $t1Name vs $t2Name is starting soon!'),
         scheduledDate: scheduledTime,
       );
 
@@ -649,13 +625,45 @@ class _MyHomePageState extends State<MyHomePage> {
           lang: _lang,
           activeAlert: _alerts[match.id],
           onSaveAlert: (alertType) => _saveAlert(match.id, alertType),
+          prediction: _userPreds?.matchPredictions[match.id],
+          onPredictionChanged: (t1Score, t2Score) => _saveDirectPrediction(match.id, t1Score, t2Score),
         );
       },
     );
   }
 
+  /// Saves a prediction directly from the match details modal sheet and triggers Firestore sync.
+  Future<void> _saveDirectPrediction(String matchId, int t1Score, int t2Score) async {
+    if (_userPreds == null) return;
 
+    setState(() {
+      _userPreds!.matchPredictions[matchId] = MatchPrediction(
+        matchId: matchId,
+        t1Score: t1Score,
+        t2Score: t2Score,
+      );
+    });
 
+    await PredictionService.savePredictionData(_userPreds!);
+    final totalPoints = PredictionService.calculateTotalPoints(_userPreds!, _rawMatches);
+    final streak = PredictionService.calculateActiveStreak(_userPreds!, _rawMatches);
+    final guruCount = PredictionService.calculateExactGuessesCount(_userPreds!, _rawMatches);
+
+    await WCFirebaseService.syncUserProfile(
+      username: _userPreds!.username,
+      supportedTeam: _userPreds!.supportedTeam,
+      points: totalPoints,
+      streak: streak,
+      guruCount: guruCount,
+      avatar: _userPreds!.avatar,
+    );
+
+    // Refresh prediction views (ChallengeView tab) instantly
+    setState(() {
+      _challengeViewKey = UniqueKey();
+    });
+  }
+// ... existing code ...
 
   void _updateTournamentOddsAndCheckNotifications() {
     final newOdds = WCOddsService.calculateOdds(_resolvedMatches);
@@ -663,38 +671,37 @@ class _MyHomePageState extends State<MyHomePage> {
       final favCode = _supportedTeam!.toLowerCase();
       final double oldProb = _currentOdds[favCode] ?? 0.0;
       final double newProb = newOdds[favCode] ?? 0.0;
-      
-      // If odds changed, dispatch a push notification
+
       if (oldProb.toStringAsFixed(1) != newProb.toStringAsFixed(1)) {
         final flag = _getCountryFlagEmoji(favCode);
         final nickname = WCNotificationService.getTeamNickname(favCode, _lang);
-        
+
         String title = '';
         String body = '';
-        
+
         if (newProb == 0.0) {
           title = _lang == 'fr' ? '❌ Élimination !' : (_lang == 'es' ? '❌ ¡Eliminación!' : '❌ Elimination!');
-          body = _lang == 'fr' 
+          body = _lang == 'fr'
               ? 'Le rêve prend fin pour $nickname $flag ! Son parcours au Mondial 2026 s\'arrête ici.'
-              : (_lang == 'es' 
-                  ? '¡El sueño termina para $nickname $flag! Su camino en el Mundial 2026 termina aquí.' 
-                  : 'The dream ends for $nickname $flag! Their World Cup 2026 run ends here.');
+              : (_lang == 'es'
+              ? '¡El sogno termina para $nickname $flag! Su camino en el Mundial 2026 termina aquí.'
+              : 'The dream ends for $nickname $flag! Their World Cup 2026 run ends here.');
         } else if (newProb > oldProb) {
           title = _lang == 'fr' ? '📈 Cote en hausse !' : (_lang == 'es' ? '📈 ¡Cuotas al alza!' : '📈 Odds rising!');
           body = _lang == 'fr'
               ? 'La probabilité de titre pour $nickname $flag monte à ${newProb.toStringAsFixed(1)}% !'
               : (_lang == 'es'
-                  ? '¡La probabilidad de título para $nickname $flag sube al ${newProb.toStringAsFixed(1)}%!'
-                  : 'Title winning probability for $nickname $flag rises to ${newProb.toStringAsFixed(1)}%!');
+              ? '¡La probabilidad de título para $nickname $flag sube al ${newProb.toStringAsFixed(1)}%!'
+              : 'Title winning probability for $nickname $flag rises to ${newProb.toStringAsFixed(1)}%!');
         } else {
           title = _lang == 'fr' ? '📉 Cote en baisse !' : (_lang == 'es' ? '📉 ¡Cuotas a la baja!' : '📉 Odds falling!');
           body = _lang == 'fr'
               ? 'La probabilité de titre pour $nickname $flag baisse à ${newProb.toStringAsFixed(1)}%.'
               : (_lang == 'es'
-                  ? 'La probabilidad de título para $nickname $flag baja al ${newProb.toStringAsFixed(1)}%.'
-                  : 'Title winning probability for $nickname $flag falls to ${newProb.toStringAsFixed(1)}%.');
+              ? 'La probabilidad de título para $nickname $flag baja al ${newProb.toStringAsFixed(1)}%.'
+              : 'Title winning probability for $nickname $flag falls to ${newProb.toStringAsFixed(1)}%.');
         }
-        
+
         WCNotificationService.showNotification(
           id: 9999,
           title: title,
@@ -702,7 +709,7 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }
     }
-    
+
     setState(() {
       _previousOdds = Map.from(_currentOdds.isEmpty ? newOdds : _currentOdds);
       _currentOdds = newOdds;
@@ -720,7 +727,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'sco': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'za': '🇿🇦', 'qa': '🇶🇦', 'ch': '🇨🇭',
       'ht': '🇭🇹', 'au': '🇦🇺', 'tr': '🇹🇷', 'cw': '🇨🇼',
       'cv': '🇨🇻', 'ci': '🇨🇮', 'se': '🇸🇪', 'tn': '🇹🇳',
-      'cd': '🇨🇩', 'uz': '🇺🇿', 'gh': '🇬🇭', 'pa': '🇵🇦',
+      'cd': '🇨🇩', 'uz': '🇺🇿', 'gh': '🇬染', 'pa': '🇵🇦',
       'no': '🇳🇴', 'iq': '🇮🇶', 'at': '🇦🇹', 'jo': '🇯🇴',
       'sa': '🇸🇦', 'nz': '🇳🇿', 'ir': '🇮🇷', 'ec': '🇪🇨',
       'ba': '🇧🇦', 'py': '🇵🇾', 'pl': '🇵🇱', 'cl': '🇨🇱',
@@ -729,6 +736,15 @@ class _MyHomePageState extends State<MyHomePage> {
       'dk': '🇩🇰',
     };
     return flags[countryCode.toLowerCase()] ?? '🏳️';
+  }
+
+  String _getLanguageFlag(String langCode) {
+    switch (langCode) {
+      case 'fr': return '🇫🇷';
+      case 'en': return '🇬🇧';
+      case 'es': return '🇪🇸';
+      default: return '🏳️';
+    }
   }
 
   @override
@@ -752,22 +768,23 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: false,
-        titleSpacing: 12,
+        titleSpacing: 16,
         title: Row(
           children: [
             Image.asset(
               'assets/logos/fifa_logo_dark.png',
-              height: 30,
+              height: 28,
               fit: BoxFit.contain,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 AppTranslations.get(_lang, 'appTitle'),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
-                  fontSize: 22,
+                  fontSize: 20,
+                  letterSpacing: -0.5,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -775,207 +792,255 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         actions: [
+          // 1. Bouton sélecteur de langue dynamique
           PopupMenuButton<String>(
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+            offset: const Offset(0, 45),
+            color: AppColors.card,
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             onSelected: (String value) {
-              if (value == 'mascots') _showMascotsModal();
-              if (value == 'anthems') _showAnthemsModal();
-              if (value == 'profile') _showProfileModal();
-              if (['en', 'fr', 'es'].contains(value)) {
-                setState(() => _lang = value);
-                // _saveSettings();
-              }
+              setState(() => _lang = value);
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                enabled: false,
-                child: Row(
-                  children: [
-                    const Icon(Icons.access_time, size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text('Timezone: $_userTimezone', style: const TextStyle(fontSize: 12))),
-                  ],
-                ),
+              const PopupMenuItem<String>(value: 'fr', child: Text('🇫🇷  Français', style: TextStyle(fontWeight: FontWeight.w500))),
+              const PopupMenuItem<String>(value: 'en', child: Text('🇬🇧  English', style: TextStyle(fontWeight: FontWeight.w500))),
+              const PopupMenuItem<String>(value: 'es', child: Text('🇪🇸  Español', style: TextStyle(fontWeight: FontWeight.w500))),
+            ],
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border, width: 1),
               ),
-              const PopupMenuDivider(),
-              PopupMenuItem<String>(
-                value: 'mascots',
-                child: Row(
-                  children: [
-                    const Icon(Icons.emoji_people, size: 18),
-                    const SizedBox(width: 8),
-                    Text(_lang == 'fr' ? 'Mascottes' : (_lang == 'es' ? 'Mascotas' : 'Mascots')),
-                  ],
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_getLanguageFlag(_lang), style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textDim),
+                ],
               ),
+            ),
+          ),
+
+          // 2. Bouton options contextuel
+          PopupMenuButton<String>(
+            padding: EdgeInsets.zero,
+            offset: const Offset(0, 45),
+            color: AppColors.card,
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            onSelected: (String value) {
+              if (value == 'anthems') _showAnthemsModal();
+              if (value == 'mascots') _showMascotsModal();
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
                 value: 'anthems',
                 child: Row(
                   children: [
-                    const Icon(Icons.music_note, size: 18),
-                    const SizedBox(width: 8),
-                    Text(AppTranslations.get(_lang, 'anthemsTitle')),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
+                      child: const Icon(Icons.music_note_rounded, size: 16, color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(AppTranslations.get(_lang, 'anthemsTitle'), style: const TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
-              if (_userPreds != null)
-                PopupMenuItem<String>(
-                  value: 'profile',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_outline, size: 18),
-                      const SizedBox(width: 8),
-                      Text(_lang == 'fr' ? 'Mon Profil' : (_lang == 'es' ? 'Mi Perfil' : 'My Profile')),
-                    ],
-                  ),
+              PopupMenuItem<String>(
+                value: 'mascots',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
+                      child: const Icon(Icons.emoji_events_rounded, size: 16, color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(_lang == 'fr' ? 'Mascottes' : (_lang == 'es' ? 'Mascotas' : 'Mascots'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ],
                 ),
-              const PopupMenuDivider(),
-              const PopupMenuItem<String>(value: 'fr', child: Text('🇫🇷 Français')),
-              const PopupMenuItem<String>(value: 'en', child: Text('🇬🇧 English')),
-              const PopupMenuItem<String>(value: 'es', child: Text('🇪🇸 Español')),
+              ),
             ],
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.border, width: 1),
+              ),
+              child: const Icon(Icons.grid_view_rounded, size: 18, color: AppColors.textPrimary),
+            ),
           ),
-          const SizedBox(width: 4),
+
+          // 3. Bouton Profil
+          if (_userPreds != null)
+            GestureDetector(
+              onTap: _showProfileModal,
+              child: Container(
+                margin: const EdgeInsets.only(left: 4, right: 16),
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.accent, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: AppColors.accent.withValues(alpha: 0.1),
+                  backgroundImage: (_userPreds!.avatar.isNotEmpty && _userPreds!.avatar.contains('.png'))
+                      ? AssetImage(_userPreds!.avatar)
+                      : null,
+                  child: (_userPreds!.avatar.isEmpty || !_userPreds!.avatar.contains('.png'))
+                      ? const Icon(Icons.person_rounded, size: 18, color: AppColors.accent)
+                      : null,
+                ),
+              ),
+            ),
         ],
       ),
       body: Stack(
         children: [
           _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.accent),
-                )
+            child: CircularProgressIndicator(color: AppColors.accent),
+          )
               : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_activeTab == 'matches') ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (_activeTab == 'matches') ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
+                          borderRadius: BorderRadius.circular(kCardRadius),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: AppColors.card,
-                                borderRadius: BorderRadius.circular(kCardRadius),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              child: Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => setState(() => _matchFilter = 'all'),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: _matchFilter == 'all'
-                                            ? AppColors.border
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(kButtonRadius),
-                                      ),
-                                      child: Text(
-                                        AppTranslations.get(_lang, 'allMatches'),
-                                        style: TextStyle(
-                                          color: _matchFilter == 'all'
-                                              ? Colors.white
-                                              : AppColors.textMuted,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
+                            GestureDetector(
+                              onTap: () => setState(() => _matchFilter = 'all'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: _matchFilter == 'all'
+                                      ? AppColors.border
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(kButtonRadius),
+                                ),
+                                child: Text(
+                                  AppTranslations.get(_lang, 'allMatches'),
+                                  style: TextStyle(
+                                    color: _matchFilter == 'all'
+                                        ? Colors.white
+                                        : AppColors.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
-                                  GestureDetector(
-                                    onTap: () => setState(() => _matchFilter = 'alerts'),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: _matchFilter == 'alerts'
-                                            ? AppColors.border
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(kButtonRadius),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.notifications_none_outlined, size: 14, color: AppColors.accent),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            AppTranslations.get(_lang, 'myAlerts'),
-                                            style: TextStyle(
-                                              color: _matchFilter == 'alerts'
-                                                  ? Colors.white
-                                                  : AppColors.textMuted,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.card,
-                                borderRadius: BorderRadius.circular(kCardRadius),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    tooltip: AppTranslations.get(_lang, 'listView'),
-                                    icon: const Icon(
-                                      Icons.list_alt,
-                                      size: 20,
-                                      color: AppColors.accent,
+                            GestureDetector(
+                              onTap: () => setState(() => _matchFilter = 'alerts'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: _matchFilter == 'alerts'
+                                      ? AppColors.border
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(kButtonRadius),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.notifications_none_outlined, size: 14, color: AppColors.accent),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      AppTranslations.get(_lang, 'myAlerts'),
+                                      style: TextStyle(
+                                        color: _matchFilter == 'alerts'
+                                            ? Colors.white
+                                            : AppColors.textMuted,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: _viewMode == 'list'
-                                          ? AppColors.border
-                                          : Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      minimumSize: Size.zero,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(kButtonRadius)),
-                                    ),
-                                    onPressed: () => setState(() => _viewMode = 'list'),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  IconButton(
-                                    tooltip: AppTranslations.get(_lang, 'calendarView'),
-                                    icon: const Icon(
-                                      Icons.calendar_today_outlined,
-                                      size: 20,
-                                      color: AppColors.accent,
-                                    ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: _viewMode == 'calendar'
-                                          ? AppColors.border
-                                          : Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      minimumSize: Size.zero,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(kButtonRadius)),
-                                    ),
-                                    onPressed: () => setState(() => _viewMode = 'calendar'),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ],
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: _buildActiveView(filteredMatches, matchesByDate),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
+                          borderRadius: BorderRadius.circular(kCardRadius),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              tooltip: AppTranslations.get(_lang, 'listView'),
+                              icon: const Icon(
+                                Icons.list_alt,
+                                size: 20,
+                                color: AppColors.accent,
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: _viewMode == 'list'
+                                    ? AppColors.border
+                                    : Colors.transparent,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                minimumSize: Size.zero,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(kButtonRadius)),
+                              ),
+                              onPressed: () => setState(() => _viewMode = 'list'),
+                            ),
+                            const SizedBox(width: 4),
+                            IconButton(
+                              tooltip: AppTranslations.get(_lang, 'calendarView'),
+                              icon: const Icon(
+                                Icons.calendar_today_outlined,
+                                size: 20,
+                                color: AppColors.accent,
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: _viewMode == 'calendar'
+                                    ? AppColors.border
+                                    : Colors.transparent,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                minimumSize: Size.zero,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(kButtonRadius)),
+                              ),
+                              onPressed: () => setState(() => _viewMode = 'calendar'),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
+                ],
+                const SizedBox(height: 16),
+                Expanded(
+                  child: _buildActiveView(filteredMatches, matchesByDate),
                 ),
+              ],
+            ),
+          ),
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -1001,48 +1066,48 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         child: Builder(
-          builder: (context) {
-            final tabsList = [
-              'matches',
-              'standings',
-              'bracket',
-              'challenge',
-            ];
-            final currentIndex = tabsList.indexOf(_activeTab).clamp(0, tabsList.length - 1);
+            builder: (context) {
+              final tabsList = [
+                'matches',
+                'standings',
+                'bracket',
+                'challenge',
+              ];
+              final currentIndex = tabsList.indexOf(_activeTab).clamp(0, tabsList.length - 1);
 
-            return BottomNavigationBar(
-              backgroundColor: AppColors.background,
-              selectedItemColor: AppColors.accent,
-              unselectedItemColor: AppColors.textDim,
-              showSelectedLabels: true,
-              showUnselectedLabels: true,
-              type: BottomNavigationBarType.fixed,
-              currentIndex: currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _activeTab = tabsList[index];
-                });
-              },
-              items: [
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.sports_soccer),
-                  label: AppTranslations.get(_lang, 'today'),
-                ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.table_rows),
-                  label: AppTranslations.get(_lang, 'standings'),
-                ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.hub_outlined),
-                  label: AppTranslations.get(_lang, 'bracket'),
-                ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.emoji_events),
-                  label: AppTranslations.get(_lang, 'challengeTab'),
-                ),
-              ],
-            );
-          }
+              return BottomNavigationBar(
+                backgroundColor: AppColors.background,
+                selectedItemColor: AppColors.accent,
+                unselectedItemColor: AppColors.textDim,
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                type: BottomNavigationBarType.fixed,
+                currentIndex: currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _activeTab = tabsList[index];
+                  });
+                },
+                items: [
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.sports_soccer),
+                    label: AppTranslations.get(_lang, 'today'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.table_rows),
+                    label: AppTranslations.get(_lang, 'standings'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.hub_outlined),
+                    label: AppTranslations.get(_lang, 'bracket'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.emoji_events),
+                    label: AppTranslations.get(_lang, 'challengeTab'),
+                  ),
+                ],
+              );
+            }
         ),
       ),
     );
@@ -1051,7 +1116,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildStandingsTab() {
     return Column(
       children: [
-        // Sub-tabs Segment Bar
         Container(
           color: AppColors.surface,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -1072,8 +1136,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ),
-
-        // Sub-tab content
         Expanded(
           child: _getStandingsSubTabContent(),
         ),
@@ -1133,9 +1195,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildActiveView(
-    List<WorldCupMatch> filteredMatches,
-    Map<String, List<WorldCupMatch>> matchesByDate,
-  ) {
+      List<WorldCupMatch> filteredMatches,
+      Map<String, List<WorldCupMatch>> matchesByDate,
+      ) {
     if (_activeTab == 'standings') {
       return _buildStandingsTab();
     }
@@ -1145,7 +1207,7 @@ class _MyHomePageState extends State<MyHomePage> {
         matches: _resolvedMatches,
         lang: _lang,
         onMatchTap: _showMatchDetails,
-        supportedTeamCode: _supportedTeam,
+        supportedTeamCode: _userPreds?.supportedTeam, // Ajoutez cette ligne manquante
       );
     }
 
@@ -1176,7 +1238,6 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
 
-    // Default: Matches Tab
     if (filteredMatches.isEmpty) {
       return Center(
         child: Column(
@@ -1194,10 +1255,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (_viewMode == 'calendar') {
-      return CalendarViewWidget(
+      return CalendarViewWidget(   // ← ajouter "return"
         matches: filteredMatches,
         lang: _lang,
         hasAlert: _hasAlert,
+        hasPredicted: (match) {
+          if (_userPreds == null) return false;
+          return _userPreds!.matchPredictions.containsKey(match.id);
+        },
+        alertType: (match) => PredictionService.getPredictionResult(match, _userPreds),
+        supportedTeamCode: _supportedTeam,
         onMatchTap: _showMatchDetails,
       );
     }
@@ -1238,8 +1305,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 match: m,
                 lang: _lang,
                 hasAlert: _hasAlert(m),
-                alertType: _alerts[m.id] ?? (_hasAlert(m) ? '1h' : null),
-                supportedTeamCode: _supportedTeam,
+                hasPrediction: _userPreds?.matchPredictions.containsKey(m.id) ?? false,
+                alertType: (WorldCupMatch match) => PredictionService.getPredictionResult(match, _userPreds),                supportedTeamCode: _supportedTeam,
                 onAlertToggle: () {
                   if (_hasAlert(m)) {
                     _saveAlert(m.id, 'none');
@@ -1251,377 +1318,6 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             }),
           ],
-        );
-      },
-    );
-  }
-
-
-void _showTestNotificationDialog() {
-    // Hardcoded ISO list to drive the picker interface cleanly
-    final List<String> teamCodes = [
-      'ar', 'at', 'au', 'ba', 'be', 'bg', 'br', 'ca', 'cd', 'ch', 'ci', 'cl', 
-      'cm', 'co', 'cu', 'cv', 'cz', 'de', 'dk', 'dz', 'ec', 'eg', 'en', 'es', 
-      'fr', 'sco', 'gh', 'gr', 'hr', 'ht', 'hu', 'iq', 'ir', 'it', 'jo', 'jp', 
-      'kr', 'ma', 'mx', 'ng', 'nl', 'no', 'nz', 'pa', 'pe', 'pl', 'pt', 'qa', 
-      'ro', 'rs', 'sa', 'se', 'sn', 'tn', 'tr', 'ua', 'us', 'uy', 'uz', 've', 'za'
-    ]..sort();
-
-    String t1 = 'fr';
-    String t2 = 'dk';
-    final t1ScoreController = TextEditingController(text: '2');
-    final t2ScoreController = TextEditingController(text: '0');
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: AppColors.card,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
-              title: Row(
-                children: [
-                  const Icon(Icons.notifications_active, color: AppColors.accent),
-                  const SizedBox(width: 10),
-                  Text(
-                    _lang == 'fr' ? 'Tester les notifications' : (_lang == 'es' ? 'Probar notificaciones' : 'Test Notifications'),
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
-                  ),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _lang == 'fr' 
-                          ? 'Choisissez deux équipes et un score pour simuler une alerte :' 
-                          : (_lang == 'es' ? 'Elige dos equipos y un marcador para simular una alerta:' : 'Choose two teams and a score to simulate a notification:'),
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Team 1 Selector
-                    Text(
-                      _lang == 'fr' ? 'Équipe 1' : (_lang == 'es' ? 'Equipo 1' : 'Team 1'),
-                      style: const TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: () {
-                        TeamSelectorBottomSheet.show(
-                          context: context,
-                          lang: _lang,
-                          title: _lang == 'fr' ? 'Sélectionner Équipe 1' : 'Select Team 1',
-                          selectedTeamCode: t1,
-                          teamCodes: teamCodes,
-                          onTeamSelected: (val) {
-                            setDialogState(() => t1 = val);
-                          },
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              '${_getCountryFlagEmoji(t1)} ${AppTranslations.getTeam(_lang, t1)} ($t1)',
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
-                            ),
-                            const Spacer(),
-                            const Icon(Icons.arrow_drop_down, color: AppColors.accent),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Team 2 Selector
-                    Text(
-                      _lang == 'fr' ? 'Équipe 2' : (_lang == 'es' ? 'Equipo 2' : 'Team 2'),
-                      style: const TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: () {
-                        TeamSelectorBottomSheet.show(
-                          context: context,
-                          lang: _lang,
-                          title: _lang == 'fr' ? 'Sélectionner Équipe 2' : 'Select Team 2',
-                          selectedTeamCode: t2,
-                          teamCodes: teamCodes,
-                          onTeamSelected: (val) {
-                            setDialogState(() => t2 = val);
-                          },
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              '${_getCountryFlagEmoji(t2)} ${AppTranslations.getTeam(_lang, t2)} ($t2)',
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
-                            ),
-                            const Spacer(),
-                            const Icon(Icons.arrow_drop_down, color: AppColors.accent),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Scores
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _lang == 'fr' ? 'Score éq. 1' : (_lang == 'es' ? 'Marcador eq. 1' : 'Score Team 1'),
-                                style: const TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 11),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: t1ScoreController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: AppColors.surface,
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                ),
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _lang == 'fr' ? 'Score éq. 2' : (_lang == 'es' ? 'Marcador eq. 2' : 'Score Team 2'),
-                                style: const TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 11),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: t2ScoreController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: AppColors.surface,
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                ),
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              actions: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.border,
-                              foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            onPressed: () {
-                              final s1 = int.tryParse(t1ScoreController.text) ?? 0;
-                              final s2 = int.tryParse(t2ScoreController.text) ?? 0;
-                              final body = WCNotificationService.formatScoreNotificationBody(
-                                lang: _lang,
-                                t1Code: t1,
-                                t2Code: t2,
-                                t1Score: s1,
-                                t2Score: s2,
-                                isFinished: false,
-                              );
-                              final title = _lang == 'fr' ? '⚽ Mi-temps !' : (_lang == 'es' ? '⚽ ¡Medio tiempo!' : '⚽ Half-time!');
-                              WCNotificationService.showInstantNotification(
-                                id: 'test_ht',
-                                title: title,
-                                body: body,
-                              );
-                            },
-                            child: Text(_lang == 'fr' ? 'Alerte Mi-temps' : (_lang == 'es' ? 'Alerta Medio Tiempo' : 'Half-Time Alert'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accent,
-                              foregroundColor: AppColors.surface,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            onPressed: () {
-                              final s1 = int.tryParse(t1ScoreController.text) ?? 0;
-                              final s2 = int.tryParse(t2ScoreController.text) ?? 0;
-                              final body = WCNotificationService.formatScoreNotificationBody(
-                                lang: _lang,
-                                t1Code: t1,
-                                t2Code: t2,
-                                t1Score: s1,
-                                t2Score: s2,
-                                isFinished: true,
-                              );
-                              final title = _lang == 'fr' ? '🏆 Fin du match !' : (_lang == 'es' ? '🏆 ¡Fin del partido!' : '🏆 Full-time!');
-                              WCNotificationService.showInstantNotification(
-                                id: 'test_ft',
-                                title: title,
-                                body: body,
-                              );
-                            },
-                            child: Text(_lang == 'fr' ? 'Alerte Fin' : (_lang == 'es' ? 'Alerta Fin' : 'Full-Time Alert'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(_lang == 'fr' ? 'Fermer' : (_lang == 'es' ? 'Cerrar' : 'Close'), style: const TextStyle(color: AppColors.textDim)),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-
-  Future<GoalEvent?> _showAddGoalDialog(String t1, String t2) async {
-    final scorerController = TextEditingController();
-    final assistController = TextEditingController();
-    final minController = TextEditingController(text: '45');
-    String teamSelect = 't1';
-
-    return showDialog<GoalEvent>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDlgState) {
-            return AlertDialog(
-              backgroundColor: AppColors.card,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
-              title: const Text('Add Goal Event', style: TextStyle(color: Colors.amber)),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Team choice
-                    Row(
-                      children: [
-                        const Text('Scoring Team: ', style: TextStyle(fontSize: 13)),
-                        const Spacer(),
-                        ChoiceChip(
-                          label: Text(AppTranslations.getTeam(_lang, t1), style: const TextStyle(fontSize: 12)),
-                          selected: teamSelect == 't1',
-                          onSelected: (sel) {
-                            if (sel) setDlgState(() => teamSelect = 't1');
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          label: Text(AppTranslations.getTeam(_lang, t2), style: const TextStyle(fontSize: 12)),
-                          selected: teamSelect == 't2',
-                          onSelected: (sel) {
-                            if (sel) setDlgState(() => teamSelect = 't2');
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: scorerController,
-                      style: const TextStyle(fontSize: 14),
-                      decoration: const InputDecoration(
-                        labelText: 'Scorer Name',
-                        labelStyle: TextStyle(color: AppColors.textDim),
-                        hintText: 'e.g. K. Mbappé',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: assistController,
-                      style: const TextStyle(fontSize: 14),
-                      decoration: const InputDecoration(
-                        labelText: 'Assistant Name (Optional)',
-                        labelStyle: TextStyle(color: AppColors.textDim),
-                        hintText: 'e.g. A. Griezmann',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: minController,
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 14),
-                      decoration: const InputDecoration(
-                        labelText: 'Minute',
-                        labelStyle: TextStyle(color: AppColors.textDim),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textDim)),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
-                  onPressed: () {
-                    if (scorerController.text.isNotEmpty) {
-                      final goal = GoalEvent(
-                        team: teamSelect,
-                        scorer: scorerController.text,
-                        assistant: assistController.text.isNotEmpty ? assistController.text : null,
-                        minute: int.tryParse(minController.text) ?? 45,
-                      );
-                      Navigator.pop(context, goal);
-                    }
-                  },
-                  child: const Text('Add Goal', style: TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          },
         );
       },
     );

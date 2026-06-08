@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
+import '../app_constants.dart';
 import '../services/team_profile_service.dart';
+import '../services/prediction_service.dart';
 import 'team_flag.dart';
 import 'team_selector.dart';
 
@@ -73,11 +75,13 @@ class TournamentStats {
 class ScorersLeaderboardWidget extends StatelessWidget {
   final List<WorldCupMatch> matches;
   final String lang;
+  final PredictionData? userPreds;
 
   const ScorersLeaderboardWidget({
     super.key,
     required this.matches,
     required this.lang,
+    this.userPreds,
   });
 
   @override
@@ -95,28 +99,40 @@ class ScorersLeaderboardWidget extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = list[index];
-        return _buildStatRow(context, index, item, '⚽');
+        final isUserChoice = userPreds?.goldenBootPlayer?.trim().toLowerCase() == item.name.trim().toLowerCase();
+        return _buildStatRow(context, index, item, '⚽', isUserChoice);
       },
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.sports_soccer, size: 48, color: AppColors.borderStrong),
-          const SizedBox(height: 16),
-          Text(
-            AppTranslations.get(lang, 'loading'),
-            style: const TextStyle(color: AppColors.textDim, fontSize: 14),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.sports_soccer_rounded, size: 56, color: AppColors.borderStrong),
+            const SizedBox(height: 16),
+            Text(
+              lang == 'fr' ? 'Classement indisponible' : 'Leaderboard Unavailable',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              lang == 'fr'
+                  ? "Les statistiques individuelles débloqueront dès le coup d'envoi du premier match !"
+                  : "Individual statistics will unlock as soon as the opening match kicks off!",
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatRow(BuildContext context, int index, PlayerStat item, String suffixIcon) {
+  Widget _buildStatRow(BuildContext context, int index, PlayerStat item, String suffixIcon, bool isUserChoice) {
     final teamName = AppTranslations.getTeam(lang, item.teamCode);
 
     return Container(
@@ -124,11 +140,16 @@ class ScorersLeaderboardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        border: Border.all(
+            color: isUserChoice ? AppColors.accent : AppColors.border,
+            width: isUserChoice ? 2.0 : 1.5
+        ),
+        boxShadow: isUserChoice ? [
+          BoxShadow(color: AppColors.accent.withValues(alpha: 0.1), blurRadius: 10, spreadRadius: 1)
+        ] : null,
       ),
       child: Row(
         children: [
-          // Rank Badge
           Container(
             width: 28,
             height: 28,
@@ -137,10 +158,10 @@ class ScorersLeaderboardWidget extends StatelessWidget {
               color: index == 0
                   ? AppColors.rankGold.withOpacity(0.2)
                   : index == 1
-                      ? AppColors.textMuted.withOpacity(0.2)
-                      : index == 2
-                          ? AppColors.rankGold.withOpacity(0.2)
-                          : AppColors.surface,
+                  ? AppColors.textMuted.withOpacity(0.2)
+                  : index == 2
+                  ? AppColors.rankGold.withOpacity(0.2)
+                  : AppColors.surface,
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -149,10 +170,10 @@ class ScorersLeaderboardWidget extends StatelessWidget {
                 color: index == 0
                     ? AppColors.warning
                     : index == 1
-                        ? AppColors.textBody
-                        : index == 2
-                            ? AppColors.rankGold
-                            : AppColors.textDim,
+                    ? AppColors.textBody
+                    : index == 2
+                    ? AppColors.rankGold
+                    : AppColors.textDim,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -160,27 +181,46 @@ class ScorersLeaderboardWidget extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Flag Image
           TeamFlagWidget(
             code: item.teamCode,
-            width: 22,
-            height: 14,
-            borderRadius: 2,
+            width: 24,
+            height: 16,
+            borderRadius: 4,
           ),
           const SizedBox(width: 12),
 
-          // Player Name & Team Nickname
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (isUserChoice) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'MY PRONO 🎯',
+                          style: TextStyle(color: AppColors.accent, fontSize: 8, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -194,7 +234,6 @@ class ScorersLeaderboardWidget extends StatelessWidget {
             ),
           ),
 
-          // Value Count
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -229,11 +268,13 @@ class ScorersLeaderboardWidget extends StatelessWidget {
 class AssistsLeaderboardWidget extends StatelessWidget {
   final List<WorldCupMatch> matches;
   final String lang;
+  final PredictionData? userPreds;
 
   const AssistsLeaderboardWidget({
     super.key,
     required this.matches,
     required this.lang,
+    this.userPreds,
   });
 
   @override
@@ -243,16 +284,27 @@ class AssistsLeaderboardWidget extends StatelessWidget {
 
     if (list.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.star_outline, size: 48, color: AppColors.borderStrong),
-            const SizedBox(height: 16),
-            Text(
-              AppTranslations.get(lang, 'loading'),
-              style: const TextStyle(color: AppColors.textDim, fontSize: 14),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.star_outline_rounded, size: 56, color: AppColors.borderStrong),
+              const SizedBox(height: 16),
+              Text(
+                lang == 'fr' ? 'Classement indisponible' : 'Leaderboard Unavailable',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                lang == 'fr'
+                    ? "Les statistiques de passes décisives s'activeront au coup d'envoi du premier match !"
+                    : "Assists statistics will unlock as soon as the opening match kicks off!",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -263,9 +315,9 @@ class AssistsLeaderboardWidget extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = list[index];
-        // Using running shoes / boots or star emoji for assists
-        return ScorersLeaderboardWidget(matches: matches, lang: lang)
-            ._buildStatRow(context, index, item, '👟');
+        final isUserChoice = userPreds?.topAssisterPlayer?.trim().toLowerCase() == item.name.trim().toLowerCase();
+        return ScorersLeaderboardWidget(matches: matches, lang: lang, userPreds: userPreds)
+            ._buildStatRow(context, index, item, '👟', isUserChoice);
       },
     );
   }
@@ -293,20 +345,79 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
   @override
   void initState() {
     super.initState();
-    // Default to the first team alphabetically, e.g., 'de' or 'ar'
-    _selectedTeam = 'fr'; // France by default
+    _selectedTeam = 'fr'; // France par défaut
+  }
+
+  // Permet d'extraire uniquement les équipes qualifiées (pour éviter les équipes fantômes)
+  List<String> _getSortedQualifiedTeams() {
+    final Set<String> qualifiedCodes = {};
+    for (final m in widget.matches) {
+      bool isValidCountryCode(String code) {
+        final c = code.toLowerCase();
+        if (c == 'tbd') return false;
+        if (c.contains(RegExp(r'[0-9]'))) return false;
+        if ((c.startsWith('w') || c.startsWith('l')) && c.length > 3) return false;
+        return true;
+      }
+
+      if (isValidCountryCode(m.t1)) qualifiedCodes.add(m.t1.toLowerCase());
+      if (isValidCountryCode(m.t2)) qualifiedCodes.add(m.t2.toLowerCase());
+    }
+    return qualifiedCodes.toList()
+      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
+          .compareTo(AppTranslations.getTeam(widget.lang, b)));
+  }
+
+  // Algorithme d'extraction du vrai groupe de l'équipe à partir des matchs
+  String _getTeamGroup(String teamCode) {
+    for (final m in widget.matches) {
+      if (m.group != null && m.group!.isNotEmpty) {
+        if (m.t1.toLowerCase() == teamCode.toLowerCase() || m.t2.toLowerCase() == teamCode.toLowerCase()) {
+          return m.group!;
+        }
+      }
+    }
+    return '';
+  }
+
+  // Construit les badges de forme colorés (Standard UX Sofascore/Flashscore)
+  Widget _buildFormBadge(String result) {
+    Color color;
+    String label = result.toUpperCase();
+
+    if (label == 'W' || label == 'V') {
+      color = AppColors.accent; // Vert
+    } else if (label == 'D' || label == 'N') {
+      color = AppColors.textMuted; // Gris
+    } else {
+      color = AppColors.danger; // Rouge
+    }
+
+    return Container(
+      width: 24,
+      height: 24,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 1.5),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<String> sortedTeams = WCTeamProfileService.allTeams
-      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
-          .compareTo(AppTranslations.getTeam(widget.lang, b)));
-
+    final List<String> sortedTeams = _getSortedQualifiedTeams();
     final currentTeam = _selectedTeam ?? 'fr';
 
-    // Compute stats for currentTeam
-    final teamMatches = widget.matches.where((m) => m.t1 == currentTeam || m.t2 == currentTeam).toList()
+    final teamMatches = widget.matches
+        .where((m) => m.t1 == currentTeam || m.t2 == currentTeam)
+        .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
 
     int goalsScored = 0;
@@ -315,6 +426,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
     int draws = 0;
     int losses = 0;
     int played = 0;
+    List<String> formHistory = [];
 
     for (final m in teamMatches) {
       if (m.isPlayed) {
@@ -324,13 +436,16 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
         final scoreOpp = isT1 ? m.t2Score! : m.t1Score!;
         goalsScored += scoreSelf;
         goalsConceded += scoreOpp;
-        
+
         if (scoreSelf > scoreOpp) {
           wins++;
+          formHistory.add(widget.lang == 'fr' ? 'V' : 'W');
         } else if (scoreSelf < scoreOpp) {
           losses++;
+          formHistory.add('L');
         } else {
           draws++;
+          formHistory.add(widget.lang == 'fr' ? 'N' : 'D');
         }
       }
     }
@@ -338,15 +453,15 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
     final stats = TournamentStats.compute(widget.matches);
     final teamScorers = stats.scorers.where((p) => p.teamCode == currentTeam).toList();
     final teamAssists = stats.assists.where((p) => p.teamCode == currentTeam).toList();
-
     final teamEmblemName = AppTranslations.getTeamWithEmblem(widget.lang, currentTeam);
+    final teamRealGroup = _getTeamGroup(currentTeam);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Selector Dropdown
+          // 1. Selector
           GestureDetector(
             onTap: () {
               TeamSelectorBottomSheet.show(
@@ -420,13 +535,12 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        '${AppTranslations.get(widget.lang, 'group')} ${currentTeam == 'en' ? 'B' : currentTeam.toUpperCase()}', // Simplified group mapping
-                        style: const TextStyle(
-                          color: AppColors.textDim,
-                          fontSize: 12,
+                      // Correction : Affichage dynamique du groupe réel du tournoi
+                      if (teamRealGroup.isNotEmpty)
+                        Text(
+                          '${AppTranslations.get(widget.lang, 'group')} $teamRealGroup',
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 12),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -440,7 +554,30 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             children: [
               _buildStatCard(AppTranslations.get(widget.lang, 'matchesPlayed'), '$played', Icons.sports_soccer),
               const SizedBox(width: 12),
-              _buildStatCard('W - D - L', '$wins - $draws - $losses', Icons.insights),
+
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border, width: 1.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.lang == 'fr' ? 'FORME RÉCENTE' : 'FORM GUIDE',
+                        style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 6),
+                      formHistory.isEmpty
+                          ? Text(widget.lang == 'fr' ? 'Aucun match joué' : 'No matches played', style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic))
+                          : Row(children: formHistory.map((res) => _buildFormBadge(res)).toList()),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -463,7 +600,6 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Scorers List
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(12),
@@ -475,10 +611,8 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AppTranslations.get(widget.lang, 'scorers'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
+                      Text(AppTranslations.get(widget.lang, 'scorers'),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                       const Divider(color: AppColors.border, height: 16),
                       if (teamScorers.isEmpty)
                         const Padding(
@@ -487,32 +621,26 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                         )
                       else
                         ...teamScorers.map((p) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      p.name,
-                                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${p.value} ⚽',
-                                    style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11),
-                                  ),
-                                ],
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(p.name,
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
                               ),
-                            )),
+                              Text('${p.value} ⚽',
+                                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11)),
+                            ],
+                          ),
+                        )),
                     ],
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-
-              // Assists List
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(12),
@@ -524,10 +652,8 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AppTranslations.get(widget.lang, 'assists'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
+                      Text(AppTranslations.get(widget.lang, 'assists'),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                       const Divider(color: AppColors.border, height: 16),
                       if (teamAssists.isEmpty)
                         const Padding(
@@ -536,25 +662,21 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                         )
                       else
                         ...teamAssists.map((p) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      p.name,
-                                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${p.value} 👟',
-                                    style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11),
-                                  ),
-                                ],
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(p.name,
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
                               ),
-                            )),
+                              Text('${p.value} 👟',
+                                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11)),
+                            ],
+                          ),
+                        )),
                     ],
                   ),
                 ),
@@ -563,7 +685,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           ),
           const SizedBox(height: 24),
 
-          // 5. Team Matches List
+          // 5. Team Matches
           Text(
             AppTranslations.get(widget.lang, 'allMatches'),
             style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
@@ -575,10 +697,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: teamMatches.length,
             separatorBuilder: (c, i) => const SizedBox(height: 8),
-            itemBuilder: (c, i) {
-              final m = teamMatches[i];
-              return _buildCompactMatchCard(context, m);
-            },
+            itemBuilder: (c, i) => _buildCompactMatchCard(context, teamMatches[i]),
           ),
         ],
       ),
@@ -602,17 +721,13 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(label,
+                      style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
+                  Text(value,
+                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -637,16 +752,8 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
         ),
         child: Row(
           children: [
-            // Team 1 flag
-            TeamFlagWidget(
-              code: m.t1,
-              width: 18,
-              height: 12,
-              borderRadius: 2,
-            ),
+            TeamFlagWidget(code: m.t1, width: 18, height: 12, borderRadius: 2),
             const SizedBox(width: 8),
-
-            // Teams Names & Scores
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -655,18 +762,14 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(
-                          t1Name,
-                          style: const TextStyle(color: Colors.white, fontSize: 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: Text(t1Name,
+                            style: const TextStyle(color: Colors.white, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       ),
                       if (m.isPlayed)
-                        Text(
-                          '${m.t1Score}',
-                          style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12),
-                        ),
+                        Text('${m.t1Score}',
+                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -674,49 +777,30 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(
-                          t2Name,
-                          style: const TextStyle(color: Colors.white, fontSize: 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: Text(t2Name,
+                            style: const TextStyle(color: Colors.white, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       ),
                       if (m.isPlayed)
-                        Text(
-                          '${m.t2Score}',
-                          style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12),
-                        ),
+                        Text('${m.t2Score}',
+                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-
-            // Team 2 flag
-            TeamFlagWidget(
-              code: m.t2,
-              width: 18,
-              height: 12,
-              borderRadius: 2,
-            ),
+            TeamFlagWidget(code: m.t2, width: 18, height: 12, borderRadius: 2),
             const SizedBox(width: 12),
-
-            // Divider line
             Container(width: 1, height: 24, color: AppColors.border),
             const SizedBox(width: 12),
-
-            // Time or Play Status indicator
             if (m.isPlayed)
-              const Text(
-                'FIN',
-                style: TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 10),
-              )
+              const Text('FIN',
+                  style: TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 10))
             else
-              Text(
-                m.getFormattedTime(),
-                style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 10),
-              ),
+              Text(m.getFormattedTime(),
+                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 10)),
           ],
         ),
       ),

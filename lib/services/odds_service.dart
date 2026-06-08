@@ -44,8 +44,8 @@ class WCOddsService {
           // If a knockout match is played and somehow tied, check shootout winner or fallback
           final winner = m.pkWinner ?? m.etWinner ?? m.t1;
           matchWinners[m.id] = winner.toLowerCase();
-          matchLosers[m.id] = (winner.toLowerCase() == m.t1.toLowerCase()) 
-              ? m.t2.toLowerCase() 
+          matchLosers[m.id] = (winner.toLowerCase() == m.t1.toLowerCase())
+              ? m.t2.toLowerCase()
               : m.t1.toLowerCase();
         }
       }
@@ -53,14 +53,14 @@ class WCOddsService {
 
     // 3. Short-circuit: If the Final (m80) is finished, that team is 100%, others 0%
     final finalMatch = resolvedMatches.firstWhere(
-      (m) => m.id == kFinalMatchId,
+          (m) => m.id == kFinalMatchId,
       orElse: () => resolvedMatches.lastWhere((m) => m.isKnockout, orElse: () => resolvedMatches.last),
     );
 
     if (finalMatch.id == kFinalMatchId && finalMatch.isPlayed) {
       final Map<String, double> result = {};
       final winner = matchWinners[kFinalMatchId] ?? (finalMatch.pkWinner ?? finalMatch.etWinner)?.toLowerCase() ?? (finalMatch.t1Score! > finalMatch.t2Score! ? finalMatch.t1 : finalMatch.t2).toLowerCase();
-      
+
       for (final t in allTeams) {
         result[t] = (t == winner) ? 100.0 : 0.0;
       }
@@ -179,7 +179,7 @@ class WCOddsService {
       if (m.isKnockout) {
         final t1 = m.t1.toLowerCase();
         final t2 = m.t2.toLowerCase();
-        
+
         int stageVal = 1; // Round of 32
         if (m.stage == 'Round of 16') stageVal = 2;
         else if (m.stage == 'Quarter-Final') stageVal = 3;
@@ -206,7 +206,10 @@ class WCOddsService {
         continue;
       }
 
-      final rating = kTeamRatings[lowerTeam] ?? 70;
+      // Safe clean-up of country codes to find actual team index ratings
+      final cleanCode = lowerTeam.replaceAll('g_', '');
+      final rating = kTeamRatings[cleanCode] ?? 70;
+
       // Weight proportional to rating^4.5 (rewards elite teams more realistically)
       final double basePower = pow(rating.toDouble(), 4.5).toDouble();
 
