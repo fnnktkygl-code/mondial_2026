@@ -220,7 +220,7 @@
     
     .flip-card {
         background-color: transparent;
-        height: 400px;
+        aspect-ratio: 9 / 19.5;
         perspective: 1000px;
         cursor: pointer;
     }
@@ -280,8 +280,10 @@
     .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
     /* Desktop version for specific cards */
-    .flip-card.desktop { height: 300px; grid-column: span 2; }
-    @media (max-width: 900px) { .flip-card.desktop { grid-column: span 1; } }
+    .flip-card.desktop { aspect-ratio: 16 / 9; grid-column: span 2; }
+    @media (max-width: 900px) { 
+        .flip-card.desktop { grid-column: span 1; aspect-ratio: 9 / 19.5; } 
+    }
 
     /* ─── SCORING ─────────────────────────────────────────── */
     #scoring { padding: 120px 0; }
