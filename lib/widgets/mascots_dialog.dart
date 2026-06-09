@@ -1,3 +1,4 @@
+import 'package:mondial_2026/l10n/translations.dart';
 import 'package:flutter/material.dart';
 import '../app_colors.dart';
 import 'team_flag.dart';
@@ -121,7 +122,7 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
         height: MediaQuery.of(context).size.height * 0.85,
         child: WCEmbeddedWebView(
           url: 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mascots',
-          title: widget.lang == 'fr' ? 'Mascottes Officielles' : 'Official Mascots',
+          title: AppTranslations.get(widget.lang, 'officialMascots'),
         ),
       ),
     );
@@ -135,13 +136,9 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.lang == 'fr'
-        ? 'Mascottes Officielles'
-        : (widget.lang == 'es' ? 'Mascotas Oficiales' : 'Official Mascots');
+    final String title = AppTranslations.get(widget.lang, 'officialMascots');
 
-    final String watchVideoText = widget.lang == 'fr'
-        ? 'Regarder la vidéo officielle'
-        : (widget.lang == 'es' ? 'Ver el video oficial' : 'Watch Official Trailer');
+    final String watchVideoText = AppTranslations.get(widget.lang, 'watchOfficialTrailer');
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -212,15 +209,9 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
                       },
                       itemBuilder: (context, idx) {
                         final mascot = _mascots[idx];
-                        final countryName = widget.lang == 'fr'
-                            ? mascot.countryNameFr
-                            : (widget.lang == 'es' ? mascot.countryNameEs : mascot.countryNameEn);
-                        final roleText = widget.lang == 'fr'
-                            ? mascot.roleFr
-                            : (widget.lang == 'es' ? mascot.roleEs : mascot.roleEn);
-                        final descText = widget.lang == 'fr'
-                            ? mascot.descFr
-                            : (widget.lang == 'es' ? mascot.descEs : mascot.descEn);
+                        final countryName = widget.lang == 'fr' ? mascot.countryNameFr : (widget.lang == 'es' ? mascot.countryNameEs : mascot.countryNameEn);
+                        final roleText = widget.lang == 'fr' ? mascot.roleFr : (widget.lang == 'es' ? mascot.roleEs : mascot.roleEn);
+                        final descText = widget.lang == 'fr' ? mascot.descFr : (widget.lang == 'es' ? mascot.descEs : mascot.descEn);
 
                         return SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
