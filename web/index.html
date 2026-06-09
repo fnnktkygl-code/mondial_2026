@@ -49,6 +49,17 @@
     .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.4s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
+    .host-gradient {
+      background: linear-gradient(to right, 
+        #006847 0%, #006847 33%, /* Mexico Green */
+        #002868 33%, #002868 66%, /* USA Blue */
+        #FF0000 66%, #FF0000 100% /* Canada Red */
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
     /* ─── NAV ─────────────────────────────────────────────── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -61,17 +72,6 @@
       max-width: 1160px; margin: 0 auto; padding: 0 24px;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .host-gradient {
-      background: linear-gradient(to right, 
-        #006847 0%, #006847 33%, /* Mexico Green */
-        #002868 33%, #002868 66%, /* USA Blue */
-        #FF0000 66%, #FF0000 100% /* Canada Red */
-      );
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-    }
-
     .logo {
       display: flex; align-items: center; gap: 12px;
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
@@ -193,18 +193,6 @@
     }
     .device-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    .screen-mock {
-      width: 100%; height: 100%;
-      background: var(--card-deep);
-      padding: 12px;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .mock-header { height: 20px; background: var(--surface); border-radius: 4px; margin-bottom: 4px; }
-    .mock-item { height: 60px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; padding: 0 12px; gap: 10px; }
-    .mock-circle { width: 30px; height: 30px; border-radius: 50%; background: var(--surface); }
-    .mock-line { height: 8px; background: var(--surface); border-radius: 4px; flex: 1; }
-    .mock-line.short { width: 40%; flex: none; }
-
     .device-tablet {
       flex: 1; min-width: 0; max-width: 500px;
       background: var(--card);
@@ -221,33 +209,88 @@
     .device-tablet-bar span { font-size: 11px; color: var(--text-3); font-weight: 600; }
     .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 
-    /* ─── FEATURES ──────────────────────────────────────── */
-    #features { background: var(--surface); position: relative; }
-    .features-header { text-align: center; margin-bottom: 64px; }
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .feature-card {
-      background: var(--card); border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg); padding: 32px;
-      transition: border-color .2s, transform .2s;
+    /* ─── FEATURES FLIP CARDS ───────────────────────────── */
+    #features { background: var(--surface); padding: 120px 0; }
+    .features-header { text-align: center; margin-bottom: 80px; }
+    .features-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+        gap: 32px; 
     }
-    .feature-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+    
+    .flip-card {
+        background-color: transparent;
+        height: 400px;
+        perspective: 1000px;
+        cursor: pointer;
+    }
+    
+    .flip-card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform-style: preserve-3d;
+    }
+    
+    .flip-card.flipped .flip-card-inner {
+        transform: rotateY(180deg);
+    }
+    
+    .flip-card-front, .flip-card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backfaceface-visibility: hidden;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 2px solid var(--border);
+    }
+    
+    .flip-card-front {
+        background: var(--card);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+    }
+    
+    .flip-card-back {
+        background: #000;
+        transform: rotateY(180deg);
+    }
+    
+    .flip-card-back img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
     .feature-icon {
-      width: 54px; height: 54px; border-radius: 16px;
-      background: var(--accent-dim); border: 1px solid rgba(16,185,129,.25);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; margin-bottom: 20px;
+        width: 64px; height: 64px; border-radius: 18px;
+        background: var(--accent-dim); border: 1px solid rgba(16,185,129,.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; margin-bottom: 24px;
     }
-    .feature-title { font-weight: 700; font-size: 18px; margin-bottom: 10px; color: var(--text-1); }
-    .feature-desc { color: var(--text-3); font-size: 14px; line-height: 1.6; }
+    .feature-title { font-weight: 700; font-size: 22px; margin-bottom: 12px; color: var(--text-1); }
+    .feature-desc { color: var(--text-3); font-size: 16px; line-height: 1.6; }
+    .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Desktop version for specific cards */
+    .flip-card.desktop { height: 300px; grid-column: span 2; }
+    @media (max-width: 900px) { .flip-card.desktop { grid-column: span 1; } }
 
     /* ─── SCORING ─────────────────────────────────────────── */
     #scoring { padding: 120px 0; }
     .scoring-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
     .scoring-card {
-      background: var(--card); border: 1.5px solid var(--border);
+      background: var(--card); border: 2px solid var(--border);
       border-radius: var(--radius-xl); padding: 40px; overflow: hidden; position: relative;
     }
-    .scoring-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .scoring-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
     .scoring-row:last-child { border-bottom: none; }
     .scoring-label { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); font-weight: 500; }
     .scoring-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--accent); }
@@ -264,7 +307,6 @@
     }
     .cta-logo { width: 120px; height: 120px; border-radius: 28px; margin-bottom: 24px; box-shadow: 0 0 40px var(--accent-glow); }
     .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: none; }
-    .cta-title .white { color: #FFFFFF; }
     
     .cta-sub { color: var(--text-2); font-size: 18px; margin-bottom: 40px; }
     .download-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
@@ -291,40 +333,12 @@
     /* ─── RESPONSIVE ─────────────────────────────────────── */
     @media (max-width: 900px) {
       .nav-links { display: none; }
-      .features-grid { grid-template-columns: 1fr; }
       .scoring-layout { grid-template-columns: 1fr; gap: 40px; }
       .hero-devices { flex-direction: column; align-items: center; }
       .device-tablet { width: 100%; max-width: 480px; }
-      .mascot-float { display: none; }
+      .float-asset { display: none; }
     }
     
-    /* ─── GALLERY (Elegant Horizontal Showcase) ─────────── */
-    #gallery { background: var(--bg); overflow: hidden; padding-bottom: 120px; }
-    .gallery-container {
-        display: flex; gap: 32px; overflow-x: auto; padding: 60px 24px;
-        scrollbar-width: none; -ms-overflow-style: none;
-        scroll-snap-type: x mandatory;
-    }
-    .gallery-container::-webkit-scrollbar { display: none; }
-    .gallery-item {
-        flex: 0 0 280px; scroll-snap-align: center;
-        background: var(--card); border-radius: 32px; overflow: hidden;
-        border: 2px solid var(--border); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        aspect-ratio: 9/19.5; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-        position: relative;
-    }
-    .gallery-item:hover { transform: translateY(-15px) scale(1.05); border-color: var(--accent); box-shadow: 0 30px 70px rgba(0,0,0,0.5); }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .video-showcase {
-        max-width: 960px; margin: 40px auto 0;
-        border-radius: 40px; overflow: hidden;
-        border: 3px solid var(--border-mid);
-        box-shadow: 0 60px 120px rgba(0,0,0,0.7);
-        background: #000; position: relative;
-    }
-    .video-showcase video { width: 100%; display: block; }
-
     .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
     .reveal.visible { opacity: 1; transform: none; }
   </style>
@@ -341,7 +355,6 @@
     <div class="nav-links">
       <a href="#features">Fonctionnalités</a>
       <a href="#scoring">Points</a>
-      <a href="#gallery">Galerie</a>
       <a href="#cta">Télécharger</a>
     </div>
     <a href="#cta" class="nav-cta">JOUER</a>
@@ -381,123 +394,119 @@
     </a>
   </div>
 
-  <!-- Device mockups with Fake Data visuals -->
+  <!-- Device mockups with REAL Screen placeholders -->
   <div class="hero-devices">
-    <!-- List / matches view mockup -->
     <div class="device-phone reveal">
       <div class="device-notch"></div>
       <div class="device-screen">
-        <div class="screen-mock">
-          <div class="mock-header"></div>
-          <div class="mock-item">
-            <div class="mock-circle"></div>
-            <div class="mock-line"></div>
-            <div class="mock-circle"></div>
-          </div>
-          <div class="mock-item">
-            <div class="mock-circle" style="background: var(--accent-dim)"></div>
-            <div class="mock-line short"></div>
-            <div class="mock-circle"></div>
-          </div>
-          <div class="mock-item">
-            <div class="mock-circle"></div>
-            <div class="mock-line"></div>
-            <div class="mock-circle" style="background: var(--blue)"></div>
-          </div>
-          <div class="mock-item">
-            <div class="mock-circle"></div>
-            <div class="mock-line short"></div>
-            <div class="mock-circle"></div>
-          </div>
-        </div>
+        <img src="screenshots/01_home.png" alt="Accueil App" onerror="this.style.display='none';">
+        <div class="screen-mock" style="position:absolute; z-index:-1;"></div> <!-- Fallback mock -->
       </div>
     </div>
 
-    <!-- Bracket view mockup -->
     <div class="device-tablet reveal">
       <div class="device-tablet-bar">
         <span>⚽ Prono Challenge — Bracket interactif</span>
       </div>
       <div class="device-tablet-screen">
-         <div class="screen-mock" style="flex-direction: row; align-items: center; justify-content: center; gap: 40px; padding: 40px;">
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div class="mock-item" style="width: 120px; height: 40px;"></div>
-                <div class="mock-item" style="width: 120px; height: 40px;"></div>
-            </div>
-            <div class="mock-item" style="width: 140px; height: 60px; border-color: var(--accent)"></div>
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div class="mock-item" style="width: 120px; height: 40px;"></div>
-                <div class="mock-item" style="width: 120px; height: 40px;"></div>
-            </div>
-         </div>
+         <img src="screenshots/04_bracket_desktop.png" alt="Bracket Desktop" onerror="this.style.display='none';">
+         <div class="screen-mock" style="position:absolute; z-index:-1;"></div>
       </div>
     </div>
 
-    <!-- Leaderboard view mockup -->
     <div class="device-phone featured reveal">
       <div class="device-notch"></div>
       <div class="device-screen">
-        <div class="screen-mock">
-          <div class="mock-header" style="background: var(--accent)"></div>
-          <div class="mock-item" style="background: var(--accent-dim); border-color: var(--accent)">
-            <div class="mock-circle" style="background: var(--accent)"></div>
-            <div class="mock-line"></div>
-            <div style="font-weight: 800; color: var(--accent)">1250</div>
-          </div>
-          <div class="mock-item">
-            <div class="mock-circle"></div>
-            <div class="mock-line"></div>
-            <div style="font-weight: 600">1180</div>
-          </div>
-          <div class="mock-item">
-            <div class="mock-circle"></div>
-            <div class="mock-line"></div>
-            <div style="font-weight: 600">1050</div>
-          </div>
-        </div>
+        <img src="screenshots/03_leaderboard.png" alt="Classement App" onerror="this.style.display='none';">
+        <div class="screen-mock" style="position:absolute; z-index:-1;"></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
+<!-- FEATURES INTERACTIVE -->
 <section id="features">
   <div class="container">
     <div class="features-header reveal">
       <div class="tag section-tag">L'app ultime</div>
-      <h2 class="section-title" style="margin-top: 16px;">Pensé pour les vrais fans</h2>
-      <p style="color: var(--text-3); max-width: 500px; margin: 0 auto;">Tout ce dont vous avez besoin pour dominer vos pronostics cette année.</p>
+      <h2 class="section-title" style="margin-top: 16px;">Explorez les fonctionnalités</h2>
+      <p style="color: var(--text-3); max-width: 500px; margin: 0 auto;">Cliquez sur les cartes pour voir l'interface réelle de l'application.</p>
     </div>
+    
     <div class="features-grid">
-      <div class="feature-card reveal">
-        <div class="feature-icon">🎯</div>
-        <div class="feature-title">Score exact</div>
-        <div class="feature-desc">Gagnez jusqu'à 40 points en prédisant le score exact. Verrouillage automatique au coup d'envoi.</div>
+      <!-- Card 1: Score Exact -->
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">🎯</div>
+            <h3 class="feature-title">Score exact</h3>
+            <p class="feature-desc">Prédisez le score final. Verrouillage automatique au coup d'envoi pour une équité totale.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/02_match_detail.png" alt="Détail Match">
+          </div>
+        </div>
       </div>
-      <div class="feature-card reveal">
-        <div class="feature-icon">👥</div>
-        <div class="feature-title">Groupes Privés</div>
-        <div class="feature-desc">Créez votre propre ligue, invitez vos amis et voyez qui est le meilleur expert.</div>
+
+      <!-- Card 2: Groupes -->
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">👥</div>
+            <h3 class="feature-title">Ligues privées</h3>
+            <p class="feature-desc">Créez votre groupe, invitez vos amis et dominez votre classement interne.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/06_groups.png" alt="Groupes Privés">
+          </div>
+        </div>
       </div>
-      <div class="feature-card reveal">
-        <div class="feature-icon">📈</div>
-        <div class="feature-title">Probabilités Live</div>
-        <div class="feature-desc">Utilisez l'index FIFA et les cotes en temps réel pour affiner vos prédictions.</div>
+
+      <!-- Card 3: Bracket (DESKTOP) -->
+      <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">🏆</div>
+            <h3 class="feature-title">Tableau de Phase Finale</h3>
+            <p class="feature-desc">Une vue large et interactive de tout le tournoi, optimisée pour desktop et tablettes.</p>
+            <div class="flip-hint">Cliquer pour voir l'interface desktop →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop">
+          </div>
+        </div>
       </div>
-      <div class="feature-card reveal">
-        <div class="feature-icon">🚀</div>
-        <div class="feature-title">Joker ×2</div>
-        <div class="feature-desc">Doublez vos points sur vos matchs les plus sûrs. À utiliser avec stratégie !</div>
+
+      <!-- Card 4: Profils -->
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">🌍</div>
+            <h3 class="feature-title">Équipes & Hymnes</h3>
+            <p class="feature-desc">Découvrez les 48 nations avec leurs hymnes nationaux et statistiques complètes.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/05_team_profile.png" alt="Profil Équipe">
+          </div>
+        </div>
       </div>
-      <div class="feature-card reveal">
-        <div class="feature-icon">🔔</div>
-        <div class="feature-title">Alertes Intelligentes</div>
-        <div class="feature-desc">Notifications avant le match pour ne jamais oublier un pronostic crucial.</div>
-      </div>
-      <div class="feature-card reveal">
-        <div class="feature-icon">🌍</div>
-        <div class="feature-title">48 Équipes</div>
-        <div class="feature-desc">Profils complets, hymnes nationaux et statistiques pour chaque nation.</div>
+
+      <!-- Card 5: Stats -->
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">📈</div>
+            <h3 class="feature-title">Probabilités Live</h3>
+            <p class="feature-desc">Analyse des cotes et probabilités FIFA en temps réel pour chaque rencontre.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/08_stats.png" alt="Statistiques">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -508,9 +517,9 @@
   <div class="container">
     <div class="scoring-layout">
       <div class="reveal">
-        <div class="tag section-tag">Barème</div>
-        <h2 class="section-title">Le talent récompensé</h2>
-        <p style="color: var(--text-3); margin-bottom: 24px;">Un système de points équilibré pour favoriser l'analyse sportive.</p>
+        <div class="tag section-tag">Barème de points</div>
+        <h2 class="section-title">Comment gagner ?</h2>
+        <p style="color: var(--text-3); margin-bottom: 24px;">Un système complet pour récompenser l'expertise à chaque étape du tournoi.</p>
       </div>
       <div class="scoring-card reveal">
         <div class="scoring-row">
@@ -554,42 +563,6 @@
           <div class="scoring-pts" style="color: var(--blue);">×2</div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- GALLERY -->
-<section id="gallery">
-  <div class="container">
-    <div class="features-header reveal">
-      <div class="tag section-tag">Galerie</div>
-      <h2 class="section-title">L'interface en action</h2>
-      <p style="color: var(--text-3); max-width: 500px; margin: 0 auto;">Découvrez chaque recoin de l'application conçue pour la meilleure expérience utilisateur.</p>
-    </div>
-  </div>
-    
-  <div class="gallery-container reveal">
-    <div class="gallery-item"><img src="screenshots/01_home.png" alt="Accueil"></div>
-    <div class="gallery-item"><img src="screenshots/02_match_detail.png" alt="Pronostics"></div>
-    <div class="gallery-item"><img src="screenshots/03_leaderboard.png" alt="Classement"></div>
-    <div class="gallery-item"><img src="screenshots/04_bracket.png" alt="Tableau"></div>
-    <div class="gallery-item"><img src="screenshots/05_team_profile.png" alt="Équipes"></div>
-    <div class="gallery-item"><img src="screenshots/06_groups.png" alt="Groupes"></div>
-    <div class="gallery-item"><img src="screenshots/07_settings.png" alt="Paramètres"></div>
-    <div class="gallery-item" style="display: flex; align-items: center; justify-content: center; background: var(--surface);">
-        <div style="text-align: center; padding: 20px;">
-            <div style="font-size: 50px; margin-bottom: 10px;">📲</div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--accent);">Swipe pour voir →</div>
-        </div>
-    </div>
-  </div>
-
-  <div class="container">
-    <div class="video-showcase reveal">
-        <video controls poster="assets/app_icon.png">
-            <source src="videos/demo.mp4" type="video/mp4">
-            Votre navigateur ne supporte pas la lecture de vidéos.
-        </video>
     </div>
   </div>
 </section>
