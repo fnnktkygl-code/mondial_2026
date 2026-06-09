@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +15,28 @@ class WCNotificationService {
       FlutterLocalNotificationsPlugin();
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  static int generateStableId(String matchId) {
+    // E.g. 'm12' -> 12, 'm12_ht' -> 121, 'm12_ft' -> 122
+    final RegExp digitRegex = RegExp(r'\d+');
+    final match = digitRegex.firstMatch(matchId);
+    
+    int baseId = 0;
+    if (match != null) {
+      baseId = int.parse(match.group(0)!);
+    } else {
+      // Fallback hash
+      int hash = 0;
+      for (int i = 0; i < matchId.length; i++) {
+        hash = 31 * hash + matchId.codeUnitAt(i);
+      }
+      baseId = hash.abs() % 100000;
+    }
+
+    if (matchId.endsWith('_ht')) return (baseId * 10) + 1;
+    if (matchId.endsWith('_ft')) return (baseId * 10) + 2;
+    return baseId * 10;
+  }
 
   static String _getFlagEmoji(String code) {
     const Map<String, String> flags = {
@@ -98,6 +122,14 @@ class WCNotificationService {
 
   static Future<void> init() async {
     tz.initializeTimeZones();
+    try {
+      if (!kIsWeb) {
+        final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      }
+    } catch (e) {
+      debugPrint('Could not get local timezone: $e');
+    }
 
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -121,10 +153,41 @@ class WCNotificationService {
         onDidReceiveNotificationResponse: (NotificationResponse _) {},
       );
 
-      _startFirestoreListener();
+      _setupFirebaseMessaging();
     } catch (e) {
       debugPrint('Error initializing notifications: $e');
     }
+  }
+
+  static void _setupFirebaseMessaging() {
+    FirebaseMessaging.instance.requestPermission();
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        showInstantNotification(
+          id: message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          title: message.notification!.title ?? 'Prono Challenge',
+          body: message.notification!.body ?? '',
+        );
+      }
+    });
+
+    // Optionally save the token to Firestore for the backend
+    FirebaseMessaging.instance.getToken().then((token) async {
+      if (token != null) {
+        try {
+          final uid = await WCFirebaseService.getOrCreateUserId();
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'fcmToken': token,
+            'fcmUpdatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        } catch (_) {}
+      }
+    });
+
+    // Keeping Firestore listener as a fallback for specific in-app notifications
+    // if backend isn't sending direct FCM. However, FCM is preferred.
+    _startFirestoreListener();
   }
 
   static void _startFirestoreListener() async {
@@ -234,8 +297,9 @@ class WCNotificationService {
     required String body,
   }) async {
     try {
+      final int stableId = generateStableId(id);
       await _plugin.show(
-        id: id.hashCode.abs(),
+        id: stableId,
         title: title,
         body: body,
         notificationDetails: _details,
@@ -251,19 +315,22 @@ class WCNotificationService {
     required String body,
     required DateTime scheduledDate,
   }) async {
+    if (kIsWeb) return; // flutter_local_notifications doesn't support Web
+    
     final tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
     if (tzDate.isBefore(tz.TZDateTime.now(tz.local))) return;
 
     try {
+      final int stableId = generateStableId(matchId);
       await _plugin.zonedSchedule(
-        id: matchId.hashCode.abs(),
+        id: stableId,
         title: title,
         body: body,
         scheduledDate: tzDate,
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        // uiLocalNotificationDateInterpretation:
-        //     UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
       debugPrint('Error scheduling notification: $e');
@@ -271,10 +338,12 @@ class WCNotificationService {
   }
 
   static Future<void> cancelNotification(String matchId) async {
+    if (kIsWeb) return;
+    
     try {
-      await _plugin.cancel(id: matchId.hashCode.abs());
-      await _plugin.cancel(id: '${matchId}_ht'.hashCode.abs());
-      await _plugin.cancel(id: '${matchId}_ft'.hashCode.abs());
+      await _plugin.cancel(generateStableId(matchId));
+      await _plugin.cancel(generateStableId('${matchId}_ht'));
+      await _plugin.cancel(generateStableId('${matchId}_ft'));
     } catch (e) {
       debugPrint('Error cancelling notification: $e');
     }
