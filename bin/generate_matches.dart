@@ -531,8 +531,8 @@ void main() {
   final file = File('assets/initial_matches.json');
   file.writeAsStringSync(jsonEncode(allMatchesJson));
 
-  print('Successfully simulated all 104 matches of Mondial 2026!');
-  print('Total generated matches in file: ${allMatchesJson.length}');
+  // Successfully simulated all 104 matches of Mondial 2026!
+  // Total generated matches in file: ${allMatchesJson.length}
 }
 
 List<Map<String, dynamic>> _simulateGoals(String t1, String t2, int score1, int score2) {

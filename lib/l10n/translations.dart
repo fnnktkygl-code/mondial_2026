@@ -19,6 +19,10 @@ class AppTranslations {
       'previewNotAvailable': 'Aperçu non disponible',
       'nationalAnthemStream': 'Hymne National - Stream',
       'nowPlaying': 'Lecture en cours...',
+      'updateAvailableTitle': 'Mise à jour disponible',
+      'version': 'Version',
+      'later': 'Plus tard',
+      'updateNow': 'Mettre à jour',
       'paused': 'En pause',
       'readyToListen': 'Prêt à écouter',
       'leaderboardUnavailable': 'Classement indisponible',
@@ -441,6 +445,10 @@ class AppTranslations {
       'previewNotAvailable': 'Preview not available',
       'nationalAnthemStream': 'National Anthem - Stream',
       'nowPlaying': 'Now playing...',
+      'updateAvailableTitle': 'Update Available',
+      'version': 'Version',
+      'later': 'Later',
+      'updateNow': 'Update Now',
       'paused': 'Paused',
       'readyToListen': 'Ready to listen',
       'leaderboardUnavailable': 'Leaderboard Unavailable',
@@ -856,6 +864,10 @@ class AppTranslations {
       'previewNotAvailable': 'Vista previa no disponible',
       'nationalAnthemStream': 'Himno Nacional - Stream',
       'nowPlaying': 'Reproduciendo...',
+      'updateAvailableTitle': 'Actualización disponible',
+      'version': 'Versión',
+      'later': 'Más tarde',
+      'updateNow': 'Actualizar ahora',
       'paused': 'En pausa',
       'readyToListen': 'Listo para escuchar',
       'leaderboardUnavailable': 'Clasificación no disponible',
@@ -1324,8 +1336,8 @@ class AppTranslations {
     final jokesMap = _data[lang]?['jokes'] as Map<String, String>?;
     if (jokesMap == null) return '';
 
-    final key1 = '${t1}_${t2}';
-    final key2 = '${t2}_${t1}';
+    final key1 = '${t1}_$t2';
+    final key2 = '${t2}_$t1';
     if (jokesMap.containsKey(key1)) return jokesMap[key1]!;
     if (jokesMap.containsKey(key2)) return jokesMap[key2]!;
 

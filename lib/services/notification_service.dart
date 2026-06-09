@@ -124,7 +124,8 @@ class WCNotificationService {
     tz.initializeTimeZones();
     try {
       if (!kIsWeb) {
-        final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+        final dynamic tzResult = await FlutterTimezone.getLocalTimezone();
+        final String timeZoneName = tzResult is String ? tzResult : tzResult.name;
         tz.setLocalLocation(tz.getLocation(timeZoneName));
       }
     } catch (e) {
@@ -329,8 +330,6 @@ class WCNotificationService {
         scheduledDate: tzDate,
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
       debugPrint('Error scheduling notification: $e');
@@ -341,9 +340,9 @@ class WCNotificationService {
     if (kIsWeb) return;
     
     try {
-      await _plugin.cancel(generateStableId(matchId));
-      await _plugin.cancel(generateStableId('${matchId}_ht'));
-      await _plugin.cancel(generateStableId('${matchId}_ft'));
+      await _plugin.cancel(id: generateStableId(matchId));
+      await _plugin.cancel(id: generateStableId('${matchId}_ht'));
+      await _plugin.cancel(id: generateStableId('${matchId}_ft'));
     } catch (e) {
       debugPrint('Error cancelling notification: $e');
     }
