@@ -143,10 +143,10 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: isUserTeam ? AppColors.accent.withOpacity(0.06) : AppColors.card,
+            color: isUserTeam ? AppColors.accent.withValues(alpha: 0.06) : AppColors.card,
             borderRadius: BorderRadius.circular(kCardRadius),
             border: Border.all(
-              color: live ? AppColors.accent.withOpacity(_pulseAnimation.value) : (isUserTeam ? AppColors.accent : (widget.hasAlert ? AppColors.accent.withOpacity(0.4) : AppColors.border)),
+              color: live ? AppColors.accent.withValues(alpha: _pulseAnimation.value) : (isUserTeam ? AppColors.accent : (widget.hasAlert ? AppColors.accent.withValues(alpha: 0.4) : AppColors.border)),
               width: (live || isUserTeam) ? 2.0 : 1.5,
             ),
           ),
@@ -163,7 +163,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                         child: Image.network(
                           _getFlagcdnUrl(widget.match.t1),
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                         ),
                       ),
                     ),
@@ -173,7 +173,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                         child: Image.network(
                           _getFlagcdnUrl(widget.match.t2),
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                         ),
                       ),
                     ),
@@ -284,7 +284,7 @@ class _LiveBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.15), borderRadius: BorderRadius.circular(kBadgeRadius)),
+    decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(kBadgeRadius)),
     child: const Text('⚽ LIVE', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
   );
 }

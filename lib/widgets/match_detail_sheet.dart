@@ -178,7 +178,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -250,7 +250,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
           margin: const EdgeInsets.only(top: 4, bottom: 12),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isUrgent ? AppColors.danger.withOpacity(0.12) : AppColors.cardDark,
+            color: isUrgent ? AppColors.danger.withValues(alpha: 0.12) : AppColors.cardDark,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isUrgent ? AppColors.danger : AppColors.border,
@@ -278,7 +278,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
               const SizedBox(width: 4),
               Icon(
                   Icons.info_outline,
-                  color: (isUrgent ? AppColors.danger : AppColors.warning).withOpacity(0.8),
+                  color: (isUrgent ? AppColors.danger : AppColors.warning).withValues(alpha: 0.8),
                   size: 13
               ),
             ],
@@ -417,8 +417,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: widget.prediction != null
-                      ? AppColors.accent.withOpacity(0.12)
-                      : AppColors.border.withOpacity(0.3),
+                      ? AppColors.accent.withValues(alpha: 0.12)
+                      : AppColors.border.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -469,7 +469,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Column(
         children: [
@@ -604,7 +604,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       width: double.infinity,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? AppColors.accent.withOpacity(0.08) : Colors.transparent,
+          backgroundColor: isSelected ? AppColors.accent.withValues(alpha: 0.08) : Colors.transparent,
           side: BorderSide(
             color: isSelected ? AppColors.accent : AppColors.border,
             width: 1.5,
@@ -692,7 +692,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: isThis ? AppColors.accent.withOpacity(0.1) : AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: isThis ? AppColors.accent : AppColors.border)),
+                  decoration: BoxDecoration(color: isThis ? AppColors.accent.withValues(alpha: 0.1) : AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: isThis ? AppColors.accent : AppColors.border)),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1044,7 +1044,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          backgroundColor: AppColors.danger.withOpacity(0.08),
+                          backgroundColor: AppColors.danger.withValues(alpha: 0.08),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
