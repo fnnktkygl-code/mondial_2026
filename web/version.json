@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "buildNumber": 1,
+  "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
+  "releaseNotes": {
+    "fr": "Première version de Prono Challenge ! Prédisez les scores de la Coupe du Monde 2026.",
+    "en": "First version of Prono Challenge! Predict the scores for the 2026 World Cup.",
+    "es": "¡Primera versión de Prono Challenge! Predice los resultados de la Copa del Mundo 2026."
+  }
+}

@@ -1,10 +1,8 @@
 import 'dart:math';
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import '../models/match.dart';
 import '../services/team_profile_service.dart';
 import '../services/audio_service.dart';
 import '../l10n/translations.dart';
@@ -25,7 +23,7 @@ class WCTeamProfileDialog extends StatefulWidget {
   static void show(BuildContext context, String teamCode, String lang) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.75),
+      barrierColor: Colors.black.withValues(alpha: 0.75),
       builder: (context) => WCTeamProfileDialog(
         teamCode: teamCode,
         lang: lang,
@@ -62,7 +60,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
           border: Border.all(color: AppColors.border, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 24,
               offset: const Offset(0, 10),
             )
@@ -285,7 +283,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.1),
+              color: AppColors.accent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 20, color: AppColors.accent),
@@ -342,8 +340,8 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          highlightColor: AppColors.border.withOpacity(0.3),
-          splashColor: AppColors.accent.withOpacity(0.15),
+          highlightColor: AppColors.border.withValues(alpha: 0.3),
+          splashColor: AppColors.accent.withValues(alpha: 0.15),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -357,7 +355,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           ? Image.asset(
                               imageUrl,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => SizedBox(
+                              errorBuilder: (context, error, stackTrace) => SizedBox(
                                 height: 160,
                                 child: _buildImagePlaceholder(),
                               ),
@@ -365,7 +363,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           : Image.network(
                               imageUrl,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => SizedBox(
+                              errorBuilder: (context, error, stackTrace) => SizedBox(
                                 height: 160,
                                 child: _buildImagePlaceholder(),
                               ),
@@ -381,7 +379,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black.withOpacity(0.55)],
+                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
                           ),
                         ),
                       ),
@@ -396,9 +394,9 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.1),
+                        color: AppColors.accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.accent.withOpacity(0.2), width: 1),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2), width: 1),
                       ),
                       child: const Icon(Icons.article_outlined, color: AppColors.accent, size: 24),
                     ),
@@ -501,7 +499,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
         width: 32,
         height: 32,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Icon(fallbackIcon, color: fallbackColor, size: 28),
+        errorBuilder: (context, error, stackTrace) => Icon(fallbackIcon, color: fallbackColor, size: 28),
       );
     }
     return Icon(fallbackIcon, color: fallbackColor, size: 28);

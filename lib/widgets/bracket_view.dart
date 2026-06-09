@@ -110,7 +110,7 @@ class BracketViewWidget extends StatelessWidget {
       onTap: () => onMatchTap(m),
       child: Container(
         width: 170, height: height,
-        decoration: BoxDecoration(color: isUserTeam ? AppColors.accent.withOpacity(0.08) : AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: isUserTeam ? AppColors.accent : (m.isPlayed ? AppColors.border : AppColors.borderMid), width: isUserTeam ? 2.2 : 1.5)),
+        decoration: BoxDecoration(color: isUserTeam ? AppColors.accent.withValues(alpha: 0.08) : AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: isUserTeam ? AppColors.accent : (m.isPlayed ? AppColors.border : AppColors.borderMid), width: isUserTeam ? 2.2 : 1.5)),
         clipBehavior: Clip.antiAlias,
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           _buildBracketTeamRow(code: m.t1, score: m.t1Score ?? 0, isWinner: isT1Winner, isLoser: m.isPlayed && !isT1Winner),
@@ -147,7 +147,7 @@ class BracketViewWidget extends StatelessWidget {
               ),
             ),
           Container(
-            color: isWinner ? AppColors.accent.withOpacity(0.06) : Colors.transparent,
+            color: isWinner ? AppColors.accent.withValues(alpha: 0.06) : Colors.transparent,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

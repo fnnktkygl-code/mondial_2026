@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -27,6 +27,7 @@ import 'services/notification_service.dart';
 import 'services/audio_service.dart';
 import 'services/odds_service.dart';
 import 'services/team_profile_service.dart';
+import 'services/update_service.dart';
 import 'utils/fifa_rules.dart';
 import 'widgets/title_odds_view.dart';
 import 'widgets/mascots_dialog.dart';
@@ -233,6 +234,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _isLoading = false;
     });
     _updateTournamentOddsAndCheckNotifications();
+
+    try {
+      if (mounted && !kIsWeb) {
+        WCUpdateService.checkUpdate(context, _lang);
+      }
+    } catch (_) {}
 
     try {
       await WCNotificationService.requestPermissions();

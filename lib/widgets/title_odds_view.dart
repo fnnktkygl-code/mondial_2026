@@ -63,7 +63,6 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
 
     return Column(
       children: [
-        // Search bar
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
           child: TextField(
@@ -108,16 +107,15 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           ),
         ),
 
-        // Info Banner pour les utilisateurs novices (méthode de contextualisation)
+        // Info Banner pour les utilisateurs novices (méthode de contextualisation avec police adaptée)
         if (_showExplanation) _buildContextualBanner(),
 
-        // Leaderboard List
         Expanded(
           child: filteredTeams.isEmpty
               ? Center(
             child: Text(
               AppTranslations.get(widget.lang, 'noTeamsFound'),
-              style: const TextStyle(color: AppColors.textDim),
+              style: const TextStyle(color: AppColors.textDim, fontSize: 14),
             ),
           )
               : ListView.separated(
@@ -150,12 +148,12 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.border,
+            color: AppColors.borderMid,
             width: 1.5,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(14.0),
+          padding: const EdgeInsets.all(16.0), // Augmentation du padding pour aérer
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -164,10 +162,10 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                 child: Icon(
                   Icons.emoji_events_outlined,
                   color: AppColors.accent,
-                  size: 20,
+                  size: 24, // Augmenté de 20 à 24 pour la visibilité
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14), // Espacement horizontal augmenté de 12 à 14
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,18 +173,18 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                     Text(
                       viewTitle,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 15, // Augmenté de 13 à 15 pour une lecture optimale
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6), // Espacement vertical augmenté de 4 à 6
                     Text(
                       viewDesc,
                       style: const TextStyle(
-                        color: AppColors.textDim,
-                        fontSize: 11,
-                        height: 1.4,
+                        color: AppColors.textSecondary, // Remplacement de textDim par textSecondary pour plus de contraste
+                        fontSize: 13, // Augmenté de 11 à 13 pour la lisibilité sur mobile
+                        height: 1.45, // Augmentation de la hauteur de ligne pour aérer le bloc
                       ),
                     ),
                   ],
@@ -194,7 +192,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.close, color: AppColors.textMuted, size: 16),
+                icon: const Icon(Icons.close, color: AppColors.textMuted, size: 20), // Augmenté de 16 à 20 pour faciliter la zone de clic
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 onPressed: () {
@@ -238,7 +236,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           AppTranslations.get(widget.lang, 'eliminated').toUpperCase(),
           style: const TextStyle(
             color: AppColors.danger,
-            fontSize: 9,
+            fontSize: 11, // Augmenté de 9 à 11 pour l'accessibilité mobile
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
           ),
@@ -253,7 +251,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           const SizedBox(width: 2),
           Text(
             '+${diff.toStringAsFixed(1)}%',
-            style: TextStyle(color: trendColor, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(color: trendColor, fontSize: 11, fontWeight: FontWeight.bold),
           ),
         ],
       );
@@ -266,7 +264,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           const SizedBox(width: 2),
           Text(
             '${diff.toStringAsFixed(1)}%',
-            style: TextStyle(color: trendColor, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(color: trendColor, fontSize: 11, fontWeight: FontWeight.bold),
           ),
         ],
       );
@@ -305,13 +303,13 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                   children: [
                     // Rank indicator
                     SizedBox(
-                      width: 26,
+                      width: 28, // Augmenté de 26 à 28
                       child: Text(
                         isEliminated ? '—' : '#$rank',
                         style: TextStyle(
                           color: isEliminated ? AppColors.textMuted : (rank <= 3 ? AppColors.accent : Colors.white),
                           fontWeight: FontWeight.w900,
-                          fontSize: 13,
+                          fontSize: 14, // Augmenté de 13 à 14
                         ),
                       ),
                     ),
@@ -339,7 +337,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                               style: TextStyle(
                                 color: isFav ? AppColors.accent : Colors.white,
                                 fontWeight: isFav ? FontWeight.w900 : FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 15, // Augmenté de 14 à 15 pour être plus lisible
                               ),
                             ),
                           ),
@@ -362,7 +360,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                       style: TextStyle(
                         color: isEliminated ? AppColors.textMuted : Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 15,
+                        fontSize: 16, // Augmenté de 15 à 16 pour un aspect premium
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -382,7 +380,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                         child: FractionallySizedBox(
                           widthFactor: (odds / 100.0).clamp(0.0, 1.0),
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
                                   AppColors.accent,

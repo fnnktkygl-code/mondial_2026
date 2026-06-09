@@ -1,134 +1,795 @@
-<!DOCTYPE html><html><head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="mondial_2026">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
-
-  <title>mondial_2026</title>
-  <link rel="manifest" href="manifest.json">
-  
-  
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <style id="splash-screen-style">
-    html {
-      height: 100%
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prono Challenge — Coupe du Monde 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --bg:         #080e1a;
+      --surface:    #0f1828;
+      --card:       #131e30;
+      --card-deep:  #0c1523;
+      --accent:     #00e07a;
+      --accent-dim: rgba(0,224,122,.12);
+      --accent-glow:rgba(0,224,122,.25);
+      --blue:       #3b82f6;
+      --border:     rgba(255,255,255,.08);
+      --border-mid: rgba(255,255,255,.14);
+      --text-1:     #ffffff;
+      --text-2:     #a8b8cc;
+      --text-3:     #5a6d82;
+      --radius-lg:  24px;
+      --radius-xl:  32px;
     }
-
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0;
-      min-height: 100%;
-      background-color: #000000;
-          background-size: 100% 100%;
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
     }
 
-    .center {
-      margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
+    /* ─── UTILITY ─────────────────────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent-dim); border: 1px solid rgba(0,224,122,.3);
+      color: var(--accent); font-size: 11px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 99px;
+    }
+    .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.4s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ─── NAV ─────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 0;
+      background: rgba(8,14,26,.8);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .inner {
+      max-width: 1160px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    }
+    .logo-ball { font-size: 22px; filter: drop-shadow(0 0 8px var(--accent)); }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text-1); }
+    .nav-cta {
+      background: var(--accent); color: #000; font-weight: 700; font-size: 14px;
+      padding: 9px 22px; border-radius: 99px; text-decoration: none;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .nav-cta:hover { box-shadow: 0 0 24px var(--accent-glow); transform: translateY(-1px); }
+
+    /* ─── HERO ────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,224,122,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 15% 80%, rgba(59,130,246,.08) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 40% at 85% 70%, rgba(0,224,122,.06) 0%, transparent 50%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+    }
+    #hero > * { position: relative; z-index: 1; }
+    .hero-tag { margin-bottom: 28px; }
+    .hero-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(40px, 7vw, 84px); line-height: 1.04;
+      letter-spacing: -.03em; margin-bottom: 24px;
+    }
+    .hero-title em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent) 0%, #a0f0c6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
+      max-width: 560px; margin: 0 auto 40px;
+    }
+    .hero-actions {
+      display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 64px;
+    }
+    .btn-primary {
+      background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
+      padding: 14px 32px; border-radius: 99px; text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .btn-primary:hover { box-shadow: 0 0 40px var(--accent-glow); transform: translateY(-2px); }
+    .btn-secondary {
+      background: transparent; color: var(--text-1); font-weight: 600; font-size: 16px;
+      padding: 14px 32px; border-radius: 99px; text-decoration: none;
+      border: 1.5px solid var(--border-mid);
+      display: flex; align-items: center; gap: 8px;
+      transition: border-color .2s, background .2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: var(--accent-dim); }
+
+    /* ─── HERO DEVICE SHOWCASE ──────────────────────────── */
+    .hero-devices {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 24px; width: 100%; max-width: 960px; margin: 0 auto;
+    }
+    .device-phone {
+      width: 220px; flex-shrink: 0;
+      background: var(--card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+      position: relative;
+      transition: transform .3s ease;
+    }
+    .device-phone:hover { transform: translateY(-6px); }
+    .device-phone.featured { transform: scale(1.08); z-index: 2; box-shadow: 0 32px 100px rgba(0,0,0,.7), 0 0 40px rgba(0,224,122,.15); }
+    .device-phone.featured:hover { transform: scale(1.08) translateY(-6px); }
+    .device-notch {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 80px; height: 22px; background: #000;
+      border-radius: 0 0 14px 14px; z-index: 10;
+    }
+    .device-screen {
+      aspect-ratio: 9/19.5;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .device-screen img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
     }
 
-    .contain {
-      display:block;
-      width:100%; height:100%;
-      object-fit: contain;
+    /* placeholder screens */
+    .screen-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; padding: 24px; text-align: center;
+      background: var(--card-deep);
+    }
+    .screen-placeholder .ph-icon { font-size: 36px; }
+    .screen-placeholder .ph-label {
+      font-size: 11px; color: var(--text-3); font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      border: 1px dashed var(--border-mid); border-radius: 8px;
+      padding: 6px 12px;
     }
 
-    .stretch {
-      display:block;
-      width:100%; height:100%;
+    .device-tablet {
+      flex: 1; min-width: 0; max-width: 500px;
+      background: var(--card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+      transition: transform .3s ease;
+    }
+    .device-tablet:hover { transform: translateY(-4px); }
+    .device-tablet-bar {
+      height: 36px; background: var(--card-deep);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .device-tablet-bar span {
+      font-size: 11px; color: var(--text-3); font-weight: 600;
+    }
+    .device-tablet-screen {
+      aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .device-tablet-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* ─── SECTION LAYOUT ──────────────────────────────────── */
+    section { padding: 100px 0; }
+    .section-tag { margin-bottom: 16px; }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(28px, 4vw, 48px); line-height: 1.1;
+      letter-spacing: -.02em; margin-bottom: 16px;
+    }
+    .section-sub { color: var(--text-2); font-size: 17px; max-width: 500px; }
+
+    /* ─── FEATURES ──────────────────────────────────────── */
+    #features { background: var(--surface); }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .section-sub { margin: 0 auto; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .feature-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 28px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: rgba(0,224,122,.4); transform: translateY(-3px); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--accent-dim); border: 1px solid rgba(0,224,122,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+    }
+    .feature-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+    .feature-desc { color: var(--text-2); font-size: 14px; line-height: 1.6; }
+
+    /* ─── SCREENSHOTS SECTION ─────────────────────────────── */
+    #screenshots {}
+    .screenshots-layout {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+    }
+    .screenshots-layout.reverse { direction: rtl; }
+    .screenshots-layout.reverse > * { direction: ltr; }
+    .screenshots-phones {
+      display: flex; gap: 16px; align-items: flex-end; justify-content: center;
+    }
+    .screenshots-phones .device-phone { width: 170px; }
+    .screenshots-phones .device-phone.main { width: 195px; transform: translateY(-16px); }
+    .screenshots-phones .device-phone.main:hover { transform: translateY(-22px); }
+
+    .screenshot-text {}
+    .screenshot-text .section-title { font-size: clamp(24px, 3vw, 36px); }
+
+    .feature-list { margin-top: 28px; display: flex; flex-direction: column; gap: 14px; }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .feature-item-dot {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+      background: var(--accent-dim); border: 1px solid rgba(0,224,122,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; margin-top: 1px;
+    }
+    .feature-item-text { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+    .feature-item-text strong { color: var(--text-1); }
+
+    /* ─── VIDEO SECTION ──────────────────────────────────── */
+    #video { background: var(--surface); text-align: center; }
+    .video-wrapper {
+      max-width: 860px; margin: 48px auto 0;
+      background: var(--card); border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius-xl); overflow: hidden;
+      box-shadow: 0 32px 100px rgba(0,0,0,.5), 0 0 60px rgba(0,224,122,.08);
+      position: relative;
+    }
+    .video-inner {
+      aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--card-deep);
+      position: relative; overflow: hidden;
+    }
+    .video-inner video {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .video-placeholder {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      color: var(--text-2);
+    }
+    .video-play-btn {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: box-shadow .2s, transform .15s;
+      box-shadow: 0 0 0 0 var(--accent-glow);
+      animation: ring 2s ease-out infinite;
+    }
+    .video-play-btn:hover { transform: scale(1.08); }
+    @keyframes ring {
+      0%   { box-shadow: 0 0 0 0 rgba(0,224,122,.5); }
+      70%  { box-shadow: 0 0 0 20px rgba(0,224,122,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,224,122,0); }
+    }
+    .video-play-btn svg { width: 28px; height: 28px; fill: #000; margin-left: 4px; }
+    .video-placeholder p { font-size: 15px; font-weight: 500; color: var(--text-3); }
+    .video-placeholder .ph-small { font-size: 12px; color: var(--text-3); font-style: italic;
+      border: 1px dashed var(--border-mid); border-radius: 8px; padding: 6px 14px; }
+
+    /* ─── SCORING ─────────────────────────────────────────── */
+    #scoring {}
+    .scoring-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .scoring-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius-xl); padding: 36px; overflow: hidden; position: relative;
+    }
+    .scoring-card::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,224,122,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .scoring-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .scoring-row:last-child { border-bottom: none; }
+    .scoring-label { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-2); }
+    .scoring-pts {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+      color: var(--accent);
     }
 
-    .cover {
-      display:block;
-      width:100%; height:100%;
-      object-fit: cover;
+    /* ─── SOCIAL PROOF / STATS ─────────────────────────────── */
+    #stats { background: var(--surface); }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .stat-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 36px 28px; text-align: center;
+    }
+    .stat-number {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 52px; line-height: 1;
+      background: linear-gradient(135deg, var(--accent), #a0f0c6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 8px;
+    }
+    .stat-label { color: var(--text-2); font-size: 15px; font-weight: 500; }
+
+    /* ─── CTA ─────────────────────────────────────────────── */
+    #cta { text-align: center; padding: 120px 24px; }
+    .cta-glow {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(0,224,122,.08), rgba(59,130,246,.06));
+      border: 1.5px solid rgba(0,224,122,.2);
+      border-radius: 48px; padding: 64px; max-width: 800px; width: 100%;
+      position: relative; overflow: hidden;
+    }
+    .cta-glow::before {
+      content: ''; position: absolute; top: -40%; left: -20%;
+      width: 140%; height: 140%;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0,224,122,.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .cta-emoji { font-size: 48px; margin-bottom: 16px; }
+    .cta-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(28px, 4vw, 44px); line-height: 1.1;
+      letter-spacing: -.02em; margin-bottom: 12px;
+    }
+    .cta-sub { color: var(--text-2); font-size: 17px; margin-bottom: 32px; }
+    .download-buttons {
+      display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    }
+    .dl-btn {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--text-1); color: #000; font-weight: 700; font-size: 15px;
+      padding: 13px 26px; border-radius: 16px; text-decoration: none;
+      transition: transform .15s, box-shadow .2s;
+      min-width: 200px;
+      text-align: left;
+    }
+    .dl-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .dl-btn.ios { background: #fff; opacity: 0.6; cursor: not-allowed; }
+    .dl-btn.android { background: #f1f1f1; }
+    .dl-btn.macos { background: #1a1a1a; color: #fff; border: 1px solid var(--border-mid); }
+    .dl-btn.web { background: var(--accent); color: #000; }
+    .dl-btn .store-icon { font-size: 22px; width: 32px; text-align: center; }
+    .dl-btn-sub { font-size: 10px; font-weight: 500; color: #444; display: block; opacity: 0.8; }
+    .dl-btn.macos .dl-btn-sub { color: #aaa; }
+    .dl-btn.web .dl-btn-sub { color: #000; }
+    .dl-btn-main { font-size: 15px; font-weight: 700; display: block; }
+
+    /* ─── FOOTER ─────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px; text-align: center;
+      color: var(--text-3); font-size: 13px;
+    }
+    footer strong { color: var(--text-2); }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .screenshots-layout, .scoring-layout, .stats-grid { grid-template-columns: 1fr; }
+      .screenshots-layout.reverse { direction: ltr; }
+      .hero-devices { flex-direction: column; align-items: center; }
+      .device-tablet { width: 100%; max-width: 480px; }
+      .device-phone.featured { transform: scale(1); }
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 36px; }
+      .device-phone { width: 160px; }
+      .download-buttons { flex-direction: column; align-items: center; }
+      .dl-btn { width: 100%; max-width: 300px; }
     }
 
-    .bottom {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      -ms-transform: translate(-50%, 0);
-      transform: translate(-50%, 0);
-    }
-
-    .bottomLeft {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
-
-    .bottomRight {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
+    /* ─── SCROLL REVEAL ──────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
   </style>
-  <script id="splash-screen-script">
-    function removeSplashFromWeb() {
-      document.getElementById("splash")?.remove();
-      document.getElementById("splash-branding")?.remove();
-      document.body.style.background = "transparent";
-    }
-  </script>
 </head>
 <body>
-  <picture id="splash">
-      <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
-      <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
-      <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
-  </picture>
-  
-  
-  
-  
-  
-  
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async=""></script>
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="logo">
+      <span class="logo-ball">⚽</span>
+      Prono <span>Challenge</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Fonctionnalités</a>
+      <a href="#screenshots">Aperçu</a>
+      <a href="#scoring">Points</a>
+      <a href="#cta">Télécharger</a>
+    </div>
+    <a href="#cta" class="nav-cta">Jouer</a>
+  </div>
+</nav>
 
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
 
-</body></html>
+  <div class="hero-tag">
+    <span class="tag">Coupe du Monde 2026 · USA / Canada / Mexique</span>
+  </div>
+
+  <h1 class="hero-title">
+    Pronostique.<br />
+    <em>Challenge tes amis.</em><br />
+    Domine le classement.
+  </h1>
+
+  <p class="hero-sub">
+    L'application qui transforme la Coupe du Monde en compétition privée. Prédis les scores, accumule des points, et vois qui est le meilleur pronostiqueur de ton groupe.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#cta" class="btn-primary">
+      <span>📱</span> Obtenir l'app
+    </a>
+    <a href="app.html" class="btn-secondary">
+      <span>🌐</span> Jouer sur le Web
+    </a>
+  </div>
+
+  <!-- Device mockups -->
+  <div class="hero-devices">
+    <!-- Phone gauche -->
+    <div class="device-phone reveal">
+      <div class="device-notch"></div>
+      <div class="device-screen">
+        <div class="screen-placeholder">
+          <div class="ph-icon">📅</div>
+          <div class="ph-label">Vue Tournoi<br/>Tous les matchs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tablet centre (featured) -->
+    <div class="device-tablet reveal">
+      <div class="device-tablet-bar">
+        <span>⚽ Prono Challenge — Tableau</span>
+      </div>
+      <div class="device-tablet-screen">
+        <div class="screen-placeholder">
+          <div class="ph-icon">🏆</div>
+          <div class="ph-label">Tableau Final<br/>Bracket Interactif</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone droite -->
+    <div class="device-phone featured reveal">
+      <div class="device-notch"></div>
+      <div class="device-screen">
+        <div class="screen-placeholder">
+          <div class="ph-icon">⚡</div>
+          <div class="ph-label">Challenge<br/>Classement Amis</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="tag section-tag">Tout ce qu'il faut</div>
+      <h2 class="section-title" style="margin: 16px auto; max-width: 600px; text-align:center;">Une app pensée pour le plaisir du groupe</h2>
+      <p class="section-sub" style="margin: 0 auto;">Tout ce dont tu as besoin pour vivre la Coupe du Monde 2026 avec tes amis — dans une seule application.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚽</div>
+        <div class="feature-title">Pronostics en temps réel</div>
+        <div class="feature-desc">Prédit le score exact de chaque match. Le verrou se ferme automatiquement au coup d'envoi.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🏆</div>
+        <div class="feature-title">Classement de groupe</div>
+        <div class="feature-desc">Crée ton groupe privé avec tes amis et suis le classement en direct au fil des matchs.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Probabilités FIFA</div>
+        <div class="feature-desc">L'index FIFA te donne les probabilités théoriques de chaque résultat pour t'aider à te décider.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Joker x2</div>
+        <div class="feature-desc">Double tes points sur un match stratégique grâce au joker. Une seule chance par tour, choisis bien !</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-title">Alertes personnalisées</div>
+        <div class="feature-desc">Reçois une notification 1 heure avant le coup d'envoi pour ne jamais oublier de pronostiquer.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🗓</div>
+        <div class="feature-title">Vue Calendrier</div>
+        <div class="feature-desc">Visualise tous les matchs de la semaine dans une vue calendrier claire avec tes alertes et pronostics.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOTS 1 — MATCH & PRONOSTIC -->
+<section id="screenshots">
+  <div class="container">
+
+    <!-- Bloc 1 -->
+    <div class="screenshots-layout reveal" style="margin-bottom: 100px;">
+      <div class="screenshots-phones">
+        <div class="device-phone">
+          <div class="device-notch"></div>
+          <div class="device-screen">
+            <div class="screen-placeholder">
+              <div class="ph-icon">📅</div>
+              <div class="ph-label">Vue Tournoi</div>
+            </div>
+          </div>
+        </div>
+        <div class="device-phone main">
+          <div class="device-notch"></div>
+          <div class="device-screen">
+            <div class="screen-placeholder">
+              <div class="ph-icon">🎯</div>
+              <div class="ph-label">Détail match<br/>+ probabilités</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screenshot-text">
+        <div class="tag section-tag">Pronostics</div>
+        <h2 class="section-title">Prédit chaque match, suis chaque score</h2>
+        <p class="section-sub">Avant le coup d'envoi, entre ton pronostic en quelques secondes. Après le match, vois directement si tu as deviné le bon résultat — ou le score exact.</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-item-dot">✓</div>
+            <div class="feature-item-text"><strong>Score exact :</strong> +30 pts (poule), +40 pts (finale)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-dot">✓</div>
+            <div class="feature-item-text"><strong>Bon vainqueur :</strong> +10 pts à +25 pts selon le contexte</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-dot">⚡</div>
+            <div class="feature-item-text"><strong>Verrou automatique</strong> : plus de modification après le coup d'envoi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloc 2 (inversé) -->
+    <div class="screenshots-layout reverse reveal" style="margin-bottom: 100px;">
+      <div class="screenshots-phones">
+        <div class="device-phone main">
+          <div class="device-notch"></div>
+          <div class="device-screen">
+            <div class="screen-placeholder">
+              <div class="ph-icon">🗓</div>
+              <div class="ph-label">Vue Calendrier</div>
+            </div>
+          </div>
+        </div>
+        <div class="device-phone">
+          <div class="device-notch"></div>
+          <div class="device-screen">
+            <div class="screen-placeholder">
+              <div class="ph-icon">🌍</div>
+              <div class="ph-label">Profil équipe</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screenshot-text">
+        <div class="tag section-tag">Organisation</div>
+        <h2 class="section-title">Tout le tournoi dans ta poche</h2>
+        <p class="section-sub">Calendrier hebdomadaire, profil des 48 équipes avec hymne national, vue bracket du tournoi — ne rate jamais un match qui compte.</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-item-dot">🔔</div>
+            <div class="feature-item-text"><strong>Alertes intelligentes</strong> pour tes équipes favorites</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-dot">🌍</div>
+            <div class="feature-item-text"><strong>48 équipes</strong> avec drapeaux, ranking et hymnes</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-dot">📊</div>
+            <div class="feature-item-text"><strong>Stats en direct</strong> et évolution des cotes de titre</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SCORING -->
+<section id="scoring">
+  <div class="container">
+    <div class="scoring-layout">
+      <div class="reveal">
+        <div class="tag section-tag">Barème</div>
+        <h2 class="section-title">Un système de points qui récompense le talent</h2>
+        <p class="section-sub">Pas de chance, seulement de l'analyse. Le bon score exact vaut largement plus qu'un simple vainqueur — et le champion du monde exact est le jackpot.</p>
+      </div>
+      <div class="scoring-card reveal">
+        <div class="scoring-row">
+          <div class="scoring-label"><span>🎯</span> Score exact (poule)</div>
+          <div class="scoring-pts">+30 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>✅</span> Bon vainqueur (poule)</div>
+          <div class="scoring-pts">+10 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>🎯</span> Score exact (finale)</div>
+          <div class="scoring-pts">+40 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>✅</span> Bon vainqueur (finale)</div>
+          <div class="scoring-pts">+15 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>⚡</span> Bon vainqueur en prolongation</div>
+          <div class="scoring-pts">+20 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>🥅</span> Bon vainqueur aux tirs au but</div>
+          <div class="scoring-pts">+25 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>🏆</span> Champion du monde exact</div>
+          <div class="scoring-pts">+100 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>👟</span> Meilleur buteur exact</div>
+          <div class="scoring-pts">+50 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label"><span>🚀</span> Joker (×2 sur un match)</div>
+          <div class="scoring-pts" style="color: var(--blue);">×2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card reveal">
+        <div class="stat-number">48</div>
+        <div class="stat-label">équipes à pronostiquer</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-number">104</div>
+        <div class="stat-label">matchs sur toute la compétition</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-number">∞</div>
+        <div class="stat-label">amis dans ton groupe privé</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta">
+  <div class="container" style="display:flex; justify-content:center;">
+    <div class="cta-glow reveal">
+      <div class="cta-emoji">⚽</div>
+      <h2 class="cta-title">Prêt à relever le défi ?</h2>
+      <p class="cta-sub">Rejoins ton groupe, pronostique dès maintenant et vise la première place avant le coup d'envoi du 11 juin 2026.</p>
+      <div class="download-buttons">
+        <!-- Web App First -->
+        <a href="app.html" class="dl-btn web">
+          <span class="store-icon">🌐</span>
+          <span>
+            <span class="dl-btn-sub">Jouer directement</span>
+            <span class="dl-btn-main">Web App</span>
+          </span>
+        </a>
+        <!-- Android APK -->
+        <a href="https://github.com/fnnktkygl-code/mondial_2026/releases/download/v1.0.0/app-release.apk" class="dl-btn android">
+          <span class="store-icon">🤖</span>
+          <span>
+            <span class="dl-btn-sub">Télécharger l'APK</span>
+            <span class="dl-btn-main">Android SDK</span>
+          </span>
+        </a>
+        <!-- macOS Desktop -->
+        <a href="https://github.com/fnnktkygl-code/mondial_2026/releases/download/v1.0.0/PronoChallenge-macOS.zip" class="dl-btn macos">
+          <span class="store-icon">💻</span>
+          <span>
+            <span class="dl-btn-sub">Télécharger pour</span>
+            <span class="dl-btn-main">macOS Desktop</span>
+          </span>
+        </a>
+        <!-- iOS Placeholder -->
+        <a href="#" class="dl-btn ios" onclick="return false;">
+          <span class="store-icon">🍎</span>
+          <span>
+            <span class="dl-btn-sub">Bientôt sur</span>
+            <span class="dl-btn-main">App Store</span>
+          </span>
+        </a>
+      </div>
+      <p style="margin-top: 24px; font-size: 12px; color: var(--text-3);">
+        * Pour Android, autorisez l'installation de sources inconnues si nécessaire. Vos données seront conservées lors des mises à jour.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>⚽ <strong>Prono Challenge</strong> — Coupe du Monde 2026 &nbsp;·&nbsp; Fait avec ❤️ pour les fans de foot</p>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Smooth nav links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+</script>
+</body>
+</html>
