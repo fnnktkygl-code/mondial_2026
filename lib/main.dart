@@ -571,14 +571,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
       await WCNotificationService.scheduleMatchNotification(
         matchId: matchId,
-        title: _lang == 'fr'
-            ? '⚽ Match imminent !'
-            : (_lang == 'es' ? '⚽ ¡Partido inminente!' : '⚽ Match starting soon!'),
-        body: _lang == 'fr'
-            ? 'Le match $t1Name vs $t2Name commence bientôt !'
-            : (_lang == 'es'
-            ? '¡El partido entre $t1Name y $t2Name comienza pronto!'
-            : 'The match $t1Name vs $t2Name is starting soon!'),
+        title: AppTranslations.get(_lang, 'matchStartingSoonTitle'),
+        body: AppTranslations.get(_lang, "matchStartingSoonBody").replaceAll("{t1}", t1Name).replaceAll('{t2}', t2Name),
         scheduledDate: scheduledTime,
       );
 
@@ -680,26 +674,14 @@ class _MyHomePageState extends State<MyHomePage> {
         String body = '';
 
         if (newProb == 0.0) {
-          title = _lang == 'fr' ? '❌ Élimination !' : (_lang == 'es' ? '❌ ¡Eliminación!' : '❌ Elimination!');
-          body = _lang == 'fr'
-              ? 'Le rêve prend fin pour $nickname $flag ! Son parcours au Mondial 2026 s\'arrête ici.'
-              : (_lang == 'es'
-              ? '¡El sogno termina para $nickname $flag! Su camino en el Mundial 2026 termina aquí.'
-              : 'The dream ends for $nickname $flag! Their World Cup 2026 run ends here.');
+          title = AppTranslations.get(_lang, 'eliminationTitle');
+          body = AppTranslations.get(_lang, 'eliminationBody').replaceAll('{nickname}', nickname).replaceAll('{flag}', flag);
         } else if (newProb > oldProb) {
-          title = _lang == 'fr' ? '📈 Cote en hausse !' : (_lang == 'es' ? '📈 ¡Cuotas al alza!' : '📈 Odds rising!');
-          body = _lang == 'fr'
-              ? 'La probabilité de titre pour $nickname $flag monte à ${newProb.toStringAsFixed(1)}% !'
-              : (_lang == 'es'
-              ? '¡La probabilidad de título para $nickname $flag sube al ${newProb.toStringAsFixed(1)}%!'
-              : 'Title winning probability for $nickname $flag rises to ${newProb.toStringAsFixed(1)}%!');
+          title = AppTranslations.get(_lang, 'oddsRisingTitle');
+          body = AppTranslations.get(_lang, 'oddsRisingBody').replaceAll('{nickname}', nickname).replaceAll('{flag}', flag).replaceAll('{prob}', newProb.toStringAsFixed(1));
         } else {
-          title = _lang == 'fr' ? '📉 Cote en baisse !' : (_lang == 'es' ? '📉 ¡Cuotas a la baja!' : '📉 Odds falling!');
-          body = _lang == 'fr'
-              ? 'La probabilité de titre pour $nickname $flag baisse à ${newProb.toStringAsFixed(1)}%.'
-              : (_lang == 'es'
-              ? 'La probabilidad de título para $nickname $flag baja al ${newProb.toStringAsFixed(1)}%.'
-              : 'Title winning probability for $nickname $flag falls to ${newProb.toStringAsFixed(1)}%.');
+          title = AppTranslations.get(_lang, 'oddsFallingTitle');
+          body = AppTranslations.get(_lang, "oddsFallingBody").replaceAll("{nickname}", nickname).replaceAll("{flag}", flag).replaceAll("{prob}", newProb.toStringAsFixed(1));
         }
 
         WCNotificationService.showNotification(
@@ -862,7 +844,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: const Icon(Icons.emoji_events_rounded, size: 16, color: AppColors.textPrimary),
                     ),
                     const SizedBox(width: 12),
-                    Text(_lang == 'fr' ? 'Mascottes' : (_lang == 'es' ? 'Mascotas' : 'Mascots'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text(AppTranslations.get(_lang, 'mascots'), style: const TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
