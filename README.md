@@ -70,11 +70,14 @@ flutter run
 
 ### Build pour la production
 ```bash
-# Web
-flutter build web --base-href "/mondial_2026/"
+# Web (Optimisé Standard)
+flutter build web --release --base-href "/mondial_2026/"
 
-# Android (APK)
-flutter build apk --release
+# Web (Haute performance - nécessite support serveur des headers MIME)
+flutter build web --wasm --base-href "/mondial_2026/"
+
+# Android (Optimisé et obfuscé pour la sécurité)
+flutter build apk --release --obfuscate --split-debug-info=build/app/outputs/symbols --split-per-abi
 
 # macOS
 flutter build macos --release

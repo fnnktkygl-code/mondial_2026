@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -46,6 +48,19 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Initialize Analytics
+    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+
+    // Initialize Crashlytics
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   } catch (e) {
     debugPrint('Firebase initialization error: $e');
@@ -947,15 +962,25 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                AppTranslations.get(_lang, 'appTitle'),
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20,
-                  letterSpacing: -0.5,
+              child: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Color(0xFF006847), // Mexico Green
+                    Color(0xFF002868), // USA Blue
+                    Color(0xFFFF0000), // Canada Red
+                  ],
+                  stops: [0.0, 0.5, 1.0],
+                ).createShader(bounds),
+                child: Text(
+                  AppTranslations.get(_lang, 'appTitle'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                    letterSpacing: -0.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
