@@ -62,7 +62,9 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
 
     // Second pass: compile match scores for played matches
     for (final match in widget.matches) {
-      if (match.group == null || match.group!.isEmpty || !match.isPlayed) continue;
+      if (match.group == null || match.group!.isEmpty || !match.isPlayed) {
+        continue;
+      }
       final grp = match.group!;
 
       final t1Entry = standings[grp]!.firstWhere((e) => e.teamCode == match.t1);
@@ -108,15 +110,13 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
   }
 
   Widget _buildFlag(String code) {
-    return TeamFlagWidget(
-      code: code,
-      width: 28,
-      height: 18,
-      borderRadius: 4,
-    );
+    return TeamFlagWidget(code: code, width: 28, height: 18, borderRadius: 4);
   }
 
-  Widget _buildMinimalistTable(List<GroupEntry> groupTeams, {bool compact = false}) {
+  Widget _buildMinimalistTable(
+    List<GroupEntry> groupTeams, {
+    bool compact = false,
+  }) {
     final double posWidth = compact ? 24.0 : 36.0;
     final double playedWidth = compact ? 28.0 : 36.0;
     final double gdWidth = compact ? 36.0 : 44.0;
@@ -129,7 +129,10 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
       children: [
         // Header row
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: compact ? 12.0 : 16.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 12.0 : 16.0,
+            vertical: 8.0,
+          ),
           child: Row(
             children: [
               SizedBox(
@@ -198,11 +201,13 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
           final entry = groupTeams[idx];
           final teamName = AppTranslations.getTeam(widget.lang, entry.teamCode);
           final isTopTwo = idx < 2;
-          final isUserSupported = widget.supportedTeamCode?.toLowerCase() == entry.teamCode.toLowerCase();
+          final isUserSupported =
+              widget.supportedTeamCode?.toLowerCase() ==
+              entry.teamCode.toLowerCase();
 
           return Container(
             decoration: BoxDecoration(
-              color: isUserSupported 
+              color: isUserSupported
                   ? AppColors.accent.withValues(alpha: 0.08)
                   : Colors.transparent,
               border: isUserSupported
@@ -238,7 +243,9 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                             child: Text(
                               '${idx + 1}',
                               style: TextStyle(
-                                color: isTopTwo ? AppColors.accent : AppColors.textMuted,
+                                color: isTopTwo
+                                    ? AppColors.accent
+                                    : AppColors.textMuted,
                                 fontWeight: FontWeight.bold,
                                 fontSize: fontSize - 1,
                               ),
@@ -267,16 +274,24 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                                   teamName,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: isUserSupported ? AppColors.accent : AppColors.textSecondary,
-                                    fontWeight: isUserSupported ? FontWeight.bold : FontWeight.w600,
+                                    color: isUserSupported
+                                        ? AppColors.accent
+                                        : AppColors.textSecondary,
+                                    fontWeight: isUserSupported
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
                                     fontSize: fontSize,
                                   ),
                                 ),
                               ),
                               if (isUserSupported) ...[
                                 const SizedBox(width: 4),
-                                const Icon(Icons.star, color: AppColors.accent, size: 12),
-                              ]
+                                const Icon(
+                                  Icons.star,
+                                  color: AppColors.accent,
+                                  size: 12,
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -297,14 +312,14 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                       SizedBox(
                         width: gdWidth,
                         child: Text(
-                          (entry.goalDifference > 0 ? '+' : '') + '${entry.goalDifference}',
+                          '${entry.goalDifference > 0 ? '+' : ''}${entry.goalDifference}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: entry.goalDifference > 0
                                 ? AppColors.accent
                                 : entry.goalDifference < 0
-                                    ? AppColors.danger
-                                    : AppColors.textMuted,
+                                ? AppColors.danger
+                                : AppColors.textMuted,
                             fontWeight: FontWeight.bold,
                             fontSize: fontSize,
                           ),
@@ -317,7 +332,9 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                           '${entry.points}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: isUserSupported ? AppColors.accent : AppColors.textPrimary,
+                            color: isUserSupported
+                                ? AppColors.accent
+                                : AppColors.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: fontSize + 1,
                           ),
@@ -368,7 +385,8 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
       final favCode = widget.supportedTeamCode!.toLowerCase();
       for (final match in widget.matches) {
         if (match.group != null && match.group!.isNotEmpty) {
-          if (match.t1.toLowerCase() == favCode || match.t2.toLowerCase() == favCode) {
+          if (match.t1.toLowerCase() == favCode ||
+              match.t2.toLowerCase() == favCode) {
             favGroup = match.group;
             break;
           }
@@ -399,9 +417,11 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                       Text(
                         '${AppTranslations.get(widget.lang, 'group')} $g',
                         style: TextStyle(
-                          color: isSelected 
-                              ? Colors.white 
-                              : (isFavGroup ? AppColors.accent : AppColors.textMuted),
+                          color: isSelected
+                              ? Colors.white
+                              : (isFavGroup
+                                    ? AppColors.accent
+                                    : AppColors.textMuted),
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -422,13 +442,18 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                   },
                   selectedColor: AppColors.border,
                   backgroundColor: AppColors.surface,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: isSelected 
-                          ? AppColors.accent 
-                          : (isFavGroup ? Colors.amber.withValues(alpha: 0.6) : AppColors.border),
+                      color: isSelected
+                          ? AppColors.accent
+                          : (isFavGroup
+                                ? Colors.amber.withValues(alpha: 0.6)
+                                : AppColors.border),
                       width: isFavGroup || isSelected ? 2.0 : 1.5,
                     ),
                   ),
@@ -457,7 +482,11 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     );
   }
 
-  Widget _buildDesktopGrid(Map<String, List<GroupEntry>> standings, List<String> groups, double screenWidth) {
+  Widget _buildDesktopGrid(
+    Map<String, List<GroupEntry>> standings,
+    List<String> groups,
+    double screenWidth,
+  ) {
     final crossAxisCount = screenWidth > 1300 ? 3 : 2;
     return GridView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),

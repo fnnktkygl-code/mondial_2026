@@ -15,7 +15,7 @@ const Map<String, List<String>> groupsMap = {
   'I': ['cl', 'pe', 'ec', 've'],
   'J': ['au', 'nz', 'sa', 'ir'],
   'K': ['tr', 'gr', 'cz', 'at'],
-  'L': ['ro', 'hu', 'bg', 'rs']
+  'L': ['ro', 'hu', 'bg', 'rs'],
 };
 
 // Player pools for simulation
@@ -33,15 +33,33 @@ const Map<String, List<String>> playerPools = {
   'sn': ['S. Mané', 'I. Sarr', 'B. Dia', 'N. Jackson', 'I. Gueye'],
   'de': ['L. Sané', 'S. Gnabry', 'K. Havertz', 'T. Müller', 'J. Musiala'],
   'br': ['Neymar Jr.', 'Vinícius Jr.', 'Rodrygo', 'Richarlison', 'Raphinha'],
-  'ar': ['L. Messi', 'L. Martínez', 'J. Álvarez', 'A. Di María', 'E. Fernández'],
+  'ar': [
+    'L. Messi',
+    'L. Martínez',
+    'J. Álvarez',
+    'A. Di María',
+    'E. Fernández',
+  ],
   'ma': ['Y. En-Nesyri', 'H. Ziyech', 'S. Boufal', 'A. Ounahi', 'A. Harit'],
   'es': ['A. Morata', 'Ferran', 'Dani Olmo', 'Gavi', 'Pedri'],
-  'it': ['G. Scamacca', 'F. Chiesa', 'D. Berardi', 'N. Barella', 'L. Pellegrini'],
+  'it': [
+    'G. Scamacca',
+    'F. Chiesa',
+    'D. Berardi',
+    'N. Barella',
+    'L. Pellegrini',
+  ],
   'pt': ['C. Ronaldo', 'B. Fernandes', 'R. Leão', 'J. Félix', 'G. Ramos'],
   'nl': ['M. Depay', 'C. Gakpo', 'W. Weghorst', 'X. Simons', 'D. Dumfries'],
   'be': ['R. Lukaku', 'L. Trossard', 'J. Doku', 'K. De Bruyne', 'Y. Tielemans'],
   'hr': ['A. Kramarić', 'I. Perišić', 'M. Pašalić', 'L. Modrić', 'M. Kovačić'],
-  'uy': ['D. Núñez', 'L. Suárez', 'F. Pellistri', 'F. Valverde', 'N. de la Cruz'],
+  'uy': [
+    'D. Núñez',
+    'L. Suárez',
+    'F. Pellistri',
+    'F. Valverde',
+    'N. de la Cruz',
+  ],
   'se': ['A. Isak', 'V. Gyökeres', 'D. Kulusevski', 'E. Forsberg'],
   'ch': ['B. Embolo', 'X. Shaqiri', 'Z. Amdouni', 'G. Xhaka'],
   'dk': ['R. Højlund', 'J. Wind', 'C. Eriksen', 'P. Højbjerg'],
@@ -67,7 +85,7 @@ const Map<String, List<String>> playerPools = {
   'ro': ['D. Alibec', 'V. Mihăilă', 'N. Stanciu', 'R. Marin'],
   'hu': ['B. Varga', 'R. Sallai', 'D. Szoboszlai', 'A. Nagy'],
   'bg': ['K. Despodov', 'G. Minchev', 'I. Gruev', 'F. Krastev'],
-  'rs': ['A. Mitrović', 'D. Vlahović', 'D. Tadić', 'S. Milinković-Savić']
+  'rs': ['A. Mitrović', 'D. Vlahović', 'D. Tadić', 'S. Milinković-Savić'],
 };
 
 // Tournament Venues
@@ -87,7 +105,7 @@ const List<String> venues = [
   'Lumen Field, Seattle',
   'BC Place, Vancouver',
   'Estadio BBVA, Monterrey',
-  'Estadio Akron, Guadalajara'
+  'Estadio Akron, Guadalajara',
 ];
 
 final Random rand = Random(42); // Seeded for reproducibility
@@ -121,7 +139,7 @@ void main() {
     final List<List<int>> pairings = [
       [0, 1], [2, 3], // Round 1
       [0, 2], [1, 3], // Round 2
-      [0, 3], [1, 2]  // Round 3
+      [0, 3], [1, 2], // Round 3
     ];
 
     for (int r = 0; r < pairings.length; r++) {
@@ -153,7 +171,7 @@ void main() {
         'group': group,
         'stage': null,
         'goals': goals,
-        'stats': stats
+        'stats': stats,
       });
 
       // Update standings
@@ -186,7 +204,9 @@ void main() {
   groupStandings.forEach((g, list) {
     list.sort((a, b) {
       if (b.points != a.points) return b.points.compareTo(a.points);
-      if (b.goalDifference != a.goalDifference) return b.goalDifference.compareTo(a.goalDifference);
+      if (b.goalDifference != a.goalDifference) {
+        return b.goalDifference.compareTo(a.goalDifference);
+      }
       if (b.goalsFor != a.goalsFor) return b.goalsFor.compareTo(a.goalsFor);
       return a.code.compareTo(b.code);
     });
@@ -201,14 +221,16 @@ void main() {
   });
   thirdPlaces.sort((a, b) {
     if (b.points != a.points) return b.points.compareTo(a.points);
-    if (b.goalDifference != a.goalDifference) return b.goalDifference.compareTo(a.goalDifference);
+    if (b.goalDifference != a.goalDifference) {
+      return b.goalDifference.compareTo(a.goalDifference);
+    }
     return b.goalsFor.compareTo(a.goalsFor);
   });
 
   // Resolve qualified teams for bracket setup
   // We have 12 group winners, 12 runners-up, 8 best 3rd places
-  final List<String> r32QualifiedTeams = [];
-  
+  // // final List<String> r32QualifiedTeams = [];
+
   // Fill A1, B1, etc.
   final Map<String, String> winners = {};
   final Map<String, String> runnersUp = {};
@@ -224,7 +246,7 @@ void main() {
   // Let's define the 16 Round of 32 match layouts.
   // Left half of bracket: m49 to m56
   // Right half of bracket: m57 to m64
-  final List<Map<String, String>> r32Pairings = [
+  /* // final List<Map<String, String>> r32Pairings = [
     // LEFT SIDE FEEDERS
     {'id': 'm49', 't1': '1A', 't2': '2B'},
     {'id': 'm50', 't1': '1C', 't2': '2D'},
@@ -244,7 +266,7 @@ void main() {
     {'id': 'm62', 't1': '1L', 't2': '3rd5'},
     {'id': 'm63', 't1': '2D', 't2': '3rd6'},
     {'id': 'm64', 't1': '2H', 't2': '3rd7'}
-  ];
+  ]; */
 
   // Modify duplicates to make sure all winners/runnersUp/3rds are covered cleanly
   // A to L is 12 groups.
@@ -253,7 +275,7 @@ void main() {
   // 3rd: 3rd1, 3rd2, 3rd3, 3rd4, 3rd5, 3rd6, 3rd7, 3rd8 (8)
   // Total = 32 slots.
   // Symmetrical layout pairing:
-  final List<Map<String, String>> symmetricR32Pairings = [
+  /* // final List<Map<String, String>> symmetricR32Pairings = [
     // LEFT HALF (m49 to m56)
     {'id': 'm49', 't1': '1A', 't2': '3rd1'},
     {'id': 'm50', 't1': '2B', 't2': '2C'},
@@ -273,8 +295,8 @@ void main() {
     {'id': 'm62', 't1': '2E', 't2': '2H'}, // let's use 2L
     {'id': 'm63', 't1': '1H', 't2': '3rd8'},
     {'id': 'm64', 't1': '1I', 't2': '2A'}  // let's use 2B
-  ];
-  
+  ]; */
+
   // Make sure pairing placeholders are unique and cover all 32 spots!
   final List<Map<String, String>> finalR32Pairings = [
     // LEFT HALF
@@ -295,7 +317,7 @@ void main() {
     {'id': 'm61', 't1': '1F', 't2': '3rd7'},
     {'id': 'm62', 't1': '1H', 't2': '3rd8'},
     {'id': 'm63', 't1': '1I', 't2': '1J'},
-    {'id': 'm64', 't1': '1K', 't2': '1L'}
+    {'id': 'm64', 't1': '1K', 't2': '1L'},
   ];
 
   // Helper map of winners
@@ -333,7 +355,11 @@ void main() {
     int score1 = rand.nextInt(4);
     int score2 = rand.nextInt(4);
     if (score1 == score2) {
-      if (rand.nextBool()) score1++; else score2++;
+      if (rand.nextBool()) {
+        score1++;
+      } else {
+        score2++;
+      }
     }
 
     final goals = _simulateGoals(p1, p2, score1, score2);
@@ -352,7 +378,7 @@ void main() {
       'group': null,
       'stage': 'Round of 32',
       'goals': goals,
-      'stats': stats
+      'stats': stats,
     });
 
     matchIdCounter++;
@@ -371,7 +397,7 @@ void main() {
     {'id': 'm69', 't1': 'w57', 't2': 'w58'},
     {'id': 'm70', 't1': 'w59', 't2': 'w60'},
     {'id': 'm71', 't1': 'w61', 't2': 'w62'},
-    {'id': 'm72', 't1': 'w63', 't2': 'w64'}
+    {'id': 'm72', 't1': 'w63', 't2': 'w64'},
   ];
 
   for (final pair in r16Pairings) {
@@ -389,7 +415,11 @@ void main() {
     int score1 = rand.nextInt(4);
     int score2 = rand.nextInt(4);
     if (score1 == score2) {
-      if (rand.nextBool()) score1++; else score2++;
+      if (rand.nextBool()) {
+        score1++;
+      } else {
+        score2++;
+      }
     }
 
     final goals = _simulateGoals(p1, p2, score1, score2);
@@ -408,7 +438,7 @@ void main() {
       'group': null,
       'stage': 'Round of 16',
       'goals': goals,
-      'stats': stats
+      'stats': stats,
     });
 
     matchIdCounter++;
@@ -421,7 +451,7 @@ void main() {
     {'id': 'm73', 't1': 'w65', 't2': 'w66'},
     {'id': 'm74', 't1': 'w67', 't2': 'w68'},
     {'id': 'm75', 't1': 'w69', 't2': 'w70'},
-    {'id': 'm76', 't1': 'w71', 't2': 'w72'}
+    {'id': 'm76', 't1': 'w71', 't2': 'w72'},
   ];
 
   for (final pair in qfPairings) {
@@ -436,7 +466,11 @@ void main() {
     int score1 = rand.nextInt(4);
     int score2 = rand.nextInt(4);
     if (score1 == score2) {
-      if (rand.nextBool()) score1++; else score2++;
+      if (rand.nextBool()) {
+        score1++;
+      } else {
+        score2++;
+      }
     }
 
     final goals = _simulateGoals(p1, p2, score1, score2);
@@ -455,7 +489,7 @@ void main() {
       'group': null,
       'stage': 'Quarter-Final',
       'goals': goals,
-      'stats': stats
+      'stats': stats,
     });
 
     matchIdCounter++;
@@ -464,7 +498,7 @@ void main() {
   // 5. Generate Semi-Finals (2 matches: m77 left, m78 right)
   final List<Map<String, String>> sfPairings = [
     {'id': 'm77', 't1': 'w73', 't2': 'w74'},
-    {'id': 'm78', 't1': 'w75', 't2': 'w76'}
+    {'id': 'm78', 't1': 'w75', 't2': 'w76'},
   ];
 
   for (final pair in sfPairings) {
@@ -479,7 +513,11 @@ void main() {
     int score1 = rand.nextInt(4);
     int score2 = rand.nextInt(4);
     if (score1 == score2) {
-      if (rand.nextBool()) score1++; else score2++;
+      if (rand.nextBool()) {
+        score1++;
+      } else {
+        score2++;
+      }
     }
 
     final goals = _simulateGoals(p1, p2, score1, score2);
@@ -498,20 +536,24 @@ void main() {
       'group': null,
       'stage': 'Semi-Final',
       'goals': goals,
-      'stats': stats
+      'stats': stats,
     });
 
     matchIdCounter++;
   }
 
   // 6. Generate Play-off for third place (m79)
-  final String sf1T1 = allMatchesJson.firstWhere((m) => m['id'] == 'm77')['t1'] as String;
-  final String sf1T2 = allMatchesJson.firstWhere((m) => m['id'] == 'm77')['t2'] as String;
+  final String sf1T1 =
+      allMatchesJson.firstWhere((m) => m['id'] == 'm77')['t1'] as String;
+  final String sf1T2 =
+      allMatchesJson.firstWhere((m) => m['id'] == 'm77')['t2'] as String;
   final String sf1Winner = simWinners['m77']!;
   final String sf1Loser = sf1Winner == sf1T1 ? sf1T2 : sf1T1;
 
-  final String sf2T1 = allMatchesJson.firstWhere((m) => m['id'] == 'm78')['t1'] as String;
-  final String sf2T2 = allMatchesJson.firstWhere((m) => m['id'] == 'm78')['t2'] as String;
+  final String sf2T1 =
+      allMatchesJson.firstWhere((m) => m['id'] == 'm78')['t1'] as String;
+  final String sf2T2 =
+      allMatchesJson.firstWhere((m) => m['id'] == 'm78')['t2'] as String;
   final String sf2Winner = simWinners['m78']!;
   final String sf2Loser = sf2Winner == sf2T1 ? sf2T2 : sf2T1;
 
@@ -522,7 +564,11 @@ void main() {
   int tpScore1 = rand.nextInt(4);
   int tpScore2 = rand.nextInt(4);
   if (tpScore1 == tpScore2) {
-    if (rand.nextBool()) tpScore1++; else tpScore2++;
+    if (rand.nextBool()) {
+      tpScore1++;
+    } else {
+      tpScore2++;
+    }
   }
   final tpGoals = _simulateGoals(sf1Loser, sf2Loser, tpScore1, tpScore2);
   final tpStats = _simulateStats(tpScore1, tpScore2);
@@ -538,7 +584,7 @@ void main() {
     'group': null,
     'stage': 'Play-off for third place',
     'goals': tpGoals,
-    'stats': tpStats
+    'stats': tpStats,
   });
 
   // 7. Generate Final (m80)
@@ -549,7 +595,11 @@ void main() {
   int score1 = rand.nextInt(4);
   int score2 = rand.nextInt(4);
   if (score1 == score2) {
-    if (rand.nextBool()) score1++; else score2++;
+    if (rand.nextBool()) {
+      score1++;
+    } else {
+      score2++;
+    }
   }
 
   final goals = _simulateGoals(finalP1, finalP2, score1, score2);
@@ -566,18 +616,22 @@ void main() {
     'group': null,
     'stage': 'Final',
     'goals': goals,
-    'stats': stats
+    'stats': stats,
   });
 
   // Write all matches to assets/initial_matches.json
   final file = File('assets/initial_matches.json');
-  file.writeAsStringSync(jsonEncode(allMatchesJson));
-
-  print('Successfully simulated all 104 matches of Mondial 2026!');
-  print('Total generated matches in file: ${allMatchesJson.length}');
+  file.writeAsStringSync(
+    jsonEncode(allMatchesJson),
+  ); // print removed // print removed
 }
 
-List<Map<String, dynamic>> _simulateGoals(String t1, String t2, int score1, int score2) {
+List<Map<String, dynamic>> _simulateGoals(
+  String t1,
+  String t2,
+  int score1,
+  int score2,
+) {
   final List<Map<String, dynamic>> goalsList = [];
 
   final t1Players = playerPools[t1] ?? ['Player A', 'Player B'];
@@ -597,7 +651,7 @@ List<Map<String, dynamic>> _simulateGoals(String t1, String t2, int score1, int 
       'team': 't1',
       'scorer': scorer,
       'assistant': assistant,
-      'minute': rand.nextInt(90) + 1
+      'minute': rand.nextInt(90) + 1,
     });
   }
 
@@ -615,7 +669,7 @@ List<Map<String, dynamic>> _simulateGoals(String t1, String t2, int score1, int 
       'team': 't2',
       'scorer': scorer,
       'assistant': assistant,
-      'minute': rand.nextInt(90) + 1
+      'minute': rand.nextInt(90) + 1,
     });
   }
 
@@ -642,6 +696,6 @@ Map<String, int> _simulateStats(int score1, int score2) {
     'yellowCardsT1': rand.nextInt(4),
     'yellowCardsT2': rand.nextInt(4),
     'redCardsT1': rand.nextInt(10) == 0 ? 1 : 0,
-    'redCardsT2': rand.nextInt(10) == 0 ? 1 : 0
+    'redCardsT2': rand.nextInt(10) == 0 ? 1 : 0,
   };
 }

@@ -1,5 +1,5 @@
 import 'package:benchmark_harness/benchmark_harness.dart';
-import '../../lib/models/match.dart';
+import 'package:mondial_2026/models/match.dart';
 
 class MockMatch extends WorldCupMatch {
   MockMatch(String id, String stage)
@@ -30,38 +30,56 @@ class BaselineFilterBenchmark extends BenchmarkBase {
 
   @override
   void run() {
-    final leftR32 = r32Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 49 && idNum <= 56;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r32Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 49 && idNum <= 56;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightR32 = r32Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 57 && idNum <= 64;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r32Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 57 && idNum <= 64;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftR16 = r16Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 65 && idNum <= 68;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r16Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 65 && idNum <= 68;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightR16 = r16Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 69 && idNum <= 72;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r16Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 69 && idNum <= 72;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftQF = qfMatches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 73 && idNum <= 74;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    qfMatches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 73 && idNum <= 74;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightQF = qfMatches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 75 && idNum <= 76;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    qfMatches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 75 && idNum <= 76;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftSF = sfMatches.where((m) => m.id == 'm77').toList();
-    final rightSF = sfMatches.where((m) => m.id == 'm78').toList();
+    sfMatches.where((m) => m.id == 'm77').toList();
+    sfMatches.where((m) => m.id == 'm78').toList();
   }
 }
 

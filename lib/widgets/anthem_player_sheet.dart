@@ -51,8 +51,12 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
     }
     // Sort alphabetically by translated name
     _allTeams = teamCodes.toList()
-      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
-          .compareTo(AppTranslations.getTeam(widget.lang, b)));
+      ..sort(
+        (a, b) => AppTranslations.getTeam(
+          widget.lang,
+          a,
+        ).compareTo(AppTranslations.getTeam(widget.lang, b)),
+      );
   }
 
   @override
@@ -123,7 +127,10 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
 
               // Header Title
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 4,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -145,30 +152,51 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
 
               // Search Bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: TextField(
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: AppTranslations.get(widget.lang, 'searchTeams'),
-                    hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
-                    prefixIcon: const Icon(Icons.search, color: AppColors.textDim),
+                    hintStyle: const TextStyle(
+                      color: AppColors.textDim,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.textDim,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear, color: AppColors.textDim),
+                            icon: const Icon(
+                              Icons.clear,
+                              color: AppColors.textDim,
+                            ),
                             onPressed: () => _searchController.clear(),
                           )
                         : null,
                     filled: true,
                     fillColor: AppColors.surface,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                      borderSide: const BorderSide(
+                        color: AppColors.border,
+                        width: 1.5,
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                      borderSide: const BorderSide(
+                        color: AppColors.accent,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -177,7 +205,12 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
               // Team Grid list
               Expanded(
                 child: GridView.builder(
-                  padding: const EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 200),
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 12,
+                    bottom: 200,
+                  ),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
@@ -197,19 +230,24 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                         return ValueListenableBuilder<PlayerState>(
                           valueListenable: _audioService.playerState,
                           builder: (context, state, _) {
-                            final isCurrentlyPlaying = isPlayingThis && state == PlayerState.playing;
+                            final isCurrentlyPlaying =
+                                isPlayingThis && state == PlayerState.playing;
 
                             return Container(
                               decoration: BoxDecoration(
                                 color: AppColors.card,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isPlayingThis ? AppColors.accent : AppColors.border,
+                                  color: isPlayingThis
+                                      ? AppColors.accent
+                                      : AppColors.border,
                                   width: isPlayingThis ? 2.0 : 1.5,
                                 ),
                               ),
-                              child: GestureDetector( // Utilisation de GestureDetector pour une meilleure portée
-                                behavior: HitTestBehavior.opaque, // IMPORTANT : intercepte tout le rectangle
+                              child: GestureDetector(
+                                // Utilisation de GestureDetector pour une meilleure portée
+                                behavior: HitTestBehavior
+                                    .opaque, // IMPORTANT : intercepte tout le rectangle
                                 onTap: () => _audioService.playAnthem(code),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12),
@@ -219,8 +257,10 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Text(
                                               name,
@@ -248,7 +288,8 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                       ),
                                       // Small play/pause action button
                                       ValueListenableBuilder<bool>(
-                                        valueListenable: _audioService.isLoading,
+                                        valueListenable:
+                                            _audioService.isLoading,
                                         builder: (context, loading, _) {
                                           if (isPlayingThis && loading) {
                                             return const SizedBox(
@@ -256,7 +297,10 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                               height: 24,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
-                                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(AppColors.accent),
                                               ),
                                             );
                                           }
@@ -265,7 +309,9 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                             isCurrentlyPlaying
                                                 ? Icons.pause_circle_filled
                                                 : Icons.play_circle_filled,
-                                            color: isPlayingThis ? AppColors.accent : AppColors.textDim,
+                                            color: isPlayingThis
+                                                ? AppColors.accent
+                                                : AppColors.textDim,
                                             size: 26,
                                           );
                                         },
@@ -364,7 +410,9 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.accent,
+                                ),
                               ),
                             ),
                           );
@@ -376,11 +424,14 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                             final isPlaying = state == PlayerState.playing;
                             return IconButton(
                               icon: Icon(
-                                isPlaying ? Icons.pause_circle : Icons.play_circle,
+                                isPlaying
+                                    ? Icons.pause_circle
+                                    : Icons.play_circle,
                                 color: AppColors.accent,
                                 size: 30,
                               ),
-                              onPressed: () => _audioService.playAnthem(playingCode),
+                              onPressed: () =>
+                                  _audioService.playAnthem(playingCode),
                             );
                           },
                         );
@@ -407,15 +458,21 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                       valueListenable: _audioService.duration,
                       builder: (context, dur, _) {
                         final double maxVal = dur.inMilliseconds.toDouble();
-                        final double currentVal = pos.inMilliseconds.toDouble().clamp(0.0, maxVal);
+                        final double currentVal = pos.inMilliseconds
+                            .toDouble()
+                            .clamp(0.0, maxVal);
 
                         return Column(
                           children: [
                             SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 3,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 6,
+                                ),
+                                overlayShape: const RoundSliderOverlayShape(
+                                  overlayRadius: 12,
+                                ),
                                 activeTrackColor: AppColors.accent,
                                 inactiveTrackColor: AppColors.border,
                                 thumbColor: AppColors.accent,
@@ -424,22 +481,33 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                 value: currentVal,
                                 max: maxVal > 0 ? maxVal : 1.0,
                                 onChanged: (val) {
-                                  _audioService.seek(Duration(milliseconds: val.toInt()));
+                                  _audioService.seek(
+                                    Duration(milliseconds: val.toInt()),
+                                  );
                                 },
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     _formatDuration(pos),
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 10,
+                                    ),
                                   ),
                                   Text(
                                     _formatDuration(dur),
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 10,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -453,10 +521,17 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
 
                 // Volume Bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   child: Row(
                     children: [
-                      const Icon(Icons.volume_down, color: AppColors.textDim, size: 14),
+                      const Icon(
+                        Icons.volume_down,
+                        color: AppColors.textDim,
+                        size: 14,
+                      ),
                       Expanded(
                         child: ValueListenableBuilder<double>(
                           valueListenable: _audioService.volume,
@@ -464,20 +539,27 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                             return SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                                thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 5,
+                                ),
                                 activeTrackColor: AppColors.accent,
                                 inactiveTrackColor: AppColors.border,
                                 thumbColor: AppColors.accent,
                               ),
                               child: Slider(
                                 value: vol,
-                                onChanged: (val) => _audioService.setVolume(val),
+                                onChanged: (val) =>
+                                    _audioService.setVolume(val),
                               ),
                             );
                           },
                         ),
                       ),
-                      const Icon(Icons.volume_up, color: AppColors.textDim, size: 14),
+                      const Icon(
+                        Icons.volume_up,
+                        color: AppColors.textDim,
+                        size: 14,
+                      ),
                     ],
                   ),
                 ),
@@ -504,7 +586,8 @@ class SoundwaveVisualizer extends StatefulWidget {
   State<SoundwaveVisualizer> createState() => _SoundwaveVisualizerState();
 }
 
-class _SoundwaveVisualizerState extends State<SoundwaveVisualizer> with SingleTickerProviderStateMixin {
+class _SoundwaveVisualizerState extends State<SoundwaveVisualizer>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final List<double> _heights = [4.0, 10.0, 6.0, 12.0];
   final List<double> _targets = [4.0, 10.0, 6.0, 12.0];
@@ -514,21 +597,27 @@ class _SoundwaveVisualizerState extends State<SoundwaveVisualizer> with SingleTi
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300))
-      ..addListener(() {
-        setState(() {
-          for (int i = 0; i < 4; i++) {
-            // Smoothly interpolate height to target
-            _heights[i] = _heights[i] + (_targets[i] - _heights[i]) * 0.25;
-          }
-        });
-      })
-      ..repeat();
+    _controller =
+        AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 300),
+          )
+          ..addListener(() {
+            setState(() {
+              for (int i = 0; i < 4; i++) {
+                // Smoothly interpolate height to target
+                _heights[i] = _heights[i] + (_targets[i] - _heights[i]) * 0.25;
+              }
+            });
+          })
+          ..repeat();
 
     _timer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
       if (!mounted) return;
       for (int i = 0; i < 4; i++) {
-        _targets[i] = 3.0 + _random.nextDouble() * 11.0; // Random heights between 3 and 14
+        _targets[i] =
+            3.0 +
+            _random.nextDouble() * 11.0; // Random heights between 3 and 14
       }
     });
   }
