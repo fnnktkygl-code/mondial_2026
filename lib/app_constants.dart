@@ -160,7 +160,7 @@ const String kUserIdKey = 'wc2026_anon_user_id';
 const String kDefaultUsername = '';
 
 // ─── Groupe global ────────────────────────────────────────────────────────────
-const String kGlobalGroupName = 'Mondial Global Cup';
+const String kGlobalGroupName = 'Global';
 const String kGlobalGroupCode = 'GLOBAL-2026';
 const String kUserEmblem = '⚽';
 

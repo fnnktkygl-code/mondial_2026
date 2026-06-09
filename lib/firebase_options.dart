@@ -37,28 +37,27 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'REDACTED_API_KEY',
-    appId: '1:REDACTED_PROJECT_NUMBER:web:REDACTED_APP_ID',
-    messagingSenderId: 'REDACTED_PROJECT_NUMBER',
-    projectId: 'REDACTED_PROJECT_ID',
-    authDomain: 'REDACTED_PROJECT_ID.firebaseapp.com',
-    storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyBzUFfMaITpS5UXAEsINYK-atbPLJsrjlE',
+    appId: '1:1106243131:web:e750b217aa5c11120df61e',
+    messagingSenderId: '1106243131',
+    projectId: 'mondial-2026-challenge-8f',
+    authDomain: 'mondial-2026-challenge-8f.firebaseapp.com',
+    storageBucket: 'mondial-2026-challenge-8f.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REDACTED_API_KEY',
-    appId: '1:REDACTED_PROJECT_NUMBER:android:REDACTED_APP_ID',
-    messagingSenderId: 'REDACTED_PROJECT_NUMBER',
-    projectId: 'REDACTED_PROJECT_ID',
-    storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyDC6LAqpL3-dg7bDt5NX2_zW2RJ_qNvzoo',
+    appId: '1:1106243131:android:50eddfb373cd45e10df61e',
+    messagingSenderId: '1106243131',
+    projectId: 'mondial-2026-challenge-8f',
+    storageBucket: 'mondial-2026-challenge-8f.firebasestorage.app',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'REDACTED_API_KEY',
-    appId: '1:REDACTED_PROJECT_NUMBER:ios:REDACTED_APP_ID',
-    messagingSenderId: 'REDACTED_PROJECT_NUMBER',
-    projectId: 'REDACTED_PROJECT_ID',
-    storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyC6G4MUq5qg-9L3YblixQ5D-T2XwhZkcvA',
+    appId: '1:1106243131:ios:4e1979980f53f2c10df61e',
+    messagingSenderId: '1106243131',
+    projectId: 'mondial-2026-challenge-8f',
+    storageBucket: 'mondial-2026-challenge-8f.firebasestorage.app',
     iosBundleId: 'com.mondial2026.mondial2026',
   );
 }
