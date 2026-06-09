@@ -157,12 +157,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
         : 'GMT$sign${hours.abs()}:${minutes.toString().padLeft(2, '0')}';
 
     // Label de fuseau horaire traduit pour l'en-tête
-    String tzSubtitle = 'HEURES EN $localTimeZoneLabel';
-    if (widget.lang == 'en') {
-      tzSubtitle = 'ALL TIMES IN $localTimeZoneLabel';
-    } else if (widget.lang == 'es') {
-      tzSubtitle = 'HORAS EN $localTimeZoneLabel';
-    }
+    String tzSubtitle = AppTranslations.get(widget.lang, 'allTimesIn').replaceAll('{tz}', localTimeZoneLabel);
 
     const double rowHeight = 110.0;
     const double colWidth = 175.0;
@@ -435,24 +430,24 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                             if (predResult == 'exact') {
                                               predIcon = Icons.star_rounded;
                                               predColor = Colors.amber;
-                                              tooltipMessage = widget.lang == 'fr' ? 'Score exact !' : (widget.lang == 'es' ? '¡Marcador exacto!' : 'Exact score!');
+                                              tooltipMessage = AppTranslations.get(widget.lang, 'exactScoreTooltip');
                                             } else if (predResult == 'winner') {
                                               predIcon = Icons.check_circle_rounded;
                                               predColor = Colors.greenAccent;
-                                              tooltipMessage = widget.lang == 'fr' ? 'Bon vainqueur' : (widget.lang == 'es' ? 'Ganador correcto' : 'Correct winner');
+                                              tooltipMessage = AppTranslations.get(widget.lang, 'correctWinnerTooltip');
                                             } else {
                                               predIcon = Icons.cancel_rounded;
                                               predColor = Colors.redAccent;
-                                              tooltipMessage = widget.lang == 'fr' ? 'Pronostic raté' : (widget.lang == 'es' ? 'Pronóstico fallado' : 'Wrong prediction');
+                                              tooltipMessage = AppTranslations.get(widget.lang, 'wrongPredictionTooltip');
                                             }
                                           } else if (hasPredicted) {
                                             predIcon = Icons.check_circle_rounded;
                                             predColor = Colors.greenAccent;
-                                            tooltipMessage = widget.lang == 'fr' ? 'Pronostic enregistré' : (widget.lang == 'es' ? 'Pronóstico guardado' : 'Prediction saved');
+                                            tooltipMessage = AppTranslations.get(widget.lang, 'predictionSavedTooltip');
                                           } else {
                                             predIcon = Icons.pending_actions_rounded;
                                             predColor = Colors.orangeAccent;
-                                            tooltipMessage = widget.lang == 'fr' ? 'Pronostic en attente' : (widget.lang == 'es' ? 'Pronóstico pendiente' : 'Prediction pending');
+                                            tooltipMessage = AppTranslations.get(widget.lang, 'predictionPendingTooltip');
                                           }
 
                                           // Couleurs du bloc — isUserTeam prioritaire, puis hasAlert, puis défaut

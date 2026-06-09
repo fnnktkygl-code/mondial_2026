@@ -195,9 +195,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     if (token == null || token.isEmpty) return; // Cannot share global group
 
     final payload = PredictionService.generateSharePayload(grp.code, token);
-    final inviteMessage = widget.lang == 'fr'
-        ? "🏆 Rejoins mon groupe de pronos '${grp.name}' sur Mondial 2026! Entre mon code de défi pour comparer nos scores:\n\n$payload"
-        : "🏆 Join my prediction group '${grp.name}' on World Cup 2026! Paste my challenge code to compare our scores:\n\n$payload";
+    final inviteMessage = AppTranslations.get(widget.lang, 'inviteMessageFull').replaceAll('{groupName}', grp.name).replaceAll('{payload}', payload);
 
     Clipboard.setData(ClipboardData(text: inviteMessage));
     widget.showSnackBar(AppTranslations.get(widget.lang, 'copied'));
@@ -303,7 +301,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               children: [
                 Text(
                   _userPreds.username.isEmpty
-                      ? (widget.lang == 'fr' ? 'Joueur' : 'Player')
+                      ? (AppTranslations.get(widget.lang, 'player'))
                       : _userPreds.username,
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   maxLines: 1,
@@ -365,7 +363,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     Expanded(
                       child: _userPreds.supportedTeam == null
                           ? Text(
-                              widget.lang == 'fr' ? 'Aucune' : (widget.lang == 'es' ? 'Ninguno' : 'None'),
+                              AppTranslations.get(widget.lang, 'none'),
                               style: const TextStyle(color: AppColors.textDim, fontSize: 13, fontStyle: FontStyle.italic),
                             )
                           : Row(
@@ -439,11 +437,11 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Row(
         children: [
-          _buildSubTabButton('preds',       l == 'fr' ? 'Pronos'    : (l == 'es' ? 'Pronos'    : 'Preds'),    Icons.sports_soccer),
+          _buildSubTabButton('preds',       AppTranslations.get(l, 'predsTabShort'),    Icons.sports_soccer),
           const SizedBox(width: 6),
-          _buildSubTabButton('groups',      l == 'fr' ? 'Groupes'   : (l == 'es' ? 'Grupos'    : 'Groups'),   Icons.groups),
+          _buildSubTabButton('groups',      AppTranslations.get(l, 'groupsTabShort'),   Icons.groups),
           const SizedBox(width: 6),
-          _buildSubTabButton('leaderboard', l == 'fr' ? 'Classement': (l == 'es' ? 'Ranking'   : 'Rankings'), Icons.emoji_events),
+          _buildSubTabButton('leaderboard', AppTranslations.get(l, 'leaderboardTabShort'), Icons.emoji_events),
         ],
       ),
     );
@@ -1186,12 +1184,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              lang == 'fr'
-                  ? 'Verrouillez votre champion et votre buteur dans votre profil ↗'
-                  : (lang == 'es'
-                      ? 'Bloquea tu campeón y goleador en tu perfil ↗'
-                      : 'Lock your champion & top scorer in your profile ↗'),
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              AppTranslations.get(lang, 'profileLockPrompt2'),
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
           ),
         ]),
@@ -1212,7 +1206,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             const Icon(Icons.lock, color: AppColors.warning, size: 13),
             const SizedBox(width: 6),
             Text(
-              lang == 'fr' ? 'Pronostics verrouillés' : (lang == 'es' ? 'Pronósticos bloqueados' : 'Locked predictions'),
+              AppTranslations.get(lang, 'lockedPredictions'),
               style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ]),
@@ -1499,7 +1493,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           backgroundColor: AppColors.card,
           title: Text(AppTranslations.get(widget.lang, 'delete') ?? 'Delete Group', style: const TextStyle(color: Colors.white, fontSize: 14)),
           content: Text(
-            widget.lang == 'fr' ? 'Êtes-vous sûr de vouloir supprimer ce groupe pour tout le monde ?' : 'Are you sure you want to delete this group for everyone?',
+            AppTranslations.get(widget.lang, 'deleteGroupForEveryone'),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -1530,9 +1524,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.card,
-          title: Text(widget.lang == 'fr' ? 'Quitter le groupe' : 'Leave Group', style: const TextStyle(color: Colors.white, fontSize: 14)),
+          title: Text(AppTranslations.get(widget.lang, 'leaveGroupTitle'), style: const TextStyle(color: Colors.white, fontSize: 14)),
           content: Text(
-            widget.lang == 'fr' ? 'Voulez-vous vraiment quitter ce groupe ?' : 'Are you sure you want to leave this group?',
+            AppTranslations.get(widget.lang, 'leaveGroupConfirm'),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -1549,7 +1543,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   await _loadData();
                 }
               },
-              child: Text(widget.lang == 'fr' ? 'Quitter' : 'Leave', style: const TextStyle(color: Colors.white)),
+              child: Text(AppTranslations.get(widget.lang, 'leave'), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );

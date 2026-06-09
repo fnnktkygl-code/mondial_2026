@@ -78,9 +78,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           backgroundColor: AppColors.card,
           title: Text(AppTranslations.get(widget.lang, 'resetProfile') ?? 'Reset Profile', style: const TextStyle(color: Colors.white)),
           content: Text(
-            widget.lang == 'fr'
-                ? 'Êtes-vous sûr de vouloir réinitialiser toutes vos prédictions ? Les matchs déjà joués ne pourront pas être pronostiqués de nouveau et vous perdrez tous vos points.'
-                : 'Are you sure you want to reset all your predictions? Played matches cannot be predicted again, and you will lose all points.',
+            AppTranslations.get(widget.lang, 'resetProfileConfirm'),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -143,9 +141,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           backgroundColor: AppColors.card,
           title: Text(AppTranslations.get(widget.lang, 'deleteProfile') ?? 'Delete Profile', style: const TextStyle(color: Colors.white)),
           content: Text(
-            widget.lang == 'fr'
-                ? 'Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.'
-                : 'Are you sure you want to permanently delete your account? This action cannot be undone.',
+            AppTranslations.get(widget.lang, 'deleteProfileConfirm'),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -270,9 +266,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       children: [
         const SizedBox(height: 12),
         Text(
-          widget.lang == 'fr'
-              ? 'Palmarès de l\'équipe :'
-              : (widget.lang == 'es' ? 'Palmarés del equipo:' : 'Team Achievements:'),
+          AppTranslations.get(widget.lang, 'teamAchievements'),
           style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
@@ -386,7 +380,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
               ),
               child: Text(
-                widget.lang == 'fr' ? 'Confirmer' : (widget.lang == 'es' ? 'Confirmar' : 'Confirm'),
+                AppTranslations.get(widget.lang, 'confirm'),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -413,7 +407,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      widget.showSnackBar(widget.lang == 'fr' ? 'Le pseudo ne peut pas être vide' : 'Nickname cannot be empty');
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'nicknameEmpty'));
       return;
     }
 
@@ -424,11 +418,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final bool isNewAssister = widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty;
 
     if (isNewScorer && !kWC2026Players.contains(scorerInput)) {
-      widget.showSnackBar(widget.lang == 'fr' ? 'Buteur introuvable dans la liste officielle.' : 'Scorer not found in the official list.');
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'scorerNotFound'));
       return;
     }
     if (isNewAssister && !kWC2026Players.contains(assisterInput)) {
-      widget.showSnackBar(widget.lang == 'fr' ? 'Passeur introuvable dans la liste officielle.' : 'Assister not found in the official list.');
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'assisterNotFound'));
       return;
     }
 
@@ -440,13 +434,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             backgroundColor: AppColors.card,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
             title: Text(
-              widget.lang == 'fr' ? 'Confirmer les pronostics' : 'Confirm predictions',
+              AppTranslations.get(widget.lang, 'confirmPredictions'),
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             content: Text(
-              widget.lang == 'fr'
-                  ? 'Attention, vos pronostics pour le meilleur buteur et/ou passeur ne pourront plus être modifiés.'
-                  : 'Attention, your predictions for top scorer and/or assister cannot be modified after this.',
+              AppTranslations.get(widget.lang, 'confirmPredictionsWarning'),
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             actions: [
@@ -462,7 +454,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
                 ),
                 child: Text(
-                  widget.lang == 'fr' ? 'Confirmer' : (widget.lang == 'es' ? 'Confirmar' : 'Confirm'),
+                  AppTranslations.get(widget.lang, 'confirm'),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -577,7 +569,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
               const Divider(color: AppColors.border, height: 24),
 
               Text(
-                widget.lang == 'fr' ? 'Avatar' : 'Avatar',
+                AppTranslations.get(widget.lang, 'avatar'),
                 style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
@@ -660,9 +652,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        widget.lang == 'fr'
-                            ? '⚠️ Attention : Vainqueur et Meilleur Buteur sont définitifs après validation. Vous pouvez attendre, mais vos points potentiels diminuent avec le temps (100% avant le 1er match, puis 80% en poules, tombant à 0% en demi-finales).'
-                            : '⚠️ Warning: Winner and Top Scorer are locked once saved. You can submit them later, but potential points decrease over time (100% before match 1, 80% in groups, decaying to 0% in semi-finals).',
+                        AppTranslations.get(widget.lang, 'winnerScorerWarningText'),
                         style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.4),
                       ),
                     ),
@@ -681,7 +671,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 decoration: InputDecoration(
                   fillColor: AppColors.surface,
                   filled: true,
-                  hintText: widget.lang == 'fr' ? 'Entrez votre pseudo...' : 'Enter your nickname...',
+                  hintText: AppTranslations.get(widget.lang, 'enterNickname'),
                   hintStyle: const TextStyle(color: AppColors.textDim),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
@@ -852,9 +842,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        widget.lang == 'fr'
-                            ? 'Ce choix sera définitif après enregistrement.'
-                            : 'This choice will be final after saving.',
+                        AppTranslations.get(widget.lang, 'choiceFinalWarning'),
                         style: const TextStyle(color: AppColors.warning, fontSize: 11),
                       ),
                     ),
@@ -864,7 +852,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
               const SizedBox(height: 20),
               Text(
-                (widget.lang == 'fr' ? 'Meilleur Buteur' : 'Golden Boot Scorer') +
+                (AppTranslations.get(widget.lang, 'goldenBootScorer')) +
                     (widget.userPreds.goldenBootPlayer != null
                         ? ' (+$lockedScorerPts pts max)'
                         : ' (Actuel : +$potentialScorerPts pts max)'),
@@ -934,7 +922,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         decoration: InputDecoration(
                           fillColor: AppColors.surface,
                           filled: true,
-                          hintText: widget.lang == 'fr' ? 'Rechercher le buteur...' : 'Search scorer...',
+                          hintText: AppTranslations.get(widget.lang, 'searchScorer'),
                           prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
@@ -975,7 +963,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
               const SizedBox(height: 20),
               Text(
-                (widget.lang == 'fr' ? 'Meilleur Passeur' : 'Top Assister') +
+                (AppTranslations.get(widget.lang, 'topAssister')) +
                     (widget.userPreds.topAssisterPlayer != null
                         ? ' (+$lockedAssisterPts pts max)'
                         : ' (Actuel : +$potentialAssisterPts pts max)'),
@@ -1045,7 +1033,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         decoration: InputDecoration(
                           fillColor: AppColors.surface,
                           filled: true,
-                          hintText: widget.lang == 'fr' ? 'Rechercher le passeur...' : 'Search assister...',
+                          hintText: AppTranslations.get(widget.lang, 'searchAssister'),
                           prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
                           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.accent)),
@@ -1062,7 +1050,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    widget.lang == 'fr' ? 'Masquer du classement global' : 'Hide from global leaderboard',
+                    AppTranslations.get(widget.lang, 'hideFromGlobalLeaderboard'),
                     style: const TextStyle(color: Colors.white, fontSize: 13),
                   ),
                   Switch(
