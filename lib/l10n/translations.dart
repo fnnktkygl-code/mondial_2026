@@ -62,7 +62,7 @@ class AppTranslations {
       'matchStartingSoonBody': 'Le match {t1} vs {t2} commence bientôt !',
       'eliminationTitle': '❌ Élimination !',
       'eliminationBody':
-          'Le rêve prend fin pour {nickname} {flag} ! Son parcours au Mondial 2026 s\'arrête ici.',
+          'Le rêve prend fin pour {nickname} {flag} ! Son parcours au Global 2026 s\'arrête ici.',
       'oddsRisingTitle': '📈 Cote en hausse !',
       'oddsRisingBody':
           'La probabilité de titre pour {nickname} {flag} monte à {prob}% !',
@@ -84,8 +84,7 @@ class AppTranslations {
           'Confirmez-vous le choix de {player} ({team}) comme meilleur buteur ?',
       'topAssisterPrompt':
           'Confirmez-vous le choix de {player} ({team}) comme meilleur passeur ?',
-      'inviteMessageFull':
-          '🏆 Rejoins mon groupe de pronos \'{groupName}\' sur Mondial 2026! Entre mon code de défi pour comparer nos scores:\n\n{payload}',
+      'inviteMessageFull': '🏆 Rejoins mon groupe de pronos \'{groupName}\' sur Global 2026! Entre mon code de défi pour comparer nos scores:\n\n{payload}',
       'profileLockPrompt2':
           'Verrouillez votre champion et votre buteur dans votre profil ↗',
       'resetProfileConfirm':
@@ -165,6 +164,9 @@ class AppTranslations {
       'groupsTab': 'Groupes',
       'oddsTab': 'Cotes',
       'oddsTitle': 'Cote de Titre',
+      'oddsViewTitle': 'Chances de titre',
+      'oddsViewExplanation':
+          'Ce classement représente le pourcentage de probabilité de chaque nation de remporter la compétition. Les valeurs fluctuent en temps réel après chaque match selon les dynamiques sportives.',
       'eliminated': 'Éliminé',
       'scorersTab': 'Buteurs',
       'assistsTab': 'Passeurs',
@@ -173,7 +175,7 @@ class AppTranslations {
       'myPredictions': 'Mes Pronos',
       'friendGroups': 'Groupes d\'Amis',
       'bonusBets': 'Bonus',
-      'predictChampion': 'Champion Mondial 2026',
+      'predictChampion': 'Champion Global 2026',
       'predictScorer': 'Soulier d\'Or (Buteur)',
       'createGroup': 'Créer un groupe',
       'joinGroup': 'Rejoindre un groupe',
@@ -240,9 +242,33 @@ class AppTranslations {
       'outcomeKnockoutPts': 'Résultat correct (ph. finale) : +15 pts',
       'etBonusPts': 'Bon vainqueur en prolong. : +20 pts',
       'pkBonusPts': 'Bon vainqueur aux tirs au but : +25 pts',
-      'championBonusLabel': 'Champion du monde exact : +100 pts',
+      'championBonusLabel': 'Champion global exact : +100 pts',
       'goldenBootBonusLabel': 'Meilleur buteur exact : +50 pts',
       'jokerBonusLabel': 'Joker (x2 sur un match)',
+      'noMatchSelected': 'Aucun match sélectionné',
+      'change': 'Changer',
+      'select': 'Choisir',
+      'chooseBoosterMatch': 'Choisir le match Booster ×2',
+      'clear': 'Effacer',
+      'predictionShort': 'Prono',
+      'globalCup': 'Global',
+      'globalCupHeader': '🌍 Global',
+      'globalBadge': 'GLB',
+      'groupBadge': 'GRP',
+      'myGroups': 'Mes groupes',
+      'createShort': '+ Créer',
+      'joinShort': 'Rejoindre',
+      'playersLabel': 'joueurs',
+      'yourRank': 'Votre rang',
+      'globalRank': 'Votre rang global',
+      'loadingGlobalLeaderboard': 'Classement global en cours de chargement…',
+      'codeCopied': 'Code copié !',
+      'invite': 'Inviter',
+      'createGroupSubtitle': 'Créez un groupe et défiez vos amis',
+      'joinGroupSubtitle': 'Entrez le code reçu de votre ami',
+      'meSuffix': ' (moi)',
+      'levelShort': 'Niv.',
+      'profileLockPrompt': 'Verrouillez votre champion et votre buteur dans votre profil ↗',
       //       ── ET / PK prediction UI ──────────────────────────────────────────────
       'extraTimeLabel': 'Prolongations',
       'penaltiesLabel': 'Tirs au but',
@@ -251,7 +277,6 @@ class AppTranslations {
       'jokes': {
         'default':
             'Un match qui s\'annonce spectaculaire ! Préparez le pop-corn. 🍿⚽',
-        //             'Un match qui s\'annonce spectaculaire ! Préparez le pop-corn. 🍿⚽',
         'mx_de':
             'Attention aux secousses sismiques à Mexico ! Rappelez-vous 2018... 🇲🇽⚡🇩🇪',
         'us_en':
@@ -259,7 +284,6 @@ class AppTranslations {
         'ca_jp': 'Le sirop d\'érable face au sushi mécanique. 🍁🍣',
         'fr_br':
             'L\'ombre de 1998 et 2006 plane toujours... Un duel légendaire ! 🇫🇷🇧🇷✨',
-        //             'L\'ombre de 1998 et 2006 plane toujours... Un duel légendaire ! 🇫🇷🇧🇷✨',
         'sn_ar':
             'Le rythme endiablé des Lions face au tango argentin. 🇸🇳🕺🇦🇷',
         'ma_es':
@@ -276,18 +300,6 @@ class AppTranslations {
             'Le beau jeu du Brésil contre la puissance physique des Lions du Sénégal. 🇧🇷🇸🇳🦁',
         'knockout_tbd':
             'Le suspense est insoutenable, même le chatbot ne sait pas qui va jouer ! 🤖🔮',
-        'dataLoadError': 'Erreur de chargement des données',
-        'noSupportedTeam': 'Aucune',
-        'playerDefault': 'Joueur',
-        'editGroupTitle': 'Modifier le groupe',
-        'deleteGroupTitle': 'Supprimer le groupe',
-        'deleteGroupConfirm':
-            'Êtes-vous sûr de vouloir supprimer ce groupe pour tout le monde ?',
-        'profileLockPrompt':
-            'Verrouillez votre champion et votre buteur dans votre profil ↗',
-        'pointsBadge': '+ {pts} PTS',
-        'predsTab': 'Pronos',
-        'leaderboardTab': 'Classement',
       },
       'teams': {
         'mx': 'Mexique',
@@ -353,30 +365,53 @@ class AppTranslations {
         'qa': 'Qatar',
         'uz': 'Ouzbékistan',
         '1A': '1er Groupe A',
+        '2A': '2e Groupe A',
+        '1B': '1er Groupe B',
         '2B': '2e Groupe B',
         '1C': '1er Groupe C',
+        '2C': '2e Groupe C',
+        '1D': '1er Groupe D',
         '2D': '2e Groupe D',
+        '1E': '1er Groupe E',
+        '2E': '2e Groupe E',
+        '1F': '1er Groupe F',
+        '2F': '2e Groupe F',
+        '1G': '1er Groupe G',
+        '2G': '2e Groupe G',
+        '1H': '1er Groupe H',
+        '2H': '2e Groupe H',
+        '1I': '1er Groupe I',
+        '2I': '2e Groupe I',
+        '1J': '1er Groupe J',
+        '2J': '2e Groupe J',
+        '1K': '1er Groupe K',
+        '2K': '2e Groupe K',
+        '1L': '1er Groupe L',
+        '2L': '2e Groupe L',
         'w49': 'Vainqueur M49',
         'w50': 'Vainqueur M50',
-        'w61': 'Vainqueur D1',
-        'w62': 'Vainqueur D2',
+        'w61': 'Vainqueur SF1',
+        'w62': 'Vainqueur SF2',
         'tbd': 'À déterminer',
-        'tab_predictions': 'Pronostics',
-        'tab_groups': 'Groupes',
-        'tab_leaderboard': 'Classement',
-        'filter_group_stage': 'Phase de groupes',
-        'filter_knockout_stage': 'Phase finale',
-        'joinGroup': 'Rejoindre un groupe',
-        'createGroup': 'Créer un groupe',
-        'cancel': 'Annuler',
-        'save': 'Enregistrer',
-        'msg_group_joined': 'Groupe rejoint avec succès',
-        'msg_group_created': 'Groupe créé avec succès',
-        'enter_group_code': 'Entrez le code du groupe',
-        'group_name': 'Nom du groupe',
-        'error_code_required': 'Le code est obligatoire',
-        'error_name_required': 'Le nom est obligatoire',
       },
+      'dataLoadError': 'Erreur de chargement des données',
+      'noSupportedTeam': 'Aucune',
+      'playerDefault': 'Joueur',
+      'editGroupTitle': 'Modifier le groupe',
+      'deleteGroupTitle': 'Supprimer le groupe',
+      'pointsBadge': '+ {pts} PTS',
+      'predsTab': 'Pronos',
+      'leaderboardTab': 'Classement',
+      'tab_predictions': 'Pronostics',
+      'tab_groups': 'Groupes',
+      'tab_leaderboard': 'Classement',
+      'filter_group_stage': 'Phase de groupes',
+      'filter_knockout_stage': 'Phase finale',
+      'msg_group_joined': 'Groupe rejoint avec succès',
+      'msg_group_created': 'Groupe créé avec succès',
+      'enter_group_code': 'Entrez le code du groupe',
+      'error_code_required': 'Le code est obligatoire',
+      'error_name_required': 'Le nom est obligatoire',
       'aboutLocking': 'À propos du verrouillage',
       'aboutProbabilities': 'À propos des probabilités',
       'predictionLocked': 'Pronostic verrouillé',
@@ -551,6 +586,9 @@ class AppTranslations {
       'groupsTab': 'Groups',
       'oddsTab': 'Odds',
       'oddsTitle': 'Title Odds',
+      'oddsViewTitle': 'Chances of Title',
+      'oddsViewExplanation':
+          'This ranking represents the percentage probability of each nation winning the competition. Values fluctuate in real-time after each match based on sporting dynamics.',
       'eliminated': 'Eliminated',
       'scorersTab': 'Scorers',
       'assistsTab': 'Assists',
@@ -629,6 +667,30 @@ class AppTranslations {
       'championBonusLabel': 'World champion correct: +100 pts',
       'goldenBootBonusLabel': 'Golden Boot correct: +50 pts',
       'jokerBonusLabel': 'Joker (×2 on one match)',
+      'noMatchSelected': 'No match selected',
+      'change': 'Change',
+      'select': 'Select',
+      'chooseBoosterMatch': 'Choose Booster ×2 match',
+      'clear': 'Clear',
+      'predictionShort': 'Pred',
+      'globalCup': 'Global',
+      'globalCupHeader': '🌍 Global',
+      'globalBadge': 'GLB',
+      'groupBadge': 'GRP',
+      'myGroups': 'My groups',
+      'createShort': '+ Create',
+      'joinShort': 'Join',
+      'playersLabel': 'players',
+      'yourRank': 'Your rank',
+      'globalRank': 'Your global rank',
+      'loadingGlobalLeaderboard': 'Global leaderboard loading…',
+      'codeCopied': 'Code copied !',
+      'invite': 'Invite',
+      'createGroupSubtitle': 'Create a group and challenge your friends',
+      'joinGroupSubtitle': 'Enter the code received from a friend',
+      'meSuffix': ' (me)',
+      'levelShort': 'Lvl.',
+      'profileLockPrompt': 'Lock your champion and scorer in your profile ↗',
       //       ── ET / PK prediction UI ──────────────────────────────────────────────
       'extraTimeLabel': 'Extra Time',
       'penaltiesLabel': 'Penalty Shootout',
@@ -716,7 +778,7 @@ class AppTranslations {
         'za': 'South Africa',
         'ba': 'Bosnia and Herzegovina',
         'cd': 'DR Congo',
-        'cu': 'Curaçao',
+        'cw': 'Curaçao',
         'cv': 'Cabo Verde',
         'sco': 'Scotland',
         'ht': 'Haiti',
@@ -728,44 +790,52 @@ class AppTranslations {
         'qa': 'Qatar',
         'uz': 'Uzbekistan',
         '1A': 'Winner Group A',
+        '2A': 'Runner-up Group A',
+        '1B': 'Winner Group B',
         '2B': 'Runner-up Group B',
         '1C': 'Winner Group C',
+        '2C': 'Runner-up Group C',
+        '1D': 'Winner Group D',
         '2D': 'Runner-up Group D',
+        '1E': 'Winner Group E',
+        '2E': 'Runner-up Group E',
+        '1F': 'Winner Group F',
+        '2F': 'Runner-up Group F',
+        '1G': 'Winner Group G',
+        '2G': 'Runner-up Group G',
+        '1H': 'Winner Group H',
+        '2H': 'Runner-up Group H',
+        '1I': 'Winner Group I',
+        '2I': 'Runner-up Group I',
+        '1J': 'Winner Group J',
+        '2J': 'Runner-up Group J',
+        '1K': 'Winner Group K',
+        '2K': 'Runner-up Group K',
+        '1L': 'Winner Group L',
+        '2L': 'Runner-up Group L',
         'w49': 'Winner M49',
         'w50': 'Winner M50',
         'w61': 'Winner SF1',
         'w62': 'Winner SF2',
         'tbd': 'TBD',
-        'aboutLocking': 'About locking',
-        'aboutProbabilities': 'About probabilities',
-        'predictionLocked': 'Prediction locked',
-        'noPrediction': 'No prediction',
-        'myPrediction': 'MY PREDICTION',
-        'predictionLockMsg':
-            "To guarantee fairness among all players, predictions cannot be modified once the match kicks off.",
-        'locksInDays': 'Locks in: {days} d',
-        'locksInTime': 'Locks in: {time}',
-        'dataLoadError': 'Error loading data',
-        'noSupportedTeam': 'None',
-        'playerDefault': 'Player',
-        'editGroupTitle': 'Edit Group',
-        'deleteGroupTitle': 'Delete Group',
-        'deleteGroupConfirm':
-            'Are you sure you want to delete this group for everyone?',
-        'leaveGroupTitle': 'Leave Group',
-        'leaveGroupConfirm': 'Are you sure you want to leave this group?',
-        'profileLockPrompt':
-            'Lock your champion & top scorer in your profile ↗',
-        'pointsBadge': '+ {pts} PTS',
-        'predsTab': 'Predictions',
-        'leaderboardTab': 'Leaderboard',
-        'profileTitle': 'My Profile',
-        'confirmWinnerTitle': 'Confirm Winner',
-        'joinGroup': 'Join Group',
-        'createGroup': 'Create Group',
-        'cancel': 'Cancel',
-        'save': 'Save',
       },
+      'aboutLocking': 'About locking',
+      'aboutProbabilities': 'About probabilities',
+      'predictionLocked': 'Prediction locked',
+      'noPrediction': 'No prediction',
+      'myPrediction': 'MY PREDICTION',
+      'predictionLockMsg':
+          "To guarantee fairness among all players, predictions cannot be modified once the match kicks off.",
+      'locksInDays': 'Locks in: {days} d',
+      'locksInTime': 'Locks in: {time}',
+      'dataLoadError': 'Error loading data',
+      'noSupportedTeam': 'None',
+      'playerDefault': 'Player',
+      'editGroupTitle': 'Edit Group',
+      'deleteGroupTitle': 'Delete Group',
+      'pointsBadge': '+ {pts} PTS',
+      'predsTab': 'Predictions',
+      'leaderboardTab': 'Leaderboard',
     },
     'es': {
       'noTeamsFound': 'No se encontraron equipos.',
@@ -829,7 +899,7 @@ class AppTranslations {
       'matchStartingSoonBody': '¡El partido entre {t1} y {t2} comienza pronto!',
       'eliminationTitle': '❌ ¡Eliminación!',
       'eliminationBody':
-          '¡El sueño termina para {nickname} {flag}! Su camino en el Mundial 2026 termina aquí.',
+          '¡El sueño termina para {nickname} {flag}! Su camino en el Global 2026 termina aquí.',
       'oddsRisingTitle': '📈 ¡Cuotas al alza!',
       'oddsRisingBody':
           '¡La probabilidad de título para {nickname} {flag} sube al {prob}%!',
@@ -851,8 +921,7 @@ class AppTranslations {
           '¿Confirmas la elección de {player} ({team}) como Bota de Oro?',
       'topAssisterPrompt':
           '¿Confirmas la elección de {player} ({team}) como Mejor Asistente?',
-      'inviteMessageFull':
-          '🏆 ¡Únete a mi grupo de pronos \'{groupName}\' en el Mundial 2026! Pega mi código de desafío para comparar nuestras puntuaciones:\n\n{payload}',
+      'inviteMessageFull': '🏆 ¡Únete a mi grupo de pronos \'{groupName}\' en el Global 2026! Pega mi código de desafío para comparar nuestras puntuaciones:\n\n{payload}',
       'profileLockPrompt2': 'Bloquea tu campeón y goleador en tu perfil ↗',
       'resetProfileConfirm':
           '¿Estás seguro de que deseas restablecer todas tus predicciones? Los partidos ya jugados no se pueden predecir nuevamente y perderás todos los puntos.',
@@ -931,6 +1000,9 @@ class AppTranslations {
       'groupsTab': 'Grupos',
       'oddsTab': 'Cuotas',
       'oddsTitle': 'Cuota de Título',
+      'oddsViewTitle': 'Probabilidades de Título',
+      'oddsViewExplanation':
+          'Esta clasificación representa el porcentaje de probabilidad de cada nación de ganar la competición. Los valores fluctúan en tiempo real tras cada partido según las dinámicas deportivas.',
       'eliminated': 'Eliminado',
       'scorersTab': 'Goleadores',
       'assistsTab': 'Asistentes',
@@ -962,18 +1034,6 @@ class AppTranslations {
       'goalsConceded': 'Goles Concedidos',
       'matchesPlayed': 'Partidos Jugados',
       'squadStats': 'Stats de Plantilla',
-      'tab_predictions': 'Predictions',
-      'tab_groups': 'Groups',
-      'tab_leaderboard': 'Leaderboard',
-      'filter_group_stage': 'Group Stage',
-      'filter_knockout_stage': 'Knockout Stage',
-      'msg_group_joined': 'Group joined successfully',
-      'msg_group_created': 'Group created successfully',
-      'enter_group_code': 'Enter group code',
-      'group_name': 'Group name',
-      'error_code_required': 'Code is required',
-      'error_name_required': 'Name is required',
-      //       ── Gamification ───────────────────────────────────────────────────────
       'rankRookie': 'Rookie 🥉',
       'rankTacticianPro': 'Táctico Pro 🥈',
       'rankMasterAnalyst': 'Analista Maestro 🥇',
@@ -998,18 +1058,15 @@ class AppTranslations {
       'searchTeams': 'Buscar equipos...',
       'volume': 'Volumen',
       'noAnthemPlaying': 'Ningún himno en reproducción',
-      //       ── Match detail sheet ────────────────────────────────────────────────
       'crowdPredictions': 'PRONÓSTICOS DEL PÚBLICO',
       'drawLabel': 'Empate',
       'triviaTitle': 'Humor y Anécdotas',
       'alertReminderSet': '¡Recordatorio configurado para {t1} vs {t2}!',
       'dbResetSuccess': 'Base de datos restablecida correctamente.',
       'resetTournament': 'Reiniciar torneo',
-      //       'groupStageFilter': 'Fase de Grupos',
       'knockoutFilter': 'Fase Final',
       'predGroupStage': 'Fase de Grupos',
       'predKnockout': 'Fase Final',
-      //       ── Points info panel ──────────────────────────────────────────────────
       'pointsInfoTitle': 'Distribución de puntos',
       'exactGroupPts': 'Marcador exacto (grupos): +30 pts',
       'outcomeGroupPts': 'Resultado correcto (grupos): +10 pts',
@@ -1017,10 +1074,33 @@ class AppTranslations {
       'outcomeKnockoutPts': 'Resultado correcto (eliminat.): +15 pts',
       'etBonusPts': 'Ganador en prórroga correcto: +20 pts',
       'pkBonusPts': 'Ganador en penaltis correcto: +25 pts',
-      'championBonusLabel': 'Campeón mundial correcto: +100 pts',
+      'championBonusLabel': 'Campeón global correcto: +100 pts',
       'goldenBootBonusLabel': 'Bota de Oro correcta: +50 pts',
       'jokerBonusLabel': 'Joker (×2 en un partido)',
-      //       ── ET / PK prediction UI ──────────────────────────────────────────────
+      'noMatchSelected': 'Sin partido seleccionado',
+      'change': 'Cambiar',
+      'select': 'Elegir',
+      'chooseBoosterMatch': 'Elegir el partido Booster ×2',
+      'clear': 'Borrar',
+      'predictionShort': 'Prono',
+      'globalCup': 'Global',
+      'globalCupHeader': '🌍 Global',
+      'globalBadge': 'GLB',
+      'groupBadge': 'GRP',
+      'myGroups': 'Mis grupos',
+      'createShort': '+ Crear',
+      'joinShort': 'Unirse',
+      'playersLabel': 'jugadores',
+      'yourRank': 'Tu rango',
+      'globalRank': 'Tu rango global',
+      'loadingGlobalLeaderboard': 'Cargando clasificación global…',
+      'codeCopied': '¡Código copiado!',
+      'invite': 'Invitar',
+      'createGroupSubtitle': 'Crea un grupo y desafía a tus amigos',
+      'joinGroupSubtitle': 'Introduce el código recibido de un amigo',
+      'meSuffix': ' (yo)',
+      'levelShort': 'Niv.',
+      'profileLockPrompt': 'Bloquea tu campeón y goleador en tu perfil ↗',
       'extraTimeLabel': 'Prórroga',
       'penaltiesLabel': 'Penaltis',
       'whoWinsET': '¿Quién gana en la prórroga?',
@@ -1046,7 +1126,7 @@ class AppTranslations {
         'hr_uy':
             'La garra charrúa contra el indomable espíritu croata. 🇺🇾🇭🇷💪',
         'jp_fr':
-            'Partidazo. ¿Podrán los Bleus contra la disciplina de los Samuráis? 🇯🇵🇫🇷',
+            'Partidazo. ¿Podrán los Bleus contra la disciplina de los Samuráis? 2🇯🇵🇫🇷',
         'br_sn':
             'El Joga Bonito de Brasil frente al poderío físico de Senegal. 🇧🇷🇸🇳🦁',
         'knockout_tbd':
@@ -1073,7 +1153,7 @@ class AppTranslations {
         'uy': 'Uruguay',
         'co': 'Colombia',
         'kr': 'Corea del Sur',
-        'cm': 'Cameroun',
+        'cm': 'Camerún',
         'ng': 'Nigeria',
         'se': 'Suecia',
         'ch': 'Suiza',
@@ -1104,7 +1184,7 @@ class AppTranslations {
         'za': 'Sudáfrica',
         'ba': 'Bosnia y Herzegovina',
         'cd': 'RD Congo',
-        'cu': 'Curaçao',
+        'cw': 'Curaçao',
         'cv': 'Cabo Verde',
         'sco': 'Escocia',
         'ht': 'Haití',
@@ -1116,45 +1196,54 @@ class AppTranslations {
         'qa': 'Catar',
         'uz': 'Uzbekistán',
         '1A': '1ro Grupo A',
+        '2A': '2do Grupo A',
+        '1B': '1ro Grupo B',
         '2B': '2do Grupo B',
         '1C': '1ro Grupo C',
+        '2C': '2do Grupo C',
+        '1D': '1ro Grupo D',
         '2D': '2do Grupo D',
+        '1E': '1ro Grupo E',
+        '2E': '2do Grupo E',
+        '1F': '1ro Grupo F',
+        '2F': '2do Grupo F',
+        '1G': '1ro Grupo G',
+        '2G': '2do Grupo G',
+        '1H': '1ro Grupo H',
+        '2H': '2do Grupo H',
+        '1I': '1ro Grupo I',
+        '2I': '2do Grupo I',
+        '1J': '1ro Grupo J',
+        '2J': '2do Grupo J',
+        '1K': '1ro Grupo K',
+        '2K': '2do Grupo K',
+        '1L': '1ro Grupo L',
+        '2L': '2do Grupo L',
         'w49': 'Ganador M49',
         'w50': 'Ganador M50',
         'w61': 'Ganador SF1',
         'w62': 'Ganador SF2',
         'tbd': 'Por definir',
-        'dataLoadError': 'Error al cargar los datos',
-        'noSupportedTeam': 'Ninguno',
-        'playerDefault': 'Jugador',
-        'editGroupTitle': 'Editar Grupo',
-        'deleteGroupTitle': 'Eliminar Grupo',
-        'deleteGroupConfirm':
-            '¿Estás seguro de que deseas eliminar este grupo para todos?',
-        'leaveGroupTitle': 'Salir del Grupo',
-        'leaveGroupConfirm': '¿De verdad quieres salir de este grupo?',
-        'profileLockPrompt': 'Bloquea tu campeón y goleador en tu perfil ↗',
-        'pointsBadge': '+ {pts} PTS',
-        'predsTab': 'Pronósticos',
-        'leaderboardTab': 'Clasificación',
-        'profileTitle': 'Mi Perfil',
-        'confirmWinnerTitle': 'Confirmar Ganador',
-        'tab_predictions': 'Pronósticos',
-        'tab_groups': 'Grupos',
-        'tab_leaderboard': 'Clasificación',
-        'filter_group_stage': 'Fase de grupos',
-        'filter_knockout_stage': 'Fase final',
-        'joinGroup': 'Unirse a un grupo',
-        'createGroup': 'Crear grupo',
-        'cancel': 'Cancelar',
-        'save': 'Guardar',
-        'msg_group_joined': 'Grupo unido con éxito',
-        'msg_group_created': 'Grupo creado con éxito',
-        'enter_group_code': 'Introduce el código del grupo',
-        'group_name': 'Nombre del grupo',
-        'error_code_required': 'El código es obligatorio',
-        'error_name_required': 'El nombre es obligatorio',
       },
+      'dataLoadError': 'Error al cargar los datos',
+      'noSupportedTeam': 'Ninguno',
+      'playerDefault': 'Jugador',
+      'editGroupTitle': 'Editar Grupo',
+      'deleteGroupTitle': 'Eliminar Grupo',
+      'pointsBadge': '+ {pts} PTS',
+      'predsTab': 'Pronósticos',
+      'leaderboardTab': 'Clasificación',
+      'tab_predictions': 'Pronósticos',
+      'tab_groups': 'Grupos',
+      'tab_leaderboard': 'Clasificación',
+      'filter_group_stage': 'Fase de grupos',
+      'filter_knockout_stage': 'Fase final',
+      'msg_group_joined': 'Grupo unido con éxito',
+      'msg_group_created': 'Grupo creado con éxito',
+      'enter_group_code': 'Introduce el código del grupo',
+      'group_name': 'Nombre del grupo',
+      'error_code_required': 'El código es obligatorio',
+      'error_name_required': 'El nombre es obligatorio',
       'aboutLocking': 'Sobre el bloqueo',
       'aboutProbabilities': 'Sobre las probabilidades',
       'predictionLocked': 'Pronóstico bloqueado',
@@ -1171,9 +1260,55 @@ class AppTranslations {
     return _data[lang]?[key] ?? key;
   }
 
+  static String getFlagEmoji(String code) {
+    const Map<String, String> flags = {
+      'mx': '🇲🇽', 'de': '🇩🇪', 'us': '🇺🇸', 'en': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ca': '🇨🇦',
+      'jp': '🇯🇵', 'fr': '🇫🇷', 'br': '🇧🇷', 'sn': '🇸🇳', 'ar': '🇦🇷',
+      'ma': '🇲🇦', 'es': '🇪🇸', 'it': '🇮🇹', 'pt': '🇵🇹', 'nl': '🇳🇱',
+      'be': '🇧🇪', 'hr': '🇭🇷', 'uy': '🇺🇾', 'co': '🇨🇴', 'kr': '🇰🇷',
+      'cm': '🇨🇲', 'ng': '🇳🇬', 'se': '🇸🇪', 'ch': '🇨🇭', 'dk': '🇩🇰',
+      'pl': '🇵🇱', 'ua': '🇺🇦', 'dz': '🇩🇿', 'eg': '🇪🇬', 'tn': '🇹🇳',
+      'gh': '🇬🇭', 'ci': '🇨🇮', 'cl': '🇨🇱', 'pe': '🇵🇪', 'ec': '🇪🇨',
+      've': '🇻🇪', 'au': '🇦🇺', 'nz': '🇳🇿', 'sa': '🇸🇦', 'ir': '🇮🇷',
+      'tr': '🇹🇷', 'gr': '🇬🇷', 'cz': '🇨🇿', 'at': '🇦🇹', 'ro': '🇷🇴',
+      'hu': '🇭🇺', 'bg': '🇧🇬', 'rs': '🇷🇸', 'za': '🇿🇦', 'ba': '🇧🇦',
+      'cd': '🇨🇩', 'cw': '🇨🇼', 'cv': '🇨🇻', 'sco': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+      'ht': '🇭🇹', 'iq': '🇮🇶', 'jo': '🇯🇴', 'no': '🇳🇴', 'pa': '🇵🇦',
+      'py': '🇵🇾', 'qa': '🇶🇦', 'uz': '🇺🇿',
+    };
+    return flags[code.toLowerCase()] ?? '';
+  }
+
   static String getTeam(String lang, String code) {
     final teamsMap = _data[lang]?['teams'] as Map<String, String>?;
-    return teamsMap?[code] ?? code.toUpperCase();
+    if (teamsMap != null && teamsMap.containsKey(code)) {
+      return teamsMap[code]!;
+    }
+
+    // Dynamic fallback for knockout placeholders
+    final upperCode = code.toUpperCase();
+    if (code.startsWith('1')) {
+      final grp = code.substring(1).toUpperCase();
+      return lang == 'fr' ? '1er Gr. $grp' : (lang == 'es' ? '1ro Gr. $grp' : 'Winner Gr. $grp');
+    }
+    if (code.startsWith('2')) {
+      final grp = code.substring(1).toUpperCase();
+      return lang == 'fr' ? '2e Gr. $grp' : (lang == 'es' ? '2do Gr. $grp' : 'Runner-up Gr. $grp');
+    }
+    if (code.startsWith('3rd')) {
+      final pos = code.substring(3);
+      return lang == 'fr' ? '3e Meilleur $pos' : (lang == 'es' ? '3ro Mejor $pos' : '3rd Best $pos');
+    }
+    if (code.startsWith('w')) {
+      final mid = code.substring(1);
+      return lang == 'fr' ? 'Vainqueur M$mid' : (lang == 'es' ? 'Ganador M$mid' : 'Winner M$mid');
+    }
+    if (code.startsWith('l')) {
+      final mid = code.substring(1);
+      return lang == 'fr' ? 'Perdant M$mid' : (lang == 'es' ? 'Perdedor M$mid' : 'Loser M$mid');
+    }
+
+    return upperCode;
   }
 
   static String getTeamWithEmblem(String lang, String code) {
@@ -1189,8 +1324,8 @@ class AppTranslations {
     final jokesMap = _data[lang]?['jokes'] as Map<String, String>?;
     if (jokesMap == null) return '';
 
-    final key1 = '${t1}_$t2';
-    final key2 = '${t2}_$t1';
+    final key1 = '${t1}_${t2}';
+    final key2 = '${t2}_${t1}';
     if (jokesMap.containsKey(key1)) return jokesMap[key1]!;
     if (jokesMap.containsKey(key2)) return jokesMap[key2]!;
 
