@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'models/match.dart';
@@ -31,9 +33,22 @@ import 'widgets/mascots_dialog.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
   await WCNotificationService.init();
   await initializeDateFormatting('fr', null);
   await initializeDateFormatting('en', null);
@@ -915,10 +930,13 @@ class _MyHomePageState extends State<MyHomePage> {
         titleSpacing: 16,
         title: Row(
           children: [
-            Image.asset(
-              'assets/logos/fifa_logo_dark.png',
-              height: 28,
-              fit: BoxFit.contain,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/app_icon.png',
+                height: 32,
+                fit: BoxFit.contain,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
