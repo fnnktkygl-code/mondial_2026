@@ -77,7 +77,8 @@ class PredictionData {
   factory PredictionData.fromJson(Map<String, dynamic> json) {
     final Map<String, MatchPrediction> preds = {};
     if (json['preds'] != null) {
-      final Map<String, dynamic> rawPreds = json['preds'] as Map<String, dynamic>;
+      final Map<String, dynamic> rawPreds =
+          json['preds'] as Map<String, dynamic>;
       rawPreds.forEach((key, val) {
         preds[key] = MatchPrediction.fromJson(val as Map<String, dynamic>);
       });
@@ -93,9 +94,15 @@ class PredictionData {
       topAssisterWinner: json['topAssisterWinner'] as String?,
       supportedTeam: json['supportedTeam'] as String?,
       boosterMatchId: json['boosterMatchId'] as String?,
-      championPredictedAt: json['championPredictedAt'] != null ? DateTime.tryParse(json['championPredictedAt'] as String) : null,
-      goldenBootPredictedAt: json['goldenBootPredictedAt'] != null ? DateTime.tryParse(json['goldenBootPredictedAt'] as String) : null,
-      topAssisterPredictedAt: json['topAssisterPredictedAt'] != null ? DateTime.tryParse(json['topAssisterPredictedAt'] as String) : null,
+      championPredictedAt: json['championPredictedAt'] != null
+          ? DateTime.tryParse(json['championPredictedAt'] as String)
+          : null,
+      goldenBootPredictedAt: json['goldenBootPredictedAt'] != null
+          ? DateTime.tryParse(json['goldenBootPredictedAt'] as String)
+          : null,
+      topAssisterPredictedAt: json['topAssisterPredictedAt'] != null
+          ? DateTime.tryParse(json['topAssisterPredictedAt'] as String)
+          : null,
       matchPredictions: preds,
     );
   }
@@ -116,9 +123,12 @@ class PredictionData {
       'topAssisterWinner': topAssisterWinner,
       'supportedTeam': supportedTeam,
       'boosterMatchId': boosterMatchId,
-      if (championPredictedAt != null) 'championPredictedAt': championPredictedAt!.toIso8601String(),
-      if (goldenBootPredictedAt != null) 'goldenBootPredictedAt': goldenBootPredictedAt!.toIso8601String(),
-      if (topAssisterPredictedAt != null) 'topAssisterPredictedAt': topAssisterPredictedAt!.toIso8601String(),
+      if (championPredictedAt != null)
+        'championPredictedAt': championPredictedAt!.toIso8601String(),
+      if (goldenBootPredictedAt != null)
+        'goldenBootPredictedAt': goldenBootPredictedAt!.toIso8601String(),
+      if (topAssisterPredictedAt != null)
+        'topAssisterPredictedAt': topAssisterPredictedAt!.toIso8601String(),
       'preds': predsJson,
     };
   }
@@ -172,7 +182,9 @@ class PredictionService {
     final jsonStr = prefs.getString(_prefsKey);
     if (jsonStr != null) {
       try {
-        final data = PredictionData.fromJson(jsonDecode(jsonStr) as Map<String, dynamic>);
+        final data = PredictionData.fromJson(
+          jsonDecode(jsonStr) as Map<String, dynamic>,
+        );
         bool migrated = false;
         final keys = List<String>.from(data.matchPredictions.keys);
         for (final key in keys) {
@@ -216,13 +228,15 @@ class PredictionService {
 
     final actual1 = match.t1Score!;
     final actual2 = match.t2Score!;
-    final pred1   = pred.t1Score;
-    final pred2   = pred.t2Score;
+    final pred1 = pred.t1Score;
+    final pred2 = pred.t2Score;
 
     if (!match.isKnockout) {
       if (actual1 == pred1 && actual2 == pred2) return kExactScorePoints;
-      final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-      final predOutcome   = pred1   > pred2   ? 1 : (pred1   < pred2   ? -1 : 0);
+      final actualOutcome = actual1 > actual2
+          ? 1
+          : (actual1 < actual2 ? -1 : 0);
+      final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
       if (actualOutcome == predOutcome) return kCorrectOutcomePoints;
       return 0;
     }
@@ -231,8 +245,10 @@ class PredictionService {
       return kExactScoreKnockoutPoints + _evalKnockoutBeyond90(match, pred);
     }
 
-    final actual90Outcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-    final pred90Outcome   = pred1   > pred2   ? 1 : (pred1   < pred2   ? -1 : 0);
+    final actual90Outcome = actual1 > actual2
+        ? 1
+        : (actual1 < actual2 ? -1 : 0);
+    final pred90Outcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
     if (actual90Outcome == pred90Outcome) {
       return kCorrectOutcomeKnockoutPts + _evalKnockoutBeyond90(match, pred);
     }
@@ -244,7 +260,8 @@ class PredictionService {
     int bonus = 0;
     if (match.wentToET == true && match.etWinner != null) {
       if (pred.extraTimeWinner != null &&
-          pred.extraTimeWinner!.toLowerCase() == match.etWinner!.toLowerCase()) {
+          pred.extraTimeWinner!.toLowerCase() ==
+              match.etWinner!.toLowerCase()) {
         bonus += kExtraTimeBonusPoints;
       }
     }
@@ -263,7 +280,10 @@ class PredictionService {
   // ─── Résultat du pronostic (centralisé ici, utilisé par tous les widgets) ───
 
   /// Retourne 'exact' | 'winner' | 'wrong' | null pour un match joué.
-  static String? getPredictionResult(WorldCupMatch match, PredictionData? userPreds) {
+  static String? getPredictionResult(
+    WorldCupMatch match,
+    PredictionData? userPreds,
+  ) {
     if (!match.isPlayed) return null;
     if (userPreds == null) return null;
 
@@ -323,32 +343,57 @@ class PredictionService {
     };
   }
 
-  static double getPenaltyMultiplier(DateTime? predictedAt, Map<String, DateTime> starts) {
+  static double getPenaltyMultiplier(
+    DateTime? predictedAt,
+    Map<String, DateTime> starts,
+  ) {
     if (predictedAt == null) return 1.0;
-    if (predictedAt.isBefore(starts['kickoff']!)) return 1.0;
-    else if (predictedAt.isBefore(starts['r32']!)) return 0.8;
-    else if (predictedAt.isBefore(starts['r16']!)) return 0.6;
-    else if (predictedAt.isBefore(starts['qf']!)) return 0.4;
-    else if (predictedAt.isBefore(starts['sf']!)) return 0.2;
-    else return 0.0;
+    if (predictedAt.isBefore(starts['kickoff']!)) {
+      return 1.0;
+    } else if (predictedAt.isBefore(starts['r32']!)) {
+      return 0.8;
+    } else if (predictedAt.isBefore(starts['r16']!)) {
+      return 0.6;
+    } else if (predictedAt.isBefore(starts['qf']!)) {
+      return 0.4;
+    } else if (predictedAt.isBefore(starts['sf']!)) {
+      return 0.2;
+    } else {
+      return 0.0;
+    }
   }
 
-  static int getPotentialChampionPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
+  static int getPotentialChampionPoints(
+    DateTime? predictedAt,
+    List<WorldCupMatch> matches,
+  ) {
     final starts = getStageStartTimes(matches);
-    return (kChampionBonusPoints * getPenaltyMultiplier(predictedAt, starts)).round();
+    return (kChampionBonusPoints * getPenaltyMultiplier(predictedAt, starts))
+        .round();
   }
 
-  static int getPotentialGoldenBootPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
+  static int getPotentialGoldenBootPoints(
+    DateTime? predictedAt,
+    List<WorldCupMatch> matches,
+  ) {
     final starts = getStageStartTimes(matches);
-    return (kGoldenBootBonusPoints * getPenaltyMultiplier(predictedAt, starts)).round();
+    return (kGoldenBootBonusPoints * getPenaltyMultiplier(predictedAt, starts))
+        .round();
   }
 
-  static int getPotentialTopAssisterPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
+  static int getPotentialTopAssisterPoints(
+    DateTime? predictedAt,
+    List<WorldCupMatch> matches,
+  ) {
     final starts = getStageStartTimes(matches);
-    return (kTopAssisterBonusPoints * getPenaltyMultiplier(predictedAt, starts)).round();
+    return (kTopAssisterBonusPoints * getPenaltyMultiplier(predictedAt, starts))
+        .round();
   }
 
-  static int calculateTotalPoints(PredictionData userPreds, List<WorldCupMatch> matches) {
+  static int calculateTotalPoints(
+    PredictionData userPreds,
+    List<WorldCupMatch> matches,
+  ) {
     int score = 0;
     for (final match in matches) {
       if (match.isPlayed) {
@@ -364,15 +409,19 @@ class PredictionService {
     final starts = getStageStartTimes(matches);
 
     final finalMatch = matches.firstWhere(
-          (m) => m.id == kFinalMatchId,
+      (m) => m.id == kFinalMatchId,
       orElse: () => matches[0],
     );
     if (finalMatch.isPlayed && userPreds.championCode != null) {
       final actualChampion = finalMatch.t1Score! > finalMatch.t2Score!
           ? finalMatch.t1
           : finalMatch.t2;
-      if (actualChampion.toLowerCase() == userPreds.championCode!.toLowerCase()) {
-        final mult = getPenaltyMultiplier(userPreds.championPredictedAt, starts);
+      if (actualChampion.toLowerCase() ==
+          userPreds.championCode!.toLowerCase()) {
+        final mult = getPenaltyMultiplier(
+          userPreds.championPredictedAt,
+          starts,
+        );
         score += (kChampionBonusPoints * mult).round();
       }
     }
@@ -384,7 +433,10 @@ class PredictionService {
         userPreds.goldenBootPlayer!.isNotEmpty) {
       if (userPreds.goldenBootPlayer!.trim().toLowerCase() ==
           goldenBootWinner.trim().toLowerCase()) {
-        final mult = getPenaltyMultiplier(userPreds.goldenBootPredictedAt, starts);
+        final mult = getPenaltyMultiplier(
+          userPreds.goldenBootPredictedAt,
+          starts,
+        );
         score += (kGoldenBootBonusPoints * mult).round();
       }
     }
@@ -396,7 +448,10 @@ class PredictionService {
         userPreds.topAssisterPlayer!.isNotEmpty) {
       if (userPreds.topAssisterPlayer!.trim().toLowerCase() ==
           topAssisterWinner.trim().toLowerCase()) {
-        final mult = getPenaltyMultiplier(userPreds.topAssisterPredictedAt, starts);
+        final mult = getPenaltyMultiplier(
+          userPreds.topAssisterPredictedAt,
+          starts,
+        );
         score += (kTopAssisterBonusPoints * mult).round();
       }
     }
@@ -404,7 +459,10 @@ class PredictionService {
     return score;
   }
 
-  static int calculateActiveStreak(PredictionData data, List<WorldCupMatch> matches) {
+  static int calculateActiveStreak(
+    PredictionData data,
+    List<WorldCupMatch> matches,
+  ) {
     final playedMatches = matches.where((m) => m.isPlayed).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
 
@@ -415,8 +473,12 @@ class PredictionService {
 
       final actual1 = match.t1Score!;
       final actual2 = match.t2Score!;
-      final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-      final predOutcome   = pred.t1Score > pred.t2Score ? 1 : (pred.t1Score < pred.t2Score ? -1 : 0);
+      final actualOutcome = actual1 > actual2
+          ? 1
+          : (actual1 < actual2 ? -1 : 0);
+      final predOutcome = pred.t1Score > pred.t2Score
+          ? 1
+          : (pred.t1Score < pred.t2Score ? -1 : 0);
 
       if (actualOutcome == predOutcome) {
         streak++;
@@ -428,7 +490,10 @@ class PredictionService {
   }
 
   /// Nombre de pronostics exacts (score exact).
-  static int calculateExactScoreCount(PredictionData data, List<WorldCupMatch> matches) {
+  static int calculateExactScoreCount(
+    PredictionData data,
+    List<WorldCupMatch> matches,
+  ) {
     int count = 0;
     for (final match in matches) {
       if (match.isPlayed) {
@@ -444,20 +509,22 @@ class PredictionService {
   }
 
   /// Alias conservé pour compatibilité avec les appels existants.
-  static int calculateExactGuessesCount(PredictionData data, List<WorldCupMatch> matches) =>
-      calculateExactScoreCount(data, matches);
+  static int calculateExactGuessesCount(
+    PredictionData data,
+    List<WorldCupMatch> matches,
+  ) => calculateExactScoreCount(data, matches);
 
   // ─── XP / Level ──────────────────────────────────────────────────────────────
 
   static Map<String, dynamic> getXpDetails(int totalPoints, String lang) {
     final xp = totalPoints;
     for (int i = kXpLevels.length - 1; i >= 0; i--) {
-      final entry   = kXpLevels[i];
-      final minXp   = entry['minXp'] as int;
-      final maxXp   = entry['maxXp'] as int?;
-      final level   = entry['level'] as int;
+      final entry = kXpLevels[i];
+      final minXp = entry['minXp'] as int;
+      final maxXp = entry['maxXp'] as int?;
+      final level = entry['level'] as int;
       final rankKey = entry['rankKey'] as String;
-      final nextXp  = entry['nextLevelXp'] as int;
+      final nextXp = entry['nextLevelXp'] as int;
 
       if (xp >= minXp && (maxXp == null || xp < maxXp)) {
         final double progress = maxXp == null
@@ -484,12 +551,14 @@ class PredictionService {
   // ─── Groups (Firestore) ───────────────────────────────────────────────────────
 
   static Future<List<FriendGroup>> loadChallengeGroups(
-      PredictionData userData,
-      List<WorldCupMatch> matches,
-      ) async {
+    PredictionData userData,
+    List<WorldCupMatch> matches,
+  ) async {
     final List<FriendGroup> groups = [];
     final userPoints = calculateTotalPoints(userData, matches);
-    final userEmblem = userData.avatar.isNotEmpty ? userData.avatar : kUserEmblem;
+    final userEmblem = userData.avatar.isNotEmpty
+        ? userData.avatar
+        : kUserEmblem;
 
     final globalMembers = <FriendScore>[
       FriendScore(
@@ -501,11 +570,13 @@ class PredictionService {
       ),
     ]..sort((a, b) => b.points.compareTo(a.points));
 
-    groups.add(FriendGroup(
-      name: kGlobalGroupName,
-      code: kGlobalGroupCode,
-      members: globalMembers,
-    ));
+    groups.add(
+      FriendGroup(
+        name: kGlobalGroupName,
+        code: kGlobalGroupCode,
+        members: globalMembers,
+      ),
+    );
 
     final uid = await WCFirebaseService.getOrCreateUserId();
     final firestore = FirebaseFirestore.instance;
@@ -535,7 +606,10 @@ class PredictionService {
           mName = userData.username;
           mEmblem = userEmblem;
         } else {
-          final userDoc = await firestore.collection('users').doc(memberId as String).get();
+          final userDoc = await firestore
+              .collection('users')
+              .doc(memberId as String)
+              .get();
           if (userDoc.exists) {
             final uData = userDoc.data()!;
             points = uData['points'] as int? ?? 0;
@@ -543,23 +617,27 @@ class PredictionService {
             mEmblem = uData['avatar'] as String? ?? '👤';
           }
         }
-        members.add(FriendScore(
-          name: mName,
-          points: points,
-          emblem: mEmblem,
-          isUser: isUser,
-          userId: memberId as String,
-        ));
+        members.add(
+          FriendScore(
+            name: mName,
+            points: points,
+            emblem: mEmblem,
+            isUser: isUser,
+            userId: memberId as String,
+          ),
+        );
       }
 
       members.sort((a, b) => b.points.compareTo(a.points));
-      groups.add(FriendGroup(
-        name: name,
-        code: id,
-        members: members,
-        inviteToken: inviteToken,
-        creatorId: creatorId,
-      ));
+      groups.add(
+        FriendGroup(
+          name: name,
+          code: id,
+          members: members,
+          inviteToken: inviteToken,
+          creatorId: creatorId,
+        ),
+      );
     }
 
     return groups;
@@ -592,7 +670,7 @@ class PredictionService {
     final uid = await WCFirebaseService.getOrCreateUserId();
     final firestore = FirebaseFirestore.instance;
     await firestore.collection('groups').doc(groupId).update({
-      'members': FieldValue.arrayRemove([uid])
+      'members': FieldValue.arrayRemove([uid]),
     });
   }
 
@@ -614,7 +692,7 @@ class PredictionService {
         final List<dynamic> members = data['members'] ?? [];
         if (!members.contains(uid)) {
           await docRef.update({
-            'members': FieldValue.arrayUnion([uid])
+            'members': FieldValue.arrayUnion([uid]),
           });
 
           final groupName = data['name'] as String;
@@ -628,11 +706,11 @@ class PredictionService {
                   .doc(memberId as String)
                   .collection('notifications')
                   .add({
-                'title': 'New Group Member',
-                'body': '$username joined $groupName!',
-                'createdAt': FieldValue.serverTimestamp(),
-                'read': false,
-              });
+                    'title': 'New Group Member',
+                    'body': '$username joined $groupName!',
+                    'createdAt': FieldValue.serverTimestamp(),
+                    'read': false,
+                  });
             }
           }
           return true;
