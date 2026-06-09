@@ -84,7 +84,8 @@ class AppTranslations {
           'Confirmez-vous le choix de {player} ({team}) comme meilleur buteur ?',
       'topAssisterPrompt':
           'Confirmez-vous le choix de {player} ({team}) comme meilleur passeur ?',
-      'inviteMessageFull': '🏆 Rejoins mon groupe de pronos \'{groupName}\' sur Mondial 2026! Entre mon code de défi pour comparer nos scores:\n\n{payload}',
+      'inviteMessageFull':
+          '🏆 Rejoins mon groupe de pronos \'{groupName}\' sur Mondial 2026! Entre mon code de défi pour comparer nos scores:\n\n{payload}',
       'profileLockPrompt2':
           'Verrouillez votre champion et votre buteur dans votre profil ↗',
       'resetProfileConfirm':
@@ -850,7 +851,8 @@ class AppTranslations {
           '¿Confirmas la elección de {player} ({team}) como Bota de Oro?',
       'topAssisterPrompt':
           '¿Confirmas la elección de {player} ({team}) como Mejor Asistente?',
-      'inviteMessageFull': '🏆 ¡Únete a mi grupo de pronos \'{groupName}\' en el Mundial 2026! Pega mi código de desafío para comparar nuestras puntuaciones:\n\n{payload}',
+      'inviteMessageFull':
+          '🏆 ¡Únete a mi grupo de pronos \'{groupName}\' en el Mundial 2026! Pega mi código de desafío para comparar nuestras puntuaciones:\n\n{payload}',
       'profileLockPrompt2': 'Bloquea tu campeón y goleador en tu perfil ↗',
       'resetProfileConfirm':
           '¿Estás seguro de que deseas restablecer todas tus predicciones? Los partidos ya jugados no se pueden predecir nuevamente y perderás todos los puntos.',
@@ -1187,8 +1189,8 @@ class AppTranslations {
     final jokesMap = _data[lang]?['jokes'] as Map<String, String>?;
     if (jokesMap == null) return '';
 
-    final key1 = '${t1}_${t2}';
-    final key2 = '${t2}_${t1}';
+    final key1 = '${t1}_$t2';
+    final key2 = '${t2}_$t1';
     if (jokesMap.containsKey(key1)) return jokesMap[key1]!;
     if (jokesMap.containsKey(key2)) return jokesMap[key2]!;
 

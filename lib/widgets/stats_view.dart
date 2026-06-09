@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
-import '../app_constants.dart';
-import '../services/team_profile_service.dart';
+// // import '../app_constants.dart';
+// // import '../services/team_profile_service.dart';
 import '../services/prediction_service.dart';
 import 'team_flag.dart';
 import 'team_selector.dart';
@@ -13,21 +13,14 @@ class PlayerStat {
   final int value;
   final String teamCode;
 
-  PlayerStat({
-    required this.name,
-    required this.value,
-    required this.teamCode,
-  });
+  PlayerStat({required this.name, required this.value, required this.teamCode});
 }
 
 class TournamentStats {
   final List<PlayerStat> scorers;
   final List<PlayerStat> assists;
 
-  TournamentStats({
-    required this.scorers,
-    required this.assists,
-  });
+  TournamentStats({required this.scorers, required this.assists});
 
   factory TournamentStats.compute(List<WorldCupMatch> matches) {
     final Map<String, int> goalCounts = {};
@@ -45,8 +38,11 @@ class TournamentStats {
 
           final assistantName = goal.assistant?.trim();
           if (assistantName != null && assistantName.isNotEmpty) {
-            assistCounts[assistantName] = (assistCounts[assistantName] ?? 0) + 1;
-            playerTeams[assistantName] = goal.team == 't1' ? match.t1 : match.t2;
+            assistCounts[assistantName] =
+                (assistCounts[assistantName] ?? 0) + 1;
+            playerTeams[assistantName] = goal.team == 't1'
+                ? match.t1
+                : match.t2;
           }
         }
       }
@@ -99,7 +95,9 @@ class ScorersLeaderboardWidget extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = list[index];
-        final isUserChoice = userPreds?.goldenBootPlayer?.trim().toLowerCase() == item.name.trim().toLowerCase();
+        final isUserChoice =
+            userPreds?.goldenBootPlayer?.trim().toLowerCase() ==
+            item.name.trim().toLowerCase();
         return _buildStatRow(context, index, item, '⚽', isUserChoice);
       },
     );
@@ -112,17 +110,29 @@ class ScorersLeaderboardWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.sports_soccer_rounded, size: 56, color: AppColors.borderStrong),
+            const Icon(
+              Icons.sports_soccer_rounded,
+              size: 56,
+              color: AppColors.borderStrong,
+            ),
             const SizedBox(height: 16),
             Text(
               AppTranslations.get(lang, 'leaderboardUnavailable'),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               AppTranslations.get(lang, 'statsUnlockGoals'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4),
+              style: const TextStyle(
+                color: AppColors.textDim,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
           ],
         ),
@@ -130,7 +140,13 @@ class ScorersLeaderboardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatRow(BuildContext context, int index, PlayerStat item, String suffixIcon, bool isUserChoice) {
+  Widget _buildStatRow(
+    BuildContext context,
+    int index,
+    PlayerStat item,
+    String suffixIcon,
+    bool isUserChoice,
+  ) {
     final teamName = AppTranslations.getTeam(lang, item.teamCode);
 
     return Container(
@@ -139,12 +155,18 @@ class ScorersLeaderboardWidget extends StatelessWidget {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: isUserChoice ? AppColors.accent : AppColors.border,
-            width: isUserChoice ? 2.0 : 1.5
+          color: isUserChoice ? AppColors.accent : AppColors.border,
+          width: isUserChoice ? 2.0 : 1.5,
         ),
-        boxShadow: isUserChoice ? [
-          BoxShadow(color: AppColors.accent.withValues(alpha: 0.1), blurRadius: 10, spreadRadius: 1)
-        ] : null,
+        boxShadow: isUserChoice
+            ? [
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -154,11 +176,11 @@ class ScorersLeaderboardWidget extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: index == 0
-                  ? AppColors.rankGold.withOpacity(0.2)
+                  ? AppColors.rankGold.withValues(alpha: 0.2)
                   : index == 1
-                  ? AppColors.textMuted.withOpacity(0.2)
+                  ? AppColors.textMuted.withValues(alpha: 0.2)
                   : index == 2
-                  ? AppColors.rankGold.withOpacity(0.2)
+                  ? AppColors.rankGold.withValues(alpha: 0.2)
                   : AppColors.surface,
               shape: BoxShape.circle,
             ),
@@ -207,14 +229,21 @@ class ScorersLeaderboardWidget extends StatelessWidget {
                     if (isUserChoice) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accent.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
                           'MY PRONO 🎯',
-                          style: TextStyle(color: AppColors.accent, fontSize: 8, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: AppColors.accent,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -241,10 +270,7 @@ class ScorersLeaderboardWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  suffixIcon,
-                  style: const TextStyle(fontSize: 11),
-                ),
+                Text(suffixIcon, style: const TextStyle(fontSize: 11)),
                 const SizedBox(width: 4),
                 Text(
                   '${item.value}',
@@ -287,17 +313,29 @@ class AssistsLeaderboardWidget extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.star_outline_rounded, size: 56, color: AppColors.borderStrong),
+              const Icon(
+                Icons.star_outline_rounded,
+                size: 56,
+                color: AppColors.borderStrong,
+              ),
               const SizedBox(height: 16),
               Text(
                 AppTranslations.get(lang, 'leaderboardUnavailable'),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 AppTranslations.get(lang, 'statsUnlockAssists'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4),
+                style: const TextStyle(
+                  color: AppColors.textDim,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
               ),
             ],
           ),
@@ -311,9 +349,14 @@ class AssistsLeaderboardWidget extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = list[index];
-        final isUserChoice = userPreds?.topAssisterPlayer?.trim().toLowerCase() == item.name.trim().toLowerCase();
-        return ScorersLeaderboardWidget(matches: matches, lang: lang, userPreds: userPreds)
-            ._buildStatRow(context, index, item, '👟', isUserChoice);
+        final isUserChoice =
+            userPreds?.topAssisterPlayer?.trim().toLowerCase() ==
+            item.name.trim().toLowerCase();
+        return ScorersLeaderboardWidget(
+          matches: matches,
+          lang: lang,
+          userPreds: userPreds,
+        )._buildStatRow(context, index, item, '👟', isUserChoice);
       },
     );
   }
@@ -352,23 +395,29 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
         final c = code.toLowerCase();
         if (c == 'tbd') return false;
         if (c.contains(RegExp(r'[0-9]'))) return false;
-        if ((c.startsWith('w') || c.startsWith('l')) && c.length > 3) return false;
+        if ((c.startsWith('w') || c.startsWith('l')) && c.length > 3) {
+          return false;
+        }
         return true;
       }
 
       if (isValidCountryCode(m.t1)) qualifiedCodes.add(m.t1.toLowerCase());
       if (isValidCountryCode(m.t2)) qualifiedCodes.add(m.t2.toLowerCase());
     }
-    return qualifiedCodes.toList()
-      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
-          .compareTo(AppTranslations.getTeam(widget.lang, b)));
+    return qualifiedCodes.toList()..sort(
+      (a, b) => AppTranslations.getTeam(
+        widget.lang,
+        a,
+      ).compareTo(AppTranslations.getTeam(widget.lang, b)),
+    );
   }
 
   // Algorithme d'extraction du vrai groupe de l'équipe à partir des matchs
   String _getTeamGroup(String teamCode) {
     for (final m in widget.matches) {
       if (m.group != null && m.group!.isNotEmpty) {
-        if (m.t1.toLowerCase() == teamCode.toLowerCase() || m.t2.toLowerCase() == teamCode.toLowerCase()) {
+        if (m.t1.toLowerCase() == teamCode.toLowerCase() ||
+            m.t2.toLowerCase() == teamCode.toLowerCase()) {
           return m.group!;
         }
       }
@@ -401,7 +450,11 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 11,
+        ),
       ),
     );
   }
@@ -411,16 +464,17 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
     final List<String> sortedTeams = _getSortedQualifiedTeams();
     final currentTeam = _selectedTeam ?? 'fr';
 
-    final teamMatches = widget.matches
-        .where((m) => m.t1 == currentTeam || m.t2 == currentTeam)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final teamMatches =
+        widget.matches
+            .where((m) => m.t1 == currentTeam || m.t2 == currentTeam)
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
 
     int goalsScored = 0;
     int goalsConceded = 0;
-    int wins = 0;
-    int draws = 0;
-    int losses = 0;
+    // int wins = 0;
+    // int draws = 0;
+    // int losses = 0;
     int played = 0;
     List<String> formHistory = [];
 
@@ -434,22 +488,29 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
         goalsConceded += scoreOpp;
 
         if (scoreSelf > scoreOpp) {
-          wins++;
+          // wins++;
           formHistory.add(AppTranslations.get(widget.lang, 'formWin'));
         } else if (scoreSelf < scoreOpp) {
-          losses++;
+          // losses++;
           formHistory.add('L');
         } else {
-          draws++;
+          // draws++;
           formHistory.add(AppTranslations.get(widget.lang, 'formDraw'));
         }
       }
     }
 
     final stats = TournamentStats.compute(widget.matches);
-    final teamScorers = stats.scorers.where((p) => p.teamCode == currentTeam).toList();
-    final teamAssists = stats.assists.where((p) => p.teamCode == currentTeam).toList();
-    final teamEmblemName = AppTranslations.getTeamWithEmblem(widget.lang, currentTeam);
+    final teamScorers = stats.scorers
+        .where((p) => p.teamCode == currentTeam)
+        .toList();
+    final teamAssists = stats.assists
+        .where((p) => p.teamCode == currentTeam)
+        .toList();
+    final teamEmblemName = AppTranslations.getTeamWithEmblem(
+      widget.lang,
+      currentTeam,
+    );
     final teamRealGroup = _getTeamGroup(currentTeam);
 
     return SingleChildScrollView(
@@ -491,10 +552,18 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   const SizedBox(width: 12),
                   Text(
                     AppTranslations.getTeam(widget.lang, currentTeam),
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const Spacer(),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textDim, size: 16),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: AppColors.textDim,
+                    size: 16,
+                  ),
                 ],
               ),
             ),
@@ -535,7 +604,10 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                       if (teamRealGroup.isNotEmpty)
                         Text(
                           '${AppTranslations.get(widget.lang, 'group')} $teamRealGroup',
-                          style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+                          style: const TextStyle(
+                            color: AppColors.textDim,
+                            fontSize: 12,
+                          ),
                         ),
                     ],
                   ),
@@ -548,12 +620,19 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           // 3. Stats Grid
           Row(
             children: [
-              _buildStatCard(AppTranslations.get(widget.lang, 'matchesPlayed'), '$played', Icons.sports_soccer),
+              _buildStatCard(
+                AppTranslations.get(widget.lang, 'matchesPlayed'),
+                '$played',
+                Icons.sports_soccer,
+              ),
               const SizedBox(width: 12),
 
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.card,
                     borderRadius: BorderRadius.circular(16),
@@ -564,12 +643,30 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     children: [
                       Text(
                         AppTranslations.get(widget.lang, 'recentForm'),
-                        style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: AppColors.textDim,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       formHistory.isEmpty
-                          ? Text(AppTranslations.get(widget.lang, 'noMatchesPlayed'), style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic))
-                          : Row(children: formHistory.map((res) => _buildFormBadge(res)).toList()),
+                          ? Text(
+                              AppTranslations.get(
+                                widget.lang,
+                                'noMatchesPlayed',
+                              ),
+                              style: const TextStyle(
+                                color: AppColors.textDim,
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            )
+                          : Row(
+                              children: formHistory
+                                  .map((res) => _buildFormBadge(res))
+                                  .toList(),
+                            ),
                     ],
                   ),
                 ),
@@ -579,9 +676,19 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildStatCard(AppTranslations.get(widget.lang, 'goalsScored'), '$goalsScored', Icons.arrow_upward, color: AppColors.accent),
+              _buildStatCard(
+                AppTranslations.get(widget.lang, 'goalsScored'),
+                '$goalsScored',
+                Icons.arrow_upward,
+                color: AppColors.accent,
+              ),
               const SizedBox(width: 12),
-              _buildStatCard(AppTranslations.get(widget.lang, 'goalsConceded'), '$goalsConceded', Icons.arrow_downward, color: AppColors.danger),
+              _buildStatCard(
+                AppTranslations.get(widget.lang, 'goalsConceded'),
+                '$goalsConceded',
+                Icons.arrow_downward,
+                color: AppColors.danger,
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -589,7 +696,12 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           // 4. Squad Leaders
           Text(
             AppTranslations.get(widget.lang, 'squadStats'),
-            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+            style: const TextStyle(
+              color: AppColors.accent,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -607,31 +719,56 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(AppTranslations.get(widget.lang, 'scorers'),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(
+                        AppTranslations.get(widget.lang, 'scorers'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                       const Divider(color: AppColors.border, height: 16),
                       if (teamScorers.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Text('-', style: TextStyle(color: AppColors.textDim, fontSize: 12)),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              color: AppColors.textDim,
+                              fontSize: 12,
+                            ),
+                          ),
                         )
                       else
-                        ...teamScorers.map((p) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(p.name,
-                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                        ...teamScorers.map(
+                          (p) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    p.name,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 11,
+                                    ),
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              Text('${p.value} ⚽',
-                                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11)),
-                            ],
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Text(
+                                  '${p.value} ⚽',
+                                  style: const TextStyle(
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        )),
+                        ),
                     ],
                   ),
                 ),
@@ -648,31 +785,56 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(AppTranslations.get(widget.lang, 'assists'),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(
+                        AppTranslations.get(widget.lang, 'assists'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                       const Divider(color: AppColors.border, height: 16),
                       if (teamAssists.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Text('-', style: TextStyle(color: AppColors.textDim, fontSize: 12)),
+                          child: Text(
+                            '-',
+                            style: TextStyle(
+                              color: AppColors.textDim,
+                              fontSize: 12,
+                            ),
+                          ),
                         )
                       else
-                        ...teamAssists.map((p) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(p.name,
-                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                        ...teamAssists.map(
+                          (p) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    p.name,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 11,
+                                    ),
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              Text('${p.value} 👟',
-                                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11)),
-                            ],
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Text(
+                                  '${p.value} 👟',
+                                  style: const TextStyle(
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        )),
+                        ),
                     ],
                   ),
                 ),
@@ -684,7 +846,12 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           // 5. Team Matches
           Text(
             AppTranslations.get(widget.lang, 'allMatches'),
-            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+            style: const TextStyle(
+              color: AppColors.accent,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -693,14 +860,20 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: teamMatches.length,
             separatorBuilder: (c, i) => const SizedBox(height: 8),
-            itemBuilder: (c, i) => _buildCompactMatchCard(context, teamMatches[i]),
+            itemBuilder: (c, i) =>
+                _buildCompactMatchCard(context, teamMatches[i]),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, {Color? color}) {
+  Widget _buildStatCard(
+    String label,
+    String value,
+    IconData icon, {
+    Color? color,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -717,13 +890,25 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.textDim,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
-                  Text(value,
-                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -758,14 +943,25 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(t1Name,
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          t1Name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       if (m.isPlayed)
-                        Text('${m.t1Score}',
-                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text(
+                          '${m.t1Score}',
+                          style: const TextStyle(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -773,14 +969,25 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(t2Name,
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          t2Name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       if (m.isPlayed)
-                        Text('${m.t2Score}',
-                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text(
+                          '${m.t2Score}',
+                          style: const TextStyle(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -792,11 +999,23 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             Container(width: 1, height: 24, color: AppColors.border),
             const SizedBox(width: 12),
             if (m.isPlayed)
-              const Text('FIN',
-                  style: TextStyle(color: AppColors.textDim, fontWeight: FontWeight.bold, fontSize: 10))
+              const Text(
+                'FIN',
+                style: TextStyle(
+                  color: AppColors.textDim,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              )
             else
-              Text(m.getFormattedTime(),
-                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 10)),
+              Text(
+                m.getFormattedTime(),
+                style: const TextStyle(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              ),
           ],
         ),
       ),

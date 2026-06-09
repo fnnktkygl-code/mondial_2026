@@ -16,19 +16,68 @@ class WCNotificationService {
 
   static String _getFlagEmoji(String code) {
     const Map<String, String> flags = {
-      'mx': '🇲🇽', 'de': '🇩🇪', 'us': '🇺🇸', 'en': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'ca': '🇨🇦',
-      'jp': '🇯🇵', 'fr': '🇫🇷', 'br': '🇧🇷', 'sn': '🇸🇳', 'ar': '🇦🇷',
-      'ma': '🇲🇦', 'es': '🇪🇸', 'it': '🇮🇹', 'pt': '🇵🇹', 'nl': '🇳🇱',
-      'be': '🇧🇪', 'hr': '🇭🇷', 'uy': '🇺🇾', 'co': '🇨🇴', 'kr': '🇰🇷',
-      'cm': '🇨🇲', 'ng': '🇳🇬', 'se': '🇸🇪', 'ch': '🇨🇭', 'dk': '🇩🇰',
-      'pl': '🇵🇱', 'ua': '🇺🇦', 'dz': '🇩🇿', 'eg': '🇪🇬', 'tn': '🇹🇳',
-      'gh': '🇬🇭', 'ci': '🇨🇮', 'cl': '🇨🇱', 'pe': '🇵🇪', 'ec': '🇪🇨',
-      've': '🇻🇪', 'au': '🇦🇺', 'nz': '🇳🇿', 'sa': '🇸🇦', 'ir': '🇮🇷',
-      'tr': '🇹🇷', 'gr': '🇬🇷', 'cz': '🇨🇿', 'at': '🇦🇹', 'ro': '🇷🇴',
-      'hu': '🇭🇺', 'bg': '🇧🇬', 'rs': '🇷🇸', 'za': '🇿🇦', 'ba': '🇧🇦',
-      'cd': '🇨🇩', 'cw': '🇨🇼', 'cv': '🇨🇻', 'sco': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-      'ht': '🇭🇹', 'iq': '🇮🇶', 'jo': '🇯🇴', 'no': '🇳🇴', 'pa': '🇵🇦',
-      'py': '🇵🇾', 'qa': '🇶🇦', 'uz': '🇺🇿',
+      'mx': '🇲🇽',
+      'de': '🇩🇪',
+      'us': '🇺🇸',
+      'en': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      'ca': '🇨🇦',
+      'jp': '🇯🇵',
+      'fr': '🇫🇷',
+      'br': '🇧🇷',
+      'sn': '🇸🇳',
+      'ar': '🇦🇷',
+      'ma': '🇲🇦',
+      'es': '🇪🇸',
+      'it': '🇮🇹',
+      'pt': '🇵🇹',
+      'nl': '🇳🇱',
+      'be': '🇧🇪',
+      'hr': '🇭🇷',
+      'uy': '🇺🇾',
+      'co': '🇨🇴',
+      'kr': '🇰🇷',
+      'cm': '🇨🇲',
+      'ng': '🇳🇬',
+      'se': '🇸🇪',
+      'ch': '🇨🇭',
+      'dk': '🇩🇰',
+      'pl': '🇵🇱',
+      'ua': '🇺🇦',
+      'dz': '🇩🇿',
+      'eg': '🇪🇬',
+      'tn': '🇹🇳',
+      'gh': '🇬🇭',
+      'ci': '🇨🇮',
+      'cl': '🇨🇱',
+      'pe': '🇵🇪',
+      'ec': '🇪🇨',
+      've': '🇻🇪',
+      'au': '🇦🇺',
+      'nz': '🇳🇿',
+      'sa': '🇸🇦',
+      'ir': '🇮🇷',
+      'tr': '🇹🇷',
+      'gr': '🇬🇷',
+      'cz': '🇨🇿',
+      'at': '🇦🇹',
+      'ro': '🇷🇴',
+      'hu': '🇭🇺',
+      'bg': '🇧🇬',
+      'rs': '🇷🇸',
+      'za': '🇿🇦',
+      'ba': '🇧🇦',
+      'cd': '🇨🇩',
+      'cw': '🇨🇼',
+      'cv': '🇨🇻',
+      'sco': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+      'ht': '🇭🇹',
+      'iq': '🇮🇶',
+      'jo': '🇯🇴',
+      'no': '🇳🇴',
+      'pa': '🇵🇦',
+      'py': '🇵🇾',
+      'qa': '🇶🇦',
+      'uz': '🇺🇿',
     };
     return flags[code.toLowerCase()] ?? '⚽';
   }
@@ -55,10 +104,10 @@ class WCNotificationService {
 
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
@@ -87,42 +136,58 @@ class WCNotificationService {
         .where('read', isEqualTo: false)
         .snapshots()
         .listen((snapshot) {
-      for (var change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.added) {
-          final data = change.doc.data();
-          if (data != null) {
-            final title = data['title'] as String? ?? 'Notification';
-            final body = data['body'] as String? ?? '';
-            showInstantNotification(id: change.doc.id, title: title, body: body);
+          for (var change in snapshot.docChanges) {
+            if (change.type == DocumentChangeType.added) {
+              final data = change.doc.data();
+              if (data != null) {
+                final title = data['title'] as String? ?? 'Notification';
+                final body = data['body'] as String? ?? '';
+                showInstantNotification(
+                  id: change.doc.id,
+                  title: title,
+                  body: body,
+                );
 
-            // Mark as read so we don't show it again
-            change.doc.reference.update({'read': true});
+                // Mark as read so we don't show it again
+                change.doc.reference.update({'read': true});
+              }
+            }
           }
-        }
-      }
-    });
+        });
   }
 
   static Future<bool> requestPermissions() async {
     try {
-      final ios = _plugin.resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
       if (ios != null) {
         final granted = await ios.requestPermissions(
-            alert: true, badge: true, sound: true);
+          alert: true,
+          badge: true,
+          sound: true,
+        );
         if (granted == true) return true;
       }
 
-      final mac = _plugin.resolvePlatformSpecificImplementation<
-          MacOSFlutterLocalNotificationsPlugin>();
+      final mac = _plugin
+          .resolvePlatformSpecificImplementation<
+            MacOSFlutterLocalNotificationsPlugin
+          >();
       if (mac != null) {
         final granted = await mac.requestPermissions(
-            alert: true, badge: true, sound: true);
+          alert: true,
+          badge: true,
+          sound: true,
+        );
         if (granted == true) return true;
       }
 
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         final granted = await android.requestNotificationsPermission();
         if (granted == true) return true;
@@ -144,9 +209,15 @@ class WCNotificationService {
       priority: Priority.high,
     ),
     iOS: DarwinNotificationDetails(
-        presentAlert: true, presentBadge: true, presentSound: true),
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    ),
     macOS: DarwinNotificationDetails(
-        presentAlert: true, presentBadge: true, presentSound: true),
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    ),
   );
 
   static Future<void> showNotification({
