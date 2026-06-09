@@ -34,8 +34,7 @@ class MatchCard extends StatefulWidget {
   State<MatchCard> createState() => _MatchCardState();
 }
 
-class _MatchCardState extends State<MatchCard>
-    with SingleTickerProviderStateMixin {
+class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -53,10 +52,9 @@ class _MatchCardState extends State<MatchCard>
       vsync: this,
       duration: kLivePulseDuration,
     );
-    _pulseAnimation = Tween<double>(begin: kLivePulseMin, end: kLivePulseMax)
-        .animate(
-          CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-        );
+    _pulseAnimation = Tween<double>(begin: kLivePulseMin, end: kLivePulseMax).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     if (_isLive) {
       _pulseController.repeat(reverse: true);
     }
@@ -88,17 +86,22 @@ class _MatchCardState extends State<MatchCard>
     );
   }
 
+  String _getFlagcdnUrl(String code) {
+    String cleanCode = code.toLowerCase().replaceAll('g_', '');
+    if (cleanCode == 'en') cleanCode = 'gb-eng';
+    if (cleanCode == 'sco') cleanCode = 'gb-sct';
+    if (cleanCode == 'wa') cleanCode = 'gb-wls';
+    return 'https://flagcdn.com/w320/$cleanCode.png';
+  }
+
   @override
   Widget build(BuildContext context) {
     final t1Name = AppTranslations.getTeam(widget.lang, widget.match.t1);
     final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
     final live = _isLive;
-    final isUserTeam =
-        widget.supportedTeamCode != null &&
-        (widget.match.t1.toLowerCase() ==
-                widget.supportedTeamCode!.toLowerCase() ||
-            widget.match.t2.toLowerCase() ==
-                widget.supportedTeamCode!.toLowerCase());
+    final isUserTeam = widget.supportedTeamCode != null &&
+        (widget.match.t1.toLowerCase() == widget.supportedTeamCode!.toLowerCase() ||
+            widget.match.t2.toLowerCase() == widget.supportedTeamCode!.toLowerCase());
 
     final String stageText = widget.match.isKnockout
         ? (widget.match.stage ?? '')
@@ -112,41 +115,26 @@ class _MatchCardState extends State<MatchCard>
         case 'exact':
           predIcon = Icons.star_rounded;
           predColor = Colors.amber;
-          tooltipMessage = AppTranslations.get(
-            widget.lang,
-            'exactScoreTooltip',
-          );
+          tooltipMessage = AppTranslations.get(widget.lang, 'exactScoreTooltip');
           break;
         case 'winner':
           predIcon = Icons.check_circle_rounded;
           predColor = Colors.greenAccent;
-          tooltipMessage = AppTranslations.get(
-            widget.lang,
-            'correctWinnerTooltip',
-          );
+          tooltipMessage = AppTranslations.get(widget.lang, 'correctWinnerTooltip');
           break;
         default:
           predIcon = Icons.cancel_rounded;
           predColor = Colors.redAccent;
-          tooltipMessage = AppTranslations.get(
-            widget.lang,
-            'wrongPredictionTooltip',
-          );
+          tooltipMessage = AppTranslations.get(widget.lang, 'wrongPredictionTooltip');
       }
     } else if (widget.hasPrediction) {
       predIcon = Icons.check_circle_rounded;
       predColor = Colors.greenAccent;
-      tooltipMessage = AppTranslations.get(
-        widget.lang,
-        'predictionSavedTooltip',
-      );
+      tooltipMessage = AppTranslations.get(widget.lang, 'predictionSavedTooltip');
     } else {
       predIcon = Icons.pending_actions_rounded;
       predColor = Colors.orangeAccent;
-      tooltipMessage = AppTranslations.get(
-        widget.lang,
-        'predictionPendingTooltip',
-      );
+      tooltipMessage = AppTranslations.get(widget.lang, 'predictionPendingTooltip');
     }
 
     return AnimatedBuilder(
@@ -155,22 +143,46 @@ class _MatchCardState extends State<MatchCard>
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: isUserTeam
-                ? AppColors.accent.withValues(alpha: 0.06)
-                : AppColors.card,
+            color: isUserTeam ? AppColors.accent.withOpacity(0.06) : AppColors.card,
             borderRadius: BorderRadius.circular(kCardRadius),
             border: Border.all(
-              color: live
-                  ? AppColors.accent.withValues(alpha: _pulseAnimation.value)
-                  : (isUserTeam
-                        ? AppColors.accent
-                        : (widget.hasAlert
-                              ? AppColors.accent.withValues(alpha: 0.4)
-                              : AppColors.border)),
+              color: live ? AppColors.accent.withOpacity(_pulseAnimation.value) : (isUserTeam ? AppColors.accent : (widget.hasAlert ? AppColors.accent.withOpacity(0.4) : AppColors.border)),
               width: (live || isUserTeam) ? 2.0 : 1.5,
             ),
           ),
-          child: child,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Background flags
+              Positioned.fill(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Opacity(
+                        opacity: 0.08,
+                        child: Image.network(
+                          _getFlagcdnUrl(widget.match.t1),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Opacity(
+                        opacity: 0.08,
+                        child: Image.network(
+                          _getFlagcdnUrl(widget.match.t2),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              child!,
+            ],
+          ),
         );
       },
       child: Material(
@@ -189,46 +201,16 @@ class _MatchCardState extends State<MatchCard>
                   children: [
                     Row(
                       children: [
-                        if (live)
-                          const _LiveBadge()
-                        else
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardDark,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              widget.match.getFormattedTime(),
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontFamily: 'monospace',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
+                        if (live) const _LiveBadge() else Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(color: AppColors.cardDark, borderRadius: BorderRadius.circular(10)),
+                          child: Text(widget.match.getFormattedTime(), style: const TextStyle(color: AppColors.textPrimary, fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 13)),
+                        ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.border,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            stageText,
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11,
-                            ),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(8)),
+                          child: Text(stageText, style: const TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600, fontSize: 11)),
                         ),
                       ],
                     ),
@@ -237,21 +219,17 @@ class _MatchCardState extends State<MatchCard>
                         Tooltip(
                           message: tooltipMessage,
                           triggerMode: TooltipTriggerMode.tap,
-                          child: Icon(predIcon, color: predColor, size: 20),
+                          child: Icon(
+                            predIcon,
+                            color: predColor,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          icon: Icon(
-                            widget.hasAlert
-                                ? Icons.notifications_active
-                                : Icons.notifications_none,
-                            color: widget.hasAlert
-                                ? AppColors.accent
-                                : AppColors.textDim,
-                            size: 22,
-                          ),
+                          icon: Icon(widget.hasAlert ? Icons.notifications_active : Icons.notifications_none, color: widget.hasAlert ? AppColors.accent : AppColors.textDim, size: 22),
                           onPressed: widget.onAlertToggle,
                         ),
                       ],
@@ -262,84 +240,40 @@ class _MatchCardState extends State<MatchCard>
                 // Teams
                 Row(
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => WCTeamProfileDialog.show(
-                          context,
-                          widget.match.t1,
-                          widget.lang,
-                        ),
-                        child: Column(
-                          children: [
-                            _buildFlag(widget.match.t1, 40),
-                            const SizedBox(height: 8),
-                            Text(
-                              t1Name,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    Expanded(child: _buildTeamSection(widget.match.t1, t1Name, context, true)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: widget.match.isPlayed
-                          ? Text(
-                              '${widget.match.t1Score} - ${widget.match.t2Score}',
-                              style: const TextStyle(
-                                color: AppColors.accent,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 22,
-                              ),
-                            )
-                          : const Text(
-                              'VS',
-                              style: TextStyle(
-                                color: AppColors.borderStrong,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 18,
-                              ),
-                            ),
+                          ? Text('${widget.match.t1Score} - ${widget.match.t2Score}', style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 22))
+                          : const Text('VS', style: TextStyle(color: AppColors.borderStrong, fontWeight: FontWeight.w900, fontSize: 18)),
                     ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => WCTeamProfileDialog.show(
-                          context,
-                          widget.match.t2,
-                          widget.lang,
-                        ),
-                        child: Column(
-                          children: [
-                            _buildFlag(widget.match.t2, 40),
-                            const SizedBox(height: 8),
-                            Text(
-                              t2Name,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    Expanded(child: _buildTeamSection(widget.match.t2, t2Name, context, false)),
                   ],
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTeamSection(String teamCode, String teamName, BuildContext context, bool isLeft) {
+    return GestureDetector(
+      onTap: () => WCTeamProfileDialog.show(context, teamCode, widget.lang),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildFlag(teamCode, 40),
+          const SizedBox(height: 8),
+          Text(
+            teamName,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -350,18 +284,7 @@ class _LiveBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(
-      color: AppColors.accent.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(kBadgeRadius),
-    ),
-    child: const Text(
-      '⚽ LIVE',
-      style: TextStyle(
-        color: AppColors.accent,
-        fontWeight: FontWeight.w900,
-        fontSize: 11,
-        letterSpacing: 1.2,
-      ),
-    ),
+    decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.15), borderRadius: BorderRadius.circular(kBadgeRadius)),
+    child: const Text('⚽ LIVE', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
   );
 }

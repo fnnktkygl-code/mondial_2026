@@ -29,6 +29,10 @@ flutter_macos_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  pod 'FirebaseFirestoreAbseilBinary'
+  # Use pre-compiled Firestore to avoid long build times and resource issues
+  pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '12.14.0'
+
   flutter_install_all_macos_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
@@ -36,26 +40,19 @@ target 'Runner' do
 end
 
 post_install do |installer|
+  # Patch MACOSX_DEPLOYMENT_TARGET
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
-  end
-
-  # Patch DT_TOOLCHAIN_DIR in generated xcconfig files
-  installer.aggregate_targets.each do |target|
-    target.xcconfigs.each_value do |xcconfig|
-      xcconfig.attributes.each do |key, value|
-        if value.is_a?(String) && value.include?("DT_TOOLCHAIN_DIR")
-          xcconfig.attributes[key] = value.gsub("DT_TOOLCHAIN_DIR", "TOOLCHAIN_DIR")
-        end
-      end
+    target.build_configurations.each do |config|
+      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'
     end
   end
 
-  # Modify the files on disk directly to ensure it works
-  Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', '**', '*.xcconfig')).each do |file|
-    content = File.read(file)
-    if content.include?("DT_TOOLCHAIN_DIR")
-      File.write(file, content.gsub("DT_TOOLCHAIN_DIR", "TOOLCHAIN_DIR"))
+  # Fix for absl.framework loading issue
+  installer.aggregate_targets.each do |target|
+    target.xcconfigs.each_value do |xcconfig|
+      xcconfig.attributes['FRAMEWORK_SEARCH_PATHS'] ||= '$(inherited) '
+      xcconfig.attributes['FRAMEWORK_SEARCH_PATHS'] << '"$(PODS_ROOT)/FirebaseFirestoreAbseilBinary/absl.xcframework/macos-arm64_x86_64"'
     end
   end
 end

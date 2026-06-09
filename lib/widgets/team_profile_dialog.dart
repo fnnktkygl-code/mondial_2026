@@ -1,10 +1,10 @@
 import 'dart:math';
-// // import 'dart:async';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-// // import '../models/match.dart';
+import '../models/match.dart';
 import '../services/team_profile_service.dart';
 import '../services/audio_service.dart';
 import '../l10n/translations.dart';
@@ -25,8 +25,11 @@ class WCTeamProfileDialog extends StatefulWidget {
   static void show(BuildContext context, String teamCode, String lang) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (context) => WCTeamProfileDialog(teamCode: teamCode, lang: lang),
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder: (context) => WCTeamProfileDialog(
+        teamCode: teamCode,
+        lang: lang,
+      ),
     );
   }
 
@@ -44,9 +47,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
   Widget build(BuildContext context) {
     // Correctly resolve variables using widget configuration scope properties
     final cleanCode = widget.teamCode.toLowerCase().replaceAll('g_', '');
-    final bool isRealCountry = WCAudioService.instance.isValidCountry(
-      cleanCode,
-    );
+    final bool isRealCountry = WCAudioService.instance.isValidCountry(cleanCode);
 
     final profile = WCTeamProfileService.getProfile(cleanCode, widget.lang);
     final teamName = AppTranslations.getTeam(widget.lang, cleanCode);
@@ -61,10 +62,10 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
           border: Border.all(color: AppColors.border, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withOpacity(0.5),
               blurRadius: 24,
               offset: const Offset(0, 10),
-            ),
+            )
           ],
         ),
         clipBehavior: Clip.antiAlias,
@@ -77,9 +78,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
               decoration: const BoxDecoration(
                 color: AppColors.cardDark,
-                border: Border(
-                  bottom: BorderSide(color: AppColors.border, width: 1),
-                ),
+                border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
               ),
               child: Row(
                 children: [
@@ -121,11 +120,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppColors.textDim,
-                      size: 20,
-                    ),
+                    icon: const Icon(Icons.close, color: AppColors.textDim, size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -143,64 +138,73 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     _buildSectionTitle(
                       AppTranslations.get(widget.lang, 'generalInformation'),
                     ),
-                    const SizedBox(height: 10),
-                    _buildInfoRow(
-                      icon: Icons.shield_outlined,
-                      label: AppTranslations.get(widget.lang, 'emblem'),
-                      value: profile.symbol,
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.format_list_numbered,
-                      label: AppTranslations.get(widget.lang, 'fifaRanking'),
-                      value: profile.fifaRanking == 999
-                          ? (AppTranslations.get(widget.lang, 'unranked'))
-                          : '#${profile.fifaRanking}',
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.sports_soccer_outlined,
-                      label: AppTranslations.get(widget.lang, 'appearances'),
-                      value:
-                          '${profile.appearances} ${AppTranslations.get(widget.lang, 'finalPhases')}',
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.emoji_events_outlined,
-                      label: AppTranslations.get(widget.lang, 'bestFinish'),
-                      value: profile.bestFinish,
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildInfoRow(
+                            icon: Icons.shield_outlined,
+                            label: AppTranslations.get(widget.lang, 'emblem'),
+                            value: profile.symbol,
+                          ),
+                          _buildInfoRow(
+                            icon: Icons.format_list_numbered,
+                            label: AppTranslations.get(widget.lang, 'fifaRanking'),
+                            value: profile.fifaRanking == 999
+                                ? (AppTranslations.get(widget.lang, 'unranked'))
+                                : '#${profile.fifaRanking}',
+                          ),
+                          _buildInfoRow(
+                            icon: Icons.sports_soccer_outlined,
+                            label: AppTranslations.get(widget.lang, 'appearances'),
+                            value: '${profile.appearances} ${AppTranslations.get(widget.lang, 'finalPhases')}',
+                          ),
+                          _buildInfoRow(
+                            icon: Icons.emoji_events_outlined,
+                            label: AppTranslations.get(widget.lang, 'bestFinish'),
+                            value: profile.bestFinish,
+                            isLast: true,
+                          ),
+                        ],
+                      ),
                     ),
 
                     // 2. Trophies
                     if (profile.trophies.isNotEmpty) ...[
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       _buildSectionTitle(
                         AppTranslations.get(widget.lang, 'majorTrophies'),
                       ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                      const SizedBox(height: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: profile.trophies.map((trophy) {
                           return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             decoration: BoxDecoration(
                               color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: AppColors.border),
                             ),
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 _buildTrophyBadge(trophy),
-                                const SizedBox(width: 8),
-                                Flexible(
+                                const SizedBox(width: 16),
+                                Expanded(
                                   child: Text(
                                     trophy,
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 11,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
+                                      height: 1.3,
                                     ),
                                   ),
                                 ),
@@ -219,14 +223,8 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     const SizedBox(height: 12),
                     _buildMediaCard(
                       imageUrl: profile.imageUrl,
-                      title: AppTranslations.get(
-                        widget.lang,
-                        'teamHistoryProfile',
-                      ),
-                      description: AppTranslations.get(
-                        widget.lang,
-                        'teamHistoryDesc',
-                      ),
+                      title: AppTranslations.get(widget.lang, 'teamHistoryProfile'),
+                      description: AppTranslations.get(widget.lang, 'teamHistoryDesc'),
                       onTap: () {
                         showModalBottomSheet(
                           context: context,
@@ -236,10 +234,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             height: MediaQuery.of(context).size.height * 0.85,
                             child: WCEmbeddedWebView(
                               url: profile.profileUrl,
-                              title: AppTranslations.get(
-                                widget.lang,
-                                'teamHistoryInfo',
-                              ),
+                              title: AppTranslations.get(widget.lang, 'teamHistoryInfo'),
                             ),
                           ),
                         );
@@ -272,48 +267,52 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
       title.toUpperCase(),
       style: const TextStyle(
         color: AppColors.textDim,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: FontWeight.bold,
-        letterSpacing: 1.2,
+        letterSpacing: 1.5,
       ),
     );
   }
 
   // ─── Info row ────────────────────────────────────────────────────────────────
 
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _buildInfoRow({required IconData icon, required String label, required String value, bool isLast = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 16, color: AppColors.accent),
-          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 20, color: AppColors.accent),
+          ),
+          const SizedBox(width: 16),
           Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 13, height: 1.4),
-                children: [
-                  TextSpan(
-                    text: '$label : ',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.textDim,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
-                  TextSpan(
-                    text: value,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -343,8 +342,8 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          highlightColor: AppColors.border.withValues(alpha: 0.3),
-          splashColor: AppColors.accent.withValues(alpha: 0.15),
+          highlightColor: AppColors.border.withOpacity(0.3),
+          splashColor: AppColors.accent.withOpacity(0.15),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -358,7 +357,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           ? Image.asset(
                               imageUrl,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, _, _) => SizedBox(
+                              errorBuilder: (_, __, ___) => SizedBox(
                                 height: 160,
                                 child: _buildImagePlaceholder(),
                               ),
@@ -366,23 +365,23 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           : Image.network(
                               imageUrl,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, _, _) => SizedBox(
+                              errorBuilder: (_, __, ___) => SizedBox(
                                 height: 160,
                                 child: _buildImagePlaceholder(),
                               ),
                             ),
                     ] else
-                      SizedBox(height: 160, child: _buildImagePlaceholder()),
+                      SizedBox(
+                        height: 160,
+                        child: _buildImagePlaceholder(),
+                      ),
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.55),
-                            ],
+                            colors: [Colors.transparent, Colors.black.withOpacity(0.55)],
                           ),
                         ),
                       ),
@@ -391,27 +390,17 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.1),
+                        color: AppColors.accent.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.accent.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
+                        border: Border.all(color: AppColors.accent.withOpacity(0.2), width: 1),
                       ),
-                      child: const Icon(
-                        Icons.article_outlined,
-                        color: AppColors.accent,
-                        size: 24,
-                      ),
+                      child: const Icon(Icons.article_outlined, color: AppColors.accent, size: 24),
                     ),
                     const SizedBox(width: 18),
                     Expanded(
@@ -441,11 +430,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: AppColors.textDim,
-                      size: 14,
-                    ),
+                    const Icon(Icons.arrow_forward_ios, color: AppColors.textDim, size: 14),
                   ],
                 ),
               ),
@@ -463,11 +448,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.image_outlined,
-              color: AppColors.textDim,
-              size: 40,
-            ),
+            const Icon(Icons.image_outlined, color: AppColors.textDim, size: 40),
             const SizedBox(height: 8),
             Text(
               AppTranslations.get(widget.lang, 'previewNotAvailable'),
@@ -487,50 +468,29 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     IconData fallbackIcon = Icons.workspace_premium;
     Color fallbackColor = Colors.amber;
 
-    if (lower.contains('coupe du monde') ||
-        lower.contains('world cup') ||
-        lower.contains('copa mundial')) {
+    if (lower.contains('coupe du monde') || lower.contains('world cup') || lower.contains('copa mundial')) {
       assetPath = 'assets/logos/fifa_logo_light.png';
-    } else if (lower.contains('copa américa') ||
-        lower.contains('copa america')) {
+    } else if (lower.contains('copa américa') || lower.contains('copa america')) {
       assetPath = 'assets/badges/conmebol.png';
-    } else if (lower.contains('europe') ||
-        lower.contains('euro') ||
-        lower.contains('nations league') ||
-        lower.contains('ligue des nations de l\'uefa') ||
-        lower.contains('liga de naciones de la uefa')) {
-      assetPath = lower.contains('concacaf')
-          ? 'assets/badges/concacaf.png'
-          : 'assets/badges/uefa.png';
-    } else if (lower.contains('afrique des nations') ||
-        lower.contains('africa cup') ||
-        lower.contains('copa africana') ||
-        lower.contains('chan')) {
+    } else if (lower.contains('europe') || lower.contains('euro') || lower.contains('nations league') ||
+        lower.contains('ligue des nations de l\'uefa') || lower.contains('liga de naciones de la uefa')) {
+      assetPath = lower.contains('concacaf') ? 'assets/badges/concacaf.png' : 'assets/badges/uefa.png';
+    } else if (lower.contains('afrique des nations') || lower.contains('africa cup') ||
+        lower.contains('copa africana') || lower.contains('chan')) {
       assetPath = 'assets/badges/caf.png';
-    } else if (lower.contains('asie') ||
-        lower.contains('asian cup') ||
-        lower.contains('copa asiática')) {
+    } else if (lower.contains('asie') || lower.contains('asian cup') || lower.contains('copa asiática')) {
       assetPath = 'assets/badges/afc.png';
-    } else if (lower.contains('confédérations') ||
-        lower.contains('confederations')) {
+    } else if (lower.contains('confédérations') || lower.contains('confederations')) {
       assetPath = 'assets/badges/coupe_des_confederations.png';
-    } else if (lower.contains('or de la concacaf') ||
-        lower.contains('gold cup') ||
-        lower.contains('copa de oro') ||
-        lower.contains('nations league concacaf') ||
+    } else if (lower.contains('or de la concacaf') || lower.contains('gold cup') ||
+        lower.contains('copa de oro') || lower.contains('nations league concacaf') ||
         lower.contains('ligue des nations concacaf')) {
       assetPath = 'assets/badges/concacaf.png';
-    } else if (lower.contains('ofc') ||
-        lower.contains('océanie') ||
-        lower.contains('oceania')) {
+    } else if (lower.contains('ofc') || lower.contains('océanie') || lower.contains('oceania')) {
       assetPath = 'assets/badges/ofc.png';
-    } else if (lower.contains('arabe') ||
-        lower.contains('arab cup') ||
-        lower.contains('árabe')) {
+    } else if (lower.contains('arabe') || lower.contains('arab cup') || lower.contains('árabe')) {
       assetPath = 'assets/logos/fifa_logo_light.png';
-    } else if (lower.contains('olympique') ||
-        lower.contains('olympic') ||
-        lower.contains('olímpica')) {
+    } else if (lower.contains('olympique') || lower.contains('olympic') || lower.contains('olímpica')) {
       fallbackIcon = Icons.stars;
       fallbackColor = Colors.blue;
     }
@@ -538,14 +498,13 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     if (assetPath != null) {
       return Image.asset(
         assetPath,
-        width: 20,
-        height: 20,
+        width: 32,
+        height: 32,
         fit: BoxFit.contain,
-        errorBuilder: (_, _, _) =>
-            Icon(fallbackIcon, color: fallbackColor, size: 14),
+        errorBuilder: (_, __, ___) => Icon(fallbackIcon, color: fallbackColor, size: 28),
       );
     }
-    return Icon(fallbackIcon, color: fallbackColor, size: 14);
+    return Icon(fallbackIcon, color: fallbackColor, size: 28);
   }
 
   // ─── Anthem player ───────────────────────────────────────────────────────────
@@ -565,11 +524,9 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
 
             return Container(
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isCurrent ? AppColors.accent : AppColors.border,
-                ),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isCurrent ? AppColors.accent : AppColors.border),
               ),
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -596,16 +553,11 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             style: ElevatedButton.styleFrom(
                               shape: const CircleBorder(),
                               padding: const EdgeInsets.all(12),
-                              backgroundColor: isPlaying
-                                  ? Colors.amber
-                                  : AppColors.accent,
+                              backgroundColor: isPlaying ? Colors.amber : AppColors.accent,
                               foregroundColor: AppColors.surface,
                             ),
                             onPressed: () => audio.playAnthem(code),
-                            child: Icon(
-                              isPlaying ? Icons.pause : Icons.play_arrow,
-                              size: 20,
-                            ),
+                            child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
                           );
                         },
                       ),
@@ -615,10 +567,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              AppTranslations.get(
-                                widget.lang,
-                                'nationalAnthemStream',
-                              ),
+                              AppTranslations.get(widget.lang, 'nationalAnthemStream'),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -629,22 +578,10 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             Text(
                               isCurrent
                                   ? (isPlaying
-                                        ? (AppTranslations.get(
-                                            widget.lang,
-                                            'nowPlaying',
-                                          ))
-                                        : (AppTranslations.get(
-                                            widget.lang,
-                                            'paused',
-                                          )))
-                                  : (AppTranslations.get(
-                                      widget.lang,
-                                      'readyToListen',
-                                    )),
-                              style: const TextStyle(
-                                color: AppColors.textDim,
-                                fontSize: 10,
-                              ),
+                                      ? (AppTranslations.get(widget.lang, 'nowPlaying'))
+                                      : (AppTranslations.get(widget.lang, 'paused')))
+                                  : (AppTranslations.get(widget.lang, 'readyToListen')),
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 10),
                             ),
                           ],
                         ),
@@ -661,20 +598,14 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           valueListenable: audio.position,
                           builder: (context, pos, _) {
                             final double maxVal = dur.inMilliseconds.toDouble();
-                            final double currVal = pos.inMilliseconds
-                                .toDouble()
-                                .clamp(0.0, maxVal);
+                            final double currVal = pos.inMilliseconds.toDouble().clamp(0.0, maxVal);
                             return Column(
                               children: [
                                 SliderTheme(
                                   data: SliderTheme.of(context).copyWith(
                                     trackHeight: 3,
-                                    thumbShape: const RoundSliderThumbShape(
-                                      enabledThumbRadius: 6,
-                                    ),
-                                    overlayShape: const RoundSliderOverlayShape(
-                                      overlayRadius: 12,
-                                    ),
+                                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                                     activeTrackColor: AppColors.accent,
                                     inactiveTrackColor: AppColors.border,
                                     thumbColor: AppColors.accent,
@@ -683,33 +614,16 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                                     min: 0.0,
                                     max: maxVal > 0.0 ? maxVal : 1.0,
                                     value: currVal,
-                                    onChanged: (val) => audio.seek(
-                                      Duration(milliseconds: val.toInt()),
-                                    ),
+                                    onChanged: (val) => audio.seek(Duration(milliseconds: val.toInt())),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        _formatDuration(pos),
-                                        style: const TextStyle(
-                                          color: AppColors.textMuted,
-                                          fontSize: 9,
-                                        ),
-                                      ),
-                                      Text(
-                                        _formatDuration(dur),
-                                        style: const TextStyle(
-                                          color: AppColors.textMuted,
-                                          fontSize: 9,
-                                        ),
-                                      ),
+                                      Text(_formatDuration(pos), style: const TextStyle(color: AppColors.textMuted, fontSize: 9)),
+                                      Text(_formatDuration(dur), style: const TextStyle(color: AppColors.textMuted, fontSize: 9)),
                                     ],
                                   ),
                                 ),
@@ -723,11 +637,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.volume_down,
-                        color: AppColors.textMuted,
-                        size: 14,
-                      ),
+                      const Icon(Icons.volume_down, color: AppColors.textMuted, size: 14),
                       Expanded(
                         child: ValueListenableBuilder<double>(
                           valueListenable: audio.volume,
@@ -735,9 +645,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             return SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 5,
-                                ),
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
                                 activeTrackColor: AppColors.textDim,
                                 inactiveTrackColor: AppColors.border,
                                 thumbColor: AppColors.textDim,
@@ -752,11 +660,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           },
                         ),
                       ),
-                      const Icon(
-                        Icons.volume_up,
-                        color: AppColors.textMuted,
-                        size: 14,
-                      ),
+                      const Icon(Icons.volume_up, color: AppColors.textMuted, size: 14),
                     ],
                   ),
                 ],
@@ -843,20 +747,21 @@ class _SoundwaveVisualizerState extends State<SoundwaveVisualizer>
       builder: (context, _) {
         return Row(
           mainAxisSize: MainAxisSize.min,
-          children: List.generate(_heights.length, (i) {
-            final scale =
-                0.25 +
-                0.75 * sin((_controller.value * 2 * pi) + (i * 0.4)).abs();
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 1.5),
-              width: 2.5,
-              height: (_heights[i] * scale).clamp(4.0, 24.0),
-              decoration: BoxDecoration(
-                color: AppColors.accent,
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            );
-          }),
+          children: List.generate(
+            _heights.length,
+            (i) {
+              final scale = 0.25 + 0.75 * sin((_controller.value * 2 * pi) + (i * 0.4)).abs();
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                width: 2.5,
+                height: (_heights[i] * scale).clamp(4.0, 24.0),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(1.5),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -869,7 +774,11 @@ class WCEmbeddedWebView extends StatefulWidget {
   final String url;
   final String title;
 
-  const WCEmbeddedWebView({super.key, required this.url, required this.title});
+  const WCEmbeddedWebView({
+    super.key,
+    required this.url,
+    required this.title,
+  });
 
   @override
   State<WCEmbeddedWebView> createState() => _WCEmbeddedWebViewState();
@@ -895,31 +804,15 @@ class _WCEmbeddedWebViewState extends State<WCEmbeddedWebView> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                  onPressed: _canGoBack
-                      ? () async => _webViewController?.goBack()
-                      : null,
+                  icon: const Icon(Icons.arrow_back_ios, size: 16, color: Colors.white),
+                  onPressed: _canGoBack ? () async => _webViewController?.goBack() : null,
                 ),
                 IconButton(
-                  icon: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                  onPressed: _canGoForward
-                      ? () async => _webViewController?.goForward()
-                      : null,
+                  icon: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+                  onPressed: _canGoForward ? () async => _webViewController?.goForward() : null,
                 ),
                 IconButton(
-                  icon: const Icon(
-                    Icons.refresh,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.refresh, size: 18, color: Colors.white),
                   onPressed: () async => _webViewController?.reload(),
                 ),
                 const SizedBox(width: 8),
@@ -954,9 +847,7 @@ class _WCEmbeddedWebViewState extends State<WCEmbeddedWebView> {
             const SizedBox(height: 3),
           Expanded(
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(24),
-              ),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
               child: InAppWebView(
                 initialUrlRequest: URLRequest(url: WebUri(widget.url)),
                 initialSettings: InAppWebViewSettings(
@@ -971,15 +862,9 @@ class _WCEmbeddedWebViewState extends State<WCEmbeddedWebView> {
                   displayZoomControls: false,
                 ),
                 gestureRecognizers: {
-                  Factory<VerticalDragGestureRecognizer>(
-                    () => VerticalDragGestureRecognizer(),
-                  ),
-                  Factory<HorizontalDragGestureRecognizer>(
-                    () => HorizontalDragGestureRecognizer(),
-                  ),
-                  Factory<ScaleGestureRecognizer>(
-                    () => ScaleGestureRecognizer(),
-                  ),
+                  Factory<VerticalDragGestureRecognizer>(() => VerticalDragGestureRecognizer()),
+                  Factory<HorizontalDragGestureRecognizer>(() => HorizontalDragGestureRecognizer()),
+                  Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
                   Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
                 },
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
@@ -1006,23 +891,12 @@ class _WCEmbeddedWebViewState extends State<WCEmbeddedWebView> {
                 onLoadStart: (controller, url) async {
                   final back = await controller.canGoBack();
                   final forward = await controller.canGoForward();
-                  if (mounted) {
-                    setState(() {
-                      _canGoBack = back;
-                      _canGoForward = forward;
-                    });
-                  }
+                  if (mounted) setState(() { _canGoBack = back; _canGoForward = forward; });
                 },
                 onLoadStop: (controller, url) async {
                   final back = await controller.canGoBack();
                   final forward = await controller.canGoForward();
-                  if (mounted) {
-                    setState(() {
-                      _progress = 1.0;
-                      _canGoBack = back;
-                      _canGoForward = forward;
-                    });
-                  }
+                  if (mounted) setState(() { _progress = 1.0; _canGoBack = back; _canGoForward = forward; });
                 },
                 onProgressChanged: (controller, progress) {
                   if (mounted) setState(() => _progress = progress / 100.0);
