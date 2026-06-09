@@ -33,9 +33,7 @@ import 'app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await WCNotificationService.init();
   await initializeDateFormatting('fr', null);
   await initializeDateFormatting('en', null);
@@ -62,12 +60,11 @@ class MyApp extends StatelessWidget {
           selectionColor: AppColors.accent,
           selectionHandleColor: AppColors.accent,
         ),
-        textTheme: GoogleFonts.interTextTheme(
-          Theme.of(context).textTheme,
-        ).apply(
-          bodyColor: AppColors.textSecondary,
-          displayColor: AppColors.textPrimary,
-        ),
+        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
+            .apply(
+              bodyColor: AppColors.textSecondary,
+              displayColor: AppColors.textPrimary,
+            ),
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.background,
           elevation: 0,
@@ -123,7 +120,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _lang = 'fr';
-  String _activeTab = 'matches'; // 'matches', 'standings', 'bracket', 'challenge'
+  String _activeTab =
+      'matches'; // 'matches', 'standings', 'bracket', 'challenge'
   String _standingsSubTab = 'groups'; // 'groups', 'scorers', 'assists', 'team'
   String _matchFilter = 'all'; // 'all', 'alerts'
   String _viewMode = 'list'; // 'list', 'calendar'
@@ -144,7 +142,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     _loadInitialData();
   }
 
@@ -164,15 +164,26 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Map<String, String> loadedAlerts = await AlertService.loadAlerts();
-    final loadedMatches = await ApiService.loadMatches(forceRefresh: kIsLiveMode);
+    final loadedMatches = await ApiService.loadMatches(
+      forceRefresh: kIsLiveMode,
+    );
 
     String? supportedTeam;
     PredictionData? userPreds;
     try {
       userPreds = await PredictionService.loadPredictionData();
-      final totalPoints = PredictionService.calculateTotalPoints(userPreds, loadedMatches);
-      final streak = PredictionService.calculateActiveStreak(userPreds, loadedMatches);
-      final guruCount = PredictionService.calculateExactGuessesCount(userPreds, loadedMatches);
+      final totalPoints = PredictionService.calculateTotalPoints(
+        userPreds,
+        loadedMatches,
+      );
+      final streak = PredictionService.calculateActiveStreak(
+        userPreds,
+        loadedMatches,
+      );
+      final guruCount = PredictionService.calculateExactGuessesCount(
+        userPreds,
+        loadedMatches,
+      );
       supportedTeam = userPreds.supportedTeam;
 
       await WCFirebaseService.syncUserProfile(
@@ -241,10 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return AnthemPlayerSheet(
-          matches: _resolvedMatches,
-          lang: _lang,
-        );
+        return AnthemPlayerSheet(matches: _resolvedMatches, lang: _lang);
       },
     );
   }
@@ -265,10 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
           userPreds: _userPreds!,
           showSnackBar: (msg) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(msg),
-                backgroundColor: AppColors.accent,
-              ),
+              SnackBar(content: Text(msg), backgroundColor: AppColors.accent),
             );
           },
           onSupportedTeamChanged: (teamCode) {
@@ -305,7 +310,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return alertVal != null;
   }
 
-  List<WorldCupMatch> _resolveMatchesPlaceholders(List<WorldCupMatch> rawMatches) {
+  List<WorldCupMatch> _resolveMatchesPlaceholders(
+    List<WorldCupMatch> rawMatches,
+  ) {
     final Map<String, List<GroupEntry>> groupStandings = {};
     for (final m in rawMatches) {
       if (m.group == null || m.group!.isEmpty) continue;
@@ -319,8 +326,12 @@ class _MyHomePageState extends State<MyHomePage> {
     for (final m in rawMatches) {
       if (m.group == null || m.group!.isEmpty || !m.isPlayed) continue;
       final grp = m.group!;
-      final t1Entry = groupStandings[grp]!.firstWhere((e) => e.teamCode == m.t1);
-      final t2Entry = groupStandings[grp]!.firstWhere((e) => e.teamCode == m.t2);
+      final t1Entry = groupStandings[grp]!.firstWhere(
+        (e) => e.teamCode == m.t1,
+      );
+      final t2Entry = groupStandings[grp]!.firstWhere(
+        (e) => e.teamCode == m.t2,
+      );
 
       t1Entry.played++;
       t2Entry.played++;
@@ -364,7 +375,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     thirdPlaces.sort((a, b) {
       if (b.points != a.points) return b.points.compareTo(a.points);
-      if (b.goalDifference != a.goalDifference) return b.goalDifference.compareTo(a.goalDifference);
+      if (b.goalDifference != a.goalDifference) {
+        return b.goalDifference.compareTo(a.goalDifference);
+      }
       if (b.goalsFor != a.goalsFor) return b.goalsFor.compareTo(a.goalsFor);
       if (b.fairPlay != a.fairPlay) return b.fairPlay.compareTo(a.fairPlay);
       final rankA = WCTeamProfileService.getFifaRanking(a.teamCode);
@@ -373,7 +386,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return a.teamCode.compareTo(b.teamCode);
     });
 
-    final bool allGroupsComplete = groupStandings.isNotEmpty &&
+    final bool allGroupsComplete =
+        groupStandings.isNotEmpty &&
         groupStandings.values.every((list) => list.every((e) => e.played == 3));
 
     List<WorldCupMatch> resolved = List.from(rawMatches);
@@ -410,7 +424,8 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
 
-        if (newT1.length == 2 && (newT1.startsWith('1') || newT1.startsWith('2'))) {
+        if (newT1.length == 2 &&
+            (newT1.startsWith('1') || newT1.startsWith('2'))) {
           final pos = newT1.substring(0, 1);
           final grp = newT1.substring(1, 2);
           final groupList = groupStandings[grp];
@@ -422,7 +437,8 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           }
         }
-        if (newT2.length == 2 && (newT2.startsWith('1') || newT2.startsWith('2'))) {
+        if (newT2.length == 2 &&
+            (newT2.startsWith('1') || newT2.startsWith('2'))) {
           final pos = newT2.substring(0, 1);
           final grp = newT2.substring(1, 2);
           final groupList = groupStandings[grp];
@@ -438,13 +454,17 @@ class _MyHomePageState extends State<MyHomePage> {
         if (newT1.startsWith('3rd') && newT1.length > 3) {
           if (allGroupsComplete) {
             final idx = int.parse(newT1.substring(3)) - 1;
-            if (idx >= 0 && idx < thirdPlaces.length) newT1 = thirdPlaces[idx].teamCode;
+            if (idx >= 0 && idx < thirdPlaces.length) {
+              newT1 = thirdPlaces[idx].teamCode;
+            }
           }
         }
         if (newT2.startsWith('3rd') && newT2.length > 3) {
           if (allGroupsComplete) {
             final idx = int.parse(newT2.substring(3)) - 1;
-            if (idx >= 0 && idx < thirdPlaces.length) newT2 = thirdPlaces[idx].teamCode;
+            if (idx >= 0 && idx < thirdPlaces.length) {
+              newT2 = thirdPlaces[idx].teamCode;
+            }
           }
         }
 
@@ -477,77 +497,143 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String _getKnockoutPlaceholderT1(String matchId) {
     switch (matchId) {
-      case 'm49': return '1A';
-      case 'm50': return '2B';
-      case 'm51': return '1C';
-      case 'm52': return '2A';
-      case 'm53': return '1E';
-      case 'm54': return '2F';
-      case 'm55': return '1G';
-      case 'm56': return '2H';
-      case 'm57': return '1B';
-      case 'm58': return '2E';
-      case 'm59': return '1D';
-      case 'm60': return '2K';
-      case 'm61': return '1F';
-      case 'm62': return '1H';
-      case 'm63': return '1I';
-      case 'm64': return '1K';
-      case 'm65': return 'w49';
-      case 'm66': return 'w51';
-      case 'm67': return 'w53';
-      case 'm68': return 'w55';
-      case 'm69': return 'w57';
-      case 'm70': return 'w59';
-      case 'm71': return 'w61';
-      case 'm72': return 'w63';
-      case 'm73': return 'w65';
-      case 'm74': return 'w67';
-      case 'm75': return 'w69';
-      case 'm76': return 'w71';
-      case 'm77': return 'w73';
-      case 'm78': return 'w75';
-      case 'm79': return 'l77';
-      case 'm80': return 'w77';
-      default: return 'tbd';
+      case 'm49':
+        return '1A';
+      case 'm50':
+        return '2B';
+      case 'm51':
+        return '1C';
+      case 'm52':
+        return '2A';
+      case 'm53':
+        return '1E';
+      case 'm54':
+        return '2F';
+      case 'm55':
+        return '1G';
+      case 'm56':
+        return '2H';
+      case 'm57':
+        return '1B';
+      case 'm58':
+        return '2E';
+      case 'm59':
+        return '1D';
+      case 'm60':
+        return '2K';
+      case 'm61':
+        return '1F';
+      case 'm62':
+        return '1H';
+      case 'm63':
+        return '1I';
+      case 'm64':
+        return '1K';
+      case 'm65':
+        return 'w49';
+      case 'm66':
+        return 'w51';
+      case 'm67':
+        return 'w53';
+      case 'm68':
+        return 'w55';
+      case 'm69':
+        return 'w57';
+      case 'm70':
+        return 'w59';
+      case 'm71':
+        return 'w61';
+      case 'm72':
+        return 'w63';
+      case 'm73':
+        return 'w65';
+      case 'm74':
+        return 'w67';
+      case 'm75':
+        return 'w69';
+      case 'm76':
+        return 'w71';
+      case 'm77':
+        return 'w73';
+      case 'm78':
+        return 'w75';
+      case 'm79':
+        return 'l77';
+      case 'm80':
+        return 'w77';
+      default:
+        return 'tbd';
     }
   }
 
   String _getKnockoutPlaceholderT2(String matchId) {
     switch (matchId) {
-      case 'm49': return '3rd1';
-      case 'm50': return '2C';
-      case 'm51': return '3rd2';
-      case 'm52': return '2D';
-      case 'm53': return '3rd3';
-      case 'm54': return '2G';
-      case 'm55': return '3rd4';
-      case 'm56': return '2I';
-      case 'm57': return '3rd5';
-      case 'm58': return '2J';
-      case 'm59': return '3rd6';
-      case 'm60': return '2L';
-      case 'm61': return '3rd7';
-      case 'm62': return '3rd8';
-      case 'm63': return '1J';
-      case 'm64': return '1L';
-      case 'm65': return 'w50';
-      case 'm66': return 'w52';
-      case 'm67': return 'w54';
-      case 'm68': return 'w56';
-      case 'm69': return 'w58';
-      case 'm70': return 'w60';
-      case 'm71': return 'w62';
-      case 'm72': return 'w64';
-      case 'm73': return 'w66';
-      case 'm74': return 'w68';
-      case 'm75': return 'w70';
-      case 'm76': return 'w72';
-      case 'm77': return 'w74';
-      case 'm78': return 'w76';
-      case 'm79': return 'l78';
-      case 'm80': return 'w78';
-      default: return 'tbd';
+      case 'm49':
+        return '3rd1';
+      case 'm50':
+        return '2C';
+      case 'm51':
+        return '3rd2';
+      case 'm52':
+        return '2D';
+      case 'm53':
+        return '3rd3';
+      case 'm54':
+        return '2G';
+      case 'm55':
+        return '3rd4';
+      case 'm56':
+        return '2I';
+      case 'm57':
+        return '3rd5';
+      case 'm58':
+        return '2J';
+      case 'm59':
+        return '3rd6';
+      case 'm60':
+        return '2L';
+      case 'm61':
+        return '3rd7';
+      case 'm62':
+        return '3rd8';
+      case 'm63':
+        return '1J';
+      case 'm64':
+        return '1L';
+      case 'm65':
+        return 'w50';
+      case 'm66':
+        return 'w52';
+      case 'm67':
+        return 'w54';
+      case 'm68':
+        return 'w56';
+      case 'm69':
+        return 'w58';
+      case 'm70':
+        return 'w60';
+      case 'm71':
+        return 'w62';
+      case 'm72':
+        return 'w64';
+      case 'm73':
+        return 'w66';
+      case 'm74':
+        return 'w68';
+      case 'm75':
+        return 'w70';
+      case 'm76':
+        return 'w72';
+      case 'm77':
+        return 'w74';
+      case 'm78':
+        return 'w76';
+      case 'm79':
+        return 'l78';
+      case 'm80':
+        return 'w78';
+      default:
+        return 'tbd';
     }
   }
 
@@ -572,7 +658,10 @@ class _MyHomePageState extends State<MyHomePage> {
       await WCNotificationService.scheduleMatchNotification(
         matchId: matchId,
         title: AppTranslations.get(_lang, 'matchStartingSoonTitle'),
-        body: AppTranslations.get(_lang, "matchStartingSoonBody").replaceAll("{t1}", t1Name).replaceAll('{t2}', t2Name),
+        body: AppTranslations.get(
+          _lang,
+          "matchStartingSoonBody",
+        ).replaceAll("{t1}", t1Name).replaceAll('{t2}', t2Name),
         scheduledDate: scheduledTime,
       );
 
@@ -591,9 +680,10 @@ class _MyHomePageState extends State<MyHomePage> {
               const Text('🔔 ', style: TextStyle(fontSize: 18)),
               Expanded(
                 child: Text(
-                  AppTranslations.get(_lang, 'alertReminderSet')
-                      .replaceAll('{t1}', t1Name)
-                      .replaceAll('{t2}', t2Name),
+                  AppTranslations.get(
+                    _lang,
+                    'alertReminderSet',
+                  ).replaceAll('{t1}', t1Name).replaceAll('{t2}', t2Name),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -620,14 +710,19 @@ class _MyHomePageState extends State<MyHomePage> {
           activeAlert: _alerts[match.id],
           onSaveAlert: (alertType) => _saveAlert(match.id, alertType),
           prediction: _userPreds?.matchPredictions[match.id],
-          onPredictionChanged: (t1Score, t2Score) => _saveDirectPrediction(match.id, t1Score, t2Score),
+          onPredictionChanged: (t1Score, t2Score) =>
+              _saveDirectPrediction(match.id, t1Score, t2Score),
         );
       },
     );
   }
 
   /// Saves a prediction directly from the match details modal sheet and triggers Firestore sync.
-  Future<void> _saveDirectPrediction(String matchId, int t1Score, int t2Score) async {
+  Future<void> _saveDirectPrediction(
+    String matchId,
+    int t1Score,
+    int t2Score,
+  ) async {
     if (_userPreds == null) return;
 
     setState(() {
@@ -639,9 +734,18 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     await PredictionService.savePredictionData(_userPreds!);
-    final totalPoints = PredictionService.calculateTotalPoints(_userPreds!, _rawMatches);
-    final streak = PredictionService.calculateActiveStreak(_userPreds!, _rawMatches);
-    final guruCount = PredictionService.calculateExactGuessesCount(_userPreds!, _rawMatches);
+    final totalPoints = PredictionService.calculateTotalPoints(
+      _userPreds!,
+      _rawMatches,
+    );
+    final streak = PredictionService.calculateActiveStreak(
+      _userPreds!,
+      _rawMatches,
+    );
+    final guruCount = PredictionService.calculateExactGuessesCount(
+      _userPreds!,
+      _rawMatches,
+    );
 
     await WCFirebaseService.syncUserProfile(
       username: _userPreds!.username,
@@ -657,7 +761,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _challengeViewKey = UniqueKey();
     });
   }
-// ... existing code ...
+  // ... existing code ...
 
   void _updateTournamentOddsAndCheckNotifications() {
     final newOdds = WCOddsService.calculateOdds(_resolvedMatches);
@@ -675,13 +779,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
         if (newProb == 0.0) {
           title = AppTranslations.get(_lang, 'eliminationTitle');
-          body = AppTranslations.get(_lang, 'eliminationBody').replaceAll('{nickname}', nickname).replaceAll('{flag}', flag);
+          body = AppTranslations.get(
+            _lang,
+            'eliminationBody',
+          ).replaceAll('{nickname}', nickname).replaceAll('{flag}', flag);
         } else if (newProb > oldProb) {
           title = AppTranslations.get(_lang, 'oddsRisingTitle');
-          body = AppTranslations.get(_lang, 'oddsRisingBody').replaceAll('{nickname}', nickname).replaceAll('{flag}', flag).replaceAll('{prob}', newProb.toStringAsFixed(1));
+          body = AppTranslations.get(_lang, 'oddsRisingBody')
+              .replaceAll('{nickname}', nickname)
+              .replaceAll('{flag}', flag)
+              .replaceAll('{prob}', newProb.toStringAsFixed(1));
         } else {
           title = AppTranslations.get(_lang, 'oddsFallingTitle');
-          body = AppTranslations.get(_lang, "oddsFallingBody").replaceAll("{nickname}", nickname).replaceAll("{flag}", flag).replaceAll("{prob}", newProb.toStringAsFixed(1));
+          body = AppTranslations.get(_lang, "oddsFallingBody")
+              .replaceAll("{nickname}", nickname)
+              .replaceAll("{flag}", flag)
+              .replaceAll("{prob}", newProb.toStringAsFixed(1));
         }
 
         WCNotificationService.showNotification(
@@ -700,21 +813,66 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String _getCountryFlagEmoji(String countryCode) {
     final Map<String, String> flags = {
-      'ar': '🇦🇷', 'br': '🇧🇷', 'fr': '🇫🇷', 'es': '🇪🇸',
-      'en': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'pt': '🇵🇹', 'de': '🇩🇪', 'it': '🇮🇹',
-      'nl': '🇳🇱', 'be': '🇧🇪', 'uy': '🇺🇾', 'hr': '🇭🇷',
-      'ma': '🇲🇦', 'co': '🇨🇴', 'mx': '🇲🇽', 'us': '🇺🇸',
-      'jp': '🇯🇵', 'kr': '🇰🇷', 'sn': '🇸🇳', 'ng': '🇳🇬',
-      'cm': '🇨🇲', 'ca': '🇨🇦', 'dz': '🇩🇿', 'eg': '🇪🇬',
-      'sco': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'za': '🇿🇦', 'qa': '🇶🇦', 'ch': '🇨🇭',
-      'ht': '🇭🇹', 'au': '🇦🇺', 'tr': '🇹🇷', 'cw': '🇨🇼',
-      'cv': '🇨🇻', 'ci': '🇨🇮', 'se': '🇸🇪', 'tn': '🇹🇳',
-      'cd': '🇨🇩', 'uz': '🇺🇿', 'gh': '🇬染', 'pa': '🇵🇦',
-      'no': '🇳🇴', 'iq': '🇮🇶', 'at': '🇦🇹', 'jo': '🇯🇴',
-      'sa': '🇸🇦', 'nz': '🇳🇿', 'ir': '🇮🇷', 'ec': '🇪🇨',
-      'ba': '🇧🇦', 'py': '🇵🇾', 'pl': '🇵🇱', 'cl': '🇨🇱',
-      'pe': '🇵🇪', 'hu': '🇭🇺', 'cz': '🇨🇿', 'ro': '🇷🇴',
-      'bg': '🇧🇬', 'rs': '🇷🇸', 'ua': '🇺🇦', 've': '🇻🇪',
+      'ar': '🇦🇷',
+      'br': '🇧🇷',
+      'fr': '🇫🇷',
+      'es': '🇪🇸',
+      'en': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      'pt': '🇵🇹',
+      'de': '🇩🇪',
+      'it': '🇮🇹',
+      'nl': '🇳🇱',
+      'be': '🇧🇪',
+      'uy': '🇺🇾',
+      'hr': '🇭🇷',
+      'ma': '🇲🇦',
+      'co': '🇨🇴',
+      'mx': '🇲🇽',
+      'us': '🇺🇸',
+      'jp': '🇯🇵',
+      'kr': '🇰🇷',
+      'sn': '🇸🇳',
+      'ng': '🇳🇬',
+      'cm': '🇨🇲',
+      'ca': '🇨🇦',
+      'dz': '🇩🇿',
+      'eg': '🇪🇬',
+      'sco': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+      'za': '🇿🇦',
+      'qa': '🇶🇦',
+      'ch': '🇨🇭',
+      'ht': '🇭🇹',
+      'au': '🇦🇺',
+      'tr': '🇹🇷',
+      'cw': '🇨🇼',
+      'cv': '🇨🇻',
+      'ci': '🇨🇮',
+      'se': '🇸🇪',
+      'tn': '🇹🇳',
+      'cd': '🇨🇩',
+      'uz': '🇺🇿',
+      'gh': '🇬染',
+      'pa': '🇵🇦',
+      'no': '🇳🇴',
+      'iq': '🇮🇶',
+      'at': '🇦🇹',
+      'jo': '🇯🇴',
+      'sa': '🇸🇦',
+      'nz': '🇳🇿',
+      'ir': '🇮🇷',
+      'ec': '🇪🇨',
+      'ba': '🇧🇦',
+      'py': '🇵🇾',
+      'pl': '🇵🇱',
+      'cl': '🇨🇱',
+      'pe': '🇵🇪',
+      'hu': '🇭🇺',
+      'cz': '🇨🇿',
+      'ro': '🇷🇴',
+      'bg': '🇧🇬',
+      'rs': '🇷🇸',
+      'ua': '🇺🇦',
+      've': '🇻🇪',
       'dk': '🇩🇰',
     };
     return flags[countryCode.toLowerCase()] ?? '🏳️';
@@ -722,10 +880,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String _getLanguageFlag(String langCode) {
     switch (langCode) {
-      case 'fr': return '🇫🇷';
-      case 'en': return '🇬🇧';
-      case 'es': return '🇪🇸';
-      default: return '🏳️';
+      case 'fr':
+        return '🇫🇷';
+      case 'en':
+        return '🇬🇧';
+      case 'es':
+        return '🇪🇸';
+      default:
+        return '🏳️';
     }
   }
 
@@ -780,14 +942,34 @@ class _MyHomePageState extends State<MyHomePage> {
             offset: const Offset(0, 45),
             color: AppColors.card,
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             onSelected: (String value) {
               setState(() => _lang = value);
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(value: 'fr', child: Text('🇫🇷  Français', style: TextStyle(fontWeight: FontWeight.w500))),
-              const PopupMenuItem<String>(value: 'en', child: Text('🇬🇧  English', style: TextStyle(fontWeight: FontWeight.w500))),
-              const PopupMenuItem<String>(value: 'es', child: Text('🇪🇸  Español', style: TextStyle(fontWeight: FontWeight.w500))),
+              const PopupMenuItem<String>(
+                value: 'fr',
+                child: Text(
+                  '🇫🇷  Français',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'en',
+                child: Text(
+                  '🇬🇧  English',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'es',
+                child: Text(
+                  '🇪🇸  Español',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
             ],
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -800,9 +982,16 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_getLanguageFlag(_lang), style: const TextStyle(fontSize: 16)),
+                  Text(
+                    _getLanguageFlag(_lang),
+                    style: const TextStyle(fontSize: 16),
+                  ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textDim),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: AppColors.textDim,
+                  ),
                 ],
               ),
             ),
@@ -814,7 +1003,9 @@ class _MyHomePageState extends State<MyHomePage> {
             offset: const Offset(0, 45),
             color: AppColors.card,
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             onSelected: (String value) {
               if (value == 'anthems') _showAnthemsModal();
               if (value == 'mascots') _showMascotsModal();
@@ -826,11 +1017,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-                      child: const Icon(Icons.music_note_rounded, size: 16, color: AppColors.textPrimary),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.music_note_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    Text(AppTranslations.get(_lang, 'anthemsTitle'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text(
+                      AppTranslations.get(_lang, 'anthemsTitle'),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
               ),
@@ -840,11 +1041,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-                      child: const Icon(Icons.emoji_events_rounded, size: 16, color: AppColors.textPrimary),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.emoji_events_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    Text(AppTranslations.get(_lang, 'mascots'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text(
+                      AppTranslations.get(_lang, 'mascots'),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
               ),
@@ -857,7 +1068,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.border, width: 1),
               ),
-              child: const Icon(Icons.grid_view_rounded, size: 18, color: AppColors.textPrimary),
+              child: const Icon(
+                Icons.grid_view_rounded,
+                size: 18,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
 
@@ -875,11 +1090,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: CircleAvatar(
                   radius: 14,
                   backgroundColor: AppColors.accent.withValues(alpha: 0.1),
-                  backgroundImage: (_userPreds!.avatar.isNotEmpty && _userPreds!.avatar.contains('.png'))
+                  backgroundImage:
+                      (_userPreds!.avatar.isNotEmpty &&
+                          _userPreds!.avatar.contains('.png'))
                       ? AssetImage(_userPreds!.avatar)
                       : null,
-                  child: (_userPreds!.avatar.isEmpty || !_userPreds!.avatar.contains('.png'))
-                      ? const Icon(Icons.person_rounded, size: 18, color: AppColors.accent)
+                  child:
+                      (_userPreds!.avatar.isEmpty ||
+                          !_userPreds!.avatar.contains('.png'))
+                      ? const Icon(
+                          Icons.person_rounded,
+                          size: 18,
+                          color: AppColors.accent,
+                        )
                       : null,
                 ),
               ),
@@ -890,139 +1113,185 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           _isLoading
               ? const Center(
-            child: CircularProgressIndicator(color: AppColors.accent),
-          )
+                  child: CircularProgressIndicator(color: AppColors.accent),
+                )
               : Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_activeTab == 'matches') ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: AppColors.card,
-                          borderRadius: BorderRadius.circular(kCardRadius),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Row(
+                      if (_activeTab == 'matches') ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            GestureDetector(
-                              onTap: () => setState(() => _matchFilter = 'all'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: _matchFilter == 'all'
-                                      ? AppColors.border
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(kButtonRadius),
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.card,
+                                borderRadius: BorderRadius.circular(
+                                  kCardRadius,
                                 ),
-                                child: Text(
-                                  AppTranslations.get(_lang, 'allMatches'),
-                                  style: TextStyle(
-                                    color: _matchFilter == 'all'
-                                        ? Colors.white
-                                        : AppColors.textMuted,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
+                                border: Border.all(color: AppColors.border),
                               ),
-                            ),
-                            GestureDetector(
-                              onTap: () => setState(() => _matchFilter = 'alerts'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: _matchFilter == 'alerts'
-                                      ? AppColors.border
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(kButtonRadius),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.notifications_none_outlined, size: 14, color: AppColors.accent),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      AppTranslations.get(_lang, 'myAlerts'),
-                                      style: TextStyle(
-                                        color: _matchFilter == 'alerts'
-                                            ? Colors.white
-                                            : AppColors.textMuted,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                              child: Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _matchFilter = 'all'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _matchFilter == 'all'
+                                            ? AppColors.border
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(
+                                          kButtonRadius,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        AppTranslations.get(
+                                          _lang,
+                                          'allMatches',
+                                        ),
+                                        style: TextStyle(
+                                          color: _matchFilter == 'all'
+                                              ? Colors.white
+                                              : AppColors.textMuted,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                  GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _matchFilter = 'alerts'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _matchFilter == 'alerts'
+                                            ? AppColors.border
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(
+                                          kButtonRadius,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.notifications_none_outlined,
+                                            size: 14,
+                                            color: AppColors.accent,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            AppTranslations.get(
+                                              _lang,
+                                              'myAlerts',
+                                            ),
+                                            style: TextStyle(
+                                              color: _matchFilter == 'alerts'
+                                                  ? Colors.white
+                                                  : AppColors.textMuted,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.card,
+                                borderRadius: BorderRadius.circular(
+                                  kCardRadius,
                                 ),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    tooltip: AppTranslations.get(
+                                      _lang,
+                                      'listView',
+                                    ),
+                                    icon: const Icon(
+                                      Icons.list_alt,
+                                      size: 20,
+                                      color: AppColors.accent,
+                                    ),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: _viewMode == 'list'
+                                          ? AppColors.border
+                                          : Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      minimumSize: Size.zero,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          kButtonRadius,
+                                        ),
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        setState(() => _viewMode = 'list'),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    tooltip: AppTranslations.get(
+                                      _lang,
+                                      'calendarView',
+                                    ),
+                                    icon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 20,
+                                      color: AppColors.accent,
+                                    ),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: _viewMode == 'calendar'
+                                          ? AppColors.border
+                                          : Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      minimumSize: Size.zero,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          kButtonRadius,
+                                        ),
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        setState(() => _viewMode = 'calendar'),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.card,
-                          borderRadius: BorderRadius.circular(kCardRadius),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              tooltip: AppTranslations.get(_lang, 'listView'),
-                              icon: const Icon(
-                                Icons.list_alt,
-                                size: 20,
-                                color: AppColors.accent,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: _viewMode == 'list'
-                                    ? AppColors.border
-                                    : Colors.transparent,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                minimumSize: Size.zero,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(kButtonRadius)),
-                              ),
-                              onPressed: () => setState(() => _viewMode = 'list'),
-                            ),
-                            const SizedBox(width: 4),
-                            IconButton(
-                              tooltip: AppTranslations.get(_lang, 'calendarView'),
-                              icon: const Icon(
-                                Icons.calendar_today_outlined,
-                                size: 20,
-                                color: AppColors.accent,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: _viewMode == 'calendar'
-                                    ? AppColors.border
-                                    : Colors.transparent,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                minimumSize: Size.zero,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(kButtonRadius)),
-                              ),
-                              onPressed: () => setState(() => _viewMode = 'calendar'),
-                            ),
-                          ],
-                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: _buildActiveView(filteredMatches, matchesByDate),
                       ),
                     ],
                   ),
-                ],
-                const SizedBox(height: 16),
-                Expanded(
-                  child: _buildActiveView(filteredMatches, matchesByDate),
                 ),
-              ],
-            ),
-          ),
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -1043,53 +1312,48 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.border, width: 1),
-          ),
+          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
         ),
         child: Builder(
-            builder: (context) {
-              final tabsList = [
-                'matches',
-                'standings',
-                'bracket',
-                'challenge',
-              ];
-              final currentIndex = tabsList.indexOf(_activeTab).clamp(0, tabsList.length - 1);
+          builder: (context) {
+            final tabsList = ['matches', 'standings', 'bracket', 'challenge'];
+            final currentIndex = tabsList
+                .indexOf(_activeTab)
+                .clamp(0, tabsList.length - 1);
 
-              return BottomNavigationBar(
-                backgroundColor: AppColors.background,
-                selectedItemColor: AppColors.accent,
-                unselectedItemColor: AppColors.textDim,
-                showSelectedLabels: true,
-                showUnselectedLabels: true,
-                type: BottomNavigationBarType.fixed,
-                currentIndex: currentIndex,
-                onTap: (index) {
-                  setState(() {
-                    _activeTab = tabsList[index];
-                  });
-                },
-                items: [
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.sports_soccer),
-                    label: AppTranslations.get(_lang, 'today'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.table_rows),
-                    label: AppTranslations.get(_lang, 'standings'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.hub_outlined),
-                    label: AppTranslations.get(_lang, 'bracket'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.emoji_events),
-                    label: AppTranslations.get(_lang, 'challengeTab'),
-                  ),
-                ],
-              );
-            }
+            return BottomNavigationBar(
+              backgroundColor: AppColors.background,
+              selectedItemColor: AppColors.accent,
+              unselectedItemColor: AppColors.textDim,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _activeTab = tabsList[index];
+                });
+              },
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.sports_soccer),
+                  label: AppTranslations.get(_lang, 'today'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.table_rows),
+                  label: AppTranslations.get(_lang, 'standings'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.hub_outlined),
+                  label: AppTranslations.get(_lang, 'bracket'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.emoji_events),
+                  label: AppTranslations.get(_lang, 'challengeTab'),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -1105,31 +1369,60 @@ class _MyHomePageState extends State<MyHomePage> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildStandingsSubTabButton('groups', AppTranslations.get(_lang, 'groupsTab'), Icons.table_rows),
+                _buildStandingsSubTabButton(
+                  'groups',
+                  AppTranslations.get(_lang, 'groupsTab'),
+                  Icons.table_rows,
+                ),
                 const SizedBox(width: 8),
-                _buildStandingsSubTabButton('scorers', AppTranslations.get(_lang, 'scorersTab'), Icons.sports_soccer),
+                _buildStandingsSubTabButton(
+                  'scorers',
+                  AppTranslations.get(_lang, 'scorersTab'),
+                  Icons.sports_soccer,
+                ),
                 const SizedBox(width: 8),
-                _buildStandingsSubTabButton('assists', AppTranslations.get(_lang, 'assistsTab'), Icons.star_border),
+                _buildStandingsSubTabButton(
+                  'assists',
+                  AppTranslations.get(_lang, 'assistsTab'),
+                  Icons.star_border,
+                ),
                 const SizedBox(width: 8),
-                _buildStandingsSubTabButton('team', AppTranslations.get(_lang, 'teamStatsTab'), Icons.search),
+                _buildStandingsSubTabButton(
+                  'team',
+                  AppTranslations.get(_lang, 'teamStatsTab'),
+                  Icons.search,
+                ),
                 const SizedBox(width: 8),
-                _buildStandingsSubTabButton('odds', AppTranslations.get(_lang, 'oddsTab'), Icons.analytics),
+                _buildStandingsSubTabButton(
+                  'odds',
+                  AppTranslations.get(_lang, 'oddsTab'),
+                  Icons.analytics,
+                ),
               ],
             ),
           ),
         ),
-        Expanded(
-          child: _getStandingsSubTabContent(),
-        ),
+        Expanded(child: _getStandingsSubTabContent()),
       ],
     );
   }
 
-  Widget _buildStandingsSubTabButton(String subTab, String label, IconData icon) {
+  Widget _buildStandingsSubTabButton(
+    String subTab,
+    String label,
+    IconData icon,
+  ) {
     final isSelected = _standingsSubTab == subTab;
     return ElevatedButton.icon(
-      icon: Icon(icon, size: 16, color: isSelected ? Colors.black : AppColors.textMuted),
-      label: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      icon: Icon(
+        icon,
+        size: 16,
+        color: isSelected ? Colors.black : AppColors.textMuted,
+      ),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
       style: ElevatedButton.styleFrom(
         foregroundColor: isSelected ? Colors.black : Colors.white,
         backgroundColor: isSelected ? AppColors.accent : AppColors.card,
@@ -1137,7 +1430,9 @@ class _MyHomePageState extends State<MyHomePage> {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: isSelected ? AppColors.accent : AppColors.border),
+          side: BorderSide(
+            color: isSelected ? AppColors.accent : AppColors.border,
+          ),
         ),
       ),
       onPressed: () {
@@ -1177,9 +1472,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildActiveView(
-      List<WorldCupMatch> filteredMatches,
-      Map<String, List<WorldCupMatch>> matchesByDate,
-      ) {
+    List<WorldCupMatch> filteredMatches,
+    Map<String, List<WorldCupMatch>> matchesByDate,
+  ) {
     if (_activeTab == 'standings') {
       return _buildStandingsTab();
     }
@@ -1189,7 +1484,8 @@ class _MyHomePageState extends State<MyHomePage> {
         matches: _resolvedMatches,
         lang: _lang,
         onMatchTap: _showMatchDetails,
-        supportedTeamCode: _userPreds?.supportedTeam, // Ajoutez cette ligne manquante
+        supportedTeamCode:
+            _userPreds?.supportedTeam, // Ajoutez cette ligne manquante
       );
     }
 
@@ -1200,10 +1496,7 @@ class _MyHomePageState extends State<MyHomePage> {
         lang: _lang,
         showSnackBar: (msg) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(msg),
-              backgroundColor: AppColors.accent,
-            ),
+            SnackBar(content: Text(msg), backgroundColor: AppColors.accent),
           );
         },
         onAlertsChanged: (updatedAlerts) {
@@ -1225,7 +1518,11 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.calendar_today_outlined, size: 48, color: AppColors.borderStrong),
+            const Icon(
+              Icons.calendar_today_outlined,
+              size: 48,
+              color: AppColors.borderStrong,
+            ),
             const SizedBox(height: 16),
             Text(
               AppTranslations.get(_lang, 'noAlerts'),
@@ -1237,7 +1534,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (_viewMode == 'calendar') {
-      return CalendarViewWidget(   // ← ajouter "return"
+      return CalendarViewWidget(
+        // ← ajouter "return"
         matches: filteredMatches,
         lang: _lang,
         hasAlert: _hasAlert,
@@ -1245,7 +1543,8 @@ class _MyHomePageState extends State<MyHomePage> {
           if (_userPreds == null) return false;
           return _userPreds!.matchPredictions.containsKey(match.id);
         },
-        alertType: (match) => PredictionService.getPredictionResult(match, _userPreds),
+        alertType: (match) =>
+            PredictionService.getPredictionResult(match, _userPreds),
         supportedTeamCode: _supportedTeam,
         onMatchTap: _showMatchDetails,
       );
@@ -1265,7 +1564,10 @@ class _MyHomePageState extends State<MyHomePage> {
         final dateLabel = sortedDates[dateIdx];
         final dayMatches = matchesByDate[dateLabel]!;
         final firstMatchDate = dayMatches.first.date;
-        final weekdayStr = DateFormat('EEEE d MMMM', _lang).format(firstMatchDate);
+        final weekdayStr = DateFormat(
+          'EEEE d MMMM',
+          _lang,
+        ).format(firstMatchDate);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1287,8 +1589,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 match: m,
                 lang: _lang,
                 hasAlert: _hasAlert(m),
-                hasPrediction: _userPreds?.matchPredictions.containsKey(m.id) ?? false,
-                alertType: (WorldCupMatch match) => PredictionService.getPredictionResult(match, _userPreds),                supportedTeamCode: _supportedTeam,
+                hasPrediction:
+                    _userPreds?.matchPredictions.containsKey(m.id) ?? false,
+                alertType: (WorldCupMatch match) =>
+                    PredictionService.getPredictionResult(match, _userPreds),
+                supportedTeamCode: _supportedTeam,
                 onAlertToggle: () {
                   if (_hasAlert(m)) {
                     _saveAlert(m.id, 'none');

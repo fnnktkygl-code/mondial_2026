@@ -19,9 +19,11 @@ void main() {
         final options = DefaultFirebaseOptions.currentPlatform;
 
         expect(options.appId, equals(DefaultFirebaseOptions.macos.appId));
-        expect(options.iosBundleId, equals(DefaultFirebaseOptions.macos.iosBundleId));
+        expect(
+          options.iosBundleId,
+          equals(DefaultFirebaseOptions.macos.iosBundleId),
+        );
         expect(options, equals(DefaultFirebaseOptions.macos));
-
       } finally {
         // Restore the original platform
         debugDefaultTargetPlatformOverride = originalPlatform;
@@ -47,7 +49,10 @@ void main() {
       try {
         debugDefaultTargetPlatformOverride = TargetPlatform.windows;
 
-        expect(() => DefaultFirebaseOptions.currentPlatform, throwsUnsupportedError);
+        expect(
+          () => DefaultFirebaseOptions.currentPlatform,
+          throwsUnsupportedError,
+        );
       } finally {
         debugDefaultTargetPlatformOverride = originalPlatform;
       }

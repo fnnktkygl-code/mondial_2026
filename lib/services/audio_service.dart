@@ -14,10 +14,18 @@ class WCAudioService {
   final AudioPlayer _player = AudioPlayer();
 
   // Reactive state notifiers
-  final ValueNotifier<String?> currentPlayingTeamCode = ValueNotifier<String?>(null);
-  final ValueNotifier<PlayerState> playerState = ValueNotifier<PlayerState>(PlayerState.stopped);
-  final ValueNotifier<Duration> position = ValueNotifier<Duration>(Duration.zero);
-  final ValueNotifier<Duration> duration = ValueNotifier<Duration>(Duration.zero);
+  final ValueNotifier<String?> currentPlayingTeamCode = ValueNotifier<String?>(
+    null,
+  );
+  final ValueNotifier<PlayerState> playerState = ValueNotifier<PlayerState>(
+    PlayerState.stopped,
+  );
+  final ValueNotifier<Duration> position = ValueNotifier<Duration>(
+    Duration.zero,
+  );
+  final ValueNotifier<Duration> duration = ValueNotifier<Duration>(
+    Duration.zero,
+  );
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<double> volume = ValueNotifier<double>(1.0);
 
@@ -28,17 +36,74 @@ class WCAudioService {
 
   // Set of 62 verified team codes that have working anthems on nationalanthems.info
   static const Set<String> _validCountryCodes = {
-    'ar', 'at', 'au', 'ba', 'be', 'bg', 'br', 'ca', 'cd', 'ch', 'ci', 'cl', 'cm',
-    'co', 'cu', 'cv', 'cz', 'de', 'dk', 'dz', 'ec', 'eg', 'en', 'es', 'fr', 'sco',
-    'gh', 'gr', 'hr', 'ht', 'hu', 'iq', 'ir', 'it', 'jo', 'jp', 'kr', 'ma', 'mx',
-    'ng', 'nl', 'no', 'nz', 'pa', 'pe', 'pl', 'pt', 'py', 'qa', 'ro', 'rs', 'sa',
-    'se', 'sn', 'tn', 'tr', 'ua', 'us', 'uy', 'uz', 've', 'za'
+    'ar',
+    'at',
+    'au',
+    'ba',
+    'be',
+    'bg',
+    'br',
+    'ca',
+    'cd',
+    'ch',
+    'ci',
+    'cl',
+    'cm',
+    'co',
+    'cu',
+    'cv',
+    'cz',
+    'de',
+    'dk',
+    'dz',
+    'ec',
+    'eg',
+    'en',
+    'es',
+    'fr',
+    'sco',
+    'gh',
+    'gr',
+    'hr',
+    'ht',
+    'hu',
+    'iq',
+    'ir',
+    'it',
+    'jo',
+    'jp',
+    'kr',
+    'ma',
+    'mx',
+    'ng',
+    'nl',
+    'no',
+    'nz',
+    'pa',
+    'pe',
+    'pl',
+    'pt',
+    'py',
+    'qa',
+    'ro',
+    'rs',
+    'sa',
+    'se',
+    'sn',
+    'tn',
+    'tr',
+    'ua',
+    'us',
+    'uy',
+    'uz',
+    've',
+    'za',
   };
 
   // Special URL name mappings for country codes on nationalanthems.info
   static const Map<String, String> _urlMappings = {
-    'en': 'gb',       // England uses the United Kingdom anthem (gb)
-    'sco': 'sco',   // Scotland uses Flower of Scotland (sco)
+    'en': 'gb', // England uses the United Kingdom anthem (gb)
+    'sco': 'sco', // Scotland uses Flower of Scotland (sco)
   };
 
   void _init() {
@@ -57,7 +122,9 @@ class WCAudioService {
 
     _stateSub = _player.onPlayerStateChanged.listen((state) {
       playerState.value = state;
-      if (state == PlayerState.playing || state == PlayerState.paused || state == PlayerState.stopped) {
+      if (state == PlayerState.playing ||
+          state == PlayerState.paused ||
+          state == PlayerState.stopped) {
         isLoading.value = false;
       }
     });

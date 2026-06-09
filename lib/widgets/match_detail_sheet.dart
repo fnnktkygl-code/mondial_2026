@@ -34,7 +34,8 @@ class MatchDetailSheet extends StatefulWidget {
   State<MatchDetailSheet> createState() => _MatchDetailSheetState();
 }
 
-class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerProviderStateMixin {
+class _MatchDetailSheetState extends State<MatchDetailSheet>
+    with SingleTickerProviderStateMixin {
   int? _localT1Score;
   int? _localT2Score;
   bool _isEditing = false;
@@ -72,22 +73,28 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       final Map<String, Map<String, String>> fallbacks = {
         'fr': {
           'probabilityTitle': 'PROBABILITÉS THÉORIQUES (INDEX FIFA)',
-          'probabilityExplanation': 'Calculé de manière transparente et déterministe en comparant l\'indice de force officiel FIFA de chaque nation.',
-          'alertsUnavailable': 'Les rappels d\'alertes ne sont plus disponibles car le coup d\'envoi est imminent.',
+          'probabilityExplanation':
+              'Calculé de manière transparente et déterministe en comparant l\'indice de force officiel FIFA de chaque nation.',
+          'alertsUnavailable':
+              'Les rappels d\'alertes ne sont plus disponibles car le coup d\'envoi est imminent.',
           'predictButton': 'Saisir mon pronostic',
         },
         'en': {
           'probabilityTitle': 'AI WIN PROBABILITIES (FIFA RATING)',
-          'probabilityExplanation': 'Calculated transparently and deterministically by comparing the official FIFA strength ratings of both nations.',
-          'alertsUnavailable': 'Alert reminders are no longer available because kickoff is imminent.',
+          'probabilityExplanation':
+              'Calculated transparently and deterministically by comparing the official FIFA strength ratings of both nations.',
+          'alertsUnavailable':
+              'Alert reminders are no longer available because kickoff is imminent.',
           'predictButton': 'Enter my prediction',
         },
         'es': {
           'probabilityTitle': 'PROBABILIDADES TEÓRICAS (ÍNDICE FIFA)',
-          'probabilityExplanation': 'Calculado de manera transparente y determinante comparando el índice de fuerza oficial de la FIFA de cada nación.',
-          'alertsUnavailable': 'Los recordatorios de alerta ya no están disponibles porque el comienzo es inminente.',
+          'probabilityExplanation':
+              'Calculado de manera transparente y determinante comparando el índice de fuerza oficial de la FIFA de cada nación.',
+          'alertsUnavailable':
+              'Los recordatorios de alerta ya no están disponibles porque el comienzo es inminente.',
           'predictButton': 'Guardar Pronóstico',
-        }
+        },
       };
       res = fallbacks[widget.lang]?[key] ?? fallbacks['en']?[key] ?? key;
     }
@@ -126,21 +133,36 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kDialogRadius),
+        ),
         title: Text(
-            title,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         content: Text(
-            message,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 15, height: 1.5)
+          message,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 15,
+            height: 1.5,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-                AppTranslations.get(widget.lang, 'cancel').toUpperCase(),
-                style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5)
+              AppTranslations.get(widget.lang, 'cancel').toUpperCase(),
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ],
@@ -178,7 +200,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -197,8 +219,12 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     final int charSum1 = t1.codeUnits.fold(0, (sum, val) => sum + val);
     final int charSum2 = t2.codeUnits.fold(0, (sum, val) => sum + val);
 
-    final double r1 = kTeamRatings[t1.replaceAll('g_', '').toLowerCase()] ?? (1300.0 + (charSum1 % 100));
-    final double r2 = kTeamRatings[t2.replaceAll('g_', '').toLowerCase()] ?? (1300.0 + (charSum2 % 100));
+    final double r1 =
+        kTeamRatings[t1.replaceAll('g_', '').toLowerCase()] ??
+        (1300.0 + (charSum1 % 100));
+    final double r2 =
+        kTeamRatings[t2.replaceAll('g_', '').toLowerCase()] ??
+        (1300.0 + (charSum2 % 100));
 
     const double eloDivisor = 600.0;
     final double diff = r1 - r2;
@@ -208,11 +234,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     final double pDraw = (0.28 - (diff.abs() / 3000.0)).clamp(0.16, 0.28);
     final double scale = (1.0 - pDraw) / (pHome + pAway);
 
-    return {
-      'home': pHome * scale,
-      'draw': pDraw,
-      'away': pAway * scale,
-    };
+    return {'home': pHome * scale, 'draw': pDraw, 'away': pAway * scale};
   }
 
   double _pow10(double x) => math.pow(10.0, x).toDouble();
@@ -234,15 +256,21 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       final hours = difference.inHours.toString().padLeft(2, '0');
       final minutes = (difference.inMinutes % 60).toString().padLeft(2, '0');
       final seconds = (difference.inSeconds % 60).toString().padLeft(2, '0');
-      label = _t('locksInTime', namedArgs: {'time': '$hours:$minutes:$seconds'});
+      label = _t(
+        'locksInTime',
+        namedArgs: {'time': '$hours:$minutes:$seconds'},
+      );
     }
 
-    final String tooltipMsg = AppTranslations.get(widget.lang, 'predictionLockMsg');
+    final String tooltipMsg = AppTranslations.get(
+      widget.lang,
+      'predictionLockMsg',
+    );
 
     return GestureDetector(
       onTap: () => _showInfoDialog(
-          AppTranslations.get(widget.lang, 'aboutLocking'),
-          tooltipMsg
+        AppTranslations.get(widget.lang, 'aboutLocking'),
+        tooltipMsg,
       ),
       child: FadeTransition(
         opacity: isUrgent ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
@@ -250,7 +278,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
           margin: const EdgeInsets.only(top: 4, bottom: 12),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isUrgent ? AppColors.danger.withOpacity(0.12) : AppColors.cardDark,
+            color: isUrgent
+                ? AppColors.danger.withValues(alpha: 0.12)
+                : AppColors.cardDark,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isUrgent ? AppColors.danger : AppColors.border,
@@ -277,9 +307,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
               ),
               const SizedBox(width: 4),
               Icon(
-                  Icons.info_outline,
-                  color: (isUrgent ? AppColors.danger : AppColors.warning).withOpacity(0.8),
-                  size: 13
+                Icons.info_outline,
+                color: (isUrgent ? AppColors.danger : AppColors.warning)
+                    .withValues(alpha: 0.8),
+                size: 13,
               ),
             ],
           ),
@@ -323,10 +354,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
               ),
               GestureDetector(
                 onTap: () => _showInfoDialog(
-                    AppTranslations.get(widget.lang, 'aboutProbabilities'),
-                    tooltipMsg
+                  AppTranslations.get(widget.lang, 'aboutProbabilities'),
+                  tooltipMsg,
                 ),
-                child: const Icon(Icons.info_outline_rounded, color: AppColors.accent, size: 16),
+                child: const Icon(
+                  Icons.info_outline_rounded,
+                  color: AppColors.accent,
+                  size: 16,
+                ),
               ),
             ],
           ),
@@ -337,9 +372,18 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
               height: 20,
               child: Row(
                 children: [
-                  Expanded(flex: pHome, child: Container(color: AppColors.accent)),
-                  Expanded(flex: pDraw, child: Container(color: AppColors.borderStrong)),
-                  Expanded(flex: pAway, child: Container(color: AppColors.info)),
+                  Expanded(
+                    flex: pHome,
+                    child: Container(color: AppColors.accent),
+                  ),
+                  Expanded(
+                    flex: pDraw,
+                    child: Container(color: AppColors.borderStrong),
+                  ),
+                  Expanded(
+                    flex: pAway,
+                    child: Container(color: AppColors.info),
+                  ),
                 ],
               ),
             ),
@@ -386,8 +430,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     if (isLocked) {
       return GestureDetector(
         onTap: () => _showInfoDialog(
-            AppTranslations.get(widget.lang, 'predictionLocked'),
-            AppTranslations.get(widget.lang, 'predictionLockMsg')
+          AppTranslations.get(widget.lang, 'predictionLocked'),
+          AppTranslations.get(widget.lang, 'predictionLockMsg'),
         ),
         child: Container(
           padding: const EdgeInsets.all(18),
@@ -401,7 +445,11 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
             children: [
               Row(
                 children: [
-                  const Icon(Icons.lock_outline, color: AppColors.warning, size: 20),
+                  const Icon(
+                    Icons.lock_outline,
+                    color: AppColors.warning,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     AppTranslations.get(widget.lang, 'predictionLocked'),
@@ -414,11 +462,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: widget.prediction != null
-                      ? AppColors.accent.withOpacity(0.12)
-                      : AppColors.border.withOpacity(0.3),
+                      ? AppColors.accent.withValues(alpha: 0.12)
+                      : AppColors.border.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -426,10 +477,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                       ? 'Prono : ${widget.prediction!.t1Score} - ${widget.prediction!.t2Score}'
                       : AppTranslations.get(widget.lang, 'noPrediction'),
                   style: TextStyle(
-                    color: widget.prediction != null ? AppColors.accent : AppColors.textDim,
+                    color: widget.prediction != null
+                        ? AppColors.accent
+                        : AppColors.textDim,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
-                    fontStyle: widget.prediction == null ? FontStyle.italic : null,
+                    fontStyle: widget.prediction == null
+                        ? FontStyle.italic
+                        : null,
                   ),
                 ),
               ),
@@ -447,7 +502,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
             backgroundColor: AppColors.accent,
             foregroundColor: Colors.black,
             padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
           icon: const Icon(Icons.edit_note, size: 22),
           label: Text(
@@ -469,7 +526,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withOpacity(0.3), width: 1.5),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
       ),
       child: Column(
         children: [
@@ -478,11 +538,23 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
             children: [
               Row(
                 children: [
-                  const Icon(Icons.edit_calendar, color: AppColors.accent, size: 18),
+                  const Icon(
+                    Icons.edit_calendar,
+                    color: AppColors.accent,
+                    size: 18,
+                  ),
                   const SizedBox(width: 6),
                   Text(
-                    AppTranslations.get(widget.lang, 'myPrediction').toUpperCase(),
-                    style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 0.5),
+                    AppTranslations.get(
+                      widget.lang,
+                      'myPrediction',
+                    ).toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
@@ -495,7 +567,11 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   });
                   widget.onPredictionChanged?.call(0, 0);
                 },
-                child: const Icon(Icons.delete_sweep_outlined, color: AppColors.danger, size: 20),
+                child: const Icon(
+                  Icons.delete_sweep_outlined,
+                  color: AppColors.danger,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -503,12 +579,24 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildScoreAdjuster(_localT1Score!, (val) => setState(() => _localT1Score = val), true),
+              _buildScoreAdjuster(
+                _localT1Score!,
+                (val) => setState(() => _localT1Score = val),
+                true,
+              ),
               const Text(
                 '-',
-                style: TextStyle(color: AppColors.borderStrong, fontSize: 28, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColors.borderStrong,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              _buildScoreAdjuster(_localT2Score!, (val) => setState(() => _localT2Score = val), false),
+              _buildScoreAdjuster(
+                _localT2Score!,
+                (val) => setState(() => _localT2Score = val),
+                false,
+              ),
             ],
           ),
         ],
@@ -522,26 +610,44 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
         IconButton(
           onPressed: score > 0
               ? () {
-            onChanged(score - 1);
-            widget.onPredictionChanged?.call(_localT1Score!, _localT2Score!);
-          }
+                  onChanged(score - 1);
+                  widget.onPredictionChanged?.call(
+                    _localT1Score!,
+                    _localT2Score!,
+                  );
+                }
               : null,
-          icon: const Icon(Icons.remove_circle_outline, color: AppColors.textDim, size: 30),
+          icon: const Icon(
+            Icons.remove_circle_outline,
+            color: AppColors.textDim,
+            size: 30,
+          ),
         ),
         const SizedBox(width: 4),
         Text(
           '$score',
-          style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(width: 4),
         IconButton(
           onPressed: score < 9
               ? () {
-            onChanged(score + 1);
-            widget.onPredictionChanged?.call(_localT1Score!, _localT2Score!);
-          }
+                  onChanged(score + 1);
+                  widget.onPredictionChanged?.call(
+                    _localT1Score!,
+                    _localT2Score!,
+                  );
+                }
               : null,
-          icon: const Icon(Icons.add_circle_outline, color: AppColors.accent, size: 30),
+          icon: const Icon(
+            Icons.add_circle_outline,
+            color: AppColors.accent,
+            size: 30,
+          ),
         ),
       ],
     );
@@ -551,8 +657,12 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     final now = DateTime.now();
 
     final oneDayAlertDate = widget.match.date.subtract(const Duration(days: 1));
-    final oneHourAlertDate = widget.match.date.subtract(const Duration(hours: 1));
-    final thirtyMinAlertDate = widget.match.date.subtract(const Duration(minutes: 30));
+    final oneHourAlertDate = widget.match.date.subtract(
+      const Duration(hours: 1),
+    );
+    final thirtyMinAlertDate = widget.match.date.subtract(
+      const Duration(minutes: 30),
+    );
 
     final bool showOneDay = now.isBefore(oneDayAlertDate);
     final bool showOneHour = now.isBefore(oneHourAlertDate);
@@ -568,12 +678,20 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
         ),
         child: Row(
           children: [
-            const Icon(Icons.notifications_off_outlined, color: AppColors.textDim, size: 18),
+            const Icon(
+              Icons.notifications_off_outlined,
+              color: AppColors.textDim,
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 _t('alertsUnavailable'),
-                style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
+                style: const TextStyle(
+                  color: AppColors.textDim,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
               ),
             ),
           ],
@@ -584,15 +702,27 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     return Column(
       children: [
         if (showOneDay) ...[
-          _buildAlertButton(context, '1d', AppTranslations.get(widget.lang, 'alert1Day')),
+          _buildAlertButton(
+            context,
+            '1d',
+            AppTranslations.get(widget.lang, 'alert1Day'),
+          ),
           const SizedBox(height: 8),
         ],
         if (showOneHour) ...[
-          _buildAlertButton(context, '1h', AppTranslations.get(widget.lang, 'alert1Hour')),
+          _buildAlertButton(
+            context,
+            '1h',
+            AppTranslations.get(widget.lang, 'alert1Hour'),
+          ),
           const SizedBox(height: 8),
         ],
         if (showThirtyMin) ...[
-          _buildAlertButton(context, '30m', AppTranslations.get(widget.lang, 'alert30Min')),
+          _buildAlertButton(
+            context,
+            '30m',
+            AppTranslations.get(widget.lang, 'alert30Min'),
+          ),
         ],
       ],
     );
@@ -604,13 +734,17 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       width: double.infinity,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? AppColors.accent.withOpacity(0.08) : Colors.transparent,
+          backgroundColor: isSelected
+              ? AppColors.accent.withValues(alpha: 0.08)
+              : Colors.transparent,
           side: BorderSide(
             color: isSelected ? AppColors.accent : AppColors.border,
             width: 1.5,
           ),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
         onPressed: () {
           widget.onSaveAlert(type);
@@ -648,7 +782,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     );
   }
 
-  Widget _buildStatBar({required String label, required int val1, required int val2, String suffix = '', Color colorT1 = AppColors.accent, Color colorT2 = AppColors.info}) {
+  Widget _buildStatBar({
+    required String label,
+    required int val1,
+    required int val2,
+    String suffix = '',
+    Color colorT1 = AppColors.accent,
+    Color colorT2 = AppColors.info,
+  }) {
     final int sum = val1 + val2;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -657,17 +798,40 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('$val1$suffix', style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 13)),
-              Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
-              Text('$val2$suffix', style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(
+                '$val1$suffix',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+              ),
+              Text(
+                '$val2$suffix',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
           Row(
             children: [
-              Expanded(flex: sum == 0 ? 1 : val1, child: Container(height: 6, color: colorT1)),
+              Expanded(
+                flex: sum == 0 ? 1 : val1,
+                child: Container(height: 6, color: colorT1),
+              ),
               const SizedBox(width: 2),
-              Expanded(flex: sum == 0 ? 1 : val2, child: Container(height: 6, color: colorT2)),
+              Expanded(
+                flex: sum == 0 ? 1 : val2,
+                child: Container(height: 6, color: colorT2),
+              ),
             ],
           ),
         ],
@@ -682,7 +846,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       child: ValueListenableBuilder<String?>(
         valueListenable: audioService.currentPlayingTeamCode,
         builder: (context, playingCode, _) {
-          final isThis = playingCode == teamCode.toLowerCase().replaceAll('g_', '');
+          final isThis =
+              playingCode == teamCode.toLowerCase().replaceAll('g_', '');
           return ValueListenableBuilder<PlayerState>(
             valueListenable: audioService.playerState,
             builder: (context, state, _) {
@@ -691,14 +856,40 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 onTap: () => audioService.playAnthem(teamCode),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: isThis ? AppColors.accent.withOpacity(0.1) : AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: isThis ? AppColors.accent : AppColors.border)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isThis
+                        ? AppColors.accent.withValues(alpha: 0.1)
+                        : AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isThis ? AppColors.accent : AppColors.border,
+                    ),
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled, color: isThis ? AppColors.accent : AppColors.textMuted, size: 14),
+                      Icon(
+                        isPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
+                        color: isThis ? AppColors.accent : AppColors.textMuted,
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
-                      Text(isPlaying ? "Pause" : "Hymn", style: TextStyle(color: isThis ? AppColors.accent : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(
+                        isPlaying ? "Pause" : "Hymn",
+                        style: TextStyle(
+                          color: isThis
+                              ? AppColors.accent
+                              : AppColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -712,17 +903,38 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final t1EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, widget.match.t1);
-    final t2EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, widget.match.t2);
-    final localizedDateTimeStr = DateFormat.yMMMMEEEEd(widget.lang).add_Hm().format(widget.match.date);
+    final t1EmblemName = AppTranslations.getTeamWithEmblem(
+      widget.lang,
+      widget.match.t1,
+    );
+    final t2EmblemName = AppTranslations.getTeamWithEmblem(
+      widget.lang,
+      widget.match.t2,
+    );
+    final localizedDateTimeStr = DateFormat.yMMMMEEEEd(
+      widget.lang,
+    ).add_Hm().format(widget.match.date);
 
     return Container(
-      decoration: const BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88),
+      decoration: const BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 5, margin: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: AppColors.borderMid, borderRadius: BorderRadius.circular(2.5))),
+          Container(
+            width: 40,
+            height: 5,
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.borderMid,
+              borderRadius: BorderRadius.circular(2.5),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Row(
@@ -731,7 +943,11 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
-                      WCTeamProfileDialog.show(context, widget.match.t1, widget.lang);
+                      WCTeamProfileDialog.show(
+                        context,
+                        widget.match.t1,
+                        widget.lang,
+                      );
                     },
                     child: Column(
                       children: [
@@ -755,28 +971,32 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: widget.match.isPlayed
                       ? Text(
-                    '${widget.match.t1Score} - ${widget.match.t2Score}',
-                    style: const TextStyle(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 28,
-                    ),
-                  )
+                          '${widget.match.t1Score} - ${widget.match.t2Score}',
+                          style: const TextStyle(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 28,
+                          ),
+                        )
                       : const Text(
-                    'VS',
-                    style: TextStyle(
-                      color: AppColors.borderStrong,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 24,
-                    ),
-                  ),
+                          'VS',
+                          style: TextStyle(
+                            color: AppColors.borderStrong,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 24,
+                          ),
+                        ),
                 ),
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
-                      WCTeamProfileDialog.show(context, widget.match.t2, widget.lang);
+                      WCTeamProfileDialog.show(
+                        context,
+                        widget.match.t2,
+                        widget.lang,
+                      );
                     },
                     child: Column(
                       children: [
@@ -810,7 +1030,11 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.calendar_month, color: AppColors.textDim, size: 14),
+                  const Icon(
+                    Icons.calendar_month,
+                    color: AppColors.textDim,
+                    size: 14,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -840,7 +1064,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   const SizedBox(height: 20),
                   _buildProbabilityBar(context),
                   const SizedBox(height: 20),
-                  if (widget.match.isPlayed && widget.match.goals.isNotEmpty) ...[
+                  if (widget.match.isPlayed &&
+                      widget.match.goals.isNotEmpty) ...[
                     Text(
                       AppTranslations.get(widget.lang, 'scorers').toUpperCase(),
                       style: const TextStyle(
@@ -852,7 +1077,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                     ),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(16),
@@ -863,45 +1091,55 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                           const Positioned.fill(
                             child: Align(
                               alignment: Alignment.center,
-                              child: VerticalDivider(color: AppColors.borderMid, width: 2),
+                              child: VerticalDivider(
+                                color: AppColors.borderMid,
+                                width: 2,
+                              ),
                             ),
                           ),
                           Column(
                             children: widget.match.goals.map((g) {
                               final isT1Goal = g.team == 't1';
-                              final assistText = g.assistant != null ? '\n(ass: ${g.assistant})' : '';
+                              final assistText = g.assistant != null
+                                  ? '\n(ass: ${g.assistant})'
+                                  : '';
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                                 child: Row(
                                   children: [
                                     Expanded(
                                       child: isT1Goal
                                           ? Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              g.scorer + assistText,
-                                              textAlign: TextAlign.right,
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            "${g.minute}'",
-                                            style: const TextStyle(
-                                              color: AppColors.accent,
-                                              fontSize: 13,
-                                              fontFamily: 'monospace',
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ],
-                                      )
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    g.scorer + assistText,
+                                                    textAlign: TextAlign.right,
+                                                    style: const TextStyle(
+                                                      color:
+                                                          AppColors.textPrimary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  "${g.minute}'",
+                                                  style: const TextStyle(
+                                                    color: AppColors.accent,
+                                                    fontSize: 13,
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
                                           : const SizedBox.shrink(),
                                     ),
                                     Container(
@@ -911,40 +1149,48 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                                         width: 8,
                                         height: 8,
                                         decoration: BoxDecoration(
-                                          color: isT1Goal ? AppColors.accent : AppColors.info,
+                                          color: isT1Goal
+                                              ? AppColors.accent
+                                              : AppColors.info,
                                           shape: BoxShape.circle,
-                                          border: Border.all(color: AppColors.surface, width: 1.5),
+                                          border: Border.all(
+                                            color: AppColors.surface,
+                                            width: 1.5,
+                                          ),
                                         ),
                                       ),
                                     ),
                                     Expanded(
                                       child: !isT1Goal
                                           ? Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "${g.minute}'",
-                                            style: const TextStyle(
-                                              color: AppColors.info,
-                                              fontSize: 13,
-                                              fontFamily: 'monospace',
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              g.scorer + assistText,
-                                              textAlign: TextAlign.left,
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      )
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "${g.minute}'",
+                                                  style: const TextStyle(
+                                                    color: AppColors.info,
+                                                    fontSize: 13,
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    g.scorer + assistText,
+                                                    textAlign: TextAlign.left,
+                                                    style: const TextStyle(
+                                                      color:
+                                                          AppColors.textPrimary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            )
                                           : const SizedBox.shrink(),
                                     ),
                                   ],
@@ -978,7 +1224,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                       child: Column(
                         children: [
                           _buildStatBar(
-                            label: AppTranslations.get(widget.lang, 'possession'),
+                            label: AppTranslations.get(
+                              widget.lang,
+                              'possession',
+                            ),
                             val1: widget.match.stats!.possessionT1,
                             val2: widget.match.stats!.possessionT2,
                             suffix: '%',
@@ -989,7 +1238,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                             val2: widget.match.stats!.shotsT2,
                           ),
                           _buildStatBar(
-                            label: AppTranslations.get(widget.lang, 'shotsOnTarget'),
+                            label: AppTranslations.get(
+                              widget.lang,
+                              'shotsOnTarget',
+                            ),
                             val1: widget.match.stats!.shotsOnTargetT1,
                             val2: widget.match.stats!.shotsOnTargetT2,
                           ),
@@ -999,7 +1251,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                             val2: widget.match.stats!.foulsT2,
                           ),
                           _buildStatBar(
-                            label: AppTranslations.get(widget.lang, 'yellowCards'),
+                            label: AppTranslations.get(
+                              widget.lang,
+                              'yellowCards',
+                            ),
                             val1: widget.match.stats!.yellowCardsT1,
                             val2: widget.match.stats!.yellowCardsT2,
                             colorT1: AppColors.warningYellow,
@@ -1018,7 +1273,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                     const SizedBox(height: 20),
                   ],
                   Text(
-                    AppTranslations.get(widget.lang, 'setAlertTitle').toUpperCase(),
+                    AppTranslations.get(
+                      widget.lang,
+                      'setAlertTitle',
+                    ).toUpperCase(),
                     style: const TextStyle(
                       color: AppColors.textDim,
                       fontWeight: FontWeight.bold,
@@ -1033,7 +1291,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                     SizedBox(
                       width: double.infinity,
                       child: TextButton.icon(
-                        icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: AppColors.danger,
+                        ),
                         label: Text(
                           AppTranslations.get(widget.lang, 'removeAlert'),
                           style: const TextStyle(
@@ -1042,7 +1303,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          backgroundColor: AppColors.danger.withOpacity(0.08),
+                          backgroundColor: AppColors.danger.withValues(alpha: 0.08),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
