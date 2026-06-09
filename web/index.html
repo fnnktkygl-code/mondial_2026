@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* ─── TOKENS (Sychronized with AppColors) ─────────────── */
+    /* ─── TOKENS (Synchronized with AppColors) ─────────────── */
     :root {
       --bg:         #0A0E1A;
       --surface:    #0F172A;
@@ -64,10 +64,11 @@
     .logo {
       display: flex; align-items: center; gap: 12px;
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
-      text-transform: uppercase; letter-spacing: -0.02em;
+      letter-spacing: -0.02em;
     }
     .logo img { width: 36px; height: 36px; border-radius: 8px; box-shadow: 0 0 15px var(--accent-glow); }
-    .logo span { color: var(--accent); }
+    .logo .white { color: #FFFFFF; }
+    .logo .green { color: var(--accent); }
     .nav-links { display: flex; gap: 28px; }
     .nav-links a {
       color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
@@ -110,14 +111,11 @@
       font-weight: 800;
       font-size: clamp(44px, 8vw, 92px); line-height: 0.95;
       letter-spacing: -0.04em; margin-bottom: 24px;
-      text-transform: uppercase;
+      text-transform: none; /* Changed to match app */
     }
-    .hero-title em {
-      font-style: normal;
-      background: linear-gradient(135deg, var(--accent) 0%, #34D399 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    .hero-title .white { color: #FFFFFF; }
+    .hero-title .green { color: var(--accent); }
+    
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
       max-width: 600px; margin: 0 auto 40px;
@@ -188,19 +186,17 @@
     }
     .device-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    .screen-placeholder {
+    .screen-mock {
       width: 100%; height: 100%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 12px; padding: 24px; text-align: center;
       background: var(--card-deep);
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .screen-placeholder .ph-icon { font-size: 36px; }
-    .screen-placeholder .ph-label {
-      font-size: 11px; color: var(--text-3); font-weight: 600;
-      letter-spacing: .06em; text-transform: uppercase;
-      border: 1px dashed var(--border-mid); border-radius: 8px;
-      padding: 6px 12px;
-    }
+    .mock-header { height: 20px; background: var(--surface); border-radius: 4px; margin-bottom: 4px; }
+    .mock-item { height: 60px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; padding: 0 12px; gap: 10px; }
+    .mock-circle { width: 30px; height: 30px; border-radius: 50%; background: var(--surface); }
+    .mock-line { height: 8px; background: var(--surface); border-radius: 4px; flex: 1; }
+    .mock-line.short { width: 40%; flex: none; }
 
     .device-tablet {
       flex: 1; min-width: 0; max-width: 500px;
@@ -260,7 +256,10 @@
       box-shadow: 0 40px 100px rgba(0,0,0,0.5);
     }
     .cta-logo { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 24px; box-shadow: 0 0 30px var(--accent-glow); }
-    .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: uppercase; }
+    .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: none; }
+    .cta-title .white { color: #FFFFFF; }
+    .cta-title .green { color: var(--accent); }
+    
     .cta-sub { color: var(--text-2); font-size: 18px; margin-bottom: 40px; }
     .download-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
     .dl-btn {
@@ -304,7 +303,7 @@
   <div class="inner">
     <div class="logo">
       <img src="assets/app_icon.png" alt="Prono Challenge Logo">
-      PRONO <span>CHALLENGE</span>
+      <span class="white">PRONO</span> <span class="green">CHALLENGE</span>
     </div>
     <div class="nav-links">
       <a href="#features">Fonctionnalités</a>
@@ -330,9 +329,8 @@
   </div>
 
   <h1 class="hero-title">
-    Pronostique.<br />
-    <em>Défie tes amis.</em><br />
-    Gagne la coupe.
+    <span class="white">PRONO</span><br />
+    <em class="green">CHALLENGE</em>
   </h1>
 
   <p class="hero-sub">
@@ -348,36 +346,79 @@
     </a>
   </div>
 
-  <!-- Device mockups -->
+  <!-- Device mockups with Fake Data visuals -->
   <div class="hero-devices">
+    <!-- List / matches view mockup -->
     <div class="device-phone reveal">
       <div class="device-notch"></div>
       <div class="device-screen">
-        <div class="screen-placeholder">
-          <div class="ph-icon">📅</div>
-          <div class="ph-label">Vue Calendrier<br/>Tous les matchs</div>
+        <div class="screen-mock">
+          <div class="mock-header"></div>
+          <div class="mock-item">
+            <div class="mock-circle"></div>
+            <div class="mock-line"></div>
+            <div class="mock-circle"></div>
+          </div>
+          <div class="mock-item">
+            <div class="mock-circle" style="background: var(--accent-dim)"></div>
+            <div class="mock-line short"></div>
+            <div class="mock-circle"></div>
+          </div>
+          <div class="mock-item">
+            <div class="mock-circle"></div>
+            <div class="mock-line"></div>
+            <div class="mock-circle" style="background: var(--blue)"></div>
+          </div>
+          <div class="mock-item">
+            <div class="mock-circle"></div>
+            <div class="mock-line short"></div>
+            <div class="mock-circle"></div>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Bracket view mockup -->
     <div class="device-tablet reveal">
       <div class="device-tablet-bar">
         <span>⚽ Prono Challenge — Bracket interactif</span>
       </div>
       <div class="device-tablet-screen">
-        <div class="screen-placeholder">
-          <div class="ph-icon">🏆</div>
-          <div class="ph-label">Tableau Final<br/>Visualisation du Bracket</div>
-        </div>
+         <div class="screen-mock" style="flex-direction: row; align-items: center; justify-content: center; gap: 40px; padding: 40px;">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="mock-item" style="width: 120px; height: 40px;"></div>
+                <div class="mock-item" style="width: 120px; height: 40px;"></div>
+            </div>
+            <div class="mock-item" style="width: 140px; height: 60px; border-color: var(--accent)"></div>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="mock-item" style="width: 120px; height: 40px;"></div>
+                <div class="mock-item" style="width: 120px; height: 40px;"></div>
+            </div>
+         </div>
       </div>
     </div>
 
+    <!-- Leaderboard view mockup -->
     <div class="device-phone featured reveal">
       <div class="device-notch"></div>
       <div class="device-screen">
-        <div class="screen-placeholder">
-          <div class="ph-icon">⚡</div>
-          <div class="ph-label">Challenge<br/>Classement Live</div>
+        <div class="screen-mock">
+          <div class="mock-header" style="background: var(--accent)"></div>
+          <div class="mock-item" style="background: var(--accent-dim); border-color: var(--accent)">
+            <div class="mock-circle" style="background: var(--accent)"></div>
+            <div class="mock-line"></div>
+            <div style="font-weight: 800; color: var(--accent)">1250</div>
+          </div>
+          <div class="mock-item">
+            <div class="mock-circle"></div>
+            <div class="mock-line"></div>
+            <div style="font-weight: 600">1180</div>
+          </div>
+          <div class="mock-item">
+            <div class="mock-circle"></div>
+            <div class="mock-line"></div>
+            <div style="font-weight: 600">1050</div>
+          </div>
         </div>
       </div>
     </div>
@@ -467,7 +508,7 @@
   <div class="container" style="display:flex; justify-content:center;">
     <div class="cta-glow reveal">
       <img src="assets/app_icon.png" alt="App Icon" class="cta-logo">
-      <h2 class="cta-title">Entre dans l'arène</h2>
+      <h2 class="cta-title"><span class="white">PRONO</span> <span class="green">CHALLENGE</span></h2>
       <p class="cta-sub">Télécharge Prono Challenge et commence tes prédictions dès aujourd'hui.</p>
       <div class="download-buttons">
         <a href="app.html" class="dl-btn web">
@@ -506,7 +547,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    <p>⚽ <strong>PRONO CHALLENGE</strong> — Coupe du Monde 2026</p>
+    <p>⚽ <strong class="syne">PRONO CHALLENGE</strong> — Coupe du Monde 2026</p>
     <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">Développé avec passion pour les fans du ballon rond.</p>
   </div>
 </footer>
