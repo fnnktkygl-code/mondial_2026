@@ -61,17 +61,23 @@
       max-width: 1160px; margin: 0 auto; padding: 0 24px;
       display: flex; align-items: center; justify-content: space-between;
     }
+    .host-gradient {
+      background: linear-gradient(to right, 
+        #006847 0%, #006847 33%, /* Mexico Green */
+        #002868 33%, #002868 66%, /* USA Blue */
+        #FF0000 66%, #FF0000 100% /* Canada Red */
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
     .logo {
       display: flex; align-items: center; gap: 12px;
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
       letter-spacing: -0.02em;
-      text-shadow: 
-        -2px 2px 0px rgba(0, 104, 71, 0.4), /* Mexico Green */
-        0px 2px 0px rgba(0, 40, 104, 0.4),  /* USA Blue */
-        2px 2px 0px rgba(255, 0, 0, 0.4);   /* Canada Red */
     }
     .logo img { width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 0 20px var(--accent-glow); }
-    .logo .white { color: #FFFFFF; }
     .nav-links { display: flex; gap: 28px; }
     .nav-links a {
       color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
@@ -115,13 +121,7 @@
       font-size: clamp(44px, 8vw, 92px); line-height: 0.95;
       letter-spacing: -0.04em; margin-bottom: 24px;
       text-transform: none;
-      text-shadow: 
-        -6px 6px 0px rgba(0, 104, 71, 0.7), /* Mexico Green */
-        0px 6px 0px rgba(0, 40, 104, 0.7),  /* USA Blue */
-        6px 6px 0px rgba(255, 0, 0, 0.7);   /* Canada Red */
     }
-    .hero-title .white { color: #FFFFFF; }
-    
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
       max-width: 600px; margin: 0 auto 40px;
@@ -336,7 +336,7 @@
   <div class="inner">
     <div class="logo">
       <img src="assets/app_icon.png" alt="Prono Challenge Logo">
-      <span class="white">Prono Challenge</span>
+      <span class="host-gradient">Prono Challenge</span>
     </div>
     <div class="nav-links">
       <a href="#features">Fonctionnalités</a>
@@ -364,8 +364,8 @@
   </div>
 
   <h1 class="hero-title">
-    <span class="white">Prono</span><br />
-    <span class="white">Challenge</span>
+    <span class="host-gradient">Prono</span><br />
+    <span class="host-gradient">Challenge</span>
   </h1>
 
   <p class="hero-sub">
@@ -599,7 +599,7 @@
   <div class="container" style="display:flex; justify-content:center;">
     <div class="cta-glow reveal">
       <img src="assets/app_icon.png" alt="App Icon" class="cta-logo">
-      <h2 class="cta-title"><span class="white">Prono Challenge</span></h2>
+      <h2 class="cta-title"><span class="host-gradient">Prono Challenge</span></h2>
       <p class="cta-sub">Télécharge Prono Challenge et commence tes prédictions dès aujourd'hui.</p>
       <div class="download-buttons">
         <a href="app.html" class="dl-btn web">
@@ -638,7 +638,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    <p>⚽ <strong class="syne">Prono Challenge</strong> — Coupe du Monde 2026</p>
+    <p>⚽ <strong class="syne host-gradient">Prono Challenge</strong> — Coupe du Monde 2026</p>
     <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">Développé avec passion pour les fans du ballon rond.</p>
   </div>
 </footer>
