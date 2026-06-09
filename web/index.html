@@ -70,7 +70,7 @@
         0px 2px 0px rgba(0, 40, 104, 0.4),  /* USA Blue */
         2px 2px 0px rgba(255, 0, 0, 0.4);   /* Canada Red */
     }
-    .logo img { width: 36px; height: 36px; border-radius: 8px; box-shadow: 0 0 15px var(--accent-glow); }
+    .logo img { width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 0 20px var(--accent-glow); }
     .logo .white { color: #FFFFFF; }
     .nav-links { display: flex; gap: 28px; }
     .nav-links a {
@@ -147,15 +147,16 @@
     }
     .btn-secondary:hover { border-color: var(--accent); background: var(--accent-dim); }
 
-    /* ─── MASCOTS FLOATING ──────────────────────────────── */
-    .mascot-float {
+    /* ─── FLOATING ASSETS ───────────────────────────────── */
+    .float-asset {
         position: absolute; z-index: 1; pointer-events: none;
         animation: float 6s ease-in-out infinite;
-        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
     }
-    .mascot-clutch { width: 140px; top: 20%; left: 8%; animation-delay: 0s; }
-    .mascot-maple { width: 130px; bottom: 15%; right: 10%; animation-delay: 1.5s; }
-    .mascot-zayu { width: 150px; top: 25%; right: 7%; animation-delay: 3s; }
+    .mascot-clutch { width: 180px; top: 15%; left: 5%; animation-delay: 0s; }
+    .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
+    .mascot-zayu { width: 190px; top: 20%; right: 5%; animation-delay: 3s; }
+    .logo-hero { width: 120px; bottom: 20%; left: 8%; animation-delay: 4.5s; border-radius: 28px; box-shadow: 0 0 40px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -261,7 +262,7 @@
       position: relative; overflow: hidden;
       box-shadow: 0 40px 100px rgba(0,0,0,0.5);
     }
-    .cta-logo { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 24px; box-shadow: 0 0 30px var(--accent-glow); }
+    .cta-logo { width: 120px; height: 120px; border-radius: 28px; margin-bottom: 24px; box-shadow: 0 0 40px var(--accent-glow); }
     .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: none; }
     .cta-title .white { color: #FFFFFF; }
     
@@ -297,6 +298,26 @@
       .mascot-float { display: none; }
     }
     
+    /* ─── GALLERY ────────────────────────────────────────── */
+    #gallery { background: var(--bg); }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 48px; }
+    .gallery-item {
+        background: var(--card); border-radius: 20px; overflow: hidden;
+        border: 1px solid var(--border); transition: transform 0.3s ease;
+        aspect-ratio: 9/19;
+    }
+    .gallery-item:hover { transform: scale(1.02); border-color: var(--accent); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .video-showcase {
+        max-width: 900px; margin: 64px auto 0;
+        border-radius: 32px; overflow: hidden;
+        border: 2px solid var(--border-mid);
+        box-shadow: 0 50px 100px rgba(0,0,0,0.6);
+        background: #000;
+    }
+    .video-showcase video { width: 100%; display: block; }
+
     .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
     .reveal.visible { opacity: 1; transform: none; }
   </style>
@@ -313,6 +334,7 @@
     <div class="nav-links">
       <a href="#features">Fonctionnalités</a>
       <a href="#scoring">Points</a>
+      <a href="#gallery">Galerie</a>
       <a href="#cta">Télécharger</a>
     </div>
     <a href="#cta" class="nav-cta">JOUER</a>
@@ -324,10 +346,11 @@
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
 
-  <!-- Mascottes flottantes -->
-  <img src="assets/mascots/clutch.png" alt="Clutch" class="mascot-float mascot-clutch">
-  <img src="assets/mascots/maple.png" alt="Maple" class="mascot-float mascot-maple">
-  <img src="assets/mascots/zayu.png" alt="Zayu" class="mascot-float mascot-zayu">
+  <!-- Actifs flottants (Mascottes & Logo) -->
+  <img src="assets/mascots/clutch.png" alt="Clutch" class="float-asset mascot-clutch">
+  <img src="assets/mascots/maple.png" alt="Maple" class="float-asset mascot-maple">
+  <img src="assets/mascots/zayu.png" alt="Zayu" class="float-asset mascot-zayu">
+  <img src="assets/app_icon.png" alt="Logo" class="float-asset logo-hero">
 
   <div class="hero-tag">
     <span class="tag">Coupe du Monde 2026 · USA / Canada / Mexique</span>
@@ -504,6 +527,40 @@
           <div class="scoring-pts" style="color: var(--blue);">×2</div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="tag section-tag">Galerie</div>
+      <h2 class="section-title">L'interface en action</h2>
+      <p style="color: var(--text-3); max-width: 500px; margin: 0 auto;">Découvrez chaque recoin de l'application conçue pour la meilleure expérience utilisateur.</p>
+    </div>
+    
+    <div class="gallery-grid">
+      <div class="gallery-item reveal"><img src="screenshots/01_home.png" alt="Accueil"></div>
+      <div class="gallery-item reveal"><img src="screenshots/02_match_detail.png" alt="Pronostics"></div>
+      <div class="gallery-item reveal"><img src="screenshots/03_leaderboard.png" alt="Classement"></div>
+      <div class="gallery-item reveal"><img src="screenshots/04_bracket.png" alt="Tableau"></div>
+      <div class="gallery-item reveal"><img src="screenshots/05_team_profile.png" alt="Équipes"></div>
+      <div class="gallery-item reveal"><img src="screenshots/06_groups.png" alt="Groupes"></div>
+      <div class="gallery-item reveal"><img src="screenshots/07_settings.png" alt="Paramètres"></div>
+      <div class="gallery-item reveal" style="display: flex; align-items: center; justify-content: center; background: var(--surface);">
+          <div style="text-align: center; padding: 20px;">
+              <div style="font-size: 40px; margin-bottom: 10px;">🎥</div>
+              <div style="font-size: 12px; color: var(--text-3);">Voir la démo vidéo ci-dessous</div>
+          </div>
+      </div>
+    </div>
+
+    <div class="video-showcase reveal">
+        <video controls poster="assets/app_icon.png">
+            <source src="videos/demo.mp4" type="video/mp4">
+            Votre navigateur ne supporte pas la lecture de vidéos.
+        </video>
     </div>
   </div>
 </section>
