@@ -232,25 +232,15 @@ class WCNotificationService {
 
       await scheduleMatchNotification(
         matchId: '${match.id}_ht',
-        title: lang == 'fr'
-            ? '⚽ Mi-temps !'
-            : (lang == 'es' ? '⚽ ¡Entretiempo!' : '⚽ Half-time!'),
-        body: lang == 'fr'
-            ? "C'est la mi-temps !"
-            : (lang == 'es' ? '¡Fin de la primera parte!' : 'It is half-time!'),
+        title: AppTranslations.get(lang, 'halfTimeTitle'),
+        body: AppTranslations.get(lang, 'halfTimeBody'),
         scheduledDate: htTime,
       );
 
       await scheduleMatchNotification(
         matchId: '${match.id}_ft',
-        title: lang == 'fr'
-            ? '🏆 Fin du match !'
-            : (lang == 'es' ? '🏆 ¡Fin del partido!' : '🏆 Full-time!'),
-        body: lang == 'fr'
-            ? 'Le match est terminé !'
-            : (lang == 'es'
-                ? '¡El partido ha terminado!'
-                : 'The match has finished!'),
+        title: AppTranslations.get(lang, 'fullTimeTitle'),
+        body: AppTranslations.get(lang, "fullTimeBody"),
         scheduledDate: ftTime,
       );
     }

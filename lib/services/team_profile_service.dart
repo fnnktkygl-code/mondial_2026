@@ -1,3 +1,4 @@
+import 'package:mondial_2026/l10n/translations.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
@@ -260,9 +261,7 @@ class WCTeamProfileService {
       return entry[lang] ?? entry['en'] ?? '';
     }
 
-    if (lang == 'fr') return 'Phase de Poules';
-    if (lang == 'es') return 'Fase de Grupos';
-    return 'Group Stage';
+    return AppTranslations.get(lang, "groupStageFilter");
   }
 
   static List<String> _getTrophies(String code, String lang) {

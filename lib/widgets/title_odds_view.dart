@@ -112,10 +112,8 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           child: filteredTeams.isEmpty
               ? Center(
                   child: Text(
-                    widget.lang == 'fr' 
-                        ? 'Aucune équipe trouvée.' 
-                        : (widget.lang == 'es' ? 'No se encontraron equipos.' : 'No teams found.'),
-                    style: const TextStyle(color: AppColors.textDim),
+                    AppTranslations.get(widget.lang, 'noTeamsFound'),
+                      style: const TextStyle(color: AppColors.textDim),
                   ),
                 )
               : ListView.separated(

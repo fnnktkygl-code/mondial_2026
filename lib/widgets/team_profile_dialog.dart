@@ -136,30 +136,29 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                   children: [
                     // 1. General Info
                     _buildSectionTitle(
-                      widget.lang == 'fr' ? 'Informations Générales'
-                          : (widget.lang == 'es' ? 'Información General' : 'General Information'),
+                      AppTranslations.get(widget.lang, 'generalInformation'),
                     ),
                     const SizedBox(height: 10),
                     _buildInfoRow(
                       icon: Icons.shield_outlined,
-                      label: widget.lang == 'fr' ? 'Emblème' : (widget.lang == 'es' ? 'Emblema' : 'Emblem'),
+                      label: AppTranslations.get(widget.lang, 'emblem'),
                       value: profile.symbol,
                     ),
                     _buildInfoRow(
                       icon: Icons.format_list_numbered,
-                      label: widget.lang == 'fr' ? 'Classement FIFA' : (widget.lang == 'es' ? 'Clasificación FIFA' : 'FIFA Ranking'),
+                      label: AppTranslations.get(widget.lang, 'fifaRanking'),
                       value: profile.fifaRanking == 999
-                          ? (widget.lang == 'fr' ? 'Non classé' : (widget.lang == 'es' ? 'Sin clasificación' : 'Unranked'))
+                          ? (AppTranslations.get(widget.lang, 'unranked'))
                           : '#${profile.fifaRanking}',
                     ),
                     _buildInfoRow(
                       icon: Icons.sports_soccer_outlined,
-                      label: widget.lang == 'fr' ? 'Participations' : (widget.lang == 'es' ? 'Participaciones' : 'Appearances'),
-                      value: '${profile.appearances} ${widget.lang == 'fr' ? 'phases finales' : (widget.lang == 'es' ? 'fases finales' : 'appearances')}',
+                      label: AppTranslations.get(widget.lang, 'appearances'),
+                      value: '${profile.appearances} ${AppTranslations.get(widget.lang, 'finalPhases')}',
                     ),
                     _buildInfoRow(
                       icon: Icons.emoji_events_outlined,
-                      label: widget.lang == 'fr' ? 'Meilleur résultat' : (widget.lang == 'es' ? 'Mejor resultado' : 'Best finish'),
+                      label: AppTranslations.get(widget.lang, 'bestFinish'),
                       value: profile.bestFinish,
                     ),
 
@@ -167,7 +166,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     if (profile.trophies.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       _buildSectionTitle(
-                        widget.lang == 'fr' ? 'Palmarès Majeur' : (widget.lang == 'es' ? 'Títulos' : 'Trophies'),
+                        AppTranslations.get(widget.lang, 'majorTrophies'),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
@@ -206,20 +205,13 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     // 3. Media & History — single card only
                     const SizedBox(height: 24),
                     _buildSectionTitle(
-                      widget.lang == 'fr' ? 'Médias & Histoire'
-                          : (widget.lang == 'es' ? 'Medios e Historia' : 'Media & History'),
+                      AppTranslations.get(widget.lang, 'mediaHistory'),
                     ),
                     const SizedBox(height: 12),
                     _buildMediaCard(
                       imageUrl: profile.imageUrl,
-                      title: widget.lang == 'fr'
-                          ? 'Histoire & Profil de l\'Équipe'
-                          : (widget.lang == 'es' ? 'Historia y Perfil del Equipo' : 'Team History & Profile'),
-                      description: widget.lang == 'fr'
-                          ? 'Parcourez le profil officiel, les moments historiques marquants et les archives.'
-                          : (widget.lang == 'es'
-                              ? 'Explore el perfil oficial, momentos históricos clave y los archivos.'
-                              : 'Explore the official profile, key historical moments, and archives.'),
+                      title: AppTranslations.get(widget.lang, 'teamHistoryProfile'),
+                      description: AppTranslations.get(widget.lang, 'teamHistoryDesc'),
                       onTap: () {
                         showModalBottomSheet(
                           context: context,
@@ -229,7 +221,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             height: MediaQuery.of(context).size.height * 0.85,
                             child: WCEmbeddedWebView(
                               url: profile.profileUrl,
-                              title: widget.lang == 'fr' ? 'Histoire & Infos' : 'Team History',
+                              title: AppTranslations.get(widget.lang, 'teamHistoryInfo'),
                             ),
                           ),
                         );
@@ -240,8 +232,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     if (isRealCountry) ...[
                       const SizedBox(height: 24),
                       _buildSectionTitle(
-                        widget.lang == 'fr' ? 'Hymne National'
-                            : (widget.lang == 'es' ? 'Himno Nacional' : 'National Anthem'),
+                        AppTranslations.get(widget.lang, 'nationalAnthem'),
                       ),
                       const SizedBox(height: 12),
                       _buildAnthemPlayerSection(cleanCode),
@@ -439,9 +430,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
             const Icon(Icons.image_outlined, color: AppColors.textDim, size: 40),
             const SizedBox(height: 8),
             Text(
-              widget.lang == 'fr'
-                  ? 'Aperçu non disponible'
-                  : (widget.lang == 'es' ? 'Vista previa no disponible' : 'Preview not available'),
+              AppTranslations.get(widget.lang, 'previewNotAvailable'),
               style: const TextStyle(color: AppColors.textDim, fontSize: 11),
             ),
           ],
@@ -557,9 +546,7 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.lang == 'fr'
-                                  ? 'Hymne National - Stream'
-                                  : (widget.lang == 'es' ? 'Himno Nacional - Stream' : 'National Anthem - Stream'),
+                              AppTranslations.get(widget.lang, 'nationalAnthemStream'),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -570,9 +557,9 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             Text(
                               isCurrent
                                   ? (isPlaying
-                                      ? (widget.lang == 'fr' ? 'Lecture en cours...' : (widget.lang == 'es' ? 'Reproduciendo...' : 'Now playing...'))
-                                      : (widget.lang == 'fr' ? 'En pause' : (widget.lang == 'es' ? 'En pausa' : 'Paused')))
-                                  : (widget.lang == 'fr' ? 'Prêt à écouter' : (widget.lang == 'es' ? 'Listo para escuchar' : 'Ready to listen')),
+                                      ? (AppTranslations.get(widget.lang, 'nowPlaying'))
+                                      : (AppTranslations.get(widget.lang, 'paused')))
+                                  : (AppTranslations.get(widget.lang, 'readyToListen')),
                               style: const TextStyle(color: AppColors.textDim, fontSize: 10),
                             ),
                           ],
