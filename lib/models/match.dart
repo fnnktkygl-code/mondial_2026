@@ -117,22 +117,25 @@ class WorldCupMatch {
   final String t2;
   final int? t1Score;
   final int? t2Score;
-  final String? venue;       // null for live API data (not in free tier)
+  final String? venue; // null for live API data (not in free tier)
   final String? group;
   final String? stage;
   final List<GoalEvent> goals;
   final MatchStats? stats;
-  final String? status;      // TIMED / SCHEDULED / IN_PLAY / FINISHED / POSTPONED
+  final String? status; // TIMED / SCHEDULED / IN_PLAY / FINISHED / POSTPONED
   final DateTime? lastUpdated;
   final bool? _isKnockoutOverride; // explicit override from JSON
 
   // ── Extra-time / Penalty shootout result (knockout matches only) ──────────
   /// True if the match was decided in extra time (regardless of penalties).
   final bool? wentToET;
+
   /// True if the match was decided by a penalty shootout.
   final bool? wentToPK;
+
   /// Team code of the extra-time winner (also set when PK follows ET).
   final String? etWinner;
+
   /// Team code of the penalty-shootout winner.
   final String? pkWinner;
 
@@ -161,12 +164,16 @@ class WorldCupMatch {
     var goalsList = const <GoalEvent>[];
     if (json['goals'] != null) {
       final List<dynamic> rawGoals = json['goals'] as List<dynamic>;
-      goalsList = rawGoals.map((g) => GoalEvent.fromJson(g as Map<String, dynamic>)).toList();
+      goalsList = rawGoals
+          .map((g) => GoalEvent.fromJson(g as Map<String, dynamic>))
+          .toList();
     }
 
     DateTime? lastUpd;
     if (json['lastUpdated'] != null) {
-      try { lastUpd = DateTime.parse(json['lastUpdated'] as String); } catch (_) {}
+      try {
+        lastUpd = DateTime.parse(json['lastUpdated'] as String);
+      } catch (_) {}
     }
 
     return WorldCupMatch(
@@ -174,13 +181,19 @@ class WorldCupMatch {
       date: DateTime.parse(json['date'] as String).toLocal(),
       t1: json['t1'] as String? ?? 'xx',
       t2: json['t2'] as String? ?? 'xx',
-      t1Score: json['t1Score'] != null ? (json['t1Score'] as num).toInt() : null,
-      t2Score: json['t2Score'] != null ? (json['t2Score'] as num).toInt() : null,
+      t1Score: json['t1Score'] != null
+          ? (json['t1Score'] as num).toInt()
+          : null,
+      t2Score: json['t2Score'] != null
+          ? (json['t2Score'] as num).toInt()
+          : null,
       venue: json['venue'] as String?,
       group: json['group'] as String?,
       stage: json['stage'] as String?,
       goals: goalsList,
-      stats: json['stats'] != null ? MatchStats.fromJson(json['stats'] as Map<String, dynamic>) : null,
+      stats: json['stats'] != null
+          ? MatchStats.fromJson(json['stats'] as Map<String, dynamic>)
+          : null,
       status: json['status'] as String?,
       lastUpdated: lastUpd,
       isKnockoutOverride: json['isKnockout'] as bool?,
@@ -209,15 +222,15 @@ class WorldCupMatch {
     };
   }
 
-  // FIX: Only consider a match played if the scores are actually loaded and present! 
-  // Previously, this evaluated to true on `status == 'FINISHED'` alone, causing a 
+  // FIX: Only consider a match played if the scores are actually loaded and present!
+  // Previously, this evaluated to true on `status == 'FINISHED'` alone, causing a
   // null assertion crash (`t1Score!`) in your standings loops.
   bool get isPlayed => t1Score != null && t2Score != null;
 
   bool get isLive => status == 'IN_PLAY' || status == 'PAUSED';
 
   bool get isKnockout {
-    if (_isKnockoutOverride != null) return _isKnockoutOverride!;
+    if (_isKnockoutOverride != null) return _isKnockoutOverride;
     return stage != null && stage!.isNotEmpty;
   }
 

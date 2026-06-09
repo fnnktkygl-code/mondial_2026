@@ -41,15 +41,12 @@ class MascotInfo {
 class WCMascotsDialog extends StatefulWidget {
   final String lang;
 
-  const WCMascotsDialog({
-    super.key,
-    required this.lang,
-  });
+  const WCMascotsDialog({super.key, required this.lang});
 
   static void show(BuildContext context, String lang) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (context) => WCMascotsDialog(lang: lang),
     );
   }
@@ -73,9 +70,12 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
       roleFr: 'Gardien de but & artiste créatif',
       roleEn: 'Goalkeeper & Creative Artist',
       roleEs: 'Portero y artista creativo',
-      descFr: 'Maple adore le style urbain, la musique et le dessin. Il incarne la créativité et la résilience canadiennes, fièrement vêtu de rouge avec le motif de la feuille d\'érable.',
-      descEn: 'Maple loves street style, music, and drawing. He embodies Canadian resilience and creativity, wearing red with the maple leaf design.',
-      descEs: 'A Maple le encanta el estilo urbano, la música y el dibujo. Personifica la creatividad y la resiliencia canadienses, vistiendo de rojo con el diseño de la hoja de arce.',
+      descFr:
+          'Maple adore le style urbain, la musique et le dessin. Il incarne la créativité et la résilience canadiennes, fièrement vêtu de rouge avec le motif de la feuille d\'érable.',
+      descEn:
+          'Maple loves street style, music, and drawing. He embodies Canadian resilience and creativity, wearing red with the maple leaf design.',
+      descEs:
+          'A Maple le encanta el estilo urbano, la música y el dibujo. Personifica la creatividad y la resiliencia canadienses, vistiendo de rojo con el diseño de la hoja de arce.',
       assetPath: 'assets/mascots/maple.png',
       themeColor: const Color(0xFFF87171),
     ),
@@ -89,9 +89,12 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
       roleFr: 'Buteur agile & ambassadeur de joie',
       roleEn: 'Agile Striker & Ambassador of Joy',
       roleEs: 'Goleador ágil y ambajador de la alegría',
-      descFr: 'Inspiré par le riche patrimoine naturel du Mexique, Zayu est un jaguar agile qui transmet la force, l\'unité et l\'esprit de fête à travers le football.',
-      descEn: 'Inspired by Mexico\'s rich natural heritage, Zayu is an agile jaguar who spreads strength, unity, and celebration through football.',
-      descEs: 'Inspirado en el rico patrimonio natural de México, Zayu es un jaguar ágil que difunde la fuerza, la unidad y la celebración a través del fútbol.',
+      descFr:
+          'Inspiré par le riche patrimoine naturel du Mexique, Zayu est un jaguar agile qui transmet la force, l\'unité et l\'esprit de fête à travers le football.',
+      descEn:
+          'Inspired by Mexico\'s rich natural heritage, Zayu is an agile jaguar who spreads strength, unity, and celebration through football.',
+      descEs:
+          'Inspirado en el rico patrimonio natural de México, Zayu es un jaguar ágil que difunde la fuerza, la unidad y la celebración a través del fútbol.',
       assetPath: 'assets/mascots/zayu.png',
       themeColor: const Color(0xFF34D399),
     ),
@@ -105,9 +108,12 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
       roleFr: 'Milieu audacieux & leader inspirant',
       roleEn: 'Bold Midfielder & Inspiring Leader',
       roleEs: 'Centrocampista audaz y líder inspirador',
-      descFr: 'Clutch incarne le courage et l\'action décisive sous pression. Cet aigle royal symbolise l\'unité, le leadership et l\'énergie débordante des fans américains.',
-      descEn: 'Clutch represents courage and decisive action under pressure. This bald eagle symbols unity, leadership, and the high-energy spirit of American fans.',
-      descEs: 'Clutch representa el coraje y la acción decisiva bajo presión. Esta águila calva simboliza la unidad, el liderazgo y el espíritu de alta energía de los fanáticos estadounidenses.',
+      descFr:
+          'Clutch incarne le courage et l\'action décisive sous pression. Cet aigle royal symbolise l\'unité, le leadership et l\'énergie débordante des fans américains.',
+      descEn:
+          'Clutch represents courage and decisive action under pressure. This bald eagle symbols unity, leadership, and the high-energy spirit of American fans.',
+      descEs:
+          'Clutch representa el coraje y la acción decisiva bajo presión. Esta águila calva simboliza la unidad, el liderazgo y el espíritu de alta energía de los fanáticos estadounidenses.',
       assetPath: 'assets/mascots/clutch.png',
       themeColor: const Color(0xFF60A5FA),
     ),
@@ -121,7 +127,8 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
       builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.85,
         child: WCEmbeddedWebView(
-          url: 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mascots',
+          url:
+              'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mascots',
           title: AppTranslations.get(widget.lang, 'officialMascots'),
         ),
       ),
@@ -138,7 +145,10 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
   Widget build(BuildContext context) {
     final String title = AppTranslations.get(widget.lang, 'officialMascots');
 
-    final String watchVideoText = AppTranslations.get(widget.lang, 'watchOfficialTrailer');
+    final String watchVideoText = AppTranslations.get(
+      widget.lang,
+      'watchOfficialTrailer',
+    );
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -150,10 +160,10 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
           border: Border.all(color: AppColors.border, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 24,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
         clipBehavior: Clip.antiAlias,
@@ -166,11 +176,17 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
               padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
               decoration: const BoxDecoration(
                 color: AppColors.cardDark,
-                border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.border, width: 1),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.emoji_people, color: AppColors.accent, size: 24),
+                  const Icon(
+                    Icons.emoji_people,
+                    color: AppColors.accent,
+                    size: 24,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -184,7 +200,11 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textDim, size: 20),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.textDim,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -209,9 +229,21 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
                       },
                       itemBuilder: (context, idx) {
                         final mascot = _mascots[idx];
-                        final countryName = widget.lang == 'fr' ? mascot.countryNameFr : (widget.lang == 'es' ? mascot.countryNameEs : mascot.countryNameEn);
-                        final roleText = widget.lang == 'fr' ? mascot.roleFr : (widget.lang == 'es' ? mascot.roleEs : mascot.roleEn);
-                        final descText = widget.lang == 'fr' ? mascot.descFr : (widget.lang == 'es' ? mascot.descEs : mascot.descEn);
+                        final countryName = widget.lang == 'fr'
+                            ? mascot.countryNameFr
+                            : (widget.lang == 'es'
+                                  ? mascot.countryNameEs
+                                  : mascot.countryNameEn);
+                        final roleText = widget.lang == 'fr'
+                            ? mascot.roleFr
+                            : (widget.lang == 'es'
+                                  ? mascot.roleEs
+                                  : mascot.roleEn);
+                        final descText = widget.lang == 'fr'
+                            ? mascot.descFr
+                            : (widget.lang == 'es'
+                                  ? mascot.descEs
+                                  : mascot.descEn);
 
                         return SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
@@ -227,25 +259,32 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
-                                      color: mascot.themeColor.withOpacity(0.5),
+                                      color: mascot.themeColor.withValues(alpha: 0.5),
                                       width: 2,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: mascot.themeColor.withOpacity(0.25),
+                                        color: mascot.themeColor.withValues(alpha:
+                                          0.25,
+                                        ),
                                         blurRadius: 16,
                                         spreadRadius: 2,
-                                      )
+                                      ),
                                     ],
                                   ),
                                   clipBehavior: Clip.antiAlias,
                                   child: Image.asset(
                                     mascot.assetPath,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stack) => Container(
-                                      color: AppColors.cardDark,
-                                      child: const Icon(Icons.image_not_supported, size: 40, color: AppColors.textDim),
-                                    ),
+                                    errorBuilder: (context, error, stack) =>
+                                        Container(
+                                          color: AppColors.cardDark,
+                                          child: const Icon(
+                                            Icons.image_not_supported,
+                                            size: 40,
+                                            color: AppColors.textDim,
+                                          ),
+                                        ),
                                   ),
                                 ),
                                 const SizedBox(height: 20),
@@ -285,11 +324,16 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
 
                                 // Role Badge
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: mascot.themeColor.withOpacity(0.1),
+                                    color: mascot.themeColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: mascot.themeColor.withOpacity(0.3)),
+                                    border: Border.all(
+                                      color: mascot.themeColor.withValues(alpha: 0.3),
+                                    ),
                                   ),
                                   child: Text(
                                     roleText.toUpperCase(),
@@ -305,7 +349,9 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
 
                                 // Description
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                  ),
                                   child: Text(
                                     descText,
                                     textAlign: TextAlign.center,
@@ -359,14 +405,19 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
                 color: AppColors.cardDark,
-                border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+                border: Border(
+                  top: BorderSide(color: AppColors.border, width: 1),
+                ),
               ),
               child: ElevatedButton.icon(
                 onPressed: () => _launchVideo(context),
                 icon: const Icon(Icons.play_circle_fill, size: 20),
                 label: Text(
                   watchVideoText,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,

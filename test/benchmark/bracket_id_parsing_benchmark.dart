@@ -16,42 +16,66 @@ class UnoptimizedParserBenchmark extends BenchmarkBase {
   @override
   void setup() {
     // Generate matches
-    r32Matches = List.generate(16, (i) => DummyMatch('m${i + 49}')); // m49 to m64
-    r16Matches = List.generate(8, (i) => DummyMatch('m${i + 65}')); // m65 to m72
+    r32Matches = List.generate(
+      16,
+      (i) => DummyMatch('m${i + 49}'),
+    ); // m49 to m64
+    r16Matches = List.generate(
+      8,
+      (i) => DummyMatch('m${i + 65}'),
+    ); // m65 to m72
     qfMatches = List.generate(4, (i) => DummyMatch('m${i + 73}')); // m73 to m76
   }
 
   @override
   void run() {
-    final leftR32 = r32Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 49 && idNum <= 56;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r32Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 49 && idNum <= 56;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightR32 = r32Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 57 && idNum <= 64;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r32Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 57 && idNum <= 64;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftR16 = r16Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 65 && idNum <= 68;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r16Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 65 && idNum <= 68;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightR16 = r16Matches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 69 && idNum <= 72;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r16Matches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 69 && idNum <= 72;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftQF = qfMatches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 73 && idNum <= 74;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    qfMatches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 73 && idNum <= 74;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightQF = qfMatches.where((m) {
-      final idNum = int.tryParse(m.id.substring(1)) ?? 0;
-      return idNum >= 75 && idNum <= 76;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    qfMatches
+        .where((m) {
+          final idNum = int.tryParse(m.id.substring(1)) ?? 0;
+          return idNum >= 75 && idNum <= 76;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
   }
 }
 
@@ -75,8 +99,14 @@ class OptimizedParserBenchmark extends BenchmarkBase {
   @override
   void setup() {
     // Generate matches
-    r32Matches = List.generate(16, (i) => DummyMatch('m${i + 49}')); // m49 to m64
-    r16Matches = List.generate(8, (i) => DummyMatch('m${i + 65}')); // m65 to m72
+    r32Matches = List.generate(
+      16,
+      (i) => DummyMatch('m${i + 49}'),
+    ); // m49 to m64
+    r16Matches = List.generate(
+      8,
+      (i) => DummyMatch('m${i + 65}'),
+    ); // m65 to m72
     qfMatches = List.generate(4, (i) => DummyMatch('m${i + 73}')); // m73 to m76
 
     // Pre-warm the cache slightly or let it run, benchmark_harness runs setup once,
@@ -86,40 +116,58 @@ class OptimizedParserBenchmark extends BenchmarkBase {
 
   @override
   void run() {
-    final leftR32 = r32Matches.where((m) {
-      final idNum = _getParsedId(m.id);
-      return idNum >= 49 && idNum <= 56;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r32Matches
+        .where((m) {
+          final idNum = _getParsedId(m.id);
+          return idNum >= 49 && idNum <= 56;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightR32 = r32Matches.where((m) {
-      final idNum = _getParsedId(m.id);
-      return idNum >= 57 && idNum <= 64;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r32Matches
+        .where((m) {
+          final idNum = _getParsedId(m.id);
+          return idNum >= 57 && idNum <= 64;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftR16 = r16Matches.where((m) {
-      final idNum = _getParsedId(m.id);
-      return idNum >= 65 && idNum <= 68;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r16Matches
+        .where((m) {
+          final idNum = _getParsedId(m.id);
+          return idNum >= 65 && idNum <= 68;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightR16 = r16Matches.where((m) {
-      final idNum = _getParsedId(m.id);
-      return idNum >= 69 && idNum <= 72;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    r16Matches
+        .where((m) {
+          final idNum = _getParsedId(m.id);
+          return idNum >= 69 && idNum <= 72;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final leftQF = qfMatches.where((m) {
-      final idNum = _getParsedId(m.id);
-      return idNum >= 73 && idNum <= 74;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    qfMatches
+        .where((m) {
+          final idNum = _getParsedId(m.id);
+          return idNum >= 73 && idNum <= 74;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
 
-    final rightQF = qfMatches.where((m) {
-      final idNum = _getParsedId(m.id);
-      return idNum >= 75 && idNum <= 76;
-    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    qfMatches
+        .where((m) {
+          final idNum = _getParsedId(m.id);
+          return idNum >= 75 && idNum <= 76;
+        })
+        .toList()
+        .sort((a, b) => a.id.compareTo(b.id));
   }
 }
 
 void main() {
-  print('Running benchmarks...');
+  // print removed
   UnoptimizedParserBenchmark().report();
   OptimizedParserBenchmark().report();
 }

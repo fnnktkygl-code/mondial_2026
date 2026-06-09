@@ -69,7 +69,11 @@ class WCFirebaseService {
 
     // Attempt to delete user doc and its subcollections (simplified clean up)
     try {
-      final sub = await _firestore.collection('users').doc(uid).collection('notifications').get();
+      final sub = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('notifications')
+          .get();
       for (final doc in sub.docs) {
         await doc.reference.delete();
       }

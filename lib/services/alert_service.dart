@@ -12,8 +12,11 @@ class AlertService {
     if (jsonStr == null) return {};
 
     try {
-      final Map<String, dynamic> decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
-      final Map<String, String> alerts = decoded.map((key, value) => MapEntry(key, value.toString()));
+      final Map<String, dynamic> decoded =
+          jsonDecode(jsonStr) as Map<String, dynamic>;
+      final Map<String, String> alerts = decoded.map(
+        (key, value) => MapEntry(key, value.toString()),
+      );
 
       bool migrated = false;
       final keys = List<String>.from(alerts.keys);
@@ -39,7 +42,10 @@ class AlertService {
   }
 
   /// Save or remove a match alert.
-  static Future<Map<String, String>> saveAlert(String matchId, String alertType) async {
+  static Future<Map<String, String>> saveAlert(
+    String matchId,
+    String alertType,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final alerts = await loadAlerts();
 
@@ -51,21 +57,25 @@ class AlertService {
   }
 
   /// Automatically set 1hour alerts for a team's matches if no alert exists.
-  static Future<Map<String, String>> activateAlertsForTeam(String teamCode, List<WorldCupMatch> matches) async {
+  static Future<Map<String, String>> activateAlertsForTeam(
+    String teamCode,
+    List<WorldCupMatch> matches,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final alerts = await loadAlerts();
-    
+
     bool changed = false;
     final lowerTeamCode = teamCode.toLowerCase();
     for (final match in matches) {
-      if (match.t1.toLowerCase() == lowerTeamCode || match.t2.toLowerCase() == lowerTeamCode) {
+      if (match.t1.toLowerCase() == lowerTeamCode ||
+          match.t2.toLowerCase() == lowerTeamCode) {
         if (!alerts.containsKey(match.id)) {
           alerts[match.id] = '1hour';
           changed = true;
         }
       }
     }
-    
+
     if (changed) {
       final jsonStr = jsonEncode(alerts);
       await prefs.setString(_alertsKey, jsonStr);
