@@ -124,9 +124,7 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
               onChanged: _filterTeams,
               style: const TextStyle(color: Colors.white, fontSize: 16),
               decoration: InputDecoration(
-                hintText: widget.lang == 'fr' 
-                    ? 'Rechercher une équipe...' 
-                    : (widget.lang == 'es' ? 'Buscar equipo...' : 'Search team...'),
+                hintText: AppTranslations.get(widget.lang, 'searchTeams'),
                 hintStyle: const TextStyle(color: AppColors.textDim),
                 prefixIcon: const Icon(Icons.search, color: AppColors.textDim),
                 filled: true,
@@ -148,7 +146,7 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
             child: _filteredTeams.isEmpty
                 ? Center(
                     child: Text(
-                      widget.lang == 'fr' ? 'Aucune équipe trouvée' : 'No teams found',
+                      AppTranslations.get(widget.lang, 'noTeamsFound'),
                       style: const TextStyle(color: AppColors.textDim, fontSize: 14),
                     ),
                   )

@@ -115,14 +115,12 @@ class ScorersLeaderboardWidget extends StatelessWidget {
             const Icon(Icons.sports_soccer_rounded, size: 56, color: AppColors.borderStrong),
             const SizedBox(height: 16),
             Text(
-              lang == 'fr' ? 'Classement indisponible' : 'Leaderboard Unavailable',
+              AppTranslations.get(lang, 'leaderboardUnavailable'),
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Text(
-              lang == 'fr'
-                  ? "Les statistiques individuelles débloqueront dès le coup d'envoi du premier match !"
-                  : "Individual statistics will unlock as soon as the opening match kicks off!",
+              AppTranslations.get(lang, 'statsUnlockGoals'),
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4),
             ),
@@ -292,14 +290,12 @@ class AssistsLeaderboardWidget extends StatelessWidget {
               const Icon(Icons.star_outline_rounded, size: 56, color: AppColors.borderStrong),
               const SizedBox(height: 16),
               Text(
-                lang == 'fr' ? 'Classement indisponible' : 'Leaderboard Unavailable',
+                AppTranslations.get(lang, 'leaderboardUnavailable'),
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 8),
               Text(
-                lang == 'fr'
-                    ? "Les statistiques de passes décisives s'activeront au coup d'envoi du premier match !"
-                    : "Assists statistics will unlock as soon as the opening match kicks off!",
+                AppTranslations.get(lang, 'statsUnlockAssists'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4),
               ),
@@ -439,13 +435,13 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
 
         if (scoreSelf > scoreOpp) {
           wins++;
-          formHistory.add(widget.lang == 'fr' ? 'V' : 'W');
+          formHistory.add(AppTranslations.get(widget.lang, 'formWin'));
         } else if (scoreSelf < scoreOpp) {
           losses++;
           formHistory.add('L');
         } else {
           draws++;
-          formHistory.add(widget.lang == 'fr' ? 'N' : 'D');
+          formHistory.add(AppTranslations.get(widget.lang, 'formDraw'));
         }
       }
     }
@@ -467,7 +463,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
               TeamSelectorBottomSheet.show(
                 context: context,
                 lang: widget.lang,
-                title: widget.lang == 'fr' ? 'Sélectionner une équipe' : 'Select a team',
+                title: AppTranslations.get(widget.lang, 'selectTeam'),
                 selectedTeamCode: currentTeam,
                 teamCodes: sortedTeams,
                 onTeamSelected: (val) {
@@ -567,12 +563,12 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.lang == 'fr' ? 'FORME RÉCENTE' : 'FORM GUIDE',
+                        AppTranslations.get(widget.lang, 'recentForm'),
                         style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 6),
                       formHistory.isEmpty
-                          ? Text(widget.lang == 'fr' ? 'Aucun match joué' : 'No matches played', style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic))
+                          ? Text(AppTranslations.get(widget.lang, 'noMatchesPlayed'), style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic))
                           : Row(children: formHistory.map((res) => _buildFormBadge(res)).toList()),
                     ],
                   ),
