@@ -107,26 +107,26 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
         case 'exact':
           predIcon = Icons.star_rounded;
           predColor = Colors.amber;
-          tooltipMessage = widget.lang == 'fr' ? 'Score exact !' : (widget.lang == 'es' ? '¡Marcador exacto!' : 'Exact score!');
+          tooltipMessage = AppTranslations.get(widget.lang, 'exactScoreTooltip');
           break;
         case 'winner':
           predIcon = Icons.check_circle_rounded;
           predColor = Colors.greenAccent;
-          tooltipMessage = widget.lang == 'fr' ? 'Bon vainqueur' : (widget.lang == 'es' ? 'Ganador correcto' : 'Correct winner');
+          tooltipMessage = AppTranslations.get(widget.lang, 'correctWinnerTooltip');
           break;
         default:
           predIcon = Icons.cancel_rounded;
           predColor = Colors.redAccent;
-          tooltipMessage = widget.lang == 'fr' ? 'Pronostic raté' : (widget.lang == 'es' ? 'Pronóstico fallado' : 'Wrong prediction');
+          tooltipMessage = AppTranslations.get(widget.lang, 'wrongPredictionTooltip');
       }
     } else if (widget.hasPrediction) {
       predIcon = Icons.check_circle_rounded;
       predColor = Colors.greenAccent;
-      tooltipMessage = widget.lang == 'fr' ? 'Pronostic enregistré' : (widget.lang == 'es' ? 'Pronóstico guardado' : 'Prediction saved');
+      tooltipMessage = AppTranslations.get(widget.lang, 'predictionSavedTooltip');
     } else {
       predIcon = Icons.pending_actions_rounded;
       predColor = Colors.orangeAccent;
-      tooltipMessage = widget.lang == 'fr' ? 'Pronostic en attente' : (widget.lang == 'es' ? 'Pronóstico pendiente' : 'Prediction pending');
+      tooltipMessage = AppTranslations.get(widget.lang, 'predictionPendingTooltip');
     }
 
     return AnimatedBuilder(
