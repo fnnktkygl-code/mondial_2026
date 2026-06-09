@@ -42,11 +42,11 @@ class TeamSelectorBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<TeamSelectorBottomSheet> createState() => _TeamSelectorBottomSheetState();
+  State<TeamSelectorBottomSheet> createState() =>
+      _TeamSelectorBottomSheetState();
 }
 
 class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
-  String _searchQuery = '';
   late List<String> _filteredTeams;
 
   @override
@@ -57,13 +57,13 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
 
   void _filterTeams(String query) {
     setState(() {
-      _searchQuery = query;
       if (query.isEmpty) {
         _filteredTeams = widget.teamCodes;
       } else {
         _filteredTeams = widget.teamCodes.where((code) {
           final name = AppTranslations.getTeam(widget.lang, code).toLowerCase();
-          return name.contains(query.toLowerCase()) || code.toLowerCase().contains(query.toLowerCase());
+          return name.contains(query.toLowerCase()) ||
+              code.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
     });
@@ -72,7 +72,7 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.card,
@@ -129,14 +129,23 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
                 prefixIcon: const Icon(Icons.search, color: AppColors.textDim),
                 filled: true,
                 fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                  borderSide: const BorderSide(
+                    color: AppColors.border,
+                    width: 1.5,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                  borderSide: const BorderSide(
+                    color: AppColors.accent,
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -147,7 +156,10 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
                 ? Center(
                     child: Text(
                       AppTranslations.get(widget.lang, 'noTeamsFound'),
-                      style: const TextStyle(color: AppColors.textDim, fontSize: 14),
+                      style: const TextStyle(
+                        color: AppColors.textDim,
+                        fontSize: 14,
+                      ),
                     ),
                   )
                 : ListView.builder(
@@ -156,16 +168,23 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
                     itemBuilder: (context, index) {
                       final code = _filteredTeams[index];
                       final name = AppTranslations.getTeam(widget.lang, code);
-                      final isSelected = widget.selectedTeamCode?.toLowerCase() == code.toLowerCase();
+                      final isSelected =
+                          widget.selectedTeamCode?.toLowerCase() ==
+                          code.toLowerCase();
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.accent.withOpacity(0.08) : Colors.transparent,
+                          color: isSelected
+                              ? AppColors.accent.withValues(alpha: 0.08)
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
                           leading: TeamFlagWidget(
                             code: code,
                             width: 36,
@@ -175,13 +194,21 @@ class _TeamSelectorBottomSheetState extends State<TeamSelectorBottomSheet> {
                           title: Text(
                             name,
                             style: TextStyle(
-                              color: isSelected ? AppColors.accent : Colors.white,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              color: isSelected
+                                  ? AppColors.accent
+                                  : Colors.white,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
                               fontSize: 16,
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(Icons.check_circle, color: AppColors.accent, size: 24)
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.accent,
+                                  size: 24,
+                                )
                               : null,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),

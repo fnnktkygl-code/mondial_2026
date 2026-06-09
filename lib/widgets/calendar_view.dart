@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
-import '../app_constants.dart';
 import 'team_flag.dart';
 
 class CalendarViewWidget extends StatefulWidget {
@@ -31,7 +30,9 @@ class CalendarViewWidget extends StatefulWidget {
 }
 
 class _CalendarViewWidgetState extends State<CalendarViewWidget> {
-  final DateTime _tournamentStart = DateTime.parse('2026-06-08T00:00:00Z').toLocal();
+  final DateTime _tournamentStart = DateTime.parse(
+    '2026-06-08T00:00:00Z',
+  ).toLocal();
   late DateTime _currentWeekStart;
   DateTime? _targetMatchDate;
   late ScrollController _verticalScrollController;
@@ -63,7 +64,9 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     WorldCupMatch? nextMatch;
     try {
-      nextMatch = widget.matches.firstWhere((m) => !m.isPlayed && m.date.isAfter(now));
+      nextMatch = widget.matches.firstWhere(
+        (m) => !m.isPlayed && m.date.isAfter(now),
+      );
     } catch (_) {
       if (widget.matches.isNotEmpty) {
         nextMatch = widget.matches.last;
@@ -74,18 +77,27 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     _targetMatchDate = targetDate;
 
     final daysSinceMonday = targetDate.weekday - DateTime.monday;
-    _currentWeekStart = DateTime(targetDate.year, targetDate.month, targetDate.day)
-        .subtract(Duration(days: daysSinceMonday));
+    _currentWeekStart = DateTime(
+      targetDate.year,
+      targetDate.month,
+      targetDate.day,
+    ).subtract(Duration(days: daysSinceMonday));
   }
 
   void _scrollToFirstMatchOfTargetDay() {
-    if (_targetMatchDate == null || widget.matches.isEmpty || !_verticalScrollController.hasClients) return;
+    if (_targetMatchDate == null ||
+        widget.matches.isEmpty ||
+        !_verticalScrollController.hasClients) {
+      return;
+    }
 
     final now = DateTime.now();
     final dayFormat = DateFormat('yyyy-MM-dd');
     final targetDayStr = dayFormat.format(_targetMatchDate!);
 
-    final targetDayMatches = widget.matches.where((m) => dayFormat.format(m.date) == targetDayStr).toList();
+    final targetDayMatches = widget.matches
+        .where((m) => dayFormat.format(m.date) == targetDayStr)
+        .toList();
     if (targetDayMatches.isEmpty) return;
 
     targetDayMatches.sort((a, b) => a.date.compareTo(b.date));
@@ -102,12 +114,20 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     }
 
     const double rowHeight = 110.0;
-    final hoursList = widget.matches.where((m) {
-      final end = _currentWeekStart.add(const Duration(days: 6));
-      return m.date.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) && m.date.isBefore(end.add(const Duration(days: 1)));
-    }).map((m) => m.date.hour).toList();
+    final hoursList = widget.matches
+        .where((m) {
+          final end = _currentWeekStart.add(const Duration(days: 6));
+          return m.date.isAfter(
+                _currentWeekStart.subtract(const Duration(milliseconds: 1)),
+              ) &&
+              m.date.isBefore(end.add(const Duration(days: 1)));
+        })
+        .map((m) => m.date.hour)
+        .toList();
 
-    final currentMinHour = hoursList.isNotEmpty ? hoursList.reduce((a, b) => a < b ? a : b) - 1 : 10;
+    final currentMinHour = hoursList.isNotEmpty
+        ? hoursList.reduce((a, b) => a < b ? a : b) - 1
+        : 10;
     final int minHourClamped = currentMinHour.clamp(0, 23);
 
     double scrollOffset = (targetHour - minHourClamped) * rowHeight;
@@ -125,7 +145,9 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     setState(() {
       _currentWeekStart = _currentWeekStart.add(Duration(days: days));
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToFirstMatchOfTargetDay());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _scrollToFirstMatchOfTargetDay(),
+    );
   }
 
   String _getWeekLabel() {
@@ -136,12 +158,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
   }
 
   Widget _buildFlag(String code) {
-    return TeamFlagWidget.flag(
-      code,
-      width: 24,
-      height: 16,
-      borderRadius: 4,
-    );
+    return TeamFlagWidget.flag(code, width: 24, height: 16, borderRadius: 4);
   }
 
   @override
@@ -157,7 +174,10 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
         : 'GMT$sign${hours.abs()}:${minutes.toString().padLeft(2, '0')}';
 
     // Label de fuseau horaire traduit pour l'en-tête
-    String tzSubtitle = AppTranslations.get(widget.lang, 'allTimesIn').replaceAll('{tz}', localTimeZoneLabel);
+    String tzSubtitle = AppTranslations.get(
+      widget.lang,
+      'allTimesIn',
+    ).replaceAll('{tz}', localTimeZoneLabel);
 
     const double rowHeight = 110.0;
     const double colWidth = 175.0;
@@ -165,7 +185,9 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     final dayFormat = DateFormat('yyyy-MM-dd');
     final localizedDayFormat = DateFormat('E d MMM', widget.lang);
-    final targetMatchStr = _targetMatchDate != null ? dayFormat.format(_targetMatchDate!) : '';
+    final targetMatchStr = _targetMatchDate != null
+        ? dayFormat.format(_targetMatchDate!)
+        : '';
 
     final weekDates = List.generate(7, (i) {
       return _currentWeekStart.add(Duration(days: i));
@@ -176,7 +198,10 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
         .subtract(const Duration(milliseconds: 1));
 
     final weekMatches = widget.matches.where((m) {
-      return m.date.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) && m.date.isBefore(weekEnd);
+      return m.date.isAfter(
+            _currentWeekStart.subtract(const Duration(milliseconds: 1)),
+          ) &&
+          m.date.isBefore(weekEnd);
     }).toList();
 
     int minHour = 10;
@@ -193,7 +218,10 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     double? timelineNowTop;
     int? timelineNowDayIdx;
-    if (now.isAfter(_currentWeekStart.subtract(const Duration(milliseconds: 1))) && now.isBefore(weekEnd)) {
+    if (now.isAfter(
+          _currentWeekStart.subtract(const Duration(milliseconds: 1)),
+        ) &&
+        now.isBefore(weekEnd)) {
       timelineNowDayIdx = now.weekday - DateTime.monday;
       timelineNowTop = ((now.hour - minHour) + (now.minute / 60)) * rowHeight;
     }
@@ -215,11 +243,16 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.chevron_left, color: AppColors.textMuted),
+                  icon: const Icon(
+                    Icons.chevron_left,
+                    color: AppColors.textMuted,
+                  ),
                   onPressed: () => _changeWeek(-7),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.card,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
                 Column(
@@ -247,11 +280,16 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chevron_right, color: AppColors.textMuted),
+                  icon: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textMuted,
+                  ),
                   onPressed: () => _changeWeek(7),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.card,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ],
@@ -281,8 +319,14 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                           decoration: const BoxDecoration(
                             color: AppColors.cardDark,
                             border: Border(
-                              bottom: BorderSide(color: AppColors.border, width: 1.5),
-                              right: BorderSide(color: AppColors.border, width: 1.5),
+                              bottom: BorderSide(
+                                color: AppColors.border,
+                                width: 1.5,
+                              ),
+                              right: BorderSide(
+                                color: AppColors.border,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           child: const Icon(
@@ -328,18 +372,28 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                           ...List.generate(7, (dayIdx) {
                             final date = weekDates[dayIdx];
                             final dateStr = dayFormat.format(date);
-                            final localizedDayLabel = localizedDayFormat.format(date);
+                            final localizedDayLabel = localizedDayFormat.format(
+                              date,
+                            );
                             final isTargetDay = dateStr == targetMatchStr;
 
-                            final dayMatches = widget.matches.where((m) => dayFormat.format(m.date) == dateStr).toList();
+                            final dayMatches = widget.matches
+                                .where(
+                                  (m) => dayFormat.format(m.date) == dateStr,
+                                )
+                                .toList();
 
                             return Container(
                               width: colWidth,
                               decoration: BoxDecoration(
-                                color: isTargetDay ? AppColors.accent.withOpacity(0.02) : Colors.transparent,
+                                color: isTargetDay
+                                    ? AppColors.accent.withValues(alpha: 0.02)
+                                    : Colors.transparent,
                                 border: Border(
                                   right: BorderSide(
-                                    color: isTargetDay ? AppColors.accent.withOpacity(0.3) : AppColors.border,
+                                    color: isTargetDay
+                                        ? AppColors.accent.withValues(alpha: 0.3)
+                                        : AppColors.border,
                                     width: isTargetDay ? 1.5 : 1,
                                   ),
                                 ),
@@ -353,11 +407,17 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                     width: colWidth,
                                     decoration: BoxDecoration(
                                       color: isTargetDay
-                                          ? AppColors.accent.withOpacity(0.08)
-                                          : (dayMatches.isNotEmpty ? AppColors.border.withOpacity(0.2) : Colors.transparent),
+                                          ? AppColors.accent.withValues(alpha: 0.08)
+                                          : (dayMatches.isNotEmpty
+                                                ? AppColors.border.withValues(alpha:
+                                                    0.2,
+                                                  )
+                                                : Colors.transparent),
                                       border: Border(
                                         bottom: BorderSide(
-                                          color: isTargetDay ? AppColors.accent : AppColors.border,
+                                          color: isTargetDay
+                                              ? AppColors.accent
+                                              : AppColors.border,
                                           width: isTargetDay ? 2 : 1.5,
                                         ),
                                       ),
@@ -366,7 +426,11 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                     child: Text(
                                       localizedDayLabel,
                                       style: TextStyle(
-                                        color: isTargetDay ? AppColors.accent : (dayMatches.isNotEmpty ? Colors.white : AppColors.textDim),
+                                        color: isTargetDay
+                                            ? AppColors.accent
+                                            : (dayMatches.isNotEmpty
+                                                  ? Colors.white
+                                                  : AppColors.textDim),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),
@@ -387,34 +451,67 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                             child: Container(
                                               height: rowHeight,
                                               decoration: const BoxDecoration(
-                                                border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: AppColors.border,
+                                                    width: 0.5,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           );
                                         }),
 
                                         ...dayMatches.map((m) {
-                                          final topOffset = ((m.date.hour - minHour) + (m.date.minute / 60)) * rowHeight;
-                                          final blockHeight = matchDuration * rowHeight;
-                                          final simultaneous = dayMatches.where((x) => x.date.hour == m.date.hour && x.date.minute == m.date.minute).toList();
-                                          final int totalSimultaneous = simultaneous.length;
-                                          final colIndex = simultaneous.indexWhere((x) => x.id == m.id);
+                                          final topOffset =
+                                              ((m.date.hour - minHour) +
+                                                  (m.date.minute / 60)) *
+                                              rowHeight;
+                                          final blockHeight =
+                                              matchDuration * rowHeight;
+                                          final simultaneous = dayMatches
+                                              .where(
+                                                (x) =>
+                                                    x.date.hour ==
+                                                        m.date.hour &&
+                                                    x.date.minute ==
+                                                        m.date.minute,
+                                              )
+                                              .toList();
+                                          final int totalSimultaneous =
+                                              simultaneous.length;
+                                          final colIndex = simultaneous
+                                              .indexWhere((x) => x.id == m.id);
 
-                                          final widthFactor = (0.94 / totalSimultaneous);
-                                          final leftMargin = 0.03 + (colIndex * widthFactor);
+                                          final widthFactor =
+                                              (0.94 / totalSimultaneous);
+                                          final leftMargin =
+                                              0.03 + (colIndex * widthFactor);
 
                                           final hasAlert = widget.hasAlert(m);
-                                          final hasPredicted = widget.hasPredicted(m);
+                                          final hasPredicted = widget
+                                              .hasPredicted(m);
 
                                           // Même logique LIVE que MatchCard (limité à 105 min)
-                                          final live = !m.isPlayed &&
+                                          final live =
+                                              !m.isPlayed &&
                                               now.isAfter(m.date) &&
-                                              now.isBefore(m.date.add(const Duration(minutes: 105)));
+                                              now.isBefore(
+                                                m.date.add(
+                                                  const Duration(minutes: 105),
+                                                ),
+                                              );
 
                                           // Mise en évidence équipe supportée — identique à MatchCard
-                                          final isUserTeam = widget.supportedTeamCode != null &&
-                                              (m.t1.toLowerCase() == widget.supportedTeamCode!.toLowerCase() ||
-                                                  m.t2.toLowerCase() == widget.supportedTeamCode!.toLowerCase());
+                                          final isUserTeam =
+                                              widget.supportedTeamCode !=
+                                                  null &&
+                                              (m.t1.toLowerCase() ==
+                                                      widget.supportedTeamCode!
+                                                          .toLowerCase() ||
+                                                  m.t2.toLowerCase() ==
+                                                      widget.supportedTeamCode!
+                                                          .toLowerCase());
 
                                           // Phase — identique à MatchCard
                                           final stageText = m.isKnockout
@@ -426,98 +523,167 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                           final Color predColor;
                                           final String tooltipMessage;
                                           if (m.isPlayed && hasPredicted) {
-                                            final predResult = widget.alertType?.call(m);
+                                            final predResult = widget.alertType
+                                                ?.call(m);
                                             if (predResult == 'exact') {
                                               predIcon = Icons.star_rounded;
                                               predColor = Colors.amber;
-                                              tooltipMessage = AppTranslations.get(widget.lang, 'exactScoreTooltip');
+                                              tooltipMessage =
+                                                  AppTranslations.get(
+                                                    widget.lang,
+                                                    'exactScoreTooltip',
+                                                  );
                                             } else if (predResult == 'winner') {
-                                              predIcon = Icons.check_circle_rounded;
+                                              predIcon =
+                                                  Icons.check_circle_rounded;
                                               predColor = Colors.greenAccent;
-                                              tooltipMessage = AppTranslations.get(widget.lang, 'correctWinnerTooltip');
+                                              tooltipMessage =
+                                                  AppTranslations.get(
+                                                    widget.lang,
+                                                    'correctWinnerTooltip',
+                                                  );
                                             } else {
                                               predIcon = Icons.cancel_rounded;
                                               predColor = Colors.redAccent;
-                                              tooltipMessage = AppTranslations.get(widget.lang, 'wrongPredictionTooltip');
+                                              tooltipMessage =
+                                                  AppTranslations.get(
+                                                    widget.lang,
+                                                    'wrongPredictionTooltip',
+                                                  );
                                             }
                                           } else if (hasPredicted) {
-                                            predIcon = Icons.check_circle_rounded;
+                                            predIcon =
+                                                Icons.check_circle_rounded;
                                             predColor = Colors.greenAccent;
-                                            tooltipMessage = AppTranslations.get(widget.lang, 'predictionSavedTooltip');
+                                            tooltipMessage =
+                                                AppTranslations.get(
+                                                  widget.lang,
+                                                  'predictionSavedTooltip',
+                                                );
                                           } else {
-                                            predIcon = Icons.pending_actions_rounded;
+                                            predIcon =
+                                                Icons.pending_actions_rounded;
                                             predColor = Colors.orangeAccent;
-                                            tooltipMessage = AppTranslations.get(widget.lang, 'predictionPendingTooltip');
+                                            tooltipMessage =
+                                                AppTranslations.get(
+                                                  widget.lang,
+                                                  'predictionPendingTooltip',
+                                                );
                                           }
 
                                           // Couleurs du bloc — isUserTeam prioritaire, puis hasAlert, puis défaut
                                           final blockColor = isUserTeam
-                                              ? AppColors.accent.withOpacity(0.06)
-                                              : (hasAlert ? const Color(0xFF0F2D21) : AppColors.border);
+                                              ? AppColors.accent.withValues(alpha:
+                                                  0.06,
+                                                )
+                                              : (hasAlert
+                                                    ? const Color(0xFF0F2D21)
+                                                    : AppColors.border);
                                           final borderColor = live
                                               ? AppColors.accent
                                               : (isUserTeam
-                                              ? AppColors.accent
-                                              : (hasAlert ? AppColors.accent : AppColors.borderMid));
-                                          final borderWidth = (live || isUserTeam) ? 2.0 : 1.5;
+                                                    ? AppColors.accent
+                                                    : (hasAlert
+                                                          ? AppColors.accent
+                                                          : AppColors
+                                                                .borderMid));
+                                          final borderWidth =
+                                              (live || isUserTeam) ? 2.0 : 1.5;
 
                                           return Positioned(
                                             top: topOffset + 2,
                                             left: colWidth * leftMargin,
-                                            width: colWidth * (widthFactor - 0.02),
+                                            width:
+                                                colWidth * (widthFactor - 0.02),
                                             height: blockHeight - 4,
                                             child: GestureDetector(
                                               onTap: () => widget.onMatchTap(m),
                                               child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 8,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: blockColor,
-                                                  borderRadius: BorderRadius.circular(14),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
                                                   border: Border.all(
                                                     color: borderColor,
                                                     width: borderWidth,
                                                   ),
                                                 ),
                                                 child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
                                                   children: [
                                                     // Header : heure (ou LIVE) + icônes
                                                     Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
                                                         if (live)
                                                           const Text(
                                                             '⚽ LIVE',
                                                             style: TextStyle(
-                                                              color: AppColors.accent,
+                                                              color: AppColors
+                                                                  .accent,
                                                               fontSize: 9,
-                                                              fontWeight: FontWeight.w900,
-                                                              letterSpacing: 0.8,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              letterSpacing:
+                                                                  0.8,
                                                             ),
                                                           )
                                                         else
                                                           Text(
                                                             m.getFormattedTime(),
                                                             style: const TextStyle(
-                                                              color: AppColors.textMuted,
+                                                              color: AppColors
+                                                                  .textMuted,
                                                               fontSize: 10,
-                                                              fontFamily: 'monospace',
-                                                              fontWeight: FontWeight.bold,
+                                                              fontFamily:
+                                                                  'monospace',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                             ),
                                                           ),
                                                         Row(
-                                                          mainAxisSize: MainAxisSize.min,
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
                                                           children: [
                                                             Tooltip(
-                                                              message: tooltipMessage,
-                                                              triggerMode: TooltipTriggerMode.tap,
-                                                              preferBelow: false,
-                                                              child: Icon(predIcon, color: predColor, size: 12),
+                                                              message:
+                                                                  tooltipMessage,
+                                                              triggerMode:
+                                                                  TooltipTriggerMode
+                                                                      .tap,
+                                                              preferBelow:
+                                                                  false,
+                                                              child: Icon(
+                                                                predIcon,
+                                                                color:
+                                                                    predColor,
+                                                                size: 12,
+                                                              ),
                                                             ),
                                                             if (hasAlert) ...[
-                                                              const SizedBox(width: 4),
-                                                              const Icon(Icons.notifications_active, color: AppColors.accent, size: 10),
+                                                              const SizedBox(
+                                                                width: 4,
+                                                              ),
+                                                              const Icon(
+                                                                Icons
+                                                                    .notifications_active,
+                                                                color: AppColors
+                                                                    .accent,
+                                                                size: 10,
+                                                              ),
                                                             ],
                                                           ],
                                                         ),
@@ -529,27 +695,48 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                       Text(
                                                         stageText,
                                                         style: const TextStyle(
-                                                          color: AppColors.textMuted,
+                                                          color: AppColors
+                                                              .textMuted,
                                                           fontSize: 9,
-                                                          fontWeight: FontWeight.w600,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
                                                         maxLines: 1,
-                                                        overflow: TextOverflow.ellipsis,
-                                                        textAlign: TextAlign.center,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        textAlign:
+                                                            TextAlign.center,
                                                       ),
 
                                                     // Équipe 1
                                                     Column(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         _buildFlag(m.t1),
-                                                        const SizedBox(height: 2),
+                                                        const SizedBox(
+                                                          height: 2,
+                                                        ),
                                                         Text(
-                                                          AppTranslations.getTeam(widget.lang, m.t1),
-                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, height: 1.1),
+                                                          AppTranslations.getTeam(
+                                                            widget.lang,
+                                                            m.t1,
+                                                          ),
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 11,
+                                                                height: 1.1,
+                                                              ),
                                                           maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          textAlign: TextAlign.center,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.center,
                                                         ),
                                                       ],
                                                     ),
@@ -557,37 +744,67 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                     // Score ou VS
                                                     m.isPlayed
                                                         ? Text(
-                                                      '${m.t1Score} - ${m.t2Score}',
-                                                      style: const TextStyle(
-                                                        color: AppColors.accent,
-                                                        fontWeight: FontWeight.w900,
-                                                        fontSize: 12,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    )
+                                                            '${m.t1Score} - ${m.t2Score}',
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: AppColors
+                                                                      .accent,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w900,
+                                                                  fontSize: 12,
+                                                                ),
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          )
                                                         : Text(
-                                                      'VS',
-                                                      style: TextStyle(
-                                                        color: AppColors.accent.withOpacity(0.5),
-                                                        fontWeight: FontWeight.w900,
-                                                        fontSize: 8.5,
-                                                        letterSpacing: 0.5,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
+                                                            'VS',
+                                                            style: TextStyle(
+                                                              color: AppColors
+                                                                  .accent
+                                                                  .withValues(alpha:
+                                                                    0.5,
+                                                                  ),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              fontSize: 8.5,
+                                                              letterSpacing:
+                                                                  0.5,
+                                                            ),
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
 
                                                     // Équipe 2
                                                     Column(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         _buildFlag(m.t2),
-                                                        const SizedBox(height: 2),
+                                                        const SizedBox(
+                                                          height: 2,
+                                                        ),
                                                         Text(
-                                                          AppTranslations.getTeam(widget.lang, m.t2),
-                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, height: 1.1),
+                                                          AppTranslations.getTeam(
+                                                            widget.lang,
+                                                            m.t2,
+                                                          ),
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 11,
+                                                                height: 1.1,
+                                                              ),
                                                           maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          textAlign: TextAlign.center,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.center,
                                                         ),
                                                       ],
                                                     ),
@@ -598,7 +815,8 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                           );
                                         }),
 
-                                        if (timelineNowTop != null && timelineNowDayIdx == dayIdx)
+                                        if (timelineNowTop != null &&
+                                            timelineNowDayIdx == dayIdx)
                                           Positioned(
                                             top: timelineNowTop,
                                             left: 0,
@@ -616,10 +834,13 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                   child: Container(
                                                     width: 10,
                                                     height: 10,
-                                                    decoration: const BoxDecoration(
-                                                      color: Colors.redAccent,
-                                                      shape: BoxShape.circle,
-                                                    ),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                          color:
+                                                              Colors.redAccent,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
                                                   ),
                                                 ),
                                               ],

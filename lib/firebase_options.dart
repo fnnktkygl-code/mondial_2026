@@ -14,7 +14,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        // FIX: Previously threw an UnsupportedError. 
+        // FIX: Previously threw an UnsupportedError.
         // We can safely return the macOS config here since it contains your iOS App ID and Bundle ID.
         return macos;
       case TargetPlatform.macOS:

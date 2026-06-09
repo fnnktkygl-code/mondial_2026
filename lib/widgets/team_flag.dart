@@ -30,12 +30,12 @@ class TeamFlagWidget extends StatelessWidget {
   /// Factory centralisée — à utiliser partout à la place de _buildFlag().
   /// Gère le placeholder "FIFA" et le cas TBD de façon unique.
   static Widget flag(
-      String code, {
-        required double width,
-        required double height,
-        double borderRadius = 8,
-        double boxShadowOpacity = 0.0,
-      }) {
+    String code, {
+    required double width,
+    required double height,
+    double borderRadius = 8,
+    double boxShadowOpacity = 0.0,
+  }) {
     final normalized = normalizeCode(code);
 
     if (!_isKnownCode(normalized) || normalized == 'tbd') {
@@ -74,7 +74,7 @@ class TeamFlagWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(boxShadowOpacity),
+              color: Colors.black.withValues(alpha: boxShadowOpacity),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

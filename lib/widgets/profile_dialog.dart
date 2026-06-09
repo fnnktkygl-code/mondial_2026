@@ -13,7 +13,10 @@ import 'team_flag.dart';
 import 'team_selector.dart';
 
 /// Chemins vers les images locales pour l avatar.
-final List<String> kAvatarOptions = List.generate(32, (index) => 'assets/avatars/${index + 1}.png');
+final List<String> kAvatarOptions = List.generate(
+  32,
+  (index) => 'assets/avatars/${index + 1}.png',
+);
 
 class UserProfileDialog extends StatefulWidget {
   final String lang;
@@ -53,8 +56,12 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.userPreds.username);
-    _scorerController = TextEditingController(text: widget.userPreds.goldenBootPlayer ?? '');
-    _assisterController = TextEditingController(text: widget.userPreds.topAssisterPlayer ?? '');
+    _scorerController = TextEditingController(
+      text: widget.userPreds.goldenBootPlayer,
+    );
+    _assisterController = TextEditingController(
+      text: widget.userPreds.topAssisterPlayer,
+    );
     _supportedTeam = widget.userPreds.supportedTeam;
     _championCode = widget.userPreds.championCode;
     _avatar = widget.userPreds.avatar;
@@ -76,7 +83,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.card,
-          title: Text(AppTranslations.get(widget.lang, 'resetProfile') ?? 'Reset Profile', style: const TextStyle(color: Colors.white)),
+          title: Text(
+            AppTranslations.get(widget.lang, 'resetProfile'),
+            style: const TextStyle(color: Colors.white),
+          ),
           content: Text(
             AppTranslations.get(widget.lang, 'resetProfileConfirm'),
             style: const TextStyle(color: AppColors.textSecondary),
@@ -84,12 +94,20 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+              child: Text(
+                AppTranslations.get(widget.lang, 'cancel'),
+                style: const TextStyle(color: AppColors.textDim),
+              ),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+              ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(AppTranslations.get(widget.lang, 'reset') ?? 'Reset', style: const TextStyle(color: Colors.white)),
+              child: Text(
+                AppTranslations.get(widget.lang, 'reset'),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -97,7 +115,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     );
 
     if (confirmed == true) {
-      print("[DEBUG RESET] Début du nettoyage du profil...");
+      // print removed
       widget.userPreds.matchPredictions.clear();
       widget.userPreds.championCode = null;
       widget.userPreds.goldenBootPlayer = null;
@@ -126,8 +144,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
       if (mounted) {
         widget.onSupportedTeamChanged(null);
-        widget.onSaved();
-        print("[DEBUG RESET] Profil réinitialisé localement et synchronisé sur Firebase.");
+        widget.onSaved(); // print removed
         Navigator.of(context).pop();
       }
     }
@@ -139,7 +156,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.card,
-          title: Text(AppTranslations.get(widget.lang, 'deleteProfile') ?? 'Delete Profile', style: const TextStyle(color: Colors.white)),
+          title: Text(
+            AppTranslations.get(widget.lang, 'deleteProfile'),
+            style: const TextStyle(color: Colors.white),
+          ),
           content: Text(
             AppTranslations.get(widget.lang, 'deleteProfileConfirm'),
             style: const TextStyle(color: AppColors.textSecondary),
@@ -147,12 +167,20 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+              child: Text(
+                AppTranslations.get(widget.lang, 'cancel'),
+                style: const TextStyle(color: AppColors.textDim),
+              ),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+              ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(AppTranslations.get(widget.lang, 'delete') ?? 'Delete', style: const TextStyle(color: Colors.white)),
+              child: Text(
+                AppTranslations.get(widget.lang, 'delete'),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -160,7 +188,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     );
 
     if (confirmed == true) {
-      print("[DEBUG DELETE] Début de suppression du compte...");
+      // print removed
       widget.userPreds.matchPredictions.clear();
       widget.userPreds.championCode = null;
       widget.userPreds.goldenBootPlayer = null;
@@ -184,8 +212,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
       if (mounted) {
         widget.onSupportedTeamChanged(null);
-        widget.onSaved();
-        print("[DEBUG DELETE] Compte supprimé et nettoyé.");
+        widget.onSaved(); // print removed
         Navigator.of(context).pop();
       }
     }
@@ -202,12 +229,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   }
 
   Widget _buildFlag(String code) {
-    return TeamFlagWidget(
-      code: code,
-      width: 32,
-      height: 22,
-      borderRadius: 6,
-    );
+    return TeamFlagWidget(code: code, width: 32, height: 22, borderRadius: 6);
   }
 
   Widget _buildTrophyBadge(String trophy) {
@@ -216,29 +238,52 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     IconData fallbackIcon = Icons.workspace_premium;
     Color fallbackColor = Colors.amber;
 
-    if (lower.contains('coupe du monde') || lower.contains('world cup') || lower.contains('copa mondial')) {
+    if (lower.contains('coupe du monde') ||
+        lower.contains('world cup') ||
+        lower.contains('copa mondial')) {
       assetPath = 'assets/logos/fifa_logo_light.png';
-    } else if (lower.contains('copa américa') || lower.contains('copa america')) {
+    } else if (lower.contains('copa américa') ||
+        lower.contains('copa america')) {
       assetPath = 'assets/badges/conmebol.png';
-    } else if (lower.contains('europe') || lower.contains('euro') || lower.contains('nations league') || lower.contains('ligue des nations de l\'uefa') || lower.contains('liga de naciones de la uefa')) {
+    } else if (lower.contains('europe') ||
+        lower.contains('euro') ||
+        lower.contains('nations league') ||
+        lower.contains('ligue des nations de l\'uefa') ||
+        lower.contains('liga de naciones de la uefa')) {
       if (lower.contains('uefa') || lower.contains('euro')) {
         assetPath = 'assets/badges/uefa.png';
       } else if (lower.contains('concacaf')) {
         assetPath = 'assets/badges/concacaf.png';
       }
-    } else if (lower.contains('afrique des nations') || lower.contains('africa cup') || lower.contains('copa africana') || lower.contains('chan')) {
+    } else if (lower.contains('afrique des nations') ||
+        lower.contains('africa cup') ||
+        lower.contains('copa africana') ||
+        lower.contains('chan')) {
       assetPath = 'assets/badges/caf.png';
-    } else if (lower.contains('asie') || lower.contains('asian cup') || lower.contains('copa asiática')) {
+    } else if (lower.contains('asie') ||
+        lower.contains('asian cup') ||
+        lower.contains('copa asiática')) {
       assetPath = 'assets/badges/afc.png';
-    } else if (lower.contains('confédérations') || lower.contains('confederations')) {
+    } else if (lower.contains('confédérations') ||
+        lower.contains('confederations')) {
       assetPath = 'assets/badges/coupe_des_confederations.png';
-    } else if (lower.contains('or de la concacaf') || lower.contains('gold cup') || lower.contains('copa de oro') || lower.contains('nations league concacaf') || lower.contains('ligue des nations concacaf')) {
+    } else if (lower.contains('or de la concacaf') ||
+        lower.contains('gold cup') ||
+        lower.contains('copa de oro') ||
+        lower.contains('nations league concacaf') ||
+        lower.contains('ligue des nations concacaf')) {
       assetPath = 'assets/badges/concacaf.png';
-    } else if (lower.contains('ofc') || lower.contains('océanie') || lower.contains('oceania')) {
+    } else if (lower.contains('ofc') ||
+        lower.contains('océanie') ||
+        lower.contains('oceania')) {
       assetPath = 'assets/badges/ofc.png';
-    } else if (lower.contains('arabe') || lower.contains('arab cup') || lower.contains('árabe')) {
+    } else if (lower.contains('arabe') ||
+        lower.contains('arab cup') ||
+        lower.contains('árabe')) {
       assetPath = 'assets/logos/fifa_logo_light.png';
-    } else if (lower.contains('olympique') || lower.contains('olympic') || lower.contains('olímpica')) {
+    } else if (lower.contains('olympique') ||
+        lower.contains('olympic') ||
+        lower.contains('olímpica')) {
       fallbackIcon = Icons.stars;
       fallbackColor = Colors.blue;
     }
@@ -249,7 +294,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         width: 16,
         height: 16,
         fit: BoxFit.contain,
-        errorBuilder: (context, err, stack) => Icon(fallbackIcon, color: fallbackColor, size: 12),
+        errorBuilder: (context, err, stack) =>
+            Icon(fallbackIcon, color: fallbackColor, size: 12),
       );
     }
 
@@ -267,7 +313,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         const SizedBox(height: 12),
         Text(
           AppTranslations.get(widget.lang, 'teamAchievements'),
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -289,7 +339,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   Flexible(
                     child: Text(
                       trophy,
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -308,7 +362,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         final c = code.toLowerCase();
         if (c == 'tbd') return false;
         if (c.contains(RegExp(r'[0-9]'))) return false;
-        if ((c.startsWith('w') || c.startsWith('l')) && c.length > 3) return false;
+        if ((c.startsWith('w') || c.startsWith('l')) && c.length > 3) {
+          return false;
+        }
         return true;
       }
 
@@ -317,25 +373,32 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     }
 
     final resultList = qualifiedCodes.toList()
-      ..sort((a, b) => AppTranslations.getTeam(widget.lang, a)
-          .compareTo(AppTranslations.getTeam(widget.lang, b)));
-
-    print("[DEBUG TEAMS] _getSortedTeams généré avec succès. Nombre de pays qualifiés détectés : ${resultList.length}");
+      ..sort(
+        (a, b) => AppTranslations.getTeam(
+          widget.lang,
+          a,
+        ).compareTo(AppTranslations.getTeam(widget.lang, b)),
+      ); // print removed
     return resultList;
   }
 
   Future<void> _confirmChampionSelection(String selectedCode) async {
-    print("[DEBUG CONFIRM] Ouverture du dialogue de confirmation pour le code pays : $selectedCode");
+    // print removed
     final teamName = AppTranslations.getTeam(widget.lang, selectedCode);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.card,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(kDialogRadius),
+          ),
           title: Text(
             AppTranslations.get(widget.lang, 'confirmWinnerTitle'),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -343,7 +406,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             children: [
               Text(
                 AppTranslations.get(widget.lang, 'confirmWinnerMsg'),
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 16),
               Row(
@@ -352,7 +418,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   const SizedBox(width: 10),
                   Text(
                     teamName,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -361,7 +431,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           actions: [
             TextButton(
               onPressed: () {
-                print("[DEBUG CONFIRM] Clic sur Annuler.");
+                // print removed
                 Navigator.of(context).pop(false);
               },
               child: Text(
@@ -371,13 +441,15 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             ),
             ElevatedButton(
               onPressed: () {
-                print("[DEBUG CONFIRM] Clic sur Confirmer.");
+                // print removed
                 Navigator.of(context).pop(true);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(kButtonRadius),
+                ),
               ),
               child: Text(
                 AppTranslations.get(widget.lang, 'confirm'),
@@ -389,21 +461,19 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       },
     );
 
-    print("[DEBUG CONFIRM] Fenêtre fermée. Résultat de la confirmation (confirmed) : $confirmed");
+    // print removed
 
     if (!mounted) return;
 
     if (confirmed == true) {
       setState(() {
-        _championCode = selectedCode;
-        print("[DEBUG STATE] _championCode mis à jour localement avec succès : $_championCode");
+        _championCode = selectedCode; // print removed
       });
     }
   }
 
   Future<void> _saveProfile() async {
-    FocusScope.of(context).unfocus();
-    print("[DEBUG SAVE] Bouton global Enregistrer cliqué.");
+    FocusScope.of(context).unfocus(); // print removed
 
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -412,10 +482,12 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     }
 
     final scorerInput = _scorerController.text.trim();
-    final bool isNewScorer = widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
+    final bool isNewScorer =
+        widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
 
     final assisterInput = _assisterController.text.trim();
-    final bool isNewAssister = widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty;
+    final bool isNewAssister =
+        widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty;
 
     if (isNewScorer && !kWC2026Players.contains(scorerInput)) {
       widget.showSnackBar(AppTranslations.get(widget.lang, 'scorerNotFound'));
@@ -432,26 +504,39 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         builder: (BuildContext context) {
           return AlertDialog(
             backgroundColor: AppColors.card,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(kDialogRadius),
+            ),
             title: Text(
               AppTranslations.get(widget.lang, 'confirmPredictions'),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             content: Text(
               AppTranslations.get(widget.lang, 'confirmPredictionsWarning'),
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(AppTranslations.get(widget.lang, 'cancel'), style: const TextStyle(color: AppColors.textDim)),
+                child: Text(
+                  AppTranslations.get(widget.lang, 'cancel'),
+                  style: const TextStyle(color: AppColors.textDim),
+                ),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(kButtonRadius),
+                  ),
                 ),
                 child: Text(
                   AppTranslations.get(widget.lang, 'confirm'),
@@ -484,19 +569,25 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         widget.userPreds.goldenBootPredictedAt = DateTime.now();
       }
 
-      if (widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty) {
+      if (widget.userPreds.topAssisterPlayer == null &&
+          assisterInput.isNotEmpty) {
         widget.userPreds.topAssisterPlayer = assisterInput;
         widget.userPreds.topAssisterPredictedAt = DateTime.now();
-      }
-
-      print("[DEBUG SAVE] Sauvegarde locale JSON via PredictionService...");
+      } // print removed
       await PredictionService.savePredictionData(widget.userPreds);
 
-      final totalPoints = PredictionService.calculateTotalPoints(widget.userPreds, widget.matches);
-      final streak = PredictionService.calculateActiveStreak(widget.userPreds, widget.matches);
-      final guruCount = PredictionService.calculateExactGuessesCount(widget.userPreds, widget.matches);
-
-      print("[DEBUG SAVE] Envoi et synchronisation Firestore en cours...");
+      final totalPoints = PredictionService.calculateTotalPoints(
+        widget.userPreds,
+        widget.matches,
+      );
+      final streak = PredictionService.calculateActiveStreak(
+        widget.userPreds,
+        widget.matches,
+      );
+      final guruCount = PredictionService.calculateExactGuessesCount(
+        widget.userPreds,
+        widget.matches,
+      ); // print removed
       await WCFirebaseService.syncUserProfile(
         username: name,
         supportedTeam: _supportedTeam,
@@ -511,11 +602,12 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
       widget.onSupportedTeamChanged(_supportedTeam);
       widget.onSaved();
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'saveSuccess'));
-      print("[DEBUG SAVE] Sauvegarde terminée avec succès, fermeture de la boîte de dialogue.");
+      widget.showSnackBar(
+        AppTranslations.get(widget.lang, 'saveSuccess'),
+      ); // print removed
       Navigator.of(context).pop();
     } catch (e) {
-      print("[DEBUG SAVE ERROR] Échec lors de la sauvegarde : $e");
+      // print removed
       widget.showSnackBar('Error saving profile: $e');
     } finally {
       if (mounted) {
@@ -528,22 +620,43 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final potentialChampPts = PredictionService.getPotentialChampionPoints(DateTime.now(), widget.matches);
-    final potentialScorerPts = PredictionService.getPotentialGoldenBootPoints(DateTime.now(), widget.matches);
-    final potentialAssisterPts = PredictionService.getPotentialTopAssisterPoints(DateTime.now(), widget.matches);
+    final potentialChampPts = PredictionService.getPotentialChampionPoints(
+      DateTime.now(),
+      widget.matches,
+    );
+    final potentialScorerPts = PredictionService.getPotentialGoldenBootPoints(
+      DateTime.now(),
+      widget.matches,
+    );
+    final potentialAssisterPts =
+        PredictionService.getPotentialTopAssisterPoints(
+          DateTime.now(),
+          widget.matches,
+        );
     final lockedChampPts = widget.userPreds.championCode != null
-        ? PredictionService.getPotentialChampionPoints(widget.userPreds.championPredictedAt, widget.matches)
+        ? PredictionService.getPotentialChampionPoints(
+            widget.userPreds.championPredictedAt,
+            widget.matches,
+          )
         : null;
     final lockedScorerPts = widget.userPreds.goldenBootPlayer != null
-        ? PredictionService.getPotentialGoldenBootPoints(widget.userPreds.goldenBootPredictedAt, widget.matches)
+        ? PredictionService.getPotentialGoldenBootPoints(
+            widget.userPreds.goldenBootPredictedAt,
+            widget.matches,
+          )
         : null;
     final lockedAssisterPts = widget.userPreds.topAssisterPlayer != null
-        ? PredictionService.getPotentialTopAssisterPoints(widget.userPreds.topAssisterPredictedAt, widget.matches)
+        ? PredictionService.getPotentialTopAssisterPoints(
+            widget.userPreds.topAssisterPredictedAt,
+            widget.matches,
+          )
         : null;
 
     return Dialog(
       backgroundColor: AppColors.card,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kDialogRadius),
+      ),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 450),
         padding: const EdgeInsets.all(24),
@@ -557,7 +670,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 children: [
                   Text(
                     AppTranslations.get(widget.lang, 'profileTitle'),
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -570,7 +687,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
               Text(
                 AppTranslations.get(widget.lang, 'avatar'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
 
@@ -586,14 +707,23 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: _avatar.isEmpty || !_avatar.contains('.png')
-                      ? const Icon(Icons.person, color: AppColors.textDim, size: 32)
+                      ? const Icon(
+                          Icons.person,
+                          color: AppColors.textDim,
+                          size: 32,
+                        )
                       : Image.asset(
-                    _avatar,
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.textDim, size: 32),
-                  ),
+                          _avatar,
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.person,
+                                color: AppColors.textDim,
+                                size: 32,
+                              ),
+                        ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -607,7 +737,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   final avatarPath = entry.value;
                   final isSelected = _avatar == avatarPath;
                   return Semantics(
-                    label: '${AppTranslations.get(widget.lang, 'avatar')} ${index + 1}',
+                    label:
+                        '${AppTranslations.get(widget.lang, 'avatar')} ${index + 1}',
                     selected: isSelected,
                     button: true,
                     child: GestureDetector(
@@ -617,9 +748,16 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : AppColors.surface,
+                          color: isSelected
+                              ? AppColors.accent.withValues(alpha: 0.15)
+                              : AppColors.surface,
                           borderRadius: BorderRadius.circular(kCardRadius),
-                          border: Border.all(color: isSelected ? AppColors.accent : AppColors.border, width: isSelected ? 2 : 1),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.accent
+                                : AppColors.border,
+                            width: isSelected ? 2 : 1,
+                          ),
                         ),
                         alignment: Alignment.center,
                         clipBehavior: Clip.antiAlias,
@@ -628,7 +766,12 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                           width: 56,
                           height: 56,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, size: 24, color: AppColors.textDim),
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.image_not_supported,
+                                size: 24,
+                                color: AppColors.textDim,
+                              ),
                         ),
                       ),
                     ),
@@ -643,17 +786,30 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 decoration: BoxDecoration(
                   color: AppColors.warning.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(kButtonRadius),
-                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 18),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppColors.warning,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        AppTranslations.get(widget.lang, 'winnerScorerWarningText'),
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.4),
+                        AppTranslations.get(
+                          widget.lang,
+                          'winnerScorerWarningText',
+                        ),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
@@ -662,7 +818,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
               Text(
                 AppTranslations.get(widget.lang, 'pseudoLabel'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -673,16 +833,35 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   filled: true,
                   hintText: AppTranslations.get(widget.lang, 'enterNickname'),
                   hintStyle: const TextStyle(color: AppColors.textDim),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kButtonRadius),
+                    borderSide: const BorderSide(
+                      color: AppColors.border,
+                      width: 1.5,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kButtonRadius),
+                    borderSide: const BorderSide(
+                      color: AppColors.accent,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
 
               Text(
                 AppTranslations.get(widget.lang, 'favoriteTeamLabel'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -690,13 +869,21 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         backgroundColor: AppColors.surface,
-                        side: const BorderSide(color: AppColors.border, width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+                        side: const BorderSide(
+                          color: AppColors.border,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(kButtonRadius),
+                        ),
                       ),
                       onPressed: () {
-                        print("[DEBUG BUTTON] Clic sur le bouton de sélection de l'Équipe Favorite.");
+                        // print removed
                         TeamSelectorBottomSheet.show(
                           context: context,
                           lang: widget.lang,
@@ -704,7 +891,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                           selectedTeamCode: _supportedTeam,
                           teamCodes: _getSortedTeams(),
                           onTeamSelected: (code) {
-                            print("[DEBUG BOTTOMSHEET] Équipe Favorite choisie dans le menu déroulant : $code");
+                            // print removed
                             setState(() {
                               _supportedTeam = code;
                             });
@@ -717,22 +904,38 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                             _buildFlag(_supportedTeam!),
                             const SizedBox(width: 12),
                             Text(
-                              AppTranslations.getTeam(widget.lang, _supportedTeam!),
-                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              AppTranslations.getTeam(
+                                widget.lang,
+                                _supportedTeam!,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ] else ...[
                             Text(
                               AppTranslations.get(widget.lang, 'chooseTeam'),
-                              style: const TextStyle(color: AppColors.textDim, fontSize: 16),
+                              style: const TextStyle(
+                                color: AppColors.textDim,
+                                fontSize: 16,
+                              ),
                             ),
                           ],
                           const Spacer(),
-                          const Icon(Icons.arrow_drop_down, color: AppColors.textDim),
+                          const Icon(
+                            Icons.arrow_drop_down,
+                            color: AppColors.textDim,
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  if (_supportedTeam != null && WCAudioService.instance.isValidCountry(_supportedTeam!)) ...[
+                  if (_supportedTeam != null &&
+                      WCAudioService.instance.isValidCountry(
+                        _supportedTeam!,
+                      )) ...[
                     const SizedBox(width: 8),
                     _buildAnthemPlayButton(_supportedTeam!),
                   ],
@@ -749,101 +952,166 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                     (widget.userPreds.championCode != null
                         ? ' (+$lockedChampPts pts max)'
                         : ' (Actuel : +$potentialChampPts pts max)'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
 
               widget.userPreds.championCode != null
                   ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(kButtonRadius),
-                  border: Border.all(color: AppColors.border, width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    _buildFlag(widget.userPreds.championCode!),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        AppTranslations.getTeam(widget.lang, widget.userPreds.championCode!),
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(kButtonRadius),
+                        border: Border.all(color: AppColors.border, width: 1.5),
                       ),
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.lock, color: AppColors.warning, size: 12),
-                          const SizedBox(width: 4),
-                          Text(
-                            '+$lockedChampPts pts',
-                            style: const TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold),
+                          _buildFlag(widget.userPreds.championCode!),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              AppTranslations.getTeam(
+                                widget.lang,
+                                widget.userPreds.championCode!,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.lock,
+                                  color: AppColors.warning,
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '+$lockedChampPts pts',
+                                  style: const TextStyle(
+                                    color: AppColors.warning,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        backgroundColor: AppColors.surface,
+                        side: BorderSide(
+                          color: _championCode != null
+                              ? AppColors.accent
+                              : AppColors.border,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(kButtonRadius),
+                        ),
+                      ),
+                      onPressed: () {
+                        // print removed
+                        TeamSelectorBottomSheet.show(
+                          context: context,
+                          lang: widget.lang,
+                          title: AppTranslations.get(
+                            widget.lang,
+                            'selectWinner',
+                          ),
+                          selectedTeamCode: _championCode,
+                          teamCodes: _getSortedTeams(),
+                          onTeamSelected: (code) {
+                            // print removed
+                            // Introduction d'un délai pour laisser le menu se fermer proprement
+                            Future.delayed(
+                              const Duration(milliseconds: 300),
+                              () {
+                                // print removed
+                                _confirmChampionSelection(code);
+                              },
+                            );
+                          },
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          if (_championCode != null) ...[
+                            _buildFlag(_championCode!),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppTranslations.getTeam(
+                                widget.lang,
+                                _championCode!,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ] else ...[
+                            Text(
+                              AppTranslations.get(widget.lang, 'selectWinner'),
+                              style: const TextStyle(
+                                color: AppColors.textDim,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                          const Spacer(),
+                          const Icon(
+                            Icons.arrow_drop_down,
+                            color: AppColors.textDim,
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              )
-                  : OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  backgroundColor: AppColors.surface,
-                  side: BorderSide(color: _championCode != null ? AppColors.accent : AppColors.border, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
-                ),
-                onPressed: () {
-                  print("[DEBUG BUTTON] Clic détecté sur le bouton du Vainqueur du tournoi.");
-                  TeamSelectorBottomSheet.show(
-                    context: context,
-                    lang: widget.lang,
-                    title: AppTranslations.get(widget.lang, 'selectWinner'),
-                    selectedTeamCode: _championCode,
-                    teamCodes: _getSortedTeams(),
-                    onTeamSelected: (code) {
-                      print("[DEBUG BOTTOMSHEET] Équipe gagnante sélectionnée dans la liste : $code");
-                      // Introduction d'un délai pour laisser le menu se fermer proprement
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        print("[DEBUG DELAY] Fin du délai d'attente de fermeture, appel du dialogue de confirmation.");
-                        _confirmChampionSelection(code);
-                      });
-                    },
-                  );
-                },
-                child: Row(
-                  children: [
-                    if (_championCode != null) ...[
-                      _buildFlag(_championCode!),
-                      const SizedBox(width: 12),
-                      Text(AppTranslations.getTeam(widget.lang, _championCode!),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                    ] else ...[
-                      Text(AppTranslations.get(widget.lang, 'selectWinner'),
-                          style: const TextStyle(color: AppColors.textDim, fontSize: 16)),
-                    ],
-                    const Spacer(),
-                    const Icon(Icons.arrow_drop_down, color: AppColors.textDim),
-                  ],
-                ),
-              ),
 
               if (_championCode != null) ...[
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.info_outline, color: AppColors.warning, size: 14),
+                    const Icon(
+                      Icons.info_outline,
+                      color: AppColors.warning,
+                      size: 14,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         AppTranslations.get(widget.lang, 'choiceFinalWarning'),
-                        style: const TextStyle(color: AppColors.warning, fontSize: 11),
+                        style: const TextStyle(
+                          color: AppColors.warning,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   ],
@@ -856,110 +1124,195 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                     (widget.userPreds.goldenBootPlayer != null
                         ? ' (+$lockedScorerPts pts max)'
                         : ' (Actuel : +$potentialScorerPts pts max)'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
 
               widget.userPreds.goldenBootPlayer != null
                   ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(kButtonRadius),
-                  border: Border.all(color: AppColors.border, width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.sports_soccer, color: Colors.white, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        widget.userPreds.goldenBootPlayer!,
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(kButtonRadius),
+                        border: Border.all(color: AppColors.border, width: 1.5),
                       ),
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.lock, color: AppColors.warning, size: 12),
-                          const SizedBox(width: 4),
-                          Text(
-                            '+$lockedScorerPts pts',
-                            style: const TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold),
+                          const Icon(
+                            Icons.sports_soccer,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              widget.userPreds.goldenBootPlayer!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.lock,
+                                  color: AppColors.warning,
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '+$lockedScorerPts pts',
+                                  style: const TextStyle(
+                                    color: AppColors.warning,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              )
+                    )
                   : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
-                      final query = textEditingValue.text.toLowerCase();
-                      return kWC2026Players.where((p) => p.toLowerCase().contains(query));
-                    },
-                    onSelected: (selection) => _scorerController.text = selection,
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      if (_scorerController.text.isNotEmpty && controller.text.isEmpty) {
-                        controller.text = _scorerController.text;
-                      }
-                      controller.addListener(() => _scorerController.text = controller.text);
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
-                        decoration: InputDecoration(
-                          fillColor: AppColors.surface,
-                          filled: true,
-                          hintText: AppTranslations.get(widget.lang, 'searchScorer'),
-                          prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kButtonRadius), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
-                        ),
-                      );
-                    },
-                    optionsViewBuilder: (context, onSelected, options) {
-                      return Align(
-                        alignment: Alignment.topLeft,
-                        child: Material(
-                          color: AppColors.card,
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(kButtonRadius),
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 200, maxWidth: 400),
-                            child: ListView.builder(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              itemCount: options.length,
-                              itemBuilder: (context, index) {
-                                final option = options.elementAt(index);
-                                return ListTile(
-                                  dense: true,
-                                  leading: const Icon(Icons.sports_soccer, color: AppColors.accent, size: 16),
-                                  title: Text(option, style: const TextStyle(color: Colors.white, fontSize: 13)),
-                                  onTap: () => onSelected(option),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return const Iterable<String>.empty();
+                            }
+                            final query = textEditingValue.text.toLowerCase();
+                            return kWC2026Players.where(
+                              (p) => p.toLowerCase().contains(query),
+                            );
+                          },
+                          onSelected: (selection) =>
+                              _scorerController.text = selection,
+                          fieldViewBuilder:
+                              (
+                                context,
+                                controller,
+                                focusNode,
+                                onEditingComplete,
+                              ) {
+                                if (_scorerController.text.isNotEmpty &&
+                                    controller.text.isEmpty) {
+                                  controller.text = _scorerController.text;
+                                }
+                                controller.addListener(
+                                  () =>
+                                      _scorerController.text = controller.text,
+                                );
+                                return TextField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  onEditingComplete: onEditingComplete,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                  decoration: InputDecoration(
+                                    fillColor: AppColors.surface,
+                                    filled: true,
+                                    hintText: AppTranslations.get(
+                                      widget.lang,
+                                      'searchScorer',
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search,
+                                      color: AppColors.textDim,
+                                      size: 18,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        kButtonRadius,
+                                      ),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.border,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        kButtonRadius,
+                                      ),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.accent,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
                                 );
                               },
-                            ),
-                          ),
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+                              child: Material(
+                                color: AppColors.card,
+                                elevation: 4,
+                                borderRadius: BorderRadius.circular(
+                                  kButtonRadius,
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxHeight: 200,
+                                    maxWidth: 400,
+                                  ),
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    itemCount: options.length,
+                                    itemBuilder: (context, index) {
+                                      final option = options.elementAt(index);
+                                      return ListTile(
+                                        dense: true,
+                                        leading: const Icon(
+                                          Icons.sports_soccer,
+                                          color: AppColors.accent,
+                                          size: 16,
+                                        ),
+                                        title: Text(
+                                          option,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        onTap: () => onSelected(option),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                      ],
+                    ),
 
               const SizedBox(height: 20),
               Text(
@@ -967,82 +1320,139 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                     (widget.userPreds.topAssisterPlayer != null
                         ? ' (+$lockedAssisterPts pts max)'
                         : ' (Actuel : +$potentialAssisterPts pts max)'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
 
               widget.userPreds.topAssisterPlayer != null
                   ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border, width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.white, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        widget.userPreds.topAssisterPlayer!,
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border, width: 1.5),
                       ),
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.lock, color: AppColors.warning, size: 12),
-                          const SizedBox(width: 4),
-                          Text(
-                            '+$lockedAssisterPts pts',
-                            style: const TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold),
+                          const Icon(Icons.star, color: Colors.white, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              widget.userPreds.topAssisterPlayer!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.lock,
+                                  color: AppColors.warning,
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '+$lockedAssisterPts pts',
+                                  style: const TextStyle(
+                                    color: AppColors.warning,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              )
+                    )
                   : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
-                      final query = textEditingValue.text.toLowerCase();
-                      return kWC2026Players.where((p) => p.toLowerCase().contains(query));
-                    },
-                    onSelected: (selection) => _assisterController.text = selection,
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      if (_assisterController.text.isNotEmpty && controller.text.isEmpty) {
-                        controller.text = _assisterController.text;
-                      }
-                      controller.addListener(() => _assisterController.text = controller.text);
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
-                        decoration: InputDecoration(
-                          fillColor: AppColors.surface,
-                          filled: true,
-                          hintText: AppTranslations.get(widget.lang, 'searchAssister'),
-                          prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.accent)),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return const Iterable<String>.empty();
+                            }
+                            final query = textEditingValue.text.toLowerCase();
+                            return kWC2026Players.where(
+                              (p) => p.toLowerCase().contains(query),
+                            );
+                          },
+                          onSelected: (selection) =>
+                              _assisterController.text = selection,
+                          fieldViewBuilder:
+                              (
+                                context,
+                                controller,
+                                focusNode,
+                                onEditingComplete,
+                              ) {
+                                if (_assisterController.text.isNotEmpty &&
+                                    controller.text.isEmpty) {
+                                  controller.text = _assisterController.text;
+                                }
+                                controller.addListener(
+                                  () => _assisterController.text =
+                                      controller.text,
+                                );
+                                return TextField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  onEditingComplete: onEditingComplete,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                  decoration: InputDecoration(
+                                    fillColor: AppColors.surface,
+                                    filled: true,
+                                    hintText: AppTranslations.get(
+                                      widget.lang,
+                                      'searchAssister',
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search,
+                                      color: AppColors.textDim,
+                                      size: 18,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.border,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.accent,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                      ],
+                    ),
 
               const SizedBox(height: 24),
 
@@ -1050,12 +1460,15 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    AppTranslations.get(widget.lang, 'hideFromGlobalLeaderboard'),
+                    AppTranslations.get(
+                      widget.lang,
+                      'hideFromGlobalLeaderboard',
+                    ),
                     style: const TextStyle(color: Colors.white, fontSize: 13),
                   ),
                   Switch(
                     value: _isHidden,
-                    activeColor: AppColors.accent,
+                    activeThumbColor: AppColors.accent,
                     onChanged: (val) {
                       setState(() {
                         _isHidden = val;
@@ -1071,18 +1484,32 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 children: [
                   TextButton.icon(
                     onPressed: _resetProfile,
-                    icon: const Icon(Icons.refresh, color: AppColors.danger, size: 16),
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: AppColors.danger,
+                      size: 16,
+                    ),
                     label: Text(
-                      AppTranslations.get(widget.lang, 'reset') ?? 'Reset',
-                      style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                      AppTranslations.get(widget.lang, 'reset'),
+                      style: const TextStyle(
+                        color: AppColors.danger,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                   TextButton.icon(
                     onPressed: _deleteProfile,
-                    icon: const Icon(Icons.delete, color: AppColors.danger, size: 16),
+                    icon: const Icon(
+                      Icons.delete,
+                      color: AppColors.danger,
+                      size: 16,
+                    ),
                     label: Text(
-                      AppTranslations.get(widget.lang, 'delete') ?? 'Delete',
-                      style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                      AppTranslations.get(widget.lang, 'delete'),
+                      style: const TextStyle(
+                        color: AppColors.danger,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
@@ -1095,12 +1522,27 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(kButtonRadius),
+                  ),
                   elevation: 0,
                 ),
                 child: _isSaving
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.0))
-                    : Text(AppTranslations.get(widget.lang, 'save'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                          strokeWidth: 2.0,
+                        ),
+                      )
+                    : Text(
+                        AppTranslations.get(widget.lang, 'save'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -1114,7 +1556,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     return ValueListenableBuilder<String?>(
       valueListenable: audioService.currentPlayingTeamCode,
       builder: (context, playingCode, _) {
-        final isThis = playingCode == teamCode.toLowerCase().replaceAll('g_', '');
+        final isThis =
+            playingCode == teamCode.toLowerCase().replaceAll('g_', '');
         return ValueListenableBuilder<PlayerState>(
           valueListenable: audioService.playerState,
           builder: (context, state, _) {
@@ -1137,7 +1580,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.accent,
+                        ),
                       ),
                     ),
                   );
@@ -1152,11 +1597,20 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: isThis ? AppColors.accent.withValues(alpha: 0.1) : AppColors.surface,
+                        color: isThis
+                            ? AppColors.accent.withValues(alpha: 0.1)
+                            : AppColors.surface,
                         borderRadius: BorderRadius.circular(kButtonRadius),
-                        border: Border.all(color: isThis ? AppColors.accent : AppColors.border, width: 1.5),
+                        border: Border.all(
+                          color: isThis ? AppColors.accent : AppColors.border,
+                          width: 1.5,
+                        ),
                       ),
-                      child: Icon(isPlaying ? Icons.pause_rounded : Icons.music_note, color: isThis ? AppColors.accent : AppColors.textMuted, size: 26),
+                      child: Icon(
+                        isPlaying ? Icons.pause_rounded : Icons.music_note,
+                        color: isThis ? AppColors.accent : AppColors.textMuted,
+                        size: 26,
+                      ),
                     ),
                   ),
                 );

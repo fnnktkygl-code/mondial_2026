@@ -17,7 +17,9 @@ class TeamGroupStats {
 
 class WCOddsService {
   /// Calculates title winning odds (probabilities) for all teams based on current match states.
-  static Map<String, double> calculateOdds(List<WorldCupMatch> resolvedMatches) {
+  static Map<String, double> calculateOdds(
+    List<WorldCupMatch> resolvedMatches,
+  ) {
     // 1. Gather all unique team codes
     final Set<String> allTeams = {};
     for (final m in resolvedMatches) {
@@ -53,13 +55,22 @@ class WCOddsService {
 
     // 3. Short-circuit: If the Final (m80) is finished, that team is 100%, others 0%
     final finalMatch = resolvedMatches.firstWhere(
-          (m) => m.id == kFinalMatchId,
-      orElse: () => resolvedMatches.lastWhere((m) => m.isKnockout, orElse: () => resolvedMatches.last),
+      (m) => m.id == kFinalMatchId,
+      orElse: () => resolvedMatches.lastWhere(
+        (m) => m.isKnockout,
+        orElse: () => resolvedMatches.last,
+      ),
     );
 
     if (finalMatch.id == kFinalMatchId && finalMatch.isPlayed) {
       final Map<String, double> result = {};
-      final winner = matchWinners[kFinalMatchId] ?? (finalMatch.pkWinner ?? finalMatch.etWinner)?.toLowerCase() ?? (finalMatch.t1Score! > finalMatch.t2Score! ? finalMatch.t1 : finalMatch.t2).toLowerCase();
+      final winner =
+          matchWinners[kFinalMatchId] ??
+          (finalMatch.pkWinner ?? finalMatch.etWinner)?.toLowerCase() ??
+          (finalMatch.t1Score! > finalMatch.t2Score!
+                  ? finalMatch.t1
+                  : finalMatch.t2)
+              .toLowerCase();
 
       for (final t in allTeams) {
         result[t] = (t == winner) ? 100.0 : 0.0;
@@ -89,8 +100,11 @@ class WCOddsService {
         TeamGroupStats? t2Entry;
 
         for (final e in list) {
-          if (e.teamCode == t1Lower) t1Entry = e;
-          else if (e.teamCode == t2Lower) t2Entry = e;
+          if (e.teamCode == t1Lower) {
+            t1Entry = e;
+          } else if (e.teamCode == t2Lower) {
+            t2Entry = e;
+          }
         }
 
         if (t1Entry == null) {
@@ -146,14 +160,17 @@ class WCOddsService {
 
     // B. Group finished and team is 4th
     groupStandings.forEach((grp, list) {
-      final int groupPlayedCount = resolvedMatches.where((m) => m.group == grp && m.isPlayed).length;
+      final int groupPlayedCount = resolvedMatches
+          .where((m) => m.group == grp && m.isPlayed)
+          .length;
       if (groupPlayedCount == 6 && list.length >= 4) {
         eliminatedTeams.add(list[3].teamCode.toLowerCase());
       }
     });
 
     // C. Group Stage entirely finished and team not in Round of 32
-    final bool groupStageFinished = totalGroupMatchesPlayed == totalGroupMatches && totalGroupMatches > 0;
+    final bool groupStageFinished =
+        totalGroupMatchesPlayed == totalGroupMatches && totalGroupMatches > 0;
     if (groupStageFinished) {
       final Set<String> r32Teams = {};
       for (final m in resolvedMatches) {
@@ -181,10 +198,15 @@ class WCOddsService {
         final t2 = m.t2.toLowerCase();
 
         int stageVal = 1; // Round of 32
-        if (m.stage == 'Round of 16') stageVal = 2;
-        else if (m.stage == 'Quarter-Final') stageVal = 3;
-        else if (m.stage == 'Semi-Final') stageVal = 4;
-        else if (m.stage == 'Final') stageVal = 5;
+        if (m.stage == 'Round of 16') {
+          stageVal = 2;
+        } else if (m.stage == 'Quarter-Final') {
+          stageVal = 3;
+        } else if (m.stage == 'Semi-Final') {
+          stageVal = 4;
+        } else if (m.stage == 'Final') {
+          stageVal = 5;
+        }
 
         if (t1 != 'tbd') {
           teamHighestStage[t1] = max(teamHighestStage[t1] ?? 0, stageVal);
@@ -254,9 +276,11 @@ class WCOddsService {
         normalizedOdds[lowerTeam] = 0.0;
       } else {
         if (totalWeight > 0.0) {
-          normalizedOdds[lowerTeam] = (weights[lowerTeam]! / totalWeight) * 100.0;
+          normalizedOdds[lowerTeam] =
+              (weights[lowerTeam]! / totalWeight) * 100.0;
         } else {
-          normalizedOdds[lowerTeam] = 100.0 / (activeCount > 0 ? activeCount : 1);
+          normalizedOdds[lowerTeam] =
+              100.0 / (activeCount > 0 ? activeCount : 1);
         }
       }
     }

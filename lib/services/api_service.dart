@@ -8,13 +8,14 @@ import '../app_constants.dart';
 class ApiService {
   static const String _cacheKey = kMatchesCacheKey;
   static const String _lastUpdatedKey = 'wc_matches_last_updated';
-  static const String _metaCacheKey = 'wc_matches_meta';
 
   /// Load tournament matches. Priority:
   /// 1. Local SharedPreferences cache (if fresh enough)
   /// 2. Remote GitHub raw JSON (committed by GitHub Actions)
   /// 3. Bundled asset initial_matches.json
-  static Future<List<WorldCupMatch>> loadMatches({bool forceRefresh = false}) async {
+  static Future<List<WorldCupMatch>> loadMatches({
+    bool forceRefresh = false,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
 
     // 1. Try local cache
@@ -31,10 +32,15 @@ class ApiService {
     // 2. Fall back to bundled asset if cache is empty
     if (matches == null || matches.isEmpty) {
       try {
-        final assetJson = await rootBundle.loadString('assets/initial_matches.json');
+        final assetJson = await rootBundle.loadString(
+          'assets/initial_matches.json',
+        );
         matches = _parseMatchesJson(assetJson);
         await prefs.setString(_cacheKey, assetJson);
-        await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
+        await prefs.setString(
+          _lastUpdatedKey,
+          DateTime.now().toIso8601String(),
+        );
       } catch (e) {
         matches = [];
       }
@@ -42,7 +48,8 @@ class ApiService {
 
     // 3. Fetch remote update (always try, skip if cached < 5 min old and not forced)
     final lastFetch = prefs.getString(_lastUpdatedKey);
-    final bool shouldFetch = forceRefresh ||
+    final bool shouldFetch =
+        forceRefresh ||
         cachedJson == null ||
         (lastFetch != null &&
             DateTime.now().difference(DateTime.parse(lastFetch)) >
@@ -65,16 +72,17 @@ class ApiService {
   /// Fetch schedule updates from the remote GitHub JSON.
   static Future<List<WorldCupMatch>> fetchRemoteMatches() async {
     try {
-      final response = await http
-          .get(Uri.parse(kApiUrl))
-          .timeout(kApiTimeout);
+      final response = await http.get(Uri.parse(kApiUrl)).timeout(kApiTimeout);
       if (response.statusCode == 200) {
         final jsonStr = response.body;
         final matches = _parseMatchesJson(jsonStr);
         if (matches.isNotEmpty) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_cacheKey, jsonStr);
-          await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
+          await prefs.setString(
+            _lastUpdatedKey,
+            DateTime.now().toIso8601String(),
+          );
           return matches;
         }
       }
@@ -89,7 +97,11 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString(_lastUpdatedKey);
     if (str == null) return null;
-    try { return DateTime.parse(str); } catch (_) { return null; }
+    try {
+      return DateTime.parse(str);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Save matches to the local cache (used by the simulator).
@@ -117,7 +129,8 @@ class ApiService {
     return decoded.map((item) {
       final map = Map<String, dynamic>.from(item as Map);
       final stage = map['stage'] as String?;
-      final isKnockout = map['isKnockout'] as bool? ?? (stage != null && stage.isNotEmpty);
+      final isKnockout =
+          map['isKnockout'] as bool? ?? (stage != null && stage.isNotEmpty);
 
       if (isKnockout) {
         String newId = map['id'] as String;

@@ -10,16 +10,16 @@ void main() {
 
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
-    addTearDown(() { tester.view.resetPhysicalSize(); tester.view.resetDevicePixelRatio(); });
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     // Pump WCTeamProfileDialog for Germany 'de'
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: WCTeamProfileDialog(
-            teamCode: 'de',
-            lang: 'fr',
-          ),
+          body: WCTeamProfileDialog(teamCode: 'de', lang: 'fr'),
         ),
       ),
     );
