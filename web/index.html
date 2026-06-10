@@ -243,7 +243,7 @@
         width: 100%;
         height: 100%;
         -webkit-backface-visibility: hidden;
-        backfaceface-visibility: hidden;
+        backface-visibility: hidden;
         border-radius: var(--radius-lg);
         overflow: hidden;
         border: 2px solid var(--border);
@@ -297,7 +297,7 @@
       background: var(--card); border: 2px solid var(--border);
       border-radius: var(--radius-xl); padding: 40px; overflow: hidden; position: relative;
     }
-    .scoring-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .scoring-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
     .scoring-row:last-child { border-bottom: none; }
     .scoring-label { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); font-weight: 500; }
     .scoring-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--accent); }
@@ -348,6 +348,15 @@
     
     .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
     .reveal.visible { opacity: 1; transform: none; }
+    
+    .video-showcase {
+        max-width: 960px; margin: 80px auto 0;
+        border-radius: 40px; overflow: hidden;
+        border: 3px solid var(--border-mid);
+        box-shadow: 0 60px 120px rgba(0,0,0,0.7);
+        background: #000; position: relative;
+    }
+    .video-showcase video { width: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -406,8 +415,7 @@
     <div class="device-phone reveal">
       <div class="device-notch"></div>
       <div class="device-screen">
-        <img src="screenshots/01_home.png" alt="Accueil App" onerror="this.style.display='none';">
-        <div class="screen-mock" style="position:absolute; z-index:-1;"></div> <!-- Fallback mock -->
+        <img src="screenshots/01_home.jpeg" alt="Accueil App">
       </div>
     </div>
 
@@ -416,16 +424,14 @@
         <span>⚽ Prono Challenge — Bracket interactif</span>
       </div>
       <div class="device-tablet-screen">
-         <img src="screenshots/04_bracket_desktop.png" alt="Bracket Desktop" onerror="this.style.display='none';">
-         <div class="screen-mock" style="position:absolute; z-index:-1;"></div>
+         <img src="screenshots/04_bracket_desktop.png" alt="Bracket Desktop">
       </div>
     </div>
 
     <div class="device-phone featured reveal">
       <div class="device-notch"></div>
       <div class="device-screen">
-        <img src="screenshots/03_leaderboard.png" alt="Classement App" onerror="this.style.display='none';">
-        <div class="screen-mock" style="position:absolute; z-index:-1;"></div>
+        <img src="screenshots/03_leaderboard.jpeg" alt="Classement App">
       </div>
     </div>
   </div>
@@ -452,7 +458,7 @@
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <img src="screenshots/02_match_detail.png" alt="Détail Match">
+            <img src="screenshots/02_match_detail.jpeg" alt="Détail Match">
           </div>
         </div>
       </div>
@@ -467,7 +473,7 @@
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <img src="screenshots/06_groups.png" alt="Groupes Privés">
+            <img src="screenshots/06_groups.jpeg" alt="Groupes Privés">
           </div>
         </div>
       </div>
@@ -482,7 +488,7 @@
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <img src="screenshots/05_team_profile.png" alt="Profil Équipe">
+            <img src="screenshots/05_team_profile.jpeg" alt="Profil Équipe">
           </div>
         </div>
       </div>
@@ -513,12 +519,12 @@
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <img src="screenshots/08_stats.png" alt="Statistiques">
+            <img src="screenshots/08_stats.jpeg" alt="Statistiques">
           </div>
         </div>
       </div>
 
-      <!-- LIGNE 3: 1 DESKTOP (2 cols) sous le précédent -->
+      <!-- LIGNE 3: 1 DESKTOP (2 cols) -->
       <!-- Card 6: Calendrier (DESKTOP) -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
@@ -529,10 +535,57 @@
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
           <div class="flip-card-back">
-            <img src="screenshots/09_calendar_desktop.png" alt="Calendrier Desktop">
+            <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop">
           </div>
         </div>
       </div>
+
+      <!-- Card 7: Hymnes (Mobile) -->
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">🎵</div>
+            <h3 class="feature-title">Hymnes Nationaux</h3>
+            <p class="feature-desc">Écoutez les hymnes officiels de chaque nation directement dans l'application.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/hymnes.jpeg" alt="Hymnes">
+          </div>
+        </div>
+      </div>
+
+      <!-- LIGNE 4: 1 DESKTOP (2 cols) pour terminer proprement -->
+      <!-- Card 8: Pools (DESKTOP) -->
+      <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">🔢</div>
+            <h3 class="feature-title">Phase de Groupes</h3>
+            <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
+            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/pool_desktop.png" alt="Pools Desktop">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO SHOWCASE -->
+<section id="video" style="padding-bottom: 120px;">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="tag section-tag">Démo</div>
+      <h2 class="section-title">Vois l'app en action</h2>
+    </div>
+    <div class="video-showcase reveal">
+        <video controls poster="assets/app_icon.png">
+            <source src="videos/demo.mov" type="video/quicktime">
+            Votre navigateur ne supporte pas la lecture de vidéos.
+        </video>
     </div>
   </div>
 </section>
