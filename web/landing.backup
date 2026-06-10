@@ -96,7 +96,7 @@
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center;
-      padding: 100px 24px 60px;
+      padding: 80px 24px 40px;
       position: relative;
       overflow: hidden;
     }
@@ -124,12 +124,12 @@
     }
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
-      max-width: 600px; margin: 0 auto 40px;
+      max-width: 600px; margin: 0 auto 32px;
       font-weight: 400;
     }
     .hero-actions {
       display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-      margin-bottom: 64px;
+      margin-bottom: 48px;
     }
     .btn-primary {
       background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 100px; top: 16%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
+    .logo-hero { width: 100px; top: 11%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -190,8 +190,9 @@
       aspect-ratio: 9/19.5;
       display: flex; align-items: center; justify-content: center;
       position: relative; overflow: hidden;
+      background: #000;
     }
-    .device-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .device-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     .device-tablet {
       flex: 1; min-width: 0; max-width: 500px;
@@ -210,7 +211,7 @@
     .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #000; }
     .device-tablet-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-    /* ─── FEATURES FLIP CARDS ───────────────────────────── */
+    /* ─── FEATURES FLIP CARDS (High-Fidelity Phone Render) ── */
     #features { background: var(--surface); padding: 120px 0; }
     .features-header { text-align: center; margin-bottom: 80px; }
     .features-grid { 
@@ -222,16 +223,21 @@
     
     .flip-card {
         background-color: transparent;
-        height: 460px;
-        perspective: 1000px;
+        height: 500px;
+        perspective: 1200px;
         cursor: pointer;
+    }
+
+    .flip-card.desktop {
+        grid-column: span 2;
+        height: auto;
+        aspect-ratio: 16 / 10;
     }
     
     .flip-card-inner {
         position: relative;
         width: 100%;
         height: 100%;
-        text-align: center;
         transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         transform-style: preserve-3d;
     }
@@ -246,9 +252,22 @@
         height: 100%;
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-        border-radius: var(--radius-lg);
         overflow: hidden;
-        border: 2px solid var(--border);
+    }
+    
+    /* Front & Back chassis styling to match Hero devices */
+    .flip-card:not(.desktop) .flip-card-front,
+    .flip-card:not(.desktop) .flip-card-back {
+        border-radius: 36px;
+        border: 1.5px solid var(--border-mid);
+        box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    /* Notch for all Mobile cards */
+    .card-notch {
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        width: 80px; height: 22px; background: #000;
+        border-radius: 0 0 14px 14px; z-index: 10;
     }
     
     .flip-card-front {
@@ -258,9 +277,10 @@
         align-items: center;
         justify-content: center;
         padding: 40px;
+        text-align: center;
     }
     
-    .flip-card-back {
+    .flip-card:not(.desktop) .flip-card-back {
         background: #000;
         transform: rotateY(180deg);
     }
@@ -268,13 +288,20 @@
     .flip-card-back img {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Prevents cropping on all screen sizes */
-        background: #000;
-    }
-    
-    .flip-card.desktop .flip-card-back img {
         object-fit: contain;
         background: #000;
+        display: block;
+    }
+    
+    .flip-card.desktop .flip-card-front,
+    .flip-card.desktop .flip-card-back {
+        border-radius: 24px;
+        border: 1.5px solid var(--border-mid);
+        background: #000;
+    }
+
+    .flip-card.desktop .flip-card-back {
+        transform: rotateY(180deg);
     }
     
     .feature-icon {
@@ -287,8 +314,6 @@
     .feature-desc { color: var(--text-3); font-size: 16px; line-height: 1.6; }
     .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Desktop version for specific cards */
-    .flip-card.desktop { height: 460px; grid-column: span 2; }
     @media (max-width: 1100px) {
         .features-grid { grid-template-columns: repeat(2, 1fr); }
         .flip-card.desktop { grid-column: span 2; }
@@ -297,6 +322,66 @@
         .features-grid { grid-template-columns: 1fr; }
         .flip-card.desktop { grid-column: span 1; height: 460px; } 
     }
+
+    /* ─── MACBOOK VIDEO SHOWCASE (High-Fidelity Image Base) ─── */
+    .macbook-showcase {
+        max-width: 1000px;
+        margin: 60px auto 0;
+        position: relative;
+        filter: drop-shadow(0 40px 100px rgba(0,0,0,0.6));
+    }
+
+    .macbook-image {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* Precise video overlay for assets/macbook.png */
+    .macbook-screen-overlay {
+        position: absolute;
+        top: 7.2%; 
+        left: 12.8%;
+        width: 74.4%; 
+        height: 74.8%;
+        background: #000;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .macbook-screen-overlay video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Keyboard letter glows on top of image */
+    .kb-glow-container {
+        position: absolute;
+        bottom: 8%;
+        left: 20%;
+        right: 20%;
+        height: 15%;
+        pointer-events: none;
+        display: grid;
+        grid-template-columns: repeat(15, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 2px;
+        opacity: 0.8;
+    }
+
+    .kb-dot {
+        background: var(--accent);
+        border-radius: 50%;
+        filter: blur(4px);
+        box-shadow: 0 0 10px var(--accent);
+        width: 5px; height: 5px;
+        margin: auto;
+        opacity: 0;
+    }
+
+    .kb-dot.active { opacity: 1; animation: pulse 2s infinite; background: #FFF; box-shadow: 0 0 12px #FFF, 0 0 20px var(--accent); }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
     /* ─── SCORING ─────────────────────────────────────────── */
     #scoring { padding: 120px 0; }
@@ -345,26 +430,8 @@
     footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
     footer strong { color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; }
 
-    /* ─── RESPONSIVE ─────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .nav-links { display: none; }
-      .scoring-layout { grid-template-columns: 1fr; gap: 40px; }
-      .hero-devices { flex-direction: column; align-items: center; }
-      .device-tablet { width: 100%; max-width: 480px; }
-      .float-asset { display: none; }
-    }
-    
     .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
     .reveal.visible { opacity: 1; transform: none; }
-    
-    .video-showcase {
-        max-width: 960px; margin: 80px auto 0;
-        border-radius: 40px; overflow: hidden;
-        border: 3px solid var(--border-mid);
-        box-shadow: 0 60px 120px rgba(0,0,0,0.7);
-        background: #000; position: relative;
-    }
-    .video-showcase video { width: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -390,7 +457,7 @@
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
 
-  <!-- Actifs flottants (Mascottes & Logo) -->
+  <!-- Actifs flottants -->
   <img src="assets/mascots/clutch.png" alt="Clutch" class="float-asset mascot-clutch">
   <img src="assets/mascots/maple.png" alt="Maple" class="float-asset mascot-maple">
   <img src="assets/mascots/zayu.png" alt="Zayu" class="float-asset mascot-zayu">
@@ -459,12 +526,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">🎯</div>
             <h3 class="feature-title">Score exact</h3>
             <p class="feature-desc">Prédisez le score final. Verrouillage automatique au coup d'envoi pour une équité totale.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/02_match_detail.jpeg" alt="Détail Match">
           </div>
         </div>
@@ -473,12 +542,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">👥</div>
             <h3 class="feature-title">Ligues privées</h3>
             <p class="feature-desc">Créez votre groupe, invitez vos amis et dominez votre classement interne.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/06_groups.jpeg" alt="Groupes Privés">
           </div>
         </div>
@@ -487,12 +558,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">🌍</div>
             <h3 class="feature-title">Équipes & Hymnes</h3>
             <p class="feature-desc">Découvrez les 48 nations avec leurs hymnes nationaux et statistiques complètes.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/05_team_profile.jpeg" alt="Profil Équipe">
           </div>
         </div>
@@ -501,7 +574,7 @@
       <!-- LIGNE 2: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front">
+          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
             <div class="feature-icon">🏆</div>
             <h3 class="feature-title">Tableau Final Interactif</h3>
             <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
@@ -516,12 +589,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">📈</div>
             <h3 class="feature-title">Probabilités Live</h3>
             <p class="feature-desc">Analyse des cotes et probabilités FIFA en temps réel pour chaque rencontre.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/08_stats.jpeg" alt="Statistiques">
           </div>
         </div>
@@ -530,7 +605,7 @@
       <!-- LIGNE 3: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front">
+          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
             <div class="feature-icon">📅</div>
             <h3 class="feature-title">Calendrier Global</h3>
             <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
@@ -545,12 +620,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">🎵</div>
             <h3 class="feature-title">Hymnes Nationaux</h3>
             <p class="feature-desc">Écoutez les hymnes officiels de chaque nation directement dans l'application.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/hymnes.jpeg" alt="Hymnes">
           </div>
         </div>
@@ -559,7 +636,7 @@
       <!-- LIGNE 4: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front">
+          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
             <div class="feature-icon">🔢</div>
             <h3 class="feature-title">Phase de Groupes</h3>
             <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
@@ -574,12 +651,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">⚙️</div>
             <h3 class="feature-title">Personnalisation</h3>
             <p class="feature-desc">Gérez votre profil, changez d'avatar et paramétrez vos alertes intelligentes.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/03_leaderboard.jpeg" alt="Paramètres">
           </div>
         </div>
@@ -588,18 +667,40 @@
   </div>
 </section>
 
-<!-- VIDEO SHOWCASE -->
+<!-- VIDEO SHOWCASE (MacBook Base Image) -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
       <div class="tag section-tag">Démo</div>
-      <h2 class="section-title">Vois l'app en action</h2>
+      <h2 class="section-title">L'expérience complète</h2>
     </div>
-    <div class="video-showcase reveal">
-        <video controls width="100%" playsinline>
+    
+    <div class="macbook-showcase reveal">
+      <img src="assets/macbook.png" alt="MacBook Base" class="macbook-image">
+      
+      <div class="macbook-screen-overlay">
+          <video controls playsinline loop muted>
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
-        </video>
+          </video>
+      </div>
+
+      <!-- Simulated keyboard glow dots on top of the image -->
+      <div class="kb-glow-container">
+          <!-- Row 2: E, R, O, P -->
+          <div class="kb-dot active" style="grid-column: 3; grid-row: 2;"></div> <!-- E -->
+          <div class="kb-dot active" style="grid-column: 4; grid-row: 2;"></div> <!-- R -->
+          <div class="kb-dot active" style="grid-column: 9; grid-row: 2;"></div> <!-- O -->
+          <div class="kb-dot active" style="grid-column: 10; grid-row: 2;"></div> <!-- P -->
+          <!-- Row 3: A, G, H, L -->
+          <div class="kb-dot active" style="grid-column: 1; grid-row: 3;"></div> <!-- A -->
+          <div class="kb-dot active" style="grid-column: 5; grid-row: 3;"></div> <!-- G -->
+          <div class="kb-dot active" style="grid-column: 6; grid-row: 3;"></div> <!-- H -->
+          <div class="kb-dot active" style="grid-column: 9; grid-row: 3;"></div> <!-- L -->
+          <!-- Row 4: C, N -->
+          <div class="kb-dot active" style="grid-column: 3; grid-row: 4;"></div> <!-- C -->
+          <div class="kb-dot active" style="grid-column: 6; grid-row: 4;"></div> <!-- N -->
+      </div>
     </div>
   </div>
 </section>
