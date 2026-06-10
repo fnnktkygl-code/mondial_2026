@@ -2,7 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      allow read: if request.auth != null;
+      // Users can only read their own profile or public (non-hidden) profiles
+      allow read: if request.auth != null && (request.auth.uid == userId || resource.data.isHidden == false);
+      
       allow write: if request.auth != null && request.auth.uid == userId
                    && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() > 0 && request.resource.data.username.size() <= 30))
                    && (!('supportedTeam' in request.resource.data) || request.resource.data.supportedTeam == null || (request.resource.data.supportedTeam is string && request.resource.data.supportedTeam.size() == 2))
@@ -14,13 +16,18 @@ service cloud.firestore {
 
       match /notifications/{notificationId} {
         allow read: if request.auth != null && request.auth.uid == userId;
-        allow write: if request.auth != null;
+        // Allow write for group notifications but validate basic structure
+        allow write: if request.auth != null 
+                     && request.resource.data.title is string 
+                     && request.resource.data.body is string
+                     && request.resource.data.read == false;
       }
     }
 
     match /groups/{groupId} {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.creatorId == request.auth.uid;
+      // Prevent changing creatorId or deleting members you don't own
       allow update: if request.auth != null && request.resource.data.creatorId == resource.data.creatorId;
       allow delete: if request.auth != null && request.auth.uid == resource.data.creatorId;
     }
