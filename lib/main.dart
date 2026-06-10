@@ -1059,6 +1059,9 @@ class _MyHomePageState extends State<MyHomePage> {
             onSelected: (String value) {
               if (value == 'anthems') _showAnthemsModal();
               if (value == 'mascots') _showMascotsModal();
+              if (value == 'privacy') {
+                launchUrl(Uri.parse('https://fnnktkygl-code.github.io/mondial_2026/privacy.html'));
+              }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
@@ -1103,13 +1106,37 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      AppTranslations.get(_lang, 'mascots'),
+                      AppTranslations.get(_lang, 'mascotsTitle'),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                  ],
-                ),
-              ),
-            ],
+                    ],
+                    ),
+                    ),
+                    PopupMenuItem<String>(
+                    value: 'privacy',
+                    child: Row(
+                    children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.privacy_tip_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      AppTranslations.get(_lang, 'privacyPolicy'),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    ],
+                    ),
+                    ),
+                    ],
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.all(8),
