@@ -96,7 +96,7 @@
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center;
-      padding: 80px 24px 40px;
+      padding: 100px 24px 60px;
       position: relative;
       overflow: hidden;
     }
@@ -124,12 +124,12 @@
     }
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
-      max-width: 600px; margin: 0 auto 32px;
+      max-width: 600px; margin: 0 auto 40px;
       font-weight: 400;
     }
     .hero-actions {
       display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-      margin-bottom: 48px;
+      margin-bottom: 64px;
     }
     .btn-primary {
       background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 100px; top: 11%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
+    .logo-hero { width: 100px; top: 16%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -323,65 +323,185 @@
         .flip-card.desktop { grid-column: span 1; height: 460px; } 
     }
 
-    /* ─── MACBOOK VIDEO SHOWCASE (High-Fidelity Image Base) ─── */
+    /* ─── MACBOOK VIDEO SHOWCASE (3D Realism) ─────────────── */
     .macbook-showcase {
-        max-width: 1000px;
+        max-width: 900px;
         margin: 60px auto 0;
+        perspective: 1800px;
+        padding: 0 4vw;
         position: relative;
-        filter: drop-shadow(0 40px 100px rgba(0,0,0,0.6));
     }
 
-    .macbook-image {
-        width: 100%;
-        height: auto;
-        display: block;
+    .mb-lid {
+        background: #111;
+        border-radius: 20px 20px 0 0;
+        padding: 2.5% 2.5% 3.5%;
+        position: relative;
+        box-shadow: 
+            inset 0 0 0 1px #333,
+            0 -2px 12px rgba(0,0,0,0.6);
+        z-index: 2;
+        transform: rotateX(-2deg);
+        transform-origin: bottom center;
     }
 
-    /* Precise video overlay for assets/macbook.png */
-    .macbook-screen-overlay {
+    .mb-camera {
         position: absolute;
-        top: 7.2%; 
-        left: 12.8%;
-        width: 74.4%; 
-        height: 74.8%;
-        background: #000;
-        border-radius: 2px;
-        overflow: hidden;
+        top: 1.2%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
     }
 
-    .macbook-screen-overlay video {
+    .mb-screen {
+        aspect-ratio: 16 / 10;
+        background: #000;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .mb-screen video {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        display: block;
     }
 
-    /* Keyboard letter glows on top of image */
-    .kb-glow-container {
+    .mb-logo { display: none; }
+
+    .mb-base {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 0.68;
+        transform-style: preserve-3d;
+        transform: rotateX(65deg);
+        transform-origin: top center;
+        z-index: 1;
+    }
+
+    .mb-base-top {
         position: absolute;
-        bottom: 8%;
-        left: 20%;
-        right: 20%;
-        height: 15%;
-        pointer-events: none;
-        display: grid;
-        grid-template-columns: repeat(15, 1fr);
-        grid-template-rows: repeat(4, 1fr);
-        gap: 2px;
-        opacity: 0.8;
+        inset: 0;
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+        border-radius: 0 0 30px 30px;
+        box-shadow: inset 0 0 4px rgba(255,255,255,0.4);
+        padding: 6% 7% 4%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-    .kb-dot {
-        background: var(--accent);
+    .mb-keyboard {
+        width: 100%;
+        height: 52%;
+        background: #1f2022;
+        border-radius: 10px;
+        box-shadow: 
+            inset 0 4px 10px rgba(0,0,0,0.5),
+            0 1px 0 rgba(255,255,255,0.3);
+        padding: 1.8%;
+        display: flex;
+        flex-direction: column;
+        gap: 2%;
+    }
+
+    .mb-row {
+        display: flex;
+        flex: 1;
+        gap: 1.2%;
+    }
+
+    .mb-key {
+        background: #111112;
+        flex: 1;
+        border-radius: 4px;
+        box-shadow: 
+            0 1px 1px rgba(0,0,0,0.6),
+            inset 0 1px 1px rgba(255,255,255,0.1);
+    }
+
+    /* Letter highlighting for "Prono Challenge" */
+    .mb-key.k-glow {
+        background: #FFFFFF !important;
+        box-shadow: 0 0 12px #FFFFFF, 0 0 20px var(--accent);
+        position: relative;
+    }
+    .mb-key.k-glow::after {
+        content: attr(data-key);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+        font-size: 8px;
+        font-weight: 800;
+    }
+
+    .mb-key.k-fn { flex: 1.5; border-radius: 2px; }
+    .mb-key.k-space { flex: 6; }
+    .mb-key.k-enter { flex: 1.8; }
+    .mb-key.k-shift { flex: 2.2; }
+    .mb-key.k-caps { flex: 1.8; }
+    .mb-key.k-tab { flex: 1.5; }
+
+    .mb-trackpad {
+        margin-top: 5%;
+        width: 38%;
+        height: 38%;
+        background: #8b919a;
+        border-radius: 8px;
+        box-shadow: 
+            inset 0 1px 4px rgba(0,0,0,0.2),
+            0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .mb-base-front {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: 14px;
+        background: linear-gradient(to right, #4b515a, #818790, #4b515a);
+        transform-origin: top center;
+        transform: rotateX(-90deg);
+        border-radius: 0 0 24px 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    }
+
+    .mb-notch-front {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12%;
+        height: 6px;
+        background: #3b4047;
+        border-radius: 0 0 4px 4px;
+        box-shadow: inset 0 2px 3px rgba(0,0,0,0.4);
+    }
+
+    .mb-glow {
+        position: absolute;
+        top: 80%;
+        left: 10%;
+        right: 10%;
+        height: 30%;
+        background: rgba(16, 185, 129, 0.15);
+        filter: blur(40px);
+        z-index: 0;
         border-radius: 50%;
-        filter: blur(4px);
-        box-shadow: 0 0 10px var(--accent);
-        width: 5px; height: 5px;
-        margin: auto;
-        opacity: 0;
+        pointer-events: none;
     }
 
-    .kb-dot.active { opacity: 1; animation: pulse 2s infinite; background: #FFF; box-shadow: 0 0 12px #FFF, 0 0 20px var(--accent); }
-    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    @media (max-width: 768px) {
+        .macbook-showcase { perspective: 1200px; margin: 40px auto 0; padding: 0 5vw; }
+        .mb-base { aspect-ratio: 1 / 0.75; transform: rotateX(60deg); }
+    }
 
     /* ─── SCORING ─────────────────────────────────────────── */
     #scoring { padding: 120px 0; }
@@ -574,11 +694,20 @@
       <!-- LIGNE 2: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
-            <div class="feature-icon">🏆</div>
-            <h3 class="feature-title">Tableau Final Interactif</h3>
-            <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
-            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
+          <div class="flip-card-front">
+            <div class="macbook-showcase" style="margin:0; width:100%;">
+                <div class="mb-lid" style="transform:none; border-radius:10px 10px 0 0;">
+                    <div class="mb-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--card);">
+                        <div class="feature-icon">🏆</div>
+                        <h3 class="feature-title">Tableau Final</h3>
+                        <p class="feature-desc">Suivez la phase finale.</p>
+                        <div class="flip-hint">Cliquer →</div>
+                    </div>
+                </div>
+                <div class="mb-base" style="transform:rotateX(45deg); aspect-ratio:1/0.3;">
+                    <div class="mb-base-top"></div>
+                </div>
+            </div>
           </div>
           <div class="flip-card-back">
             <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop">
@@ -605,11 +734,20 @@
       <!-- LIGNE 3: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
-            <div class="feature-icon">📅</div>
-            <h3 class="feature-title">Calendrier Global</h3>
-            <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
-            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
+          <div class="flip-card-front">
+            <div class="macbook-showcase" style="margin:0; width:100%;">
+                <div class="mb-lid" style="transform:none; border-radius:10px 10px 0 0;">
+                    <div class="mb-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--card);">
+                        <div class="feature-icon">📅</div>
+                        <h3 class="feature-title">Calendrier Global</h3>
+                        <p class="feature-desc">Vue grand écran.</p>
+                        <div class="flip-hint">Cliquer →</div>
+                    </div>
+                </div>
+                <div class="mb-base" style="transform:rotateX(45deg); aspect-ratio:1/0.3;">
+                    <div class="mb-base-top"></div>
+                </div>
+            </div>
           </div>
           <div class="flip-card-back">
             <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop">
@@ -636,11 +774,20 @@
       <!-- LIGNE 4: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
-            <div class="feature-icon">🔢</div>
-            <h3 class="feature-title">Phase de Groupes</h3>
-            <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
-            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
+          <div class="flip-card-front">
+            <div class="macbook-showcase" style="margin:0; width:100%;">
+                <div class="mb-lid" style="transform:none; border-radius:10px 10px 0 0;">
+                    <div class="mb-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--card);">
+                        <div class="feature-icon">🔢</div>
+                        <h3 class="feature-title">Phase de Groupes</h3>
+                        <p class="feature-desc">Simulation en direct.</p>
+                        <div class="flip-hint">Cliquer →</div>
+                    </div>
+                </div>
+                <div class="mb-base" style="transform:rotateX(45deg); aspect-ratio:1/0.3;">
+                    <div class="mb-base-top"></div>
+                </div>
+            </div>
           </div>
           <div class="flip-card-back">
             <img src="screenshots/pool_desktop.png" alt="Pools Desktop">
@@ -667,39 +814,79 @@
   </div>
 </section>
 
-<!-- VIDEO SHOWCASE (MacBook Base Image) -->
+<!-- VIDEO SHOWCASE 3D -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
       <div class="tag section-tag">Démo</div>
-      <h2 class="section-title">L'expérience complète</h2>
+      <h2 class="section-title">Vois l'app en action</h2>
     </div>
     
     <div class="macbook-showcase reveal">
-      <img src="assets/macbook.png" alt="MacBook Base" class="macbook-image">
+      <div class="mb-glow"></div>
       
-      <div class="macbook-screen-overlay">
+      <div class="mb-lid">
+        <div class="mb-camera"></div>
+        <div class="mb-screen">
           <video controls playsinline loop muted>
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
           </video>
+        </div>
       </div>
-
-      <!-- Simulated keyboard glow dots on top of the image -->
-      <div class="kb-glow-container">
-          <!-- Row 2: E, R, O, P -->
-          <div class="kb-dot active" style="grid-column: 3; grid-row: 2;"></div> <!-- E -->
-          <div class="kb-dot active" style="grid-column: 4; grid-row: 2;"></div> <!-- R -->
-          <div class="kb-dot active" style="grid-column: 9; grid-row: 2;"></div> <!-- O -->
-          <div class="kb-dot active" style="grid-column: 10; grid-row: 2;"></div> <!-- P -->
-          <!-- Row 3: A, G, H, L -->
-          <div class="kb-dot active" style="grid-column: 1; grid-row: 3;"></div> <!-- A -->
-          <div class="kb-dot active" style="grid-column: 5; grid-row: 3;"></div> <!-- G -->
-          <div class="kb-dot active" style="grid-column: 6; grid-row: 3;"></div> <!-- H -->
-          <div class="kb-dot active" style="grid-column: 9; grid-row: 3;"></div> <!-- L -->
-          <!-- Row 4: C, N -->
-          <div class="kb-dot active" style="grid-column: 3; grid-row: 4;"></div> <!-- C -->
-          <div class="kb-dot active" style="grid-column: 6; grid-row: 4;"></div> <!-- N -->
+      
+      <div class="mb-base">
+        <div class="mb-base-top">
+          <div class="mb-keyboard">
+            <!-- Row 1: Function Keys -->
+            <div class="mb-row" style="height: 12%;">
+              <div class="mb-key k-fn" style="flex: 1.5"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn" style="flex: 1.5"></div>
+            </div>
+            <!-- Row 2: Q W E R(glow) T Y U I O(glow) P(glow) -->
+            <div class="mb-row">
+              <div class="mb-key k-tab"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="E"></div><div class="mb-key k-glow" data-key="R"></div><div class="mb-key"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="O"></div><div class="mb-key k-glow" data-key="P"></div>
+              <div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-tab"></div>
+            </div>
+            <!-- Row 3: A(glow) S D F G(glow) H(glow) J K L(glow) -->
+            <div class="mb-row">
+              <div class="mb-key k-caps"></div>
+              <div class="mb-key k-glow" data-key="A"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="G"></div>
+              <div class="mb-key k-glow" data-key="H"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="L"></div>
+              <div class="mb-key"></div>
+              <div class="mb-key k-enter"></div>
+            </div>
+            <!-- Row 4: Z X C(glow) V B N(glow) M -->
+            <div class="mb-row">
+              <div class="mb-key k-shift"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="C"></div><div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-glow" data-key="N"></div><div class="mb-key"></div>
+              <div class="mb-key k-shift"></div>
+            </div>
+            <!-- Row 5: Space -->
+            <div class="mb-row">
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key" style="flex: 1.2"></div>
+              <div class="mb-key k-space"></div>
+              <div class="mb-key" style="flex: 1.2"></div><div class="mb-key"></div>
+              <div style="flex: 2; display: flex; flex-direction: column; gap: 10%; background: transparent; box-shadow: none;">
+                <div style="display:flex; justify-content:center; flex:1;"><div class="mb-key" style="width: 30%;"></div></div>
+                <div style="display:flex; gap: 10%; flex:1;">
+                  <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-trackpad"></div>
+        </div>
+        <div class="mb-base-front">
+          <div class="mb-notch-front"></div>
+        </div>
       </div>
     </div>
   </div>
