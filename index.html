@@ -364,17 +364,6 @@
         border: 1px solid #2a2a2a;
     }
 
-    /* Camera Cache Overlay */
-    .mb-camera-cache {
-        position: absolute;
-        top: -2px; left: 50%; transform: translateX(-50%);
-        width: 24px; height: 4px;
-        background: #000;
-        border-radius: 2px;
-        border: 1px solid #333;
-        z-index: 10;
-    }
-
     .mb-screen {
         aspect-ratio: 16 / 10;
         background: #000;
@@ -412,9 +401,43 @@
         align-items: center;
     }
 
+    .mb-keyboard {
+        width: 100%;
+        height: 55%;
+        background: #080808;
+        border-radius: 12px;
+        padding: 2%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5%;
+        box-shadow: inset 0 4px 20px rgba(0,0,0,0.9);
+    }
+
+    .mb-row { display: flex; flex: 1; gap: 1%; }
+    .mb-key {
+        background: #111;
+        flex: 1;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .mb-key.k-glow {
+        background: #FFF !important;
+        box-shadow: 0 0 15px #FFF, 0 0 25px var(--accent);
+        position: relative;
+    }
+    .mb-key.k-glow::after {
+        content: attr(data-key);
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: #000; font-size: 9px; font-weight: 900;
+    }
+
+    .mb-key.k-space { flex: 6; }
+    .mb-key.k-fn { flex: 1.5; }
+
     .mb-trackpad {
-        margin-top: auto;
-        margin-bottom: 5%;
+        margin-top: 6%;
         width: 35%; height: 35%;
         background: #181818;
         border-radius: 10px;
@@ -521,7 +544,6 @@
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
 
-  <!-- Actifs flottants -->
   <img src="assets/mascots/clutch.png" alt="Clutch" class="float-asset mascot-clutch">
   <img src="assets/mascots/maple.png" alt="Maple" class="float-asset mascot-maple">
   <img src="assets/mascots/zayu.png" alt="Zayu" class="float-asset mascot-zayu">
@@ -586,7 +608,6 @@
     </div>
     
     <div class="features-grid">
-      <!-- MOBILE 1 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -603,7 +624,6 @@
         </div>
       </div>
 
-      <!-- MOBILE 2 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -620,7 +640,6 @@
         </div>
       </div>
 
-      <!-- MOBILE 3 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -637,22 +656,20 @@
         </div>
       </div>
 
-      <!-- DESKTOP 1 -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="background: var(--card); border: 2.5px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <div class="flip-card-front" style="background: var(--card); border: 2px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
             <div class="feature-icon">🏆</div>
             <h3 class="feature-title">Tableau Final Interactif</h3>
             <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back" style="border-radius: 24px; border: 2.5px solid var(--border-mid); overflow: hidden;">
+          <div class="flip-card-back" style="border-radius: 24px; border: 2px solid var(--border-mid); overflow: hidden;">
             <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 4 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -669,22 +686,20 @@
         </div>
       </div>
 
-      <!-- DESKTOP 2 -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="background: var(--card); border: 2.5px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <div class="flip-card-front" style="background: var(--card); border: 2px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
             <div class="feature-icon">📅</div>
             <h3 class="feature-title">Calendrier Global</h3>
             <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back" style="border-radius: 24px; border: 2.5px solid var(--border-mid); overflow: hidden;">
+          <div class="flip-card-back" style="border-radius: 24px; border: 2px solid var(--border-mid); overflow: hidden;">
             <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 5 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -701,22 +716,20 @@
         </div>
       </div>
 
-      <!-- DESKTOP 3 -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="background: var(--card); border: 2.5px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <div class="flip-card-front" style="background: var(--card); border: 2px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
             <div class="feature-icon">🔢</div>
             <h3 class="feature-title">Phase de Groupes</h3>
             <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back" style="border-radius: 24px; border: 2.5px solid var(--border-mid); overflow: hidden;">
+          <div class="flip-card-back" style="border-radius: 24px; border: 2px solid var(--border-mid); overflow: hidden;">
             <img src="screenshots/pool_desktop.png" alt="Pools Desktop" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 6 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -736,7 +749,7 @@
   </div>
 </section>
 
-<!-- VIDEO SHOWCASE 3D -->
+<!-- VIDEO SHOWCASE (MacBook Screen Only) -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
@@ -744,28 +757,16 @@
       <h2 class="section-title">Vois l'app en action</h2>
     </div>
     
-    <div class="macbook-showcase reveal">
+    <div class="macbook-showcase reveal" style="max-width: 800px;">
       <div class="mb-glow"></div>
       
-      <div class="mb-lid">
-        <div class="mb-camera">
-           <div class="mb-camera-cache"></div>
-        </div>
-        <div class="mb-screen">
+      <div class="mb-lid" style="transform: none; border-radius: 20px;">
+        <div class="mb-camera" style="top: 10px; width: 8px; height: 8px; border: 2px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>
+        <div class="mb-screen" style="border-radius: 12px; margin-top: 5px;">
           <video controls playsinline autoplay loop muted>
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
           </video>
-        </div>
-      </div>
-      
-      <div class="mb-base">
-        <div class="mb-base-top">
-          <!-- Keyboard hidden but chassis maintained for realism -->
-          <div class="mb-trackpad"></div>
-        </div>
-        <div class="mb-base-front">
-          <div class="mb-notch-front"></div>
         </div>
       </div>
     </div>
@@ -877,13 +878,11 @@
 </footer>
 
 <script>
-  // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // Smooth nav
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const target = document.querySelector(a.getAttribute('href'));
