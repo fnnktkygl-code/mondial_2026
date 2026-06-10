@@ -35,6 +35,7 @@ import 'services/update_service.dart';
 import 'utils/fifa_rules.dart';
 import 'widgets/title_odds_view.dart';
 import 'widgets/mascots_dialog.dart';
+import 'widgets/landing_page.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
 
@@ -153,9 +154,34 @@ class MyApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
-      home: const MyHomePage(),
+      home: const LandingPageWrapper(),
       ),
     );
+  }
+}
+
+class LandingPageWrapper extends StatefulWidget {
+  const LandingPageWrapper({super.key});
+
+  @override
+  State<LandingPageWrapper> createState() => _LandingPageWrapperState();
+}
+
+class _LandingPageWrapperState extends State<LandingPageWrapper> {
+  bool _showApp = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_showApp) {
+      return LandingPage(
+        onGetStarted: () {
+          setState(() {
+            _showApp = true;
+          });
+        },
+      );
+    }
+    return const MyHomePage();
   }
 }
 
