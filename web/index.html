@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 120px; top: 22%; left: 7%; animation-delay: 4.5s; border-radius: 28px; box-shadow: 0 0 40px var(--accent-glow); }
+    .logo-hero { width: 100px; top: 16%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -268,7 +268,8 @@
     .flip-card-back img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain; /* Prevents cropping on all screen sizes */
+        background: #000;
     }
     
     .flip-card.desktop .flip-card-back img {
@@ -596,7 +597,6 @@
     </div>
     <div class="video-showcase reveal">
         <video controls width="100%" playsinline>
-            <source src="videos/demo.mov" type="video/quicktime">
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
         </video>
