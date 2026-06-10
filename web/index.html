@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* ─── TOKENS ─────────────── */
+    /* ─── TOKENS (Synchronized with AppColors) ─────────────── */
     :root {
       --bg:         #0A0E1A;
       --surface:    #0F172A;
@@ -51,9 +51,9 @@
 
     .host-gradient {
       background: linear-gradient(to right, 
-        #006847 0%, #006847 33%,
-        #002868 33%, #002868 66%,
-        #FF0000 66%, #FF0000 100%
+        #006847 0%, #006847 33%, /* Mexico Green */
+        #002868 33%, #002868 66%, /* USA Blue */
+        #FF0000 66%, #FF0000 100% /* Canada Red */
       );
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -96,7 +96,7 @@
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center;
-      padding: 100px 24px 60px;
+      padding: 80px 24px 40px;
       position: relative;
       overflow: hidden;
     }
@@ -124,12 +124,12 @@
     }
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
-      max-width: 600px; margin: 0 auto 40px;
+      max-width: 600px; margin: 0 auto 32px;
       font-weight: 400;
     }
     .hero-actions {
       display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-      margin-bottom: 64px;
+      margin-bottom: 48px;
     }
     .btn-primary {
       background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 100px; top: 16%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
+    .logo-hero { width: 100px; top: 11%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -192,7 +192,7 @@
       position: relative; overflow: hidden;
       background: #000;
     }
-    .device-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .device-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     .device-tablet {
       flex: 1; min-width: 0; max-width: 500px;
@@ -211,35 +211,29 @@
     .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #000; }
     .device-tablet-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-    /* ─── FEATURES FLIP CARDS ───────────────────────────── */
+    /* ─── FEATURES FLIP CARDS (High-Fidelity Phone Render) ── */
     #features { background: var(--surface); padding: 120px 0; }
-    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header { text-align: center; margin-bottom: 80px; }
     .features-grid { 
         display: grid; 
         grid-template-columns: repeat(3, 1fr); 
         gap: 32px;
         grid-auto-flow: dense;
-        align-items: start;
-        justify-items: center;
     }
     
     .flip-card {
         background-color: transparent;
+        height: 500px;
         perspective: 1200px;
         cursor: pointer;
-        width: 100%;
-        max-width: 260px;
-        aspect-ratio: 9 / 19.5;
     }
 
     .flip-card.desktop {
-        max-width: 100%;
-        aspect-ratio: unset;
-        height: 480px;
         grid-column: span 2;
-        justify-self: stretch;
+        height: auto;
+        aspect-ratio: 16 / 10;
     }
-
+    
     .flip-card-inner {
         position: relative;
         width: 100%;
@@ -247,11 +241,11 @@
         transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         transform-style: preserve-3d;
     }
-
+    
     .flip-card.flipped .flip-card-inner {
         transform: rotateY(180deg);
     }
-
+    
     .flip-card-front, .flip-card-back {
         position: absolute;
         width: 100%;
@@ -260,63 +254,56 @@
         backface-visibility: hidden;
         overflow: hidden;
     }
-
+    
+    /* Front & Back chassis styling to match Hero devices */
     .flip-card:not(.desktop) .flip-card-front,
     .flip-card:not(.desktop) .flip-card-back {
-        border-radius: 40px;
-        border: 2px solid var(--border-mid);
-        box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05);
+        border-radius: 36px;
+        border: 1.5px solid var(--border-mid);
+        box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
     }
 
+    /* Notch for all Mobile cards */
+    .card-notch {
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        width: 80px; height: 22px; background: #000;
+        border-radius: 0 0 14px 14px; z-index: 10;
+    }
+    
     .flip-card-front {
         background: var(--card);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 32px 24px;
+        padding: 40px;
         text-align: center;
     }
-
-    /* Common Smartphone Mockup Decoration */
-    .phone-mockup-notch {
-        position: absolute;
-        top: 12px; left: 50%; transform: translateX(-50%);
-        width: 60px; height: 18px;
-        background: #000;
-        border-radius: 0 0 12px 12px;
-        z-index: 10;
-    }
-
-    .flip-card-back {
+    
+    .flip-card:not(.desktop) .flip-card-back {
         background: #000;
         transform: rotateY(180deg);
-        position: relative;
     }
-
+    
     .flip-card-back img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        background: #000;
         display: block;
     }
-
+    
     .flip-card.desktop .flip-card-front,
     .flip-card.desktop .flip-card-back {
         border-radius: 24px;
-        border: 2px solid var(--border-mid);
-        overflow: hidden;
+        border: 1.5px solid var(--border-mid);
+        background: #000;
     }
 
-    .flip-card.desktop .flip-card-front {
-        background: var(--card);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
+    .flip-card.desktop .flip-card-back {
+        transform: rotateY(180deg);
     }
-
+    
     .feature-icon {
         width: 64px; height: 64px; border-radius: 18px;
         background: var(--accent-dim); border: 1px solid rgba(16,185,129,.25);
@@ -324,128 +311,77 @@
         font-size: 32px; margin-bottom: 24px;
     }
     .feature-title { font-weight: 700; font-size: 22px; margin-bottom: 12px; color: var(--text-1); }
-    .feature-desc { color: var(--text-3); font-size: 15px; line-height: 1.6; }
+    .feature-desc { color: var(--text-3); font-size: 16px; line-height: 1.6; }
     .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
     @media (max-width: 1100px) {
         .features-grid { grid-template-columns: repeat(2, 1fr); }
         .flip-card.desktop { grid-column: span 2; }
     }
-    @media (max-width: 768px) {
+    @media (max-width: 768px) { 
         .features-grid { grid-template-columns: 1fr; }
-        .flip-card.desktop { grid-column: span 1; height: 460px; }
+        .flip-card.desktop { grid-column: span 1; height: 460px; } 
     }
 
-    /* ─── MACBOOK VIDEO SHOWCASE (Full 3D) ─────────────── */
+    /* ─── MACBOOK VIDEO SHOWCASE (High-Fidelity Image Base) ─── */
     .macbook-showcase {
         max-width: 1000px;
         margin: 60px auto 0;
-        perspective: 2000px;
-        padding: 0 20px;
-    }
-
-    .mb-lid {
-        background: #111;
-        border-radius: 20px 20px 0 0;
-        padding: 2% 2% 3%;
         position: relative;
-        box-shadow: inset 0 0 0 1px #333, 0 -2px 20px rgba(0,0,0,0.8);
-        z-index: 2;
-        transform: rotateX(-2deg);
-        transform-origin: bottom center;
+        filter: drop-shadow(0 40px 100px rgba(0,0,0,0.6));
     }
 
-    .mb-camera {
-        position: absolute;
-        top: 1%; left: 50%; transform: translateX(-50%);
-        width: 7px; height: 7px;
-        border-radius: 50%;
-        background: #1a1a1a;
-        border: 1px solid #2a2a2a;
+    .macbook-image {
+        width: 100%;
+        height: auto;
+        display: block;
     }
 
-    /* Camera Cache Overlay */
-    .mb-camera-cache {
+    /* Precise video overlay for assets/macbook.png */
+    .macbook-screen-overlay {
         position: absolute;
-        top: -2px; left: 50%; transform: translateX(-50%);
-        width: 24px; height: 4px;
+        top: 7.2%; 
+        left: 12.8%;
+        width: 74.4%; 
+        height: 74.8%;
         background: #000;
         border-radius: 2px;
-        border: 1px solid #333;
-        z-index: 10;
-    }
-
-    .mb-screen {
-        aspect-ratio: 16 / 10;
-        background: #000;
-        border-radius: 4px;
         overflow: hidden;
-        position: relative;
-        box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
     }
 
-    .mb-screen video {
+    .macbook-screen-overlay video {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .mb-base {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 1 / 0.65;
-        transform-style: preserve-3d;
-        transform: rotateX(65deg);
-        transform-origin: top center;
-        z-index: 1;
-    }
-
-    .mb-base-top {
+    /* Keyboard letter glows on top of image */
+    .kb-glow-container {
         position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, #222, #111);
-        border-radius: 0 0 30px 30px;
-        box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
-        padding: 5% 6% 4%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        bottom: 8%;
+        left: 20%;
+        right: 20%;
+        height: 15%;
+        pointer-events: none;
+        display: grid;
+        grid-template-columns: repeat(15, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 2px;
+        opacity: 0.8;
     }
 
-    .mb-trackpad {
-        margin-top: auto;
-        margin-bottom: 5%;
-        width: 35%; height: 35%;
-        background: #181818;
-        border-radius: 10px;
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    .kb-dot {
+        background: var(--accent);
+        border-radius: 50%;
+        filter: blur(4px);
+        box-shadow: 0 0 10px var(--accent);
+        width: 5px; height: 5px;
+        margin: auto;
+        opacity: 0;
     }
 
-    .mb-base-front {
-        position: absolute;
-        top: 100%; left: 0; right: 0; height: 16px;
-        background: linear-gradient(to right, #111, #222, #111);
-        transform-origin: top center;
-        transform: rotateX(-90deg);
-        border-radius: 0 0 24px 24px;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.9);
-    }
-
-    .mb-notch-front {
-        position: absolute;
-        top: 0; left: 50%; transform: translateX(-50%);
-        width: 15%; height: 8px;
-        background: #080808;
-        border-radius: 0 0 6px 6px;
-    }
-
-    .mb-glow {
-        position: absolute;
-        top: 85%; left: 5%; right: 5%; height: 25%;
-        background: rgba(16, 185, 129, 0.2);
-        filter: blur(50px);
-        z-index: 0;
-    }
+    .kb-dot.active { opacity: 1; animation: pulse 2s infinite; background: #FFF; box-shadow: 0 0 12px #FFF, 0 0 20px var(--accent); }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
     /* ─── SCORING ─────────────────────────────────────────── */
     #scoring { padding: 120px 0; }
@@ -560,7 +496,7 @@
 
     <div class="device-tablet reveal">
       <div class="device-tablet-bar">
-        <span></span>
+        <span>⚽ Prono Challenge — Bracket interactif</span>
       </div>
       <div class="device-tablet-screen">
          <img src="screenshots/04_bracket_desktop.png" alt="Bracket Desktop">
@@ -586,148 +522,143 @@
     </div>
     
     <div class="features-grid">
-      <!-- MOBILE 1 -->
+      <!-- LIGNE 1: 3 MOBILES -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <div class="feature-icon">🎯</div>
             <h3 class="feature-title">Score exact</h3>
             <p class="feature-desc">Prédisez le score final. Verrouillage automatique au coup d'envoi pour une équité totale.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <img src="screenshots/02_match_detail.jpeg" alt="Détail Match">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 2 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <div class="feature-icon">👥</div>
             <h3 class="feature-title">Ligues privées</h3>
             <p class="feature-desc">Créez votre groupe, invitez vos amis et dominez votre classement interne.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <img src="screenshots/06_groups.jpeg" alt="Groupes Privés">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 3 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <div class="feature-icon">🌍</div>
             <h3 class="feature-title">Équipes & Hymnes</h3>
             <p class="feature-desc">Découvrez les 48 nations avec leurs hymnes nationaux et statistiques complètes.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <img src="screenshots/05_team_profile.jpeg" alt="Profil Équipe">
           </div>
         </div>
       </div>
 
-      <!-- DESKTOP 1 -->
+      <!-- LIGNE 2: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="background: var(--card); border: 2.5px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
             <div class="feature-icon">🏆</div>
             <h3 class="feature-title">Tableau Final Interactif</h3>
             <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back" style="border-radius: 24px; border: 2.5px solid var(--border-mid); overflow: hidden;">
-            <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop" style="width: 100%; height: 100%; object-fit: cover;">
+          <div class="flip-card-back">
+            <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 4 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <div class="feature-icon">📈</div>
             <h3 class="feature-title">Probabilités Live</h3>
             <p class="feature-desc">Analyse des cotes et probabilités FIFA en temps réel pour chaque rencontre.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <img src="screenshots/08_stats.jpeg" alt="Statistiques">
           </div>
         </div>
       </div>
 
-      <!-- DESKTOP 2 -->
+      <!-- LIGNE 3: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="background: var(--card); border: 2.5px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
             <div class="feature-icon">📅</div>
             <h3 class="feature-title">Calendrier Global</h3>
             <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back" style="border-radius: 24px; border: 2.5px solid var(--border-mid); overflow: hidden;">
-            <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop" style="width: 100%; height: 100%; object-fit: cover;">
+          <div class="flip-card-back">
+            <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 5 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <div class="feature-icon">🎵</div>
             <h3 class="feature-title">Hymnes Nationaux</h3>
             <p class="feature-desc">Écoutez les hymnes officiels de chaque nation directement dans l'application.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <img src="screenshots/hymnes.jpeg" alt="Hymnes">
           </div>
         </div>
       </div>
 
-      <!-- DESKTOP 3 -->
+      <!-- LIGNE 4: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front" style="background: var(--card); border: 2.5px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <div class="flip-card-front" style="padding: 40px; background: var(--card); border: 2.5px solid var(--border); border-radius: 24px;">
             <div class="feature-icon">🔢</div>
             <h3 class="feature-title">Phase de Groupes</h3>
             <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
             <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back" style="border-radius: 24px; border: 2.5px solid var(--border-mid); overflow: hidden;">
-            <img src="screenshots/pool_desktop.png" alt="Pools Desktop" style="width: 100%; height: 100%; object-fit: cover;">
+          <div class="flip-card-back">
+            <img src="screenshots/pool_desktop.png" alt="Pools Desktop">
           </div>
         </div>
       </div>
 
-      <!-- MOBILE 6 -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <div class="feature-icon">⚙️</div>
             <h3 class="feature-title">Personnalisation</h3>
             <p class="feature-desc">Gérez votre profil, changez d'avatar et paramétrez vos alertes intelligentes.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <div class="phone-mockup-notch"></div>
+            <div class="card-notch"></div>
             <img src="screenshots/03_leaderboard.jpeg" alt="Paramètres">
           </div>
         </div>
@@ -736,37 +667,39 @@
   </div>
 </section>
 
-<!-- VIDEO SHOWCASE 3D -->
+<!-- VIDEO SHOWCASE (MacBook Base Image) -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
       <div class="tag section-tag">Démo</div>
-      <h2 class="section-title">Vois l'app en action</h2>
+      <h2 class="section-title">L'expérience complète</h2>
     </div>
     
     <div class="macbook-showcase reveal">
-      <div class="mb-glow"></div>
+      <img src="assets/macbook.png" alt="MacBook Base" class="macbook-image">
       
-      <div class="mb-lid">
-        <div class="mb-camera">
-           <div class="mb-camera-cache"></div>
-        </div>
-        <div class="mb-screen">
-          <video controls playsinline autoplay loop muted>
+      <div class="macbook-screen-overlay">
+          <video controls playsinline loop muted>
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
           </video>
-        </div>
       </div>
-      
-      <div class="mb-base">
-        <div class="mb-base-top">
-          <!-- Keyboard hidden but chassis maintained for realism -->
-          <div class="mb-trackpad"></div>
-        </div>
-        <div class="mb-base-front">
-          <div class="mb-notch-front"></div>
-        </div>
+
+      <!-- Simulated keyboard glow dots on top of the image -->
+      <div class="kb-glow-container">
+          <!-- Row 2: E, R, O, P -->
+          <div class="kb-dot active" style="grid-column: 3; grid-row: 2;"></div> <!-- E -->
+          <div class="kb-dot active" style="grid-column: 4; grid-row: 2;"></div> <!-- R -->
+          <div class="kb-dot active" style="grid-column: 9; grid-row: 2;"></div> <!-- O -->
+          <div class="kb-dot active" style="grid-column: 10; grid-row: 2;"></div> <!-- P -->
+          <!-- Row 3: A, G, H, L -->
+          <div class="kb-dot active" style="grid-column: 1; grid-row: 3;"></div> <!-- A -->
+          <div class="kb-dot active" style="grid-column: 5; grid-row: 3;"></div> <!-- G -->
+          <div class="kb-dot active" style="grid-column: 6; grid-row: 3;"></div> <!-- H -->
+          <div class="kb-dot active" style="grid-column: 9; grid-row: 3;"></div> <!-- L -->
+          <!-- Row 4: C, N -->
+          <div class="kb-dot active" style="grid-column: 3; grid-row: 4;"></div> <!-- C -->
+          <div class="kb-dot active" style="grid-column: 6; grid-row: 4;"></div> <!-- N -->
       </div>
     </div>
   </div>
@@ -842,14 +775,14 @@
             <span class="dl-btn-main">Web App</span>
           </span>
         </a>
-        <a href="app-release.apk" class="dl-btn android">
+        <a href="https://github.com/fnnktkygl-code/mondial_2026/releases/download/v1.0.0/app-release.apk" class="dl-btn android">
           <span class="store-icon">🤖</span>
           <span>
             <span class="dl-btn-sub">Télécharger l'APK</span>
             <span class="dl-btn-main">Android SDK</span>
           </span>
         </a>
-        <a href="PronoChallenge-macOS.zip" class="dl-btn macos">
+        <a href="https://github.com/fnnktkygl-code/mondial_2026/releases/download/v1.0.0/PronoChallenge-macOS.zip" class="dl-btn macos">
           <span class="store-icon">💻</span>
           <span>
             <span class="dl-btn-sub">Télécharger pour</span>
