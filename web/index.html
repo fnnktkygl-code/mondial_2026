@@ -96,7 +96,7 @@
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center;
-      padding: 100px 24px 60px;
+      padding: 80px 24px 40px;
       position: relative;
       overflow: hidden;
     }
@@ -115,21 +115,21 @@
       mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
     }
     #hero > * { position: relative; z-index: 1; }
-    .hero-tag { margin-bottom: 28px; }
+    .hero-tag { margin-bottom: 24px; }
     .hero-title {
       font-weight: 800;
       font-size: clamp(44px, 8vw, 92px); line-height: 0.95;
-      letter-spacing: -0.04em; margin-bottom: 24px;
+      letter-spacing: -0.04em; margin-bottom: 20px;
       text-transform: none;
     }
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
-      max-width: 600px; margin: 0 auto 40px;
+      max-width: 600px; margin: 0 auto 32px;
       font-weight: 400;
     }
     .hero-actions {
       display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-      margin-bottom: 64px;
+      margin-bottom: 48px;
     }
     .btn-primary {
       background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 100px; top: 16%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
+    .logo-hero { width: 100px; top: 11%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -190,8 +190,9 @@
       aspect-ratio: 9/19.5;
       display: flex; align-items: center; justify-content: center;
       position: relative; overflow: hidden;
+      background: #000;
     }
-    .device-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .device-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     .device-tablet {
       flex: 1; min-width: 0; max-width: 500px;
@@ -210,7 +211,7 @@
     .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #000; }
     .device-tablet-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-    /* ─── FEATURES FLIP CARDS ───────────────────────────── */
+    /* ─── FEATURES FLIP CARDS (Phone Render) ────────────── */
     #features { background: var(--surface); padding: 120px 0; }
     .features-header { text-align: center; margin-bottom: 80px; }
     .features-grid { 
@@ -222,16 +223,19 @@
     
     .flip-card {
         background-color: transparent;
-        height: 460px;
-        perspective: 1000px;
+        height: 480px;
+        perspective: 1200px;
         cursor: pointer;
+    }
+
+    .flip-card.desktop {
+        grid-column: span 2;
     }
     
     .flip-card-inner {
         position: relative;
         width: 100%;
         height: 100%;
-        text-align: center;
         transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         transform-style: preserve-3d;
     }
@@ -248,11 +252,11 @@
         backface-visibility: hidden;
         border-radius: var(--radius-lg);
         overflow: hidden;
-        border: 2px solid var(--border);
     }
     
     .flip-card-front {
         background: var(--card);
+        border: 2px solid var(--border);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -260,21 +264,37 @@
         padding: 40px;
     }
     
-    .flip-card-back {
-        background: #000;
+    /* Phone Frame Mockup for Back of Mobile Cards */
+    .flip-card:not(.desktop) .flip-card-back {
+        background: #111;
+        border: 6px solid #2a2a2f;
+        border-radius: 36px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
         transform: rotateY(180deg);
+    }
+
+    /* Notch for Back Mockup */
+    .flip-card:not(.desktop) .flip-card-back::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 50%; transform: translateX(-50%);
+        width: 60px; height: 18px;
+        background: #000;
+        border-radius: 0 0 10px 10px;
+        z-index: 10;
     }
     
     .flip-card-back img {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Prevents cropping on all screen sizes */
+        object-fit: contain;
         background: #000;
     }
     
-    .flip-card.desktop .flip-card-back img {
-        object-fit: contain;
+    .flip-card.desktop .flip-card-back {
+        transform: rotateY(180deg);
         background: #000;
+        border: 2px solid var(--border);
     }
     
     .feature-icon {
@@ -287,8 +307,6 @@
     .feature-desc { color: var(--text-3); font-size: 16px; line-height: 1.6; }
     .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Desktop version for specific cards */
-    .flip-card.desktop { height: 460px; grid-column: span 2; }
     @media (max-width: 1100px) {
         .features-grid { grid-template-columns: repeat(2, 1fr); }
         .flip-card.desktop { grid-column: span 2; }
@@ -296,6 +314,175 @@
     @media (max-width: 768px) { 
         .features-grid { grid-template-columns: 1fr; }
         .flip-card.desktop { grid-column: span 1; height: 460px; } 
+    }
+
+    /* ─── MACBOOK VIDEO SHOWCASE (3D Realism) ─────────────── */
+    .macbook-showcase {
+        max-width: 900px;
+        margin: 60px auto 0;
+        perspective: 1800px;
+        padding: 0 4vw;
+        position: relative;
+    }
+
+    .mb-lid {
+        background: #111;
+        border-radius: 20px 20px 0 0;
+        padding: 2.5% 2.5% 3.5%;
+        position: relative;
+        box-shadow: 
+            inset 0 0 0 1px #333,
+            0 -2px 12px rgba(0,0,0,0.6);
+        z-index: 2;
+        transform: rotateX(-2deg);
+        transform-origin: bottom center;
+    }
+
+    .mb-camera {
+        position: absolute;
+        top: 1.2%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+    }
+
+    .mb-screen {
+        aspect-ratio: 16 / 10;
+        background: #000;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .mb-screen video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* MacBook logo removed as requested */
+    .mb-logo { display: none; }
+
+    .mb-base {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 0.68;
+        transform-style: preserve-3d;
+        transform: rotateX(65deg);
+        transform-origin: top center;
+        z-index: 1;
+    }
+
+    .mb-base-top {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+        border-radius: 0 0 30px 30px;
+        box-shadow: inset 0 0 4px rgba(255,255,255,0.4);
+        padding: 6% 7% 4%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mb-keyboard {
+        width: 100%;
+        height: 52%;
+        background: #1f2022;
+        border-radius: 10px;
+        box-shadow: 
+            inset 0 4px 10px rgba(0,0,0,0.5),
+            0 1px 0 rgba(255,255,255,0.3);
+        padding: 1.8%;
+        display: flex;
+        flex-direction: column;
+        gap: 2%;
+    }
+
+    .mb-row {
+        display: flex;
+        flex: 1;
+        gap: 1.2%;
+    }
+
+    .mb-key {
+        background: #111112;
+        flex: 1;
+        border-radius: 4px;
+        box-shadow: 
+            0 1px 1px rgba(0,0,0,0.6),
+            inset 0 1px 1px rgba(255,255,255,0.1);
+    }
+
+    /* Letter highlighting for "Prono Challenge" */
+    .mb-key.k-glow {
+        background: var(--accent);
+        box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .mb-key.k-fn { flex: 1.5; border-radius: 2px; }
+    .mb-key.k-space { flex: 6; }
+    .mb-key.k-enter { flex: 1.8; }
+    .mb-key.k-shift { flex: 2.2; }
+    .mb-key.k-caps { flex: 1.8; }
+    .mb-key.k-tab { flex: 1.5; }
+
+    .mb-trackpad {
+        margin-top: 5%;
+        width: 38%;
+        height: 38%;
+        background: #8b919a;
+        border-radius: 8px;
+        box-shadow: 
+            inset 0 1px 4px rgba(0,0,0,0.2),
+            0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .mb-base-front {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: 14px;
+        background: linear-gradient(to right, #4b515a, #818790, #4b515a);
+        transform-origin: top center;
+        transform: rotateX(-90deg);
+        border-radius: 0 0 24px 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    }
+
+    .mb-notch-front {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12%;
+        height: 6px;
+        background: #3b4047;
+        border-radius: 0 0 4px 4px;
+        box-shadow: inset 0 2px 3px rgba(0,0,0,0.4);
+    }
+
+    .mb-glow {
+        position: absolute;
+        top: 80%;
+        left: 10%;
+        right: 10%;
+        height: 30%;
+        background: rgba(16, 185, 129, 0.15);
+        filter: blur(40px);
+        z-index: 0;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .macbook-showcase { perspective: 1200px; margin: 40px auto 0; padding: 0 5vw; }
+        .mb-base { aspect-ratio: 1 / 0.75; transform: rotateX(60deg); }
     }
 
     /* ─── SCORING ─────────────────────────────────────────── */
@@ -344,27 +531,6 @@
     /* ─── FOOTER ─────────────────────────────────────────── */
     footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
     footer strong { color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; }
-
-    /* ─── RESPONSIVE ─────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .nav-links { display: none; }
-      .scoring-layout { grid-template-columns: 1fr; gap: 40px; }
-      .hero-devices { flex-direction: column; align-items: center; }
-      .device-tablet { width: 100%; max-width: 480px; }
-      .float-asset { display: none; }
-    }
-    
-    .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal.visible { opacity: 1; transform: none; }
-    
-    .video-showcase {
-        max-width: 960px; margin: 80px auto 0;
-        border-radius: 40px; overflow: hidden;
-        border: 3px solid var(--border-mid);
-        box-shadow: 0 60px 120px rgba(0,0,0,0.7);
-        background: #000; position: relative;
-    }
-    .video-showcase video { width: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -588,18 +754,80 @@
   </div>
 </section>
 
-<!-- VIDEO SHOWCASE -->
+<!-- VIDEO SHOWCASE 3D -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
       <div class="tag section-tag">Démo</div>
       <h2 class="section-title">Vois l'app en action</h2>
     </div>
-    <div class="video-showcase reveal">
-        <video controls width="100%" playsinline>
+    
+    <div class="macbook-showcase reveal">
+      <div class="mb-glow"></div>
+      
+      <div class="mb-lid">
+        <div class="mb-camera"></div>
+        <div class="mb-screen">
+          <video controls playsinline loop muted>
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
-        </video>
+          </video>
+        </div>
+      </div>
+      
+      <div class="mb-base">
+        <div class="mb-base-top">
+          <div class="mb-keyboard">
+            <!-- Row 1: Function Keys -->
+            <div class="mb-row" style="height: 12%;">
+              <div class="mb-key k-fn" style="flex: 1.5"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn" style="flex: 1.5"></div>
+            </div>
+            <!-- Row 2: Q W E(H) R(H) T Y U I O(H) P(H) -->
+            <div class="mb-row">
+              <div class="mb-key k-tab"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key k-glow"></div><div class="mb-key"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key k-glow"></div>
+              <div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-tab"></div>
+            </div>
+            <!-- Row 3: A(H) S D F G(H) H(H) J K L(H) -->
+            <div class="mb-row">
+              <div class="mb-key k-caps"></div>
+              <div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div>
+              <div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div>
+              <div class="mb-key"></div>
+              <div class="mb-key k-enter"></div>
+            </div>
+            <!-- Row 4: Z X C(H) V B N(H) M -->
+            <div class="mb-row">
+              <div class="mb-key k-shift"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-glow"></div><div class="mb-key"></div>
+              <div class="mb-key k-shift"></div>
+            </div>
+            <!-- Row 5: Space -->
+            <div class="mb-row">
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key" style="flex: 1.2"></div>
+              <div class="mb-key k-space"></div>
+              <div class="mb-key" style="flex: 1.2"></div><div class="mb-key"></div>
+              <div style="flex: 2; display: flex; flex-direction: column; gap: 10%; background: transparent; box-shadow: none;">
+                <div style="display:flex; justify-content:center; flex:1;"><div class="mb-key" style="width: 30%;"></div></div>
+                <div style="display:flex; gap: 10%; flex:1;">
+                  <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-trackpad"></div>
+        </div>
+        <div class="mb-base-front">
+          <div class="mb-notch-front"></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
