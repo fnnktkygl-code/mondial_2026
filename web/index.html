@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 100px; top: 11%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
+    .logo-hero { width: 90px; top: 11%; left: 11%; animation-delay: 4.5s; border-radius: 20px; box-shadow: 0 0 25px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -223,7 +223,7 @@
     
     .flip-card {
         background-color: transparent;
-        height: 480px;
+        height: 500px;
         perspective: 1200px;
         cursor: pointer;
     }
@@ -267,9 +267,9 @@
     /* Phone Frame Mockup for Back of Mobile Cards */
     .flip-card:not(.desktop) .flip-card-back {
         background: #111;
-        border: 6px solid #2a2a2f;
-        border-radius: 36px;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+        border: 8px solid #2a2a2f;
+        border-radius: 40px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px rgba(0,0,0,0.5);
         transform: rotateY(180deg);
     }
 
@@ -278,9 +278,9 @@
         content: '';
         position: absolute;
         top: 0; left: 50%; transform: translateX(-50%);
-        width: 60px; height: 18px;
+        width: 70px; height: 20px;
         background: #000;
-        border-radius: 0 0 10px 10px;
+        border-radius: 0 0 12px 12px;
         z-index: 10;
     }
     
@@ -295,6 +295,7 @@
         transform: rotateY(180deg);
         background: #000;
         border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
     }
     
     .feature-icon {
@@ -364,7 +365,6 @@
         display: block;
     }
 
-    /* MacBook logo removed as requested */
     .mb-logo { display: none; }
 
     .mb-base {
@@ -420,8 +420,8 @@
 
     /* Letter highlighting for "Prono Challenge" */
     .mb-key.k-glow {
-        background: var(--accent);
-        box-shadow: 0 0 10px var(--accent-glow);
+        background: var(--accent) !important;
+        box-shadow: 0 0 12px var(--accent-glow), inset 0 0 4px rgba(255,255,255,0.5);
     }
 
     .mb-key.k-fn { flex: 1.5; border-radius: 2px; }
@@ -786,7 +786,7 @@
               <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
               <div class="mb-key k-fn" style="flex: 1.5"></div>
             </div>
-            <!-- Row 2: Q W E(H) R(H) T Y U I O(H) P(H) -->
+            <!-- Row 2: Q W E(glow) R(glow) T Y U I O(glow) P(glow) -->
             <div class="mb-row">
               <div class="mb-key k-tab"></div>
               <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key k-glow"></div><div class="mb-key"></div>
@@ -794,7 +794,7 @@
               <div class="mb-key"></div><div class="mb-key"></div>
               <div class="mb-key k-tab"></div>
             </div>
-            <!-- Row 3: A(H) S D F G(H) H(H) J K L(H) -->
+            <!-- Row 3: A(glow) S D F G(glow) H(glow) J K L(glow) -->
             <div class="mb-row">
               <div class="mb-key k-caps"></div>
               <div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div>
@@ -802,7 +802,7 @@
               <div class="mb-key"></div>
               <div class="mb-key k-enter"></div>
             </div>
-            <!-- Row 4: Z X C(H) V B N(H) M -->
+            <!-- Row 4: Z X C(glow) V B N(glow) M -->
             <div class="mb-row">
               <div class="mb-key k-shift"></div>
               <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div>
