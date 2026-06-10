@@ -266,7 +266,12 @@
     .flip-card-back img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: cover; /* Default for mobile */
+    }
+    
+    .flip-card.desktop .flip-card-back img {
+        object-fit: contain; /* Prevent zoom/crop for desktop shots */
+        background: var(--card-deep);
     }
     
     .feature-icon {
@@ -448,7 +453,6 @@
     
     <div class="features-grid">
       <!-- LIGNE 1: 3 MOBILES -->
-      <!-- Card 1: Score Exact (Mobile) -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -463,7 +467,6 @@
         </div>
       </div>
 
-      <!-- Card 2: Groupes (Mobile) -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -478,7 +481,6 @@
         </div>
       </div>
 
-      <!-- Card 3: Profils (Mobile) -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -494,7 +496,6 @@
       </div>
 
       <!-- LIGNE 2: 1 DESKTOP (2 cols) + 1 MOBILE -->
-      <!-- Card 4: Bracket (DESKTOP) -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -509,7 +510,6 @@
         </div>
       </div>
 
-      <!-- Card 5: Stats (Mobile) -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -524,8 +524,7 @@
         </div>
       </div>
 
-      <!-- LIGNE 3: 1 DESKTOP (2 cols) -->
-      <!-- Card 6: Calendrier (DESKTOP) -->
+      <!-- LIGNE 3: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -540,7 +539,6 @@
         </div>
       </div>
 
-      <!-- Card 7: Hymnes (Mobile) -->
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -555,8 +553,7 @@
         </div>
       </div>
 
-      <!-- LIGNE 4: 1 DESKTOP (2 cols) pour terminer proprement -->
-      <!-- Card 8: Pools (DESKTOP) -->
+      <!-- LIGNE 4: 1 DESKTOP (2 cols) + 1 MOBILE -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -567,6 +564,20 @@
           </div>
           <div class="flip-card-back">
             <img src="screenshots/pool_desktop.png" alt="Pools Desktop">
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="feature-icon">⚙️</div>
+            <h3 class="feature-title">Personnalisation</h3>
+            <p class="feature-desc">Gérez votre profil, changez d'avatar et paramétrez vos alertes intelligentes.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <img src="screenshots/07_settings.jpeg" alt="Paramètres">
           </div>
         </div>
       </div>
