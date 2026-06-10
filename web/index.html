@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 90px; top: 11%; left: 11%; animation-delay: 4.5s; border-radius: 20px; box-shadow: 0 0 25px var(--accent-glow); }
+    .logo-hero { width: 90px; top: 14%; left: 10%; animation-delay: 4.5s; border-radius: 20px; box-shadow: 0 0 25px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -226,10 +226,16 @@
         height: 500px;
         perspective: 1200px;
         cursor: pointer;
+        width: 100%;
+        max-width: 220px; /* Synchronized with Hero phones */
+        margin: 0 auto;
     }
 
     .flip-card.desktop {
         grid-column: span 2;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 10;
     }
     
     .flip-card-inner {
@@ -250,38 +256,36 @@
         height: 100%;
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-        border-radius: var(--radius-lg);
         overflow: hidden;
     }
     
+    .flip-card:not(.desktop) .flip-card-front,
+    .flip-card:not(.desktop) .flip-card-back {
+        border-radius: 36px;
+        border: 1.5px solid var(--border-mid);
+        box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    /* Shared Notch for Mobile Cards */
+    .card-notch {
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        width: 80px; height: 22px; background: #000;
+        border-radius: 0 0 14px 14px; z-index: 10;
+    }
+
     .flip-card-front {
         background: var(--card);
-        border: 2px solid var(--border);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         padding: 40px;
+        text-align: center;
     }
     
-    /* Phone Frame Mockup for Back of Mobile Cards */
     .flip-card:not(.desktop) .flip-card-back {
-        background: #111;
-        border: 8px solid #2a2a2f;
-        border-radius: 40px;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px rgba(0,0,0,0.5);
-        transform: rotateY(180deg);
-    }
-
-    /* Notch for Back Mockup */
-    .flip-card:not(.desktop) .flip-card-back::after {
-        content: '';
-        position: absolute;
-        top: 0; left: 50%; transform: translateX(-50%);
-        width: 70px; height: 20px;
         background: #000;
-        border-radius: 0 0 12px 12px;
-        z-index: 10;
+        transform: rotateY(180deg);
     }
     
     .flip-card-back img {
@@ -289,13 +293,14 @@
         height: 100%;
         object-fit: contain;
         background: #000;
+        display: block;
     }
     
     .flip-card.desktop .flip-card-back {
         transform: rotateY(180deg);
         background: #000;
-        border: 2px solid var(--border);
-        border-radius: var(--radius-lg);
+        border: 1.5px solid var(--border-mid);
+        border-radius: 24px;
     }
     
     .feature-icon {
@@ -625,12 +630,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">🎯</div>
             <h3 class="feature-title">Score exact</h3>
             <p class="feature-desc">Prédisez le score final. Verrouillage automatique au coup d'envoi pour une équité totale.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/02_match_detail.jpeg" alt="Détail Match">
           </div>
         </div>
@@ -639,12 +646,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">👥</div>
             <h3 class="feature-title">Ligues privées</h3>
             <p class="feature-desc">Créez votre groupe, invitez vos amis et dominez votre classement interne.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/06_groups.jpeg" alt="Groupes Privés">
           </div>
         </div>
@@ -653,12 +662,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">🌍</div>
             <h3 class="feature-title">Équipes & Hymnes</h3>
             <p class="feature-desc">Découvrez les 48 nations avec leurs hymnes nationaux et statistiques complètes.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/05_team_profile.jpeg" alt="Profil Équipe">
           </div>
         </div>
@@ -682,12 +693,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">📈</div>
             <h3 class="feature-title">Probabilités Live</h3>
             <p class="feature-desc">Analyse des cotes et probabilités FIFA en temps réel pour chaque rencontre.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/08_stats.jpeg" alt="Statistiques">
           </div>
         </div>
@@ -711,12 +724,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">🎵</div>
             <h3 class="feature-title">Hymnes Nationaux</h3>
             <p class="feature-desc">Écoutez les hymnes officiels de chaque nation directement dans l'application.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/hymnes.jpeg" alt="Hymnes">
           </div>
         </div>
@@ -740,12 +755,14 @@
       <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
+            <div class="card-notch"></div>
             <div class="feature-icon">⚙️</div>
             <h3 class="feature-title">Personnalisation</h3>
             <p class="feature-desc">Gérez votre profil, changez d'avatar et paramétrez vos alertes intelligentes.</p>
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
+            <div class="card-notch"></div>
             <img src="screenshots/03_leaderboard.jpeg" alt="Paramètres">
           </div>
         </div>
@@ -786,27 +803,27 @@
               <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
               <div class="mb-key k-fn" style="flex: 1.5"></div>
             </div>
-            <!-- Row 2: Q W E(glow) R(glow) T Y U I O(glow) P(glow) -->
+            <!-- Row 2: Q W E R(glow) T Y U I O(glow) P(glow) -->
             <div class="mb-row">
               <div class="mb-key k-tab"></div>
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key k-glow"></div><div class="mb-key"></div>
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key k-glow"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="E"></div><div class="mb-key k-glow" data-key="R"></div><div class="mb-key"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="O"></div><div class="mb-key k-glow" data-key="P"></div>
               <div class="mb-key"></div><div class="mb-key"></div>
               <div class="mb-key k-tab"></div>
             </div>
             <!-- Row 3: A(glow) S D F G(glow) H(glow) J K L(glow) -->
             <div class="mb-row">
               <div class="mb-key k-caps"></div>
-              <div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div>
-              <div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div>
+              <div class="mb-key k-glow" data-key="A"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="G"></div>
+              <div class="mb-key k-glow" data-key="H"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="L"></div>
               <div class="mb-key"></div>
               <div class="mb-key k-enter"></div>
             </div>
             <!-- Row 4: Z X C(glow) V B N(glow) M -->
             <div class="mb-row">
               <div class="mb-key k-shift"></div>
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow"></div><div class="mb-key"></div><div class="mb-key"></div>
-              <div class="mb-key k-glow"></div><div class="mb-key"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="C"></div><div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-glow" data-key="N"></div><div class="mb-key"></div>
               <div class="mb-key k-shift"></div>
             </div>
             <!-- Row 5: Space -->
