@@ -161,7 +161,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   }
 
   Future<void> _shareGroup(FriendGroup grp) async {
-    final payload = await PredictionService.getShareLink(grp.code);
+    final payload = PredictionService.getShareLink(grp.code, grp.inviteToken ?? '');
     final inviteMessage = AppTranslations.get(widget.lang, 'inviteMessageFull')
         .replaceAll('{groupName}', grp.name)
         .replaceAll('{payload}', payload);
