@@ -115,21 +115,21 @@
       mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
     }
     #hero > * { position: relative; z-index: 1; }
-    .hero-tag { margin-bottom: 24px; }
+    .hero-tag { margin-bottom: 28px; }
     .hero-title {
       font-weight: 800;
       font-size: clamp(44px, 8vw, 92px); line-height: 0.95;
-      letter-spacing: -0.04em; margin-bottom: 20px;
+      letter-spacing: -0.04em; margin-bottom: 24px;
       text-transform: none;
     }
     .hero-sub {
       font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
-      max-width: 600px; margin: 0 auto 32px;
+      max-width: 600px; margin: 0 auto 40px;
       font-weight: 400;
     }
     .hero-actions {
       display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-      margin-bottom: 48px;
+      margin-bottom: 64px;
     }
     .btn-primary {
       background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
@@ -156,7 +156,7 @@
     .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
     .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
     .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
-    .logo-hero { width: 90px; top: 14%; left: 10%; animation-delay: 4.5s; border-radius: 20px; box-shadow: 0 0 25px var(--accent-glow); }
+    .logo-hero { width: 100px; top: 11%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
     
     @keyframes float {
         0%, 100% { transform: translateY(0) rotate(0); }
@@ -211,7 +211,7 @@
     .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #000; }
     .device-tablet-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-    /* ─── FEATURES FLIP CARDS (Phone Render) ────────────── */
+    /* ─── FEATURES FLIP CARDS (High-Fidelity Phone Render) ── */
     #features { background: var(--surface); padding: 120px 0; }
     .features-header { text-align: center; margin-bottom: 80px; }
     .features-grid { 
@@ -226,14 +226,10 @@
         height: 500px;
         perspective: 1200px;
         cursor: pointer;
-        width: 100%;
-        max-width: 220px; /* Synchronized with Hero phones */
-        margin: 0 auto;
     }
 
     .flip-card.desktop {
         grid-column: span 2;
-        max-width: 100%;
         height: auto;
         aspect-ratio: 16 / 10;
     }
@@ -259,6 +255,7 @@
         overflow: hidden;
     }
     
+    /* Front & Back chassis styling to match Hero devices */
     .flip-card:not(.desktop) .flip-card-front,
     .flip-card:not(.desktop) .flip-card-back {
         border-radius: 36px;
@@ -266,13 +263,13 @@
         box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
     }
 
-    /* Shared Notch for Mobile Cards */
+    /* Notch for all Mobile cards */
     .card-notch {
         position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
         width: 80px; height: 22px; background: #000;
         border-radius: 0 0 14px 14px; z-index: 10;
     }
-
+    
     .flip-card-front {
         background: var(--card);
         display: flex;
@@ -296,11 +293,15 @@
         display: block;
     }
     
+    .flip-card.desktop .flip-card-front,
+    .flip-card.desktop .flip-card-back {
+        border-radius: 24px;
+        border: 1.5px solid var(--border-mid);
+        background: #000;
+    }
+
     .flip-card.desktop .flip-card-back {
         transform: rotateY(180deg);
-        background: #000;
-        border: 1.5px solid var(--border-mid);
-        border-radius: 24px;
     }
     
     .feature-icon {
@@ -363,11 +364,12 @@
         position: relative;
     }
 
-    .mb-screen video {
+    /* Use assets/macbook.png as a frame for the video */
+    .macbook-img-frame {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: auto;
         display: block;
+        filter: drop-shadow(0 40px 100px rgba(0,0,0,0.6));
     }
 
     .mb-logo { display: none; }
@@ -425,8 +427,20 @@
 
     /* Letter highlighting for "Prono Challenge" */
     .mb-key.k-glow {
-        background: var(--accent) !important;
-        box-shadow: 0 0 12px var(--accent-glow), inset 0 0 4px rgba(255,255,255,0.5);
+        background: #FFFFFF !important;
+        box-shadow: 0 0 12px #FFFFFF, 0 0 20px var(--accent);
+        position: relative;
+    }
+    .mb-key.k-glow::after {
+        content: attr(data-key);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+        font-size: 8px;
+        font-weight: 800;
     }
 
     .mb-key.k-fn { flex: 1.5; border-radius: 2px; }
@@ -771,13 +785,12 @@
   </div>
 </section>
 
-<!-- 3D MACBOOK VIDEO SHOWCASE -->
+<!-- VIDEO SHOWCASE 3D -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
       <div class="tag section-tag">Démo</div>
       <h2 class="section-title">Vois l'app en action</h2>
-      <p style="color: var(--text-3); max-width: 500px; margin: 0 auto;">Vivez l'expérience immersive de Prono Challenge en vidéo.</p>
     </div>
     
     <div class="macbook-showcase reveal">
