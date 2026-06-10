@@ -96,7 +96,8 @@
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center;
-      padding: 140px 24px 80px;
+      /* MODIF 1 — padding réduit : 140px→100px (top) et 80px→60px (bottom) */
+      padding: 100px 24px 60px;
       position: relative;
       overflow: hidden;
     }
@@ -222,7 +223,8 @@
     
     .flip-card {
         background-color: transparent;
-        aspect-ratio: 9 / 19.5;
+        /* MODIF 2a — hauteur fixe uniforme à la place de aspect-ratio: 9/19.5 */
+        height: 460px;
         perspective: 1000px;
         cursor: pointer;
     }
@@ -268,7 +270,7 @@
     .flip-card-back img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Default for mobile */
+        object-fit: cover;
     }
     
     .flip-card.desktop .flip-card-back img {
@@ -287,14 +289,16 @@
     .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
     /* Desktop version for specific cards */
-    .flip-card.desktop { aspect-ratio: 16 / 9; grid-column: span 2; }
+    /* MODIF 2b — hauteur fixe uniforme à la place de aspect-ratio: 16/9 */
+    .flip-card.desktop { height: 460px; grid-column: span 2; }
     @media (max-width: 1100px) {
         .features-grid { grid-template-columns: repeat(2, 1fr); }
         .flip-card.desktop { grid-column: span 2; }
     }
     @media (max-width: 768px) { 
         .features-grid { grid-template-columns: 1fr; }
-        .flip-card.desktop { grid-column: span 1; aspect-ratio: 9 / 19.5; } 
+        /* MODIF 2c — hauteur fixe maintenue en mobile aussi */
+        .flip-card.desktop { grid-column: span 1; height: 460px; } 
     }
 
     /* ─── SCORING ─────────────────────────────────────────── */
@@ -555,7 +559,7 @@
         </div>
       </div>
 
-      <!-- LIGNE 4: 1 DESKTOP (2 cols) + 1 MOBILE -->
+      <!-- LIGNE 4: 1 DESKTOP (2 cols) seul — carte Personnalisation SUPPRIMÉE (MODIF 3) -->
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
@@ -570,20 +574,8 @@
         </div>
       </div>
 
-      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
-        <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="feature-icon">⚙️</div>
-            <h3 class="feature-title">Personnalisation</h3>
-            <p class="feature-desc">Gérez votre profil, changez d'avatar et paramétrez vos alertes intelligentes.</p>
-            <div class="flip-hint">Cliquer pour voir →</div>
-          </div>
-          <div class="flip-card-back">
-            <!-- Fallback to profile screenshot since 07 is missing -->
-            <img src="screenshots/05_team_profile.jpeg" alt="Paramètres">
-          </div>
-        </div>
-      </div>
+      <!-- MODIF 3 — Carte "Personnalisation" (⚙️) entièrement supprimée -->
+
     </div>
   </div>
 </section>
@@ -596,7 +588,8 @@
       <h2 class="section-title">Vois l'app en action</h2>
     </div>
     <div class="video-showcase reveal">
-        <video controls poster="assets/app_icon.png" width="100%" playsinline>
+        <!-- MODIF 4 — poster="assets/app_icon.png" supprimé pour ne plus afficher l'icône étirée -->
+        <video controls width="100%" playsinline>
             <source src="videos/demo.mov" type="video/quicktime">
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
