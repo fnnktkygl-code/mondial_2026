@@ -1011,28 +1011,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     Text(grp.name,
                         style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
                     const SizedBox(height: 5),
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: grp.code));
-                        widget.showSnackBar(AppTranslations.get(widget.lang, 'codeCopied'));
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.borderMid),
-                        ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Text(grp.code,
-                              style: const TextStyle(
-                                color: AppColors.textBody, fontSize: 11,
-                                fontWeight: FontWeight.w700, fontFamily: 'monospace',
-                              )),
-                          const SizedBox(width: 5),
-                          const Icon(Icons.copy_outlined, size: 11, color: AppColors.textMuted),
-                        ]),
-                      ),
+                    Text(
+                      '${grp.members.length} ${AppTranslations.get(widget.lang, 'members')}',
+                      style: const TextStyle(color: AppColors.textDim, fontSize: 12),
                     ),
                   ],
                 ),
