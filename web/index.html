@@ -317,57 +317,6 @@
         padding: 40px;
     }
 
-    .macbook-wrap {
-        width: 100%;
-        max-width: 700px;
-        margin: 0 auto;
-    }
-
-    .macbook-lid {
-        width: 100%;
-        background: #111;
-        border-radius: 12px 12px 0 0;
-        border: 2px solid #333;
-        border-bottom: none;
-        position: relative;
-        padding: 2.5% 2.5% 3.5%;
-        box-shadow: inset 0 0 0 1px #222;
-    }
-
-    .macbook-camera {
-        position: absolute;
-        top: 1.2%; left: 50%; transform: translateX(-50%);
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: #1a1a1a;
-        border: 1px solid #2a2a2a;
-    }
-
-    .macbook-screen {
-        aspect-ratio: 16 / 10;
-        background: #000;
-        border-radius: 4px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .macbook-screen img, .macbook-screen video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .macbook-base {
-        width: 110%;
-        margin-left: -5%;
-        height: 12px;
-        background: linear-gradient(to bottom, #222, #111);
-        border: 1px solid #333;
-        border-radius: 0 0 12px 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    }
-
     .feature-icon {
         width: 64px; height: 64px; border-radius: 18px;
         background: var(--accent-dim); border: 1px solid rgba(16,185,129,.25);
@@ -633,7 +582,7 @@
 
     <div class="device-tablet reveal">
       <div class="device-tablet-bar">
-        <span>⚽ Prono Challenge — Bracket interactif</span>
+        <span></span>
       </div>
       <div class="device-tablet-screen">
          <img src="screenshots/04_bracket_desktop.png" alt="Bracket Desktop">
@@ -709,30 +658,14 @@
 
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="macbook-wrap">
-              <div class="macbook-lid">
-                <div class="macbook-camera"></div>
-                <div class="macbook-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--card);padding:20px;">
-                  <div class="feature-icon">🏆</div>
-                  <h3 class="feature-title">Tableau Final Interactif</h3>
-                  <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
-                  <div class="flip-hint">Cliquer pour voir →</div>
-                </div>
-              </div>
-              <div class="macbook-base"></div>
-            </div>
+          <div class="flip-card-front" style="background: var(--card); border: 2px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <div class="feature-icon">🏆</div>
+            <h3 class="feature-title">Tableau Final Interactif</h3>
+            <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
+            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back">
-            <div class="macbook-wrap">
-              <div class="macbook-lid">
-                <div class="macbook-camera"></div>
-                <div class="macbook-screen">
-                  <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop">
-                </div>
-              </div>
-              <div class="macbook-base"></div>
-            </div>
+          <div class="flip-card-back" style="border-radius: 24px; border: 2px solid var(--border-mid); overflow: hidden;">
+            <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
       </div>
@@ -755,30 +688,14 @@
 
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="macbook-wrap">
-              <div class="macbook-lid">
-                <div class="macbook-camera"></div>
-                <div class="macbook-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--card);padding:20px;">
-                  <div class="feature-icon">📅</div>
-                  <h3 class="feature-title">Calendrier Global</h3>
-                  <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
-                  <div class="flip-hint">Cliquer pour voir →</div>
-                </div>
-              </div>
-              <div class="macbook-base"></div>
-            </div>
+          <div class="flip-card-front" style="background: var(--card); border: 2px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <div class="feature-icon">📅</div>
+            <h3 class="feature-title">Calendrier Global</h3>
+            <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
+            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back">
-            <div class="macbook-wrap">
-              <div class="macbook-lid">
-                <div class="macbook-camera"></div>
-                <div class="macbook-screen">
-                  <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop">
-                </div>
-              </div>
-              <div class="macbook-base"></div>
-            </div>
+          <div class="flip-card-back" style="border-radius: 24px; border: 2px solid var(--border-mid); overflow: hidden;">
+            <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
       </div>
@@ -801,30 +718,14 @@
 
       <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="macbook-wrap">
-              <div class="macbook-lid">
-                <div class="macbook-camera"></div>
-                <div class="macbook-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--card);padding:20px;">
-                  <div class="feature-icon">🔢</div>
-                  <h3 class="feature-title">Phase de Groupes</h3>
-                  <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
-                  <div class="flip-hint">Cliquer pour voir →</div>
-                </div>
-              </div>
-              <div class="macbook-base"></div>
-            </div>
+          <div class="flip-card-front" style="background: var(--card); border: 2px solid var(--border-mid); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <div class="feature-icon">🔢</div>
+            <h3 class="feature-title">Phase de Groupes</h3>
+            <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
+            <div class="flip-hint">Cliquer pour voir la version Desktop →</div>
           </div>
-          <div class="flip-card-back">
-            <div class="macbook-wrap">
-              <div class="macbook-lid">
-                <div class="macbook-camera"></div>
-                <div class="macbook-screen">
-                  <img src="screenshots/pool_desktop.png" alt="Pools Desktop">
-                </div>
-              </div>
-              <div class="macbook-base"></div>
-            </div>
+          <div class="flip-card-back" style="border-radius: 24px; border: 2px solid var(--border-mid); overflow: hidden;">
+            <img src="screenshots/pool_desktop.png" alt="Pools Desktop" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         </div>
       </div>
@@ -848,7 +749,7 @@
   </div>
 </section>
 
-<!-- VIDEO SHOWCASE 3D -->
+<!-- VIDEO SHOWCASE (MacBook Screen Only) -->
 <section id="video" style="padding-bottom: 120px;">
   <div class="container">
     <div class="features-header reveal">
@@ -856,65 +757,16 @@
       <h2 class="section-title">Vois l'app en action</h2>
     </div>
     
-    <div class="macbook-showcase reveal">
+    <div class="macbook-showcase reveal" style="max-width: 800px;">
       <div class="mb-glow"></div>
       
-      <div class="mb-lid">
-        <div class="mb-camera"></div>
-        <div class="mb-screen">
+      <div class="mb-lid" style="transform: none; border-radius: 20px;">
+        <div class="mb-camera" style="top: 10px; width: 8px; height: 8px; border: 2px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>
+        <div class="mb-screen" style="border-radius: 12px; margin-top: 5px;">
           <video controls playsinline autoplay loop muted>
             <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
           </video>
-        </div>
-      </div>
-      
-      <div class="mb-base">
-        <div class="mb-base-top">
-          <div class="mb-keyboard">
-            <div class="mb-row" style="height: 12%;">
-              <div class="mb-key k-fn" style="flex: 1.5"></div>
-              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
-              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
-              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
-              <div class="mb-key k-fn" style="flex: 1.5"></div>
-            </div>
-            <div class="mb-row">
-              <div class="mb-key k-tab"></div>
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="E"></div><div class="mb-key k-glow" data-key="R"></div><div class="mb-key"></div>
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="O"></div><div class="mb-key k-glow" data-key="P"></div>
-              <div class="mb-key"></div><div class="mb-key"></div>
-              <div class="mb-key k-tab"></div>
-            </div>
-            <div class="mb-row">
-              <div class="mb-key k-caps"></div>
-              <div class="mb-key k-glow" data-key="A"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="G"></div>
-              <div class="mb-key k-glow" data-key="H"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="L"></div>
-              <div class="mb-key"></div>
-              <div class="mb-key k-enter"></div>
-            </div>
-            <div class="mb-row">
-              <div class="mb-key k-shift"></div>
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="C"></div><div class="mb-key"></div><div class="mb-key"></div>
-              <div class="mb-key k-glow" data-key="N"></div><div class="mb-key"></div>
-              <div class="mb-key k-shift"></div>
-            </div>
-            <div class="mb-row">
-              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key" style="flex: 1.2"></div>
-              <div class="mb-key k-space"></div>
-              <div class="mb-key" style="flex: 1.2"></div><div class="mb-key"></div>
-              <div style="flex: 2; display: flex; flex-direction: column; gap: 10%; background: transparent; box-shadow: none;">
-                <div style="display:flex; justify-content:center; flex:1;"><div class="mb-key" style="width: 30%;"></div></div>
-                <div style="display:flex; gap: 10%; flex:1;">
-                  <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="mb-trackpad"></div>
-        </div>
-        <div class="mb-base-front">
-          <div class="mb-notch-front"></div>
         </div>
       </div>
     </div>
