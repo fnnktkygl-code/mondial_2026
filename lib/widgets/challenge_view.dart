@@ -1679,16 +1679,18 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: Text(AppTranslations.get(widget.lang, 'edit'),
-            style: const TextStyle(color: Colors.white, fontSize: 14)),
-        content: TextField(
-          controller: editController,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: AppTranslations.get(widget.lang, 'groupName'),
-            hintStyle: const TextStyle(color: AppColors.textDim),
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: TextField(
+            controller: editController,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: AppTranslations.get(widget.lang, 'groupName'),
+              hintStyle: const TextStyle(color: AppColors.textDim),
+              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
+              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+            ),
           ),
         ),
         actions: [
@@ -1721,11 +1723,15 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         title: Text(AppTranslations.get(widget.lang, 'delete'),
             style: const TextStyle(color: Colors.white, fontSize: 14)),
-        content: Text(
-          AppTranslations.get(widget.lang, 'deleteGroupForEveryone'),
-          style: const TextStyle(color: AppColors.textSecondary),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Text(
+            AppTranslations.get(widget.lang, 'deleteGroupForEveryone'),
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
         ),
         actions: [
           TextButton(
@@ -1754,11 +1760,15 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         title: Text(AppTranslations.get(widget.lang, 'leaveGroupTitle'),
             style: const TextStyle(color: Colors.white, fontSize: 14)),
-        content: Text(
-          AppTranslations.get(widget.lang, 'leaveGroupConfirm'),
-          style: const TextStyle(color: AppColors.textSecondary),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Text(
+            AppTranslations.get(widget.lang, 'leaveGroupConfirm'),
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
         ),
         actions: [
           TextButton(
@@ -1787,17 +1797,21 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         title: Text(AppTranslations.get(widget.lang, 'createGroup'),
             style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-        content: TextField(
-          controller: _newGroupController,
-          style: const TextStyle(color: Colors.white),
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: AppTranslations.get(widget.lang, 'groupName'),
-            hintStyle: const TextStyle(color: AppColors.textDim),
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: TextField(
+            controller: _newGroupController,
+            style: const TextStyle(color: Colors.white),
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: AppTranslations.get(widget.lang, 'groupName'),
+              hintStyle: const TextStyle(color: AppColors.textDim),
+              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
+              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+            ),
           ),
         ),
         actions: [
@@ -1822,18 +1836,22 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         title: Text(AppTranslations.get(widget.lang, 'joinGroup'),
             style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-        content: TextField(
-          controller: _codeController,
-          style: const TextStyle(color: Colors.white, fontSize: 11),
-          maxLines: 4,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: AppTranslations.get(widget.lang, 'enterCode'),
-            hintStyle: const TextStyle(color: AppColors.textDim),
-            enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
-            focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: TextField(
+            controller: _codeController,
+            style: const TextStyle(color: Colors.white, fontSize: 11),
+            maxLines: 4,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: AppTranslations.get(widget.lang, 'enterCode'),
+              hintStyle: const TextStyle(color: AppColors.textDim),
+              enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
+              focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+            ),
           ),
         ),
         actions: [

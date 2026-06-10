@@ -652,13 +652,20 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           )
         : null;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
+    final dialogWidth = isDesktop ? 700.0 : 450.0;
+
     return Dialog(
       backgroundColor: AppColors.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(kDialogRadius),
       ),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 450),
+        constraints: BoxConstraints(
+          maxWidth: dialogWidth,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Column(
@@ -685,835 +692,25 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
               ),
               const Divider(color: AppColors.border, height: 24),
 
-              Text(
-                AppTranslations.get(widget.lang, 'avatar'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+              if (isDesktop)
+                _buildDesktopLayout(
+                  potentialChampPts,
+                  potentialScorerPts,
+                  potentialAssisterPts,
+                  lockedChampPts,
+                  lockedScorerPts,
+                  lockedAssisterPts,
+                )
+              else
+                _buildMobileLayout(
+                  potentialChampPts,
+                  potentialScorerPts,
+                  potentialAssisterPts,
+                  lockedChampPts,
+                  lockedScorerPts,
+                  lockedAssisterPts,
                 ),
-              ),
-              const SizedBox(height: 10),
 
-              Center(
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(kDialogRadius),
-                    border: Border.all(color: AppColors.accent, width: 2),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: _avatar.isEmpty || !_avatar.contains('.png')
-                      ? const Icon(
-                          Icons.person,
-                          color: AppColors.textDim,
-                          size: 32,
-                        )
-                      : Image.asset(
-                          _avatar,
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.person,
-                                color: AppColors.textDim,
-                                size: 32,
-                              ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: kAvatarOptions.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final avatarPath = entry.value;
-                  final isSelected = _avatar == avatarPath;
-                  return Semantics(
-                    label:
-                        '${AppTranslations.get(widget.lang, 'avatar')} ${index + 1}',
-                    selected: isSelected,
-                    button: true,
-                    child: GestureDetector(
-                      onTap: () => setState(() => _avatar = avatarPath),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 140),
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.accent.withValues(alpha: 0.15)
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(kCardRadius),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.accent
-                                : AppColors.border,
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        clipBehavior: Clip.antiAlias,
-                        child: Image.asset(
-                          avatarPath,
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.image_not_supported,
-                                size: 24,
-                                color: AppColors.textDim,
-                              ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(kButtonRadius),
-                  border: Border.all(
-                    color: AppColors.warning.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.warning_amber_rounded,
-                      color: AppColors.warning,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        AppTranslations.get(
-                          widget.lang,
-                          'winnerScorerWarningText',
-                        ),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Text(
-                AppTranslations.get(widget.lang, 'pseudoLabel'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _nameController,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                decoration: InputDecoration(
-                  fillColor: AppColors.surface,
-                  filled: true,
-                  hintText: AppTranslations.get(widget.lang, 'enterNickname'),
-                  hintStyle: const TextStyle(color: AppColors.textDim),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(kButtonRadius),
-                    borderSide: const BorderSide(
-                      color: AppColors.border,
-                      width: 1.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(kButtonRadius),
-                    borderSide: const BorderSide(
-                      color: AppColors.accent,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              Text(
-                AppTranslations.get(widget.lang, 'favoriteTeamLabel'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        backgroundColor: AppColors.surface,
-                        side: const BorderSide(
-                          color: AppColors.border,
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(kButtonRadius),
-                        ),
-                      ),
-                      onPressed: () {
-                        // print removed
-                        TeamSelectorBottomSheet.show(
-                          context: context,
-                          lang: widget.lang,
-                          title: AppTranslations.get(widget.lang, 'chooseTeam'),
-                          selectedTeamCode: _supportedTeam,
-                          teamCodes: _getSortedTeams(),
-                          onTeamSelected: (code) {
-                            // print removed
-                            setState(() {
-                              _supportedTeam = code;
-                            });
-                          },
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          if (_supportedTeam != null) ...[
-                            _buildFlag(_supportedTeam!),
-                            const SizedBox(width: 12),
-                            Text(
-                              AppTranslations.getTeam(
-                                widget.lang,
-                                _supportedTeam!,
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ] else ...[
-                            Text(
-                              AppTranslations.get(widget.lang, 'chooseTeam'),
-                              style: const TextStyle(
-                                color: AppColors.textDim,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                          const Spacer(),
-                          const Icon(
-                            Icons.arrow_drop_down,
-                            color: AppColors.textDim,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (_supportedTeam != null &&
-                      WCAudioService.instance.isValidCountry(
-                        _supportedTeam!,
-                      )) ...[
-                    const SizedBox(width: 8),
-                    _buildAnthemPlayButton(_supportedTeam!),
-                  ],
-                ],
-              ),
-              if (_supportedTeam != null) ...[
-                const SizedBox(height: 12),
-                _buildAchievementsSection(_supportedTeam!),
-              ],
-              const SizedBox(height: 20),
-
-              Text(
-                AppTranslations.get(widget.lang, 'winnerPredLabel') +
-                    (widget.userPreds.championCode != null
-                        ? ' (+$lockedChampPts pts max)'
-                        : ' (Actuel : +$potentialChampPts pts max)'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              widget.userPreds.championCode != null
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(kButtonRadius),
-                        border: Border.all(color: AppColors.border, width: 1.5),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildFlag(widget.userPreds.championCode!),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              AppTranslations.getTeam(
-                                widget.lang,
-                                widget.userPreds.championCode!,
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.lock,
-                                  color: AppColors.warning,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '+$lockedChampPts pts',
-                                  style: const TextStyle(
-                                    color: AppColors.warning,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        backgroundColor: AppColors.surface,
-                        side: BorderSide(
-                          color: _championCode != null
-                              ? AppColors.accent
-                              : AppColors.border,
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(kButtonRadius),
-                        ),
-                      ),
-                      onPressed: () {
-                        // print removed
-                        TeamSelectorBottomSheet.show(
-                          context: context,
-                          lang: widget.lang,
-                          title: AppTranslations.get(
-                            widget.lang,
-                            'selectWinner',
-                          ),
-                          selectedTeamCode: _championCode,
-                          teamCodes: _getSortedTeams(),
-                          onTeamSelected: (code) {
-                            // print removed
-                            // Introduction d'un délai pour laisser le menu se fermer proprement
-                            Future.delayed(
-                              const Duration(milliseconds: 300),
-                              () {
-                                // print removed
-                                _confirmChampionSelection(code);
-                              },
-                            );
-                          },
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          if (_championCode != null) ...[
-                            _buildFlag(_championCode!),
-                            const SizedBox(width: 12),
-                            Text(
-                              AppTranslations.getTeam(
-                                widget.lang,
-                                _championCode!,
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ] else ...[
-                            Text(
-                              AppTranslations.get(widget.lang, 'selectWinner'),
-                              style: const TextStyle(
-                                color: AppColors.textDim,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                          const Spacer(),
-                          const Icon(
-                            Icons.arrow_drop_down,
-                            color: AppColors.textDim,
-                          ),
-                        ],
-                      ),
-                    ),
-
-              if (_championCode != null) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppColors.warning,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        AppTranslations.get(widget.lang, 'choiceFinalWarning'),
-                        style: const TextStyle(
-                          color: AppColors.warning,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-
-              const SizedBox(height: 20),
-              Text(
-                (AppTranslations.get(widget.lang, 'goldenBootScorer')) +
-                    (widget.userPreds.goldenBootPlayer != null
-                        ? ' (+$lockedScorerPts pts max)'
-                        : ' (Actuel : +$potentialScorerPts pts max)'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              widget.userPreds.goldenBootPlayer != null
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(kButtonRadius),
-                        border: Border.all(color: AppColors.border, width: 1.5),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.sports_soccer,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              widget.userPreds.goldenBootPlayer!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.lock,
-                                  color: AppColors.warning,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '+$lockedScorerPts pts',
-                                  style: const TextStyle(
-                                    color: AppColors.warning,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Autocomplete<String>(
-                          optionsBuilder: (TextEditingValue textEditingValue) {
-                            if (textEditingValue.text.isEmpty) {
-                              return const Iterable<String>.empty();
-                            }
-                            final query = textEditingValue.text.toLowerCase();
-                            return kWC2026Players.where(
-                              (p) => p.toLowerCase().contains(query),
-                            );
-                          },
-                          onSelected: (selection) =>
-                              _scorerController.text = selection,
-                          fieldViewBuilder:
-                              (
-                                context,
-                                controller,
-                                focusNode,
-                                onEditingComplete,
-                              ) {
-                                if (_scorerController.text.isNotEmpty &&
-                                    controller.text.isEmpty) {
-                                  controller.text = _scorerController.text;
-                                }
-                                controller.addListener(
-                                  () =>
-                                      _scorerController.text = controller.text,
-                                );
-                                return TextField(
-                                  controller: controller,
-                                  focusNode: focusNode,
-                                  onEditingComplete: onEditingComplete,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                  decoration: InputDecoration(
-                                    fillColor: AppColors.surface,
-                                    filled: true,
-                                    hintText: AppTranslations.get(
-                                      widget.lang,
-                                      'searchScorer',
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.search,
-                                      color: AppColors.textDim,
-                                      size: 18,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        kButtonRadius,
-                                      ),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.border,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        kButtonRadius,
-                                      ),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.accent,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                          optionsViewBuilder: (context, onSelected, options) {
-                            return Align(
-                              alignment: Alignment.topLeft,
-                              child: Material(
-                                color: AppColors.card,
-                                elevation: 4,
-                                borderRadius: BorderRadius.circular(
-                                  kButtonRadius,
-                                ),
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxHeight: 200,
-                                    maxWidth: 400,
-                                  ),
-                                  child: ListView.builder(
-                                    padding: EdgeInsets.zero,
-                                    shrinkWrap: true,
-                                    itemCount: options.length,
-                                    itemBuilder: (context, index) {
-                                      final option = options.elementAt(index);
-                                      return ListTile(
-                                        dense: true,
-                                        leading: const Icon(
-                                          Icons.sports_soccer,
-                                          color: AppColors.accent,
-                                          size: 16,
-                                        ),
-                                        title: Text(
-                                          option,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        onTap: () => onSelected(option),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-
-              const SizedBox(height: 20),
-              Text(
-                (AppTranslations.get(widget.lang, 'topAssister')) +
-                    (widget.userPreds.topAssisterPlayer != null
-                        ? ' (+$lockedAssisterPts pts max)'
-                        : ' (Actuel : +$potentialAssisterPts pts max)'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              widget.userPreds.topAssisterPlayer != null
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border, width: 1.5),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.white, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              widget.userPreds.topAssisterPlayer!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.lock,
-                                  color: AppColors.warning,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '+$lockedAssisterPts pts',
-                                  style: const TextStyle(
-                                    color: AppColors.warning,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Autocomplete<String>(
-                          optionsBuilder: (TextEditingValue textEditingValue) {
-                            if (textEditingValue.text.isEmpty) {
-                              return const Iterable<String>.empty();
-                            }
-                            final query = textEditingValue.text.toLowerCase();
-                            return kWC2026Players.where(
-                              (p) => p.toLowerCase().contains(query),
-                            );
-                          },
-                          onSelected: (selection) =>
-                              _assisterController.text = selection,
-                          fieldViewBuilder:
-                              (
-                                context,
-                                controller,
-                                focusNode,
-                                onEditingComplete,
-                              ) {
-                                if (_assisterController.text.isNotEmpty &&
-                                    controller.text.isEmpty) {
-                                  controller.text = _assisterController.text;
-                                }
-                                controller.addListener(
-                                  () => _assisterController.text =
-                                      controller.text,
-                                );
-                                return TextField(
-                                  controller: controller,
-                                  focusNode: focusNode,
-                                  onEditingComplete: onEditingComplete,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                  decoration: InputDecoration(
-                                    fillColor: AppColors.surface,
-                                    filled: true,
-                                    hintText: AppTranslations.get(
-                                      widget.lang,
-                                      'searchAssister',
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.search,
-                                      color: AppColors.textDim,
-                                      size: 18,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.border,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.accent,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                        ),
-                      ],
-                    ),
-
-              const SizedBox(height: 24),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppTranslations.get(
-                      widget.lang,
-                      'hideFromGlobalLeaderboard',
-                    ),
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                  ),
-                  Switch(
-                    value: _isHidden,
-                    activeThumbColor: AppColors.accent,
-                    onChanged: (val) {
-                      setState(() {
-                        _isHidden = val;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton.icon(
-                    onPressed: _resetProfile,
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: AppColors.danger,
-                      size: 16,
-                    ),
-                    label: Text(
-                      AppTranslations.get(widget.lang, 'reset'),
-                      style: const TextStyle(
-                        color: AppColors.danger,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: _deleteProfile,
-                    icon: const Icon(
-                      Icons.delete,
-                      color: AppColors.danger,
-                      size: 16,
-                    ),
-                    label: Text(
-                      AppTranslations.get(widget.lang, 'delete'),
-                      style: const TextStyle(
-                        color: AppColors.danger,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 24),
 
               ElevatedButton(
@@ -1548,6 +745,608 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(
+    int potC,
+    int potS,
+    int potA,
+    int? lockC,
+    int? lockS,
+    int? lockA,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildAvatarSection(),
+        const SizedBox(height: 20),
+        _buildWarningBanner(),
+        _buildNameInput(),
+        const SizedBox(height: 20),
+        _buildFavoriteTeam(),
+        const SizedBox(height: 20),
+        _buildWinnerPred(potC, lockC),
+        const SizedBox(height: 20),
+        _buildScorerPred(potS, lockS),
+        const SizedBox(height: 20),
+        _buildAssisterPred(potA, lockA),
+        const SizedBox(height: 24),
+        _buildVisibilitySwitch(),
+        const SizedBox(height: 12),
+        _buildActionButtons(),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(
+    int potC,
+    int potS,
+    int potA,
+    int? lockC,
+    int? lockS,
+    int? lockA,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 2, child: _buildAvatarSection()),
+            const SizedBox(width: 32),
+            Expanded(
+              flex: 3,
+              child: Column(
+                children: [
+                  _buildWarningBanner(),
+                  _buildNameInput(),
+                  const SizedBox(height: 20),
+                  _buildFavoriteTeam(),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        const Divider(color: AppColors.border),
+        const SizedBox(height: 24),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildWinnerPred(potC, lockC)),
+            const SizedBox(width: 24),
+            Expanded(child: _buildScorerPred(potS, lockS)),
+            const SizedBox(width: 24),
+            Expanded(child: _buildAssisterPred(potA, lockA)),
+          ],
+        ),
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            Expanded(child: _buildVisibilitySwitch()),
+            const SizedBox(width: 40),
+            Expanded(child: _buildActionButtons()),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAvatarSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'avatar'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: 80,
+          height: 80,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(kDialogRadius),
+            border: Border.all(color: AppColors.accent, width: 2),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child:
+              _avatar.isEmpty || !_avatar.contains('.png')
+                  ? const Icon(Icons.person, color: AppColors.textDim, size: 40)
+                  : Image.asset(_avatar, width: 80, height: 80, fit: BoxFit.cover),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children:
+              kAvatarOptions.asMap().entries.map((entry) {
+                final avatarPath = entry.value;
+                final isSelected = _avatar == avatarPath;
+                return GestureDetector(
+                  onTap: () => setState(() => _avatar = avatarPath),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 140),
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected
+                              ? AppColors.accent.withValues(alpha: 0.15)
+                              : AppColors.surface,
+                      borderRadius: BorderRadius.circular(kCardRadius),
+                      border: Border.all(
+                        color: isSelected ? AppColors.accent : AppColors.border,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(avatarPath, fit: BoxFit.cover),
+                  ),
+                );
+              }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWarningBanner() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(kButtonRadius),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppTranslations.get(widget.lang, 'winnerScorerWarningText'),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNameInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'pseudoLabel'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _nameController,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          decoration: InputDecoration(
+            fillColor: AppColors.surface,
+            filled: true,
+            hintText: AppTranslations.get(widget.lang, 'enterNickname'),
+            hintStyle: const TextStyle(color: AppColors.textDim),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFavoriteTeam() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'favoriteTeamLabel'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  backgroundColor: AppColors.surface,
+                  side: const BorderSide(color: AppColors.border, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(kButtonRadius),
+                  ),
+                ),
+                onPressed: () {
+                  TeamSelectorBottomSheet.show(
+                    context: context,
+                    lang: widget.lang,
+                    title: AppTranslations.get(widget.lang, 'chooseTeam'),
+                    selectedTeamCode: _supportedTeam,
+                    teamCodes: _getSortedTeams(),
+                    onTeamSelected: (code) => setState(() => _supportedTeam = code),
+                  );
+                },
+                child: Row(
+                  children: [
+                    if (_supportedTeam != null) ...[
+                      _buildFlag(_supportedTeam!),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppTranslations.getTeam(widget.lang, _supportedTeam!),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ] else ...[
+                      Text(
+                        AppTranslations.get(widget.lang, 'chooseTeam'),
+                        style: const TextStyle(color: AppColors.textDim, fontSize: 16),
+                      ),
+                    ],
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down, color: AppColors.textDim),
+                  ],
+                ),
+              ),
+            ),
+            if (_supportedTeam != null &&
+                WCAudioService.instance.isValidCountry(_supportedTeam!)) ...[
+              const SizedBox(width: 8),
+              _buildAnthemPlayButton(_supportedTeam!),
+            ],
+          ],
+        ),
+        if (_supportedTeam != null) ...[
+          const SizedBox(height: 12),
+          _buildAchievementsSection(_supportedTeam!),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWinnerPred(int potC, int? lockC) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'winnerPredLabel') +
+              (widget.userPreds.championCode != null
+                  ? ' (+$lockC pts)'
+                  : ' (+$potC pts)'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        widget.userPreds.championCode != null
+            ? _buildLockedPredRow(widget.userPreds.championCode!, lockC!)
+            : OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  backgroundColor: AppColors.surface,
+                  side: BorderSide(
+                    color: _championCode != null ? AppColors.accent : AppColors.border,
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(kButtonRadius),
+                  ),
+                ),
+                onPressed: () {
+                  TeamSelectorBottomSheet.show(
+                    context: context,
+                    lang: widget.lang,
+                    title: AppTranslations.get(widget.lang, 'selectWinner'),
+                    selectedTeamCode: _championCode,
+                    teamCodes: _getSortedTeams(),
+                    onTeamSelected: (code) {
+                      Future.delayed(
+                        const Duration(milliseconds: 300),
+                        () => _confirmChampionSelection(code),
+                      );
+                    },
+                  );
+                },
+                child: Row(
+                  children: [
+                    if (_championCode != null) ...[
+                      _buildFlag(_championCode!),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppTranslations.getTeam(widget.lang, _championCode!),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ] else ...[
+                      Text(
+                        AppTranslations.get(widget.lang, 'selectWinner'),
+                        style: const TextStyle(color: AppColors.textDim, fontSize: 16),
+                      ),
+                    ],
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down, color: AppColors.textDim),
+                  ],
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildScorerPred(int potS, int? lockS) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'goldenBootScorer') +
+              (widget.userPreds.goldenBootPlayer != null
+                  ? ' (+$lockS pts)'
+                  : ' (+$potS pts)'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        widget.userPreds.goldenBootPlayer != null
+            ? _buildLockedPlayerRow(widget.userPreds.goldenBootPlayer!, lockS!)
+            : _buildPlayerAutocomplete(
+                _scorerController,
+                AppTranslations.get(widget.lang, 'searchScorer'),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildAssisterPred(int potA, int? lockA) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'topAssister') +
+              (widget.userPreds.topAssisterPlayer != null
+                  ? ' (+$lockA pts)'
+                  : ' (+$potA pts)'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        widget.userPreds.topAssisterPlayer != null
+            ? _buildLockedPlayerRow(widget.userPreds.topAssisterPlayer!, lockA!)
+            : _buildPlayerAutocomplete(
+                _assisterController,
+                AppTranslations.get(widget.lang, 'searchAssister'),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildLockedPredRow(String code, int pts) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(kButtonRadius),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: Row(
+        children: [
+          _buildFlag(code),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              AppTranslations.getTeam(widget.lang, code),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          _buildLockedBadge(pts),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockedPlayerRow(String name, int pts) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(kButtonRadius),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.person_outline, color: Colors.white, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          _buildLockedBadge(pts),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockedBadge(int pts) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.lock, color: AppColors.warning, size: 12),
+          const SizedBox(width: 4),
+          Text(
+            '+$pts pts',
+            style: const TextStyle(
+              color: AppColors.warning,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerAutocomplete(TextEditingController controller, String hint) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
+        final query = textEditingValue.text.toLowerCase();
+        return kWC2026Players.where((p) => p.toLowerCase().contains(query));
+      },
+      onSelected: (selection) => controller.text = selection,
+      fieldViewBuilder: (context, fieldController, focusNode, onEditingComplete) {
+        if (controller.text.isNotEmpty && fieldController.text.isEmpty) {
+          fieldController.text = controller.text;
+        }
+        fieldController.addListener(() => controller.text = fieldController.text);
+        return TextField(
+          controller: fieldController,
+          focusNode: focusNode,
+          onEditingComplete: onEditingComplete,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+          decoration: InputDecoration(
+            fillColor: AppColors.surface,
+            filled: true,
+            hintText: hint,
+            prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 18),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+            ),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            color: AppColors.card,
+            elevation: 4,
+            borderRadius: BorderRadius.circular(kButtonRadius),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return ListTile(
+                    dense: true,
+                    title: Text(option, style: const TextStyle(color: Colors.white)),
+                    onTap: () => onSelected(option),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVisibilitySwitch() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            AppTranslations.get(widget.lang, 'hideFromGlobalLeaderboard'),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+          ),
+        ),
+        Switch(
+          value: _isHidden,
+          activeThumbColor: AppColors.accent,
+          onChanged: (val) => setState(() => _isHidden = val),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TextButton.icon(
+          onPressed: _resetProfile,
+          icon: const Icon(Icons.refresh, color: AppColors.danger, size: 16),
+          label: Text(
+            AppTranslations.get(widget.lang, 'reset'),
+            style: const TextStyle(color: AppColors.danger, fontSize: 13),
+          ),
+        ),
+        TextButton.icon(
+          onPressed: _deleteProfile,
+          icon: const Icon(Icons.delete, color: AppColors.danger, size: 16),
+          label: Text(
+            AppTranslations.get(widget.lang, 'delete'),
+            style: const TextStyle(color: AppColors.danger, fontSize: 13),
+          ),
+        ),
+      ],
     );
   }
 

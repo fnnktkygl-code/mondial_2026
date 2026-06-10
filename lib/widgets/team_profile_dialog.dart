@@ -37,228 +37,396 @@ class WCTeamProfileDialog extends StatefulWidget {
 
 class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // Correctly resolve variables using widget configuration scope properties
     final cleanCode = widget.teamCode.toLowerCase().replaceAll('g_', '');
     final bool isRealCountry = WCAudioService.instance.isValidCountry(cleanCode);
 
     final profile = WCTeamProfileService.getProfile(cleanCode, widget.lang);
     final teamName = AppTranslations.getTeam(widget.lang, cleanCode);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
+    final dialogWidth = isDesktop ? 850.0 : double.infinity;
+
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.border, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            )
-          ],
+      insetPadding: isDesktop 
+          ? const EdgeInsets.symmetric(horizontal: 40, vertical: 40)
+          : const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: dialogWidth,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ─── Header ──────────────────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-              decoration: const BoxDecoration(
-                color: AppColors.cardDark,
-                border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
-              ),
-              child: Row(
-                children: [
-                  // Dans lib/widgets/team_profile_dialog.dart
-                  Hero(
-                    tag: 'profile_flag_$cleanCode',
-                    child: TeamFlagWidget(
-                      // Normalisation locale : si c'est gb-sct, force sco, sinon garde le code
-                      code: cleanCode == 'gb-sct' ? 'sco' : cleanCode,
-                      width: 56,
-                      height: 38,
-                      borderRadius: 6,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          teamName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          profile.nickname,
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textDim, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-
-            // ─── Body ─────────────────────────────────────────────────────────
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: AppColors.border, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              )
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ─── Header ──────────────────────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+                decoration: const BoxDecoration(
+                  color: AppColors.cardDark,
+                  border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+                ),
+                child: Row(
                   children: [
-                    // 1. General Info
-                    _buildSectionTitle(
-                      AppTranslations.get(widget.lang, 'generalInformation'),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
+                    Hero(
+                      tag: 'profile_flag_$cleanCode',
+                      child: TeamFlagWidget(
+                        code: cleanCode == 'gb-sct' ? 'sco' : cleanCode,
+                        width: isDesktop ? 80 : 56,
+                        height: isDesktop ? 54 : 38,
+                        borderRadius: 6,
                       ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildInfoRow(
-                            icon: Icons.shield_outlined,
-                            label: AppTranslations.get(widget.lang, 'emblem'),
-                            value: profile.symbol,
+                          Text(
+                            teamName,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isDesktop ? 28 : 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                          _buildInfoRow(
-                            icon: Icons.format_list_numbered,
-                            label: AppTranslations.get(widget.lang, 'fifaRanking'),
-                            value: profile.fifaRanking == 999
-                                ? (AppTranslations.get(widget.lang, 'unranked'))
-                                : '#${profile.fifaRanking}',
-                          ),
-                          _buildInfoRow(
-                            icon: Icons.sports_soccer_outlined,
-                            label: AppTranslations.get(widget.lang, 'appearances'),
-                            value: '${profile.appearances} ${AppTranslations.get(widget.lang, 'finalPhases')}',
-                          ),
-                          _buildInfoRow(
-                            icon: Icons.emoji_events_outlined,
-                            label: AppTranslations.get(widget.lang, 'bestFinish'),
-                            value: profile.bestFinish,
-                            isLast: true,
+                          const SizedBox(height: 3),
+                          Text(
+                            profile.nickname,
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontSize: isDesktop ? 15 : 13,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
                     ),
-
-                    // 2. Trophies
-                    if (profile.trophies.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      _buildSectionTitle(
-                        AppTranslations.get(widget.lang, 'majorTrophies'),
-                      ),
-                      const SizedBox(height: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: profile.trophies.map((trophy) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              children: [
-                                _buildTrophyBadge(trophy),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    trophy,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-
-                    // 3. Media & History — single card only
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(
-                      AppTranslations.get(widget.lang, 'mediaHistory'),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.textDim, size: 24),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    const SizedBox(height: 12),
-                    _buildMediaCard(
-                      imageUrl: profile.imageUrl,
-                      title: AppTranslations.get(widget.lang, 'teamHistoryProfile'),
-                      description: AppTranslations.get(widget.lang, 'teamHistoryDesc'),
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.85,
-                            child: WCEmbeddedWebView(
-                              url: profile.profileUrl,
-                              title: AppTranslations.get(widget.lang, 'teamHistoryInfo'),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    // 4. National Anthem
-                    if (isRealCountry) ...[
-                      const SizedBox(height: 24),
-                      _buildSectionTitle(
-                        AppTranslations.get(widget.lang, 'nationalAnthem'),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildAnthemPlayerSection(cleanCode),
-                    ],
                   ],
                 ),
               ),
-            ),
-          ],
+
+              // ─── Body ─────────────────────────────────────────────────────────
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: isDesktop 
+                      ? _buildDesktopBody(profile, isRealCountry, cleanCode)
+                      : _buildMobileBody(profile, isRealCountry, cleanCode),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ─── Section title ───────────────────────────────────────────────────────────
+  Widget _buildMobileBody(TeamProfileData profile, bool isRealCountry, String cleanCode) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle(AppTranslations.get(widget.lang, 'generalInformation')),
+        const SizedBox(height: 12),
+        _buildGeneralInfoGrid(profile),
+        if (profile.trophies.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _buildSectionTitle(AppTranslations.get(widget.lang, 'majorTrophies')),
+          const SizedBox(height: 12),
+          _buildTrophiesList(profile),
+        ],
+        const SizedBox(height: 24),
+        _buildSectionTitle(AppTranslations.get(widget.lang, 'mediaHistory')),
+        const SizedBox(height: 12),
+        _buildMediaCard(
+          imageUrl: profile.imageUrl,
+          title: AppTranslations.get(widget.lang, 'teamHistoryProfile'),
+          description: AppTranslations.get(widget.lang, 'teamHistoryDesc'),
+          onTap: () => _showWebView(profile),
+        ),
+        if (isRealCountry) ...[
+          const SizedBox(height: 24),
+          _buildSectionTitle(AppTranslations.get(widget.lang, 'nationalAnthem')),
+          const SizedBox(height: 12),
+          _buildAnthemPlayerSection(cleanCode),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDesktopBody(TeamProfileData profile, bool isRealCountry, String cleanCode) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 4,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle(AppTranslations.get(widget.lang, 'generalInformation')),
+              const SizedBox(height: 12),
+              _buildGeneralInfoGrid(profile),
+              const SizedBox(height: 32),
+              _buildSectionTitle(AppTranslations.get(widget.lang, 'mediaHistory')),
+              const SizedBox(height: 12),
+              _buildMediaCard(
+                imageUrl: profile.imageUrl,
+                title: AppTranslations.get(widget.lang, 'teamHistoryProfile'),
+                description: AppTranslations.get(widget.lang, 'teamHistoryDesc'),
+                onTap: () => _showWebView(profile),
+                isDesktop: true,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 32),
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (profile.trophies.isNotEmpty) ...[
+                _buildSectionTitle(AppTranslations.get(widget.lang, 'majorTrophies')),
+                const SizedBox(height: 12),
+                _buildTrophiesList(profile),
+                const SizedBox(height: 32),
+              ],
+              if (isRealCountry) ...[
+                _buildSectionTitle(AppTranslations.get(widget.lang, 'nationalAnthem')),
+                const SizedBox(height: 12),
+                _buildAnthemPlayerSection(cleanCode),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showWebView(TeamProfileData profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.85,
+        child: WCEmbeddedWebView(
+          url: profile.profileUrl,
+          title: AppTranslations.get(widget.lang, 'teamHistoryInfo'),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeneralInfoGrid(TeamProfileData profile) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          _buildInfoRow(
+            icon: Icons.shield_outlined,
+            label: AppTranslations.get(widget.lang, 'emblem'),
+            value: profile.symbol,
+          ),
+          _buildInfoRow(
+            icon: Icons.format_list_numbered,
+            label: AppTranslations.get(widget.lang, 'fifaRanking'),
+            value: profile.fifaRanking == 999
+                ? (AppTranslations.get(widget.lang, 'unranked'))
+                : '#${profile.fifaRanking}',
+          ),
+          _buildInfoRow(
+            icon: Icons.sports_soccer_outlined,
+            label: AppTranslations.get(widget.lang, 'appearances'),
+            value: '${profile.appearances} ${AppTranslations.get(widget.lang, 'finalPhases')}',
+          ),
+          _buildInfoRow(
+            icon: Icons.emoji_events_outlined,
+            label: AppTranslations.get(widget.lang, 'bestFinish'),
+            value: profile.bestFinish,
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrophiesList(TeamProfileData profile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: profile.trophies.map((trophy) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              _buildTrophyBadge(trophy),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  trophy,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    height: 1.3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMediaCard({
+    required String? imageUrl,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+    bool isDesktop = false,
+  }) {
+    final bool hasImage = imageUrl != null && imageUrl.isNotEmpty;
+    final bool isLocalAsset = hasImage && imageUrl.startsWith('assets/');
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          highlightColor: AppColors.border.withValues(alpha: 0.3),
+          splashColor: AppColors.accent.withValues(alpha: 0.15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                height: isDesktop ? 220 : 160,
+                color: AppColors.cardDark,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (hasImage) ...[
+                      isLocalAsset
+                          ? Image.asset(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                            )
+                          : Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                            ),
+                    ] else
+                      _buildImagePlaceholder(),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2), width: 1),
+                      ),
+                      child: const Icon(Icons.article_outlined, color: AppColors.accent, size: 24),
+                    ),
+                    const SizedBox(width: 18),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            description,
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.arrow_forward_ios, color: AppColors.textDim, size: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -271,8 +439,6 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
       ),
     );
   }
-
-  // ─── Info row ────────────────────────────────────────────────────────────────
 
   Widget _buildInfoRow({required IconData icon, required String label, required String value, bool isLast = false}) {
     return Padding(
@@ -318,127 +484,6 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     );
   }
 
-  // ─── Media card ──────────────────────────────────────────────────────────────
-
-  Widget _buildMediaCard({
-    required String? imageUrl,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    final bool hasImage = imageUrl != null && imageUrl.isNotEmpty;
-    final bool isLocalAsset = hasImage && imageUrl.startsWith('assets/');
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          highlightColor: AppColors.border.withValues(alpha: 0.3),
-          splashColor: AppColors.accent.withValues(alpha: 0.15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                color: AppColors.cardDark,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (hasImage) ...[
-                      isLocalAsset
-                          ? Image.asset(
-                              imageUrl,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => SizedBox(
-                                height: 160,
-                                child: _buildImagePlaceholder(),
-                              ),
-                            )
-                          : Image.network(
-                              imageUrl,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => SizedBox(
-                                height: 160,
-                                child: _buildImagePlaceholder(),
-                              ),
-                            ),
-                    ] else
-                      SizedBox(
-                        height: 160,
-                        child: _buildImagePlaceholder(),
-                      ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2), width: 1),
-                      ),
-                      child: const Icon(Icons.article_outlined, color: AppColors.accent, size: 24),
-                    ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            description,
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 11,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.arrow_forward_ios, color: AppColors.textDim, size: 14),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildImagePlaceholder() {
     return Container(
       color: AppColors.cardDark,
@@ -457,8 +502,6 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
       ),
     );
   }
-
-  // ─── Trophy badge ────────────────────────────────────────────────────────────
 
   Widget _buildTrophyBadge(String trophy) {
     final lower = trophy.toLowerCase();
@@ -504,8 +547,6 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     }
     return Icon(fallbackIcon, color: fallbackColor, size: 28);
   }
-
-  // ─── Anthem player ───────────────────────────────────────────────────────────
 
   Widget _buildAnthemPlayerSection(String code) {
     final audio = WCAudioService.instance;

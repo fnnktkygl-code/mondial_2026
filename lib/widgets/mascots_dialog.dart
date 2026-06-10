@@ -150,287 +150,297 @@ class _WCMascotsDialogState extends State<WCMascotsDialog> {
       'watchOfficialTrailer',
     );
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
+    final dialogWidth = isDesktop ? 600.0 : 450.0;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.border, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: dialogWidth,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ─── Header ──────────────────────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
-              decoration: const BoxDecoration(
-                color: AppColors.cardDark,
-                border: Border(
-                  bottom: BorderSide(color: AppColors.border, width: 1),
-                ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: AppColors.border, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.emoji_people,
-                    color: AppColors.accent,
-                    size: 24,
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ─── Header ──────────────────────────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                decoration: const BoxDecoration(
+                  color: AppColors.cardDark,
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.border, width: 1),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.emoji_people,
+                      color: AppColors.accent,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppColors.textDim,
-                      size: 20,
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.textDim,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // ─── Slider ──────────────────────────────────────────────────────────
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 440,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _mascots.length,
-                      onPageChanged: (idx) {
-                        setState(() {
-                          _currentPage = idx;
-                        });
-                      },
-                      itemBuilder: (context, idx) {
-                        final mascot = _mascots[idx];
-                        final countryName = widget.lang == 'fr'
-                            ? mascot.countryNameFr
-                            : (widget.lang == 'es'
-                                  ? mascot.countryNameEs
-                                  : mascot.countryNameEn);
-                        final roleText = widget.lang == 'fr'
-                            ? mascot.roleFr
-                            : (widget.lang == 'es'
-                                  ? mascot.roleEs
-                                  : mascot.roleEn);
-                        final descText = widget.lang == 'fr'
-                            ? mascot.descFr
-                            : (widget.lang == 'es'
-                                  ? mascot.descEs
-                                  : mascot.descEn);
+              // ─── Slider ──────────────────────────────────────────────────────────
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: isDesktop ? 550 : 440,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _mascots.length,
+                        onPageChanged: (idx) {
+                          setState(() {
+                            _currentPage = idx;
+                          });
+                        },
+                        itemBuilder: (context, idx) {
+                          final mascot = _mascots[idx];
+                          final countryName = widget.lang == 'fr'
+                              ? mascot.countryNameFr
+                              : (widget.lang == 'es'
+                                    ? mascot.countryNameEs
+                                    : mascot.countryNameEn);
+                          final roleText = widget.lang == 'fr'
+                              ? mascot.roleFr
+                              : (widget.lang == 'es'
+                                    ? mascot.roleEs
+                                    : mascot.roleEn);
+                          final descText = widget.lang == 'fr'
+                              ? mascot.descFr
+                              : (widget.lang == 'es'
+                                    ? mascot.descEs
+                                    : mascot.descEn);
 
-                        return SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Mascot Illustration Card with colored glow shadow
-                                Container(
-                                  width: 220,
-                                  height: 220,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(
-                                      color: mascot.themeColor.withValues(alpha: 0.5),
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: mascot.themeColor.withValues(alpha:
-                                          0.25,
+                          return SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Mascot Illustration Card with colored glow shadow
+                                  Container(
+                                    width: isDesktop ? 300 : 220,
+                                    height: isDesktop ? 300 : 220,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: mascot.themeColor.withValues(alpha: 0.5),
+                                        width: 2,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: mascot.themeColor.withValues(alpha:
+                                            0.25,
+                                          ),
+                                          blurRadius: 16,
+                                          spreadRadius: 2,
                                         ),
-                                        blurRadius: 16,
-                                        spreadRadius: 2,
+                                      ],
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Image.asset(
+                                      mascot.assetPath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stack) =>
+                                          Container(
+                                            color: AppColors.cardDark,
+                                            child: const Icon(
+                                              Icons.image_not_supported,
+                                              size: 40,
+                                              color: AppColors.textDim,
+                                            ),
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // Mascot Name & Flag Row
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        mascot.name,
+                                        style: TextStyle(
+                                          color: mascot.themeColor,
+                                          fontSize: isDesktop ? 32 : 26,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -0.5,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      TeamFlagWidget(
+                                        code: mascot.countryCode,
+                                        width: isDesktop ? 40 : 28,
+                                        height: isDesktop ? 26 : 18,
+                                        borderRadius: 4,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        countryName,
+                                        style: TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontSize: isDesktop ? 16 : 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Image.asset(
-                                    mascot.assetPath,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stack) =>
-                                        Container(
-                                          color: AppColors.cardDark,
-                                          child: const Icon(
-                                            Icons.image_not_supported,
-                                            size: 40,
-                                            color: AppColors.textDim,
-                                          ),
-                                        ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
+                                  const SizedBox(height: 8),
 
-                                // Mascot Name & Flag Row
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      mascot.name,
+                                  // Role Badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: mascot.themeColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: mascot.themeColor.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      roleText.toUpperCase(),
                                       style: TextStyle(
                                         color: mascot.themeColor,
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    TeamFlagWidget(
-                                      code: mascot.countryCode,
-                                      width: 28,
-                                      height: 18,
-                                      borderRadius: 4,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      countryName,
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 14,
+                                        fontSize: isDesktop ? 12 : 10,
                                         fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
+                                  ),
+                                  const SizedBox(height: 14),
 
-                                // Role Badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: mascot.themeColor.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: mascot.themeColor.withValues(alpha: 0.3),
+                                  // Description
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                    ),
+                                    child: Text(
+                                      descText,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: isDesktop ? 14 : 12,
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ),
-                                  child: Text(
-                                    roleText.toUpperCase(),
-                                    style: TextStyle(
-                                      color: mascot.themeColor,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-
-                                // Description
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Text(
-                                    descText,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
 
-                  // Page Indicators
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _mascots.length,
-                      (index) => GestureDetector(
-                        onTap: () => _pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: _currentPage == index ? 20 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: _currentPage == index
-                                ? _mascots[index].themeColor
-                                : AppColors.borderStrong,
-                            borderRadius: BorderRadius.circular(4),
+                    // Page Indicators
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        _mascots.length,
+                        (index) => GestureDetector(
+                          onTap: () => _pageController.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: _currentPage == index ? 20 : 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: _currentPage == index
+                                  ? _mascots[index].themeColor
+                                  : AppColors.borderStrong,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-            ),
 
-            // ─── Watch Trailer Button ────────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: AppColors.cardDark,
-                border: Border(
-                  top: BorderSide(color: AppColors.border, width: 1),
-                ),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: () => _launchVideo(context),
-                icon: const Icon(Icons.play_circle_fill, size: 20),
-                label: Text(
-                  watchVideoText,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+              // ─── Watch Trailer Button ────────────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: AppColors.cardDark,
+                  border: Border(
+                    top: BorderSide(color: AppColors.border, width: 1),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                child: ElevatedButton.icon(
+                  onPressed: () => _launchVideo(context),
+                  icon: const Icon(Icons.play_circle_fill, size: 20),
+                  label: Text(
+                    watchVideoText,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
-                  elevation: 2,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

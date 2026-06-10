@@ -87,10 +87,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Prono Challenge',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: MaterialApp(
+        title: 'Prono Challenge',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: AppColors.background,
         primaryColor: AppColors.accent,
@@ -147,6 +154,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const MyHomePage(),
+      ),
     );
   }
 }
