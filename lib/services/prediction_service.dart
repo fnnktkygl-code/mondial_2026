@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -154,14 +155,12 @@ class FriendGroup {
   final String name;
   final String code;
   final List<FriendScore> members;
-  final String? inviteToken;
   final String? creatorId;
 
   FriendGroup({
     required this.name,
     required this.code,
     required this.members,
-    this.inviteToken,
     this.creatorId,
   });
 }
@@ -589,7 +588,6 @@ class PredictionService {
       final data = doc.data();
       final name = data['name'] as String;
       final id = doc.id;
-      final inviteToken = data['inviteToken'] as String? ?? '';
       final creatorId = data['creatorId'] as String? ?? '';
 
       final List<dynamic> memberIds = data['members'] ?? [];
@@ -634,7 +632,6 @@ class PredictionService {
           name: name,
           code: id,
           members: members,
-          inviteToken: inviteToken,
           creatorId: creatorId,
         ),
       );
@@ -646,14 +643,59 @@ class PredictionService {
   static Future<void> createCustomGroup(String groupName) async {
     final uid = await WCFirebaseService.getOrCreateUserId();
     final firestore = FirebaseFirestore.instance;
-    final token = const Uuid().v4().substring(0, 8);
-    await firestore.collection('groups').add({
+    final groupId = firestore.collection('groups').doc().id;
+    
+    // 1. Create the group
+    await firestore.collection('groups').doc(groupId).set({
       'name': groupName,
       'creatorId': uid,
       'members': [uid],
-      'inviteToken': token,
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    // 2. Create the first smart invite (100 uses, 7 days)
+    await _generateSmartInvite(groupId, uid);
+  }
+
+  static Future<String> _generateSmartInvite(String groupId, String creatorId) async {
+    final firestore = FirebaseFirestore.instance;
+    final token = const Uuid().v4().substring(0, 8);
+    final inviteId = const Uuid().v4();
+    
+    await firestore.collection('invites').doc(inviteId).set({
+      'groupId': groupId,
+      'token': token,
+      'creatorId': creatorId,
+      'usesCount': 0,
+      'maxUses': 100,
+      'expiresAt': Timestamp.fromDate(DateTime.now().add(const Duration(days: 7))),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    
+    return '${inviteId}_$token';
+  }
+
+  static Future<String> getShareLink(String groupId) async {
+    final uid = await WCFirebaseService.getOrCreateUserId();
+    final firestore = FirebaseFirestore.instance;
+    
+    // Check for existing valid invite
+    final snapshot = await firestore.collection('invites')
+        .where('groupId', isEqualTo: groupId)
+        .where('expiresAt', isGreaterThan: Timestamp.now())
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final doc = snapshot.docs.first;
+      final data = doc.data();
+      if ((data['usesCount'] as int) < (data['maxUses'] as int)) {
+        return '${doc.id}_${data['token']}';
+      }
+    }
+
+    // Otherwise generate a fresh one
+    return await _generateSmartInvite(groupId, uid);
   }
 
   static Future<void> editCustomGroup(String groupId, String newName) async {
@@ -663,7 +705,15 @@ class PredictionService {
 
   static Future<void> deleteCustomGroup(String groupId) async {
     final firestore = FirebaseFirestore.instance;
-    await firestore.collection('groups').doc(groupId).delete();
+    
+    // Clean up associated invites
+    final invites = await firestore.collection('invites').where('groupId', isEqualTo: groupId).get();
+    final batch = firestore.batch();
+    for (var doc in invites.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(firestore.collection('groups').doc(groupId));
+    await batch.commit();
   }
 
   static Future<void> leaveCustomGroup(String groupId) async {
@@ -678,49 +728,72 @@ class PredictionService {
     final parts = inviteCode.trim().split('_');
     if (parts.length != 2) return false;
 
-    final groupId = parts[0];
+    final inviteId = parts[0];
     final token = parts[1];
 
     final uid = await WCFirebaseService.getOrCreateUserId();
     final firestore = FirebaseFirestore.instance;
-    final docRef = firestore.collection('groups').doc(groupId);
-    final docSnap = await docRef.get();
+    
+    try {
+      final inviteRef = firestore.collection('invites').doc(inviteId);
+      final inviteSnap = await inviteRef.get();
 
-    if (docSnap.exists) {
-      final data = docSnap.data()!;
-      if (data['inviteToken'] == token) {
-        final List<dynamic> members = data['members'] ?? [];
-        if (!members.contains(uid)) {
-          await docRef.update({
-            'members': FieldValue.arrayUnion([uid]),
-          });
+      if (!inviteSnap.exists) return false;
+      final inviteData = inviteSnap.data()!;
+      
+      // 1. Validate token, expiry and uses
+      if (inviteData['token'] != token) return false;
+      if (inviteData['usesCount'] >= inviteData['maxUses']) return false;
+      if ((inviteData['expiresAt'] as Timestamp).toDate().isBefore(DateTime.now())) return false;
 
-          final groupName = data['name'] as String;
-          final userDoc = await firestore.collection('users').doc(uid).get();
-          final username = userDoc.data()?['username'] ?? 'Someone';
+      final groupId = inviteData['groupId'] as String;
+      final groupRef = firestore.collection('groups').doc(groupId);
+      final groupSnap = await groupRef.get();
+      if (!groupSnap.exists) return false;
+      
+      final List<dynamic> members = groupSnap.data()!['members'] ?? [];
+      if (members.contains(uid)) return true; // Already in
 
-          for (final memberId in members) {
-            if (memberId != uid) {
-              await firestore
-                  .collection('users')
-                  .doc(memberId as String)
-                  .collection('notifications')
-                  .add({
-                    'title': 'New Group Member',
-                    'body': '$username joined $groupName!',
-                    'createdAt': FieldValue.serverTimestamp(),
-                    'read': false,
-                  });
-            }
-          }
-          return true;
-        }
-      }
+      // 2. Atomic Join: Update Invite Count + Update Group Members
+      final batch = firestore.batch();
+      batch.update(inviteRef, {'usesCount': FieldValue.increment(1)});
+      batch.update(groupRef, {'members': FieldValue.arrayUnion([uid])});
+      
+      await batch.commit();
+
+      // 3. Send notifications (Non-blocking)
+      _sendJoinNotifications(groupId, members, uid);
+      
+      return true;
+    } catch (e) {
+      debugPrint('Join group error: $e');
+      return false;
     }
-    return false;
   }
 
-  static String generateSharePayload(String groupId, String inviteToken) {
-    return '${groupId}_$inviteToken';
+  static Future<void> _sendJoinNotifications(String groupId, List<dynamic> memberIds, String newMemberUid) async {
+    final firestore = FirebaseFirestore.instance;
+    try {
+      final groupSnap = await firestore.collection('groups').doc(groupId).get();
+      final groupName = groupSnap.data()?['name'] ?? 'Group';
+      
+      final userDoc = await firestore.collection('users').doc(newMemberUid).get();
+      final username = userDoc.data()?['username'] ?? 'Someone';
+
+      for (final memberId in memberIds) {
+        if (memberId != newMemberUid) {
+          firestore.collection('users').doc(memberId as String).collection('notifications').add({
+            'title': 'New Group Member',
+            'body': '$username joined $groupName!',
+            'createdAt': FieldValue.serverTimestamp(),
+            'read': false,
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  static String generateSharePayload(String inviteId, String token) {
+    return '${inviteId}_$token';
   }
 }
