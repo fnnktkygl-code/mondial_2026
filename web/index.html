@@ -207,7 +207,8 @@
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .device-tablet-bar span { font-size: 11px; color: var(--text-3); font-weight: 600; }
-    .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #000; }
+    .device-tablet-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     /* ─── FEATURES FLIP CARDS ───────────────────────────── */
     #features { background: var(--surface); padding: 120px 0; }
@@ -215,7 +216,8 @@
     .features-grid { 
         display: grid; 
         grid-template-columns: repeat(3, 1fr); 
-        gap: 32px; 
+        gap: 32px;
+        grid-auto-flow: dense;
     }
     
     .flip-card {
@@ -270,8 +272,8 @@
     }
     
     .flip-card.desktop .flip-card-back img {
-        object-fit: contain; /* Prevent zoom/crop for desktop shots */
-        background: var(--card-deep);
+        object-fit: contain;
+        background: #000;
     }
     
     .feature-icon {
@@ -577,7 +579,8 @@
             <div class="flip-hint">Cliquer pour voir →</div>
           </div>
           <div class="flip-card-back">
-            <img src="screenshots/07_settings.jpeg" alt="Paramètres">
+            <!-- Fallback to profile screenshot since 07 is missing -->
+            <img src="screenshots/05_team_profile.jpeg" alt="Paramètres">
           </div>
         </div>
       </div>
@@ -593,8 +596,9 @@
       <h2 class="section-title">Vois l'app en action</h2>
     </div>
     <div class="video-showcase reveal">
-        <video controls poster="assets/app_icon.png">
+        <video controls poster="assets/app_icon.png" width="100%" playsinline>
             <source src="videos/demo.mov" type="video/quicktime">
+            <source src="videos/demo.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la lecture de vidéos.
         </video>
     </div>
