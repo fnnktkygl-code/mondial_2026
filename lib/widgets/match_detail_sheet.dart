@@ -9,6 +9,7 @@ import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
 import '../services/audio_service.dart';
+import '../services/insights_service.dart';
 import 'team_flag.dart';
 import 'team_profile_dialog.dart';
 
@@ -97,6 +98,121 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       });
     }
     return res;
+  }
+
+  Widget _buildProInsightsSection() {
+    final history1 = WCInsightsService.getHistory(widget.match.t1);
+    final history2 = WCInsightsService.getHistory(widget.match.t2);
+    final funFact1 = WCInsightsService.getRandomFunFact(widget.match.t1);
+    final funFact2 = WCInsightsService.getRandomFunFact(widget.match.t2);
+
+    if (history1 == null && history2 == null && funFact1 == null && funFact2 == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Text(
+          _t('proInsightsTitle'),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+            letterSpacing: 1.2,
+            fontFamily: 'Syne',
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        // --- FUN FACTS (Contextuels) ---
+        if (funFact1 != null || funFact2 != null) ...[
+          _buildFunFactCard(funFact1, funFact2),
+          const SizedBox(height: 16),
+        ],
+
+        // --- HISTORIQUE (Stats proposées par l'utilisateur) ---
+        if (history1 != null || history2 != null)
+          _buildHistoryComparison(history1, history2),
+      ],
+    );
+  }
+
+  Widget _buildFunFactCard(String? f1, String? f2) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.accent.withValues(alpha: 0.15), Colors.transparent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          if (f1 != null) _buildFactItem(widget.match.t1, f1),
+          if (f1 != null && f2 != null) const Divider(height: 24, color: AppColors.border),
+          if (f2 != null) _buildFactItem(widget.match.t2, f2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFactItem(String team, String fact) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TeamFlagWidget(code: team, width: 20, height: 14, borderRadius: 2),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            fact,
+            style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.4, fontStyle: FontStyle.italic),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHistoryComparison(TeamHistory? h1, TeamHistory? h2) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          _buildHistoryRow(_t('matchesPlayed'), h1?.played, h2?.played),
+          const SizedBox(height: 10),
+          _buildHistoryRow(_t('totalWins'), h1?.wins, h2?.wins),
+          const SizedBox(height: 10),
+          _buildHistoryRow(_t('goalsScored'), h1?.goalsFor, h2?.goalsFor),
+          const SizedBox(height: 10),
+          _buildHistoryRow(_t('goalsAgainst'), h1?.goalsAgainst, h2?.goalsAgainst),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryRow(String label, int? v1, int? v2) {
+    return Row(
+      children: [
+        SizedBox(width: 40, child: Text(v1?.toString() ?? '-', 
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+        Expanded(child: Text(label, 
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.w600))),
+        SizedBox(width: 40, child: Text(v2?.toString() ?? '-', 
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+      ],
+    );
   }
 
   void _initLocalScores() {
@@ -841,6 +957,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   _buildPredictionControlCard(),
                   const SizedBox(height: 20),
                   _buildProbabilityBar(context),
+                  const SizedBox(height: 20),
+                  _buildProInsightsSection(),
                   const SizedBox(height: 20),
                   if (widget.match.isPlayed && widget.match.goals.isNotEmpty) ...[
                     Text(
