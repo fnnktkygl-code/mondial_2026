@@ -37,6 +37,10 @@ async function updateMatches() {
 
   try {
     // 1. Lire le fichier local actuel
+    if (!fs.existsSync(MATCHES_FILE)) {
+      console.error(`❌ Erreur : Le fichier ${MATCHES_FILE} n'existe pas.`);
+      process.exit(1);
+    }
     const localData = JSON.parse(fs.readFileSync(MATCHES_FILE, 'utf8'));
     console.log(`Fichier local chargé : ${localData.length} matchs.`);
 
@@ -45,11 +49,19 @@ async function updateMatches() {
     const response = await axios.get(`${BASE_URL}/fixtures`, {
       headers: { 'x-apisports-key': API_KEY },
       params: { league: LEAGUE_ID, season: SEASON }
+    }).catch(err => {
+      if (err.response) {
+        console.error(`❌ Erreur API (${err.response.status}):`, JSON.stringify(err.response.data));
+      } else {
+        console.error(`❌ Erreur Réseau :`, err.message);
+      }
+      throw err;
     });
 
     const remoteFixtures = response.data.response;
     if (!remoteFixtures || remoteFixtures.length === 0) {
       console.log('⚠️ Aucun match trouvé sur l\'API ou quota dépassé.');
+      if (response.data.errors) console.log('Erreurs API:', JSON.stringify(response.data.errors));
       return;
     }
 
