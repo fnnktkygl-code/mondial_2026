@@ -421,6 +421,13 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
               label: const Text('Générer MES propres pronostics'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _resetMyPredictions,
+              icon: const Icon(Icons.delete_sweep),
+              label: const Text('RÉINITIALISER mes pronostics'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+            ),
             const Divider(height: 30),
             ElevatedButton(
               onPressed: _isLoading ? null : () => _simulateMatches(allMatches: true),
