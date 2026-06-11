@@ -77,7 +77,34 @@ async function updateMatches() {
       if (apiMatch) {
         updatedCount++;
         
-        // Extraction des buts et passes
+        // 1. Extraction des stats détaillées
+        let stats = null;
+        if (apiMatch.statistics && apiMatch.statistics.length > 0) {
+          const s1 = apiMatch.statistics[0].statistics;
+          const s2 = apiMatch.statistics[1].statistics;
+          
+          const getVal = (statsArray, type) => {
+            const found = statsArray.find(s => s.type === type);
+            if (!found || found.value === null) return 0;
+            return parseInt(found.value.toString().replace('%', '')) || 0;
+          };
+
+          stats = {
+            possessionT1: getVal(s1, 'Ball Possession'),
+            shotsT1: getVal(s1, 'Total Shots'),
+            shotsT2: getVal(s2, 'Total Shots'),
+            shotsOnTargetT1: getVal(s1, 'Shots on Goal'),
+            shotsOnTargetT2: getVal(s2, 'Shots on Goal'),
+            foulsT1: getVal(s1, 'Fouls'),
+            foulsT2: getVal(s2, 'Fouls'),
+            yellowCardsT1: getVal(s1, 'Yellow Cards'),
+            yellowCardsT2: getVal(s2, 'Yellow Cards'),
+            redCardsT1: getVal(s1, 'Red Cards'),
+            redCardsT2: getVal(s2, 'Red Cards')
+          };
+        }
+
+        // 2. Extraction des buts et passes
         const goals = [];
         if (apiMatch.events) {
           apiMatch.events.forEach(event => {
@@ -105,7 +132,8 @@ async function updateMatches() {
           pkWinner: apiMatch.fixture.status.short === 'PEN' ? 
                     (apiMatch.teams.home.winner ? localMatch.t1 : localMatch.t2) : null,
           lastUpdated: new Date().toISOString(),
-          goals: goals
+          goals: goals,
+          stats: stats
         };
       }
       return localMatch;
