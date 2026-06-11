@@ -61,6 +61,12 @@ class WCTeamProfileService {
 
     final mediaEntry = _mediaMap[lookupCode];
     final profileUrl = mediaEntry?['profile_url'] ?? 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/$lookupCode-team-profile-history';
+    
+    // Correction spécifique pour l'Écosse si le lien par défaut est brisé
+    String finalProfileUrl = profileUrl;
+    if (lookupCode == 'sco' && mediaEntry == null) {
+      finalProfileUrl = 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/scotland-team-profile-history';
+    }
     final mediaUrl = mediaEntry?['media_url'];
     final imageUrl  = mediaEntry?['image_url'] as String?;
 
@@ -72,7 +78,7 @@ class WCTeamProfileService {
       bestFinish: bestFinish,
       trophies: trophies,
       fifaRanking: getFifaRanking(lookupCode),
-      profileUrl: profileUrl,
+      profileUrl: finalProfileUrl,
       mediaUrl: mediaUrl,
       imageUrl: imageUrl,
     );
