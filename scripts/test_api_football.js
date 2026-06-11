@@ -3,67 +3,84 @@ const axios = require('axios');
 const API_KEY = process.env.FOOTBALL_API_KEY;
 const BASE_URL = 'https://v3.football.api-sports.io';
 
-async function testApi() {
+async function deepDiveTest() {
   if (!API_KEY || API_KEY === 'ta_cle_ici') {
-    console.error('❌ Erreur : Vous devez remplacer "ta_cle_ici" par votre vraie clé API.');
+    console.error('❌ Erreur : FOOTBALL_API_KEY non définie. Lancez avec : FOOTBALL_API_KEY=votre_cle node scripts/test_api_football.js');
     return;
   }
 
-  console.log('--- DIAGNOSTIC API-FOOTBALL ---');
+  console.log('🚀 --- DEEP DIVE TEST : API-FOOTBALL V3 ---');
 
-  // Test 1 : Vérification du statut de la clé
   try {
-    console.log('1. Vérification du compte (/status)...');
-    const statusRes = await axios.get(`${BASE_URL}/status`, {
-      headers: { 'x-apisports-key': API_KEY }
-    });
+    // On prend un match de référence (Finale Argentine-France 2022 ID: 855750)
+    // Note : Si le forfait Free bloque l'historique, on pourra tester un match live plus tard.
+    const matchId = 855750; 
     
-    const account = statusRes.data.response.account;
-    const requests = statusRes.data.response.requests;
+    console.log(`📡 Récupération complète du match ID : ${matchId}...`);
     
-    console.log(`✅ Clé valide !`);
-    console.log(`Utilisateur : ${account.firstname} ${account.lastname}`);
-    console.log(`Forfait : ${statusRes.data.response.subscription.plan}`);
-    console.log(`Requêtes aujourd'hui : ${requests.current}/${requests.limit_day}`);
-
-    // Test 2 : Vérification de l'accès à la Coupe du Monde
-    console.log('\n2. Vérification de l\'accès aux données World Cup...');
-    const leagueRes = await axios.get(`${BASE_URL}/leagues`, {
+    const response = await axios.get(`${BASE_URL}/fixtures`, {
       headers: { 'x-apisports-key': API_KEY },
-      params: { id: 1 } // World Cup
+      params: { id: matchId }
     });
 
-    if (leagueRes.data.response && leagueRes.data.response.length > 0) {
-      console.log('✅ Accès à la World Cup confirmé.');
-    } else {
-      console.log('⚠️ Accès à la World Cup semble limité ou non trouvé.');
-    }
-
-    // Test 3 : Exemple de structure de buteur (si possible sur un match récent)
-    console.log('\n3. Test structure buteurs (Match récent ID 1035080)...');
-    const matchRes = await axios.get(`${BASE_URL}/fixtures`, {
-      headers: { 'x-apisports-key': API_KEY },
-      params: { id: 1035080 } // Un match récent pour éviter le blocage historique
-    });
-
-    if (matchRes.data.response && matchRes.data.response.length > 0) {
-      const events = matchRes.data.response[0].events;
-      const goals = events.filter(e => e.type === 'Goal');
-      console.log(`⚽ ${goals.length} buts trouvés dans ce match.`);
-      if (goals.length > 0) {
-        console.log(`Format nom buteur : "${goals[0].player.name}"`);
-        console.log(`Format nom passeur : "${goals[0].assist.name || 'N/A'}"`);
+    if (!response.data.response || response.data.response.length === 0) {
+      console.log('⚠️ Aucun résultat. Essai sur un match de qualification récent (ID: 1035080)...');
+      const fallbackRes = await axios.get(`${BASE_URL}/fixtures`, {
+        headers: { 'x-apisports-key': API_KEY },
+        params: { id: 1035080 }
+      });
+      
+      if (fallbackRes.data.response && fallbackRes.data.response.length > 0) {
+        processMatch(fallbackRes.data.response[0]);
+      } else {
+        console.error('❌ Impossible de récupérer un match. Erreurs API :', response.data.errors);
       }
+    } else {
+      processMatch(response.data.response[0]);
     }
 
   } catch (error) {
-    if (error.response && error.response.status === 403) {
-      console.error('❌ Erreur 403 : Accès refusé.');
-      console.log('Note : Si vous utilisez RapidAPI, essayez de remplacer "x-apisports-key" par "x-rapidapi-key" dans le code.');
-    } else {
-      console.error('❌ Erreur :', error.message);
-    }
+    console.error('❌ Erreur critique :', error.message);
   }
 }
 
-testApi();
+function processMatch(match) {
+  console.log('\n✅ DONNÉES RÉCUPÉRÉES !');
+  console.log('====================================');
+  console.log(`MATCH : ${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}`);
+  console.log(`STADE : ${match.fixture.venue.name}, ${match.fixture.venue.city}`);
+  console.log('====================================');
+
+  // 1. Structure des Événements (Buteurs / Passeurs)
+  console.log('\n⚽ ÉVÉNEMENTS (Goals & Assists) :');
+  match.events.filter(e => e.type === 'Goal').forEach(e => {
+    console.log(`- BUT : ${e.player.name} [${e.time.elapsed}']`);
+    console.log(`  PASSEUR : ${e.assist.name || 'Aucun'}`);
+  });
+
+  // 2. Structure des Statistiques (Possession, Tirs, etc.)
+  console.log('\n📊 STATISTIQUES D\'ÉQUIPE :');
+  match.statistics.forEach(s => {
+    console.log(`\nStats pour ${s.team.name}:`);
+    s.statistics.slice(0, 5).forEach(stat => {
+      console.log(`  - ${stat.type} : ${stat.value}`);
+    });
+  });
+
+  // 3. Structure des Compositions (Lineups)
+  console.log('\n🏃 COMPOSITIONS (Lineups) :');
+  match.lineups.forEach(l => {
+    console.log(`\nFormation ${l.team.name} : ${l.formation}`);
+    console.log(`Coach : ${l.coach.name}`);
+    console.log(`Starters (Top 3) : ${l.startXI.slice(0, 3).map(p => p.player.name).join(', ')}...`);
+  });
+
+  console.log('\n\n💡 ANALYSE FINALE :');
+  console.log('Cette API est extrêmement riche. On récupère non seulement les scores, mais aussi :');
+  console.log('- Les noms EXACTS des buteurs et passeurs pour tes points.');
+  console.log('- Les statistiques pour tes graphiques.');
+  console.log('- Les compositions d\'équipes si tu veux ajouter un onglet "Terrain" plus tard.');
+  console.log('====================================');
+}
+
+deepDiveTest();

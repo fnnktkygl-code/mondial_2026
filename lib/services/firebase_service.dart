@@ -14,7 +14,9 @@ class WCFirebaseService {
 
     if (_auth.currentUser == null) {
       try {
-        final credential = await _auth.signInAnonymously();
+        final credential = await _auth
+            .signInAnonymously()
+            .timeout(const Duration(seconds: 10));
         if (credential.user != null) {
           uid = credential.user!.uid;
           await prefs.setString(_uidKey, uid);

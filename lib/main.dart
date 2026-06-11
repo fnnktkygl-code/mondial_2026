@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -233,99 +234,133 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
+    debugPrint("INIT: Starting _loadInitialData");
 
-    _userTimezone = DateTime.now().timeZoneName;
-    if (_userTimezone.isEmpty) {
-      _userTimezone = 'UTC';
-    }
-
-    Map<String, String> loadedAlerts = await AlertService.loadAlerts();
-    final loadedMatches = await ApiService.loadMatches(
-      forceRefresh: kIsLiveMode && !kIsStaging,
-    );
-
-    String? supportedTeam;
-    PredictionData? userPreds;
     try {
-      userPreds = await PredictionService.loadPredictionData();
-      final totalPoints = PredictionService.calculateTotalPoints(
-        userPreds,
-        loadedMatches,
-      );
-      final streak = PredictionService.calculateActiveStreak(
-        userPreds,
-        loadedMatches,
-      );
-      final guruCount = PredictionService.calculateExactGuessesCount(
-        userPreds,
-        loadedMatches,
-      );
-      supportedTeam = userPreds.supportedTeam;
+      _userTimezone = DateTime.now().timeZoneName;
+      if (_userTimezone.isEmpty) _userTimezone = 'UTC';
 
-      await WCFirebaseService.syncUserProfile(
+      debugPrint("INIT: Loading core data (Alerts, Matches, Preds)");
+      // Parallelize core data loading to minimize wait time
+      final results = await Future.wait([
+        AlertService.loadAlerts().catchError((e) {
+          debugPrint("Error loading alerts: $e");
+          return <String, String>{};
+        }),
+        ApiService.loadMatches(forceRefresh: kIsLiveMode && !kIsStaging).catchError((e) {
+          debugPrint("Error loading matches: $e");
+          return <WorldCupMatch>[];
+        }),
+        PredictionService.loadPredictionData().catchError((e) {
+          debugPrint("Error loading predictions: $e");
+          return PredictionData();
+        }),
+      ]).timeout(const Duration(seconds: 12), onTimeout: () {
+        debugPrint("INIT: Global timeout reached during core load");
+        throw TimeoutException("Core data load timed out");
+      });
+
+      final loadedAlerts = results[0] as Map<String, String>;
+      final loadedMatches = results[1] as List<WorldCupMatch>;
+      final userPreds = results[2] as PredictionData;
+
+      if (mounted) {
+        setState(() {
+          _userPreds = userPreds;
+          _supportedTeam = userPreds.supportedTeam;
+          _alerts = loadedAlerts;
+          _rawMatches = loadedMatches;
+          _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+          // Stop loading as soon as core data is ready to show the UI
+          _isLoading = false;
+        });
+        debugPrint("INIT: Core UI state updated, spinner stopped");
+      }
+
+      // Continue with non-blocking tasks
+      _finishInitialization(userPreds, loadedMatches, loadedAlerts);
+
+    } catch (e, stack) {
+      debugPrint("FATAL INIT ERROR: $e");
+      debugPrint(stack.toString());
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  /// Handles secondary initialization tasks without blocking the main UI.
+  Future<void> _finishInitialization(
+    PredictionData userPreds,
+    List<WorldCupMatch> loadedMatches,
+    Map<String, String> loadedAlerts,
+  ) async {
+    debugPrint("INIT: Starting background tasks");
+    
+    // 1. Sync User Profile (async, non-blocking)
+    try {
+      final totalPoints = PredictionService.calculateTotalPoints(userPreds, loadedMatches);
+      final streak = PredictionService.calculateActiveStreak(userPreds, loadedMatches);
+      final guruCount = PredictionService.calculateExactGuessesCount(userPreds, loadedMatches);
+
+      WCFirebaseService.syncUserProfile(
         username: userPreds.username,
         supportedTeam: userPreds.supportedTeam,
         points: totalPoints,
         streak: streak,
         guruCount: guruCount,
         avatar: userPreds.avatar,
-      );
+      ).timeout(const Duration(seconds: 8)).catchError((e) => debugPrint("Profile sync failed: $e"));
     } catch (e) {
-      debugPrint("Firebase initial sync error: $e");
+      debugPrint("Error preparing profile sync: $e");
     }
 
+    // 2. Deep Links
     try {
       final queryParams = Uri.base.queryParameters;
       if (queryParams.containsKey('group')) {
         final base64Payload = queryParams['group']!;
         if (base64Payload.isNotEmpty) {
           await PredictionService.joinCustomGroup(base64Payload);
-          _activeTab = 'challenge';
+          if (mounted) setState(() => _activeTab = 'challenge');
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint("Deep link error: $e");
+    }
 
-    setState(() {
-      _userPreds = userPreds;
-      _supportedTeam = supportedTeam;
-      _alerts = loadedAlerts;
-      _rawMatches = loadedMatches;
-      _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
-      _isLoading = false;
-    });
+    // 3. Odds & Notifications
     _updateTournamentOddsAndCheckNotifications();
 
-    try {
-      if (mounted && !kIsWeb) {
-        WCUpdateService.checkUpdate(context, _lang);
-      }
-    } catch (_) {}
+    // 4. Update Check (non-web only)
+    if (!kIsWeb) {
+      WCUpdateService.checkUpdate(context, _lang).catchError((_) => null);
+    }
 
+    // 5. Notifications Permissions & Scheduling
     try {
       await WCNotificationService.requestPermissions();
-    } catch (_) {}
-
-    try {
       await WCNotificationService.scheduleHalfTimeAndFullTimeNotifications(
         matches: _resolvedMatches,
         lang: _lang,
       );
     } catch (e) {
-      debugPrint("Error scheduling HT/FT notifications on load: $e");
+      debugPrint("Notification scheduling error: $e");
     }
 
+    // 6. First Launch Profile Modal
     try {
       final prefs = await SharedPreferences.getInstance();
       final firstShown = prefs.getBool('wc2026_first_profile_shown') ?? false;
       if (!firstShown) {
         await prefs.setBool('wc2026_first_profile_shown', true);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showProfileModal();
+          if (mounted) _showProfileModal();
         });
       }
     } catch (e) {
-      debugPrint("Error checking first launch profile show: $e");
+      debugPrint("First launch modal error: $e");
     }
+    
+    debugPrint("INIT: All background tasks completed");
   }
 
   void _showAnthemsModal() {
