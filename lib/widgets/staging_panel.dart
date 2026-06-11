@@ -82,31 +82,62 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
 
   List<GoalEvent> _simulateGoals(String t1, String t2, int score1, int score2, Random rand) {
     final List<GoalEvent> goalsList = [];
-    final t1Players = playerPools[t1] ?? ['Player A', 'Player B'];
-    final t2Players = playerPools[t2] ?? ['Player C', 'Player D'];
+    
+    // On récupère les joueurs réels depuis la liste officielle pour ces deux équipes
+    final t1Players = kWC2026Players.where((p) => p.contains('($t1)')).toList();
+    final t2Players = kWC2026Players.where((p) => p.contains('($t2)')).toList();
+
+    // Fallback si l'équipe n'est pas dans la liste (ne devrait pas arriver)
+    final List<String> p1 = t1Players.isNotEmpty ? t1Players : ['Joueur A ($t1)', 'Joueur B ($t1)'];
+    final List<String> p2 = t2Players.isNotEmpty ? t2Players : ['Joueur C ($t2)', 'Joueur D ($t2)'];
 
     for (int i = 0; i < score1; i++) {
-      final scorer = t1Players[rand.nextInt(t1Players.length)];
+      // FORCE MBAPPÉ : Si c'est la France (fr) et que Mbappé est dans la liste, il marque 80% du temps
+      String scorer;
+      if (t1.toLowerCase() == 'fr') {
+        scorer = rand.nextDouble() < 0.8 ? 'Kylian Mbappé' : p1[rand.nextInt(p1.length)];
+      } else {
+        scorer = p1[rand.nextInt(p1.length)];
+      }
+      
       String? assistant;
       if (rand.nextBool()) {
-        final candidates = t1Players.where((p) => p != scorer).toList();
+        final candidates = p1.where((p) => p != scorer).toList();
         if (candidates.isNotEmpty) assistant = candidates[rand.nextInt(candidates.length)];
       }
-      goalsList.add(GoalEvent(team: 't1', scorer: scorer, assistant: assistant, minute: rand.nextInt(90) + 1));
+      goalsList.add(GoalEvent(team: 't1', scorer: _shortenName(scorer), assistant: assistant != null ? _shortenName(assistant) : null, minute: rand.nextInt(90) + 1));
     }
 
     for (int i = 0; i < score2; i++) {
-      final scorer = t2Players[rand.nextInt(t2Players.length)];
+      String scorer;
+      // On peut aussi forcer Messi pour l'Argentine pour varier les tests
+      if (t2.toLowerCase() == 'ar') {
+        scorer = rand.nextDouble() < 0.6 ? 'Lionel Messi' : p2[rand.nextInt(p2.length)];
+      } else {
+        scorer = p2[rand.nextInt(p2.length)];
+      }
+
       String? assistant;
       if (rand.nextBool()) {
-        final candidates = t2Players.where((p) => p != scorer).toList();
+        final candidates = p2.where((p) => p != scorer).toList();
         if (candidates.isNotEmpty) assistant = candidates[rand.nextInt(candidates.length)];
       }
-      goalsList.add(GoalEvent(team: 't2', scorer: scorer, assistant: assistant, minute: rand.nextInt(90) + 1));
+      goalsList.add(GoalEvent(team: 't2', scorer: _shortenName(scorer), assistant: assistant != null ? _shortenName(assistant) : null, minute: rand.nextInt(90) + 1));
     }
 
     goalsList.sort((a, b) => a.minute.compareTo(b.minute));
     return goalsList;
+  }
+
+  /// Transforme "Kylian Mbappé" en "K. Mbappé" (style API)
+  String _shortenName(String full) {
+    final parts = full.split(' ');
+    if (parts.length < 2) return full;
+    final firstName = parts.first;
+    final lastName = parts.sublist(1).join(' ');
+    // On enlève le tag (team) si présent
+    final cleanLastName = lastName.split('(').first.trim();
+    return '${firstName[0]}. $cleanLastName';
   }
 
   MatchStats _simulateStats(int score1, int score2, Random rand) {
