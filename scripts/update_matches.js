@@ -19,7 +19,7 @@ function normalizeName(name) {
   let normalized = name.trim().toLowerCase();
   const accents = 'àáâãäåòóôõöøèéêëìíîïùúûüñç';
   const without = 'aaaaaaooooooeeeeiiiiuuuunc';
-  for (int i = 0; i < accents.length; i++) {
+  for (let i = 0; i < accents.length; i++) {
     normalized = normalized.split(accents[i]).join(without[i]);
   }
   normalized = normalized.replace(/[^a-z0-9\s]/g, ' ');

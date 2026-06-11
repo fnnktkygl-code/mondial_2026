@@ -29,15 +29,6 @@ jobs:
         working-directory: scripts
         run: npm install
 
-      - name: Debug Key Check
-        run: |
-          if [ -z "${{ secrets.FOOTBALL_API_KEY }}" ]; then
-            echo "❌ ERROR: FOOTBALL_API_KEY secret is EMPTY or NOT FOUND in GitHub Settings."
-            exit 1
-          else
-            echo "✅ FOOTBALL_API_KEY secret is present."
-          fi
-
       - name: Fetch live match data
         env:
           FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
