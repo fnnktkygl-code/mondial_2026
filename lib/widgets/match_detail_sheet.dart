@@ -113,105 +113,91 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
-        Text(
-          _t('proInsightsTitle'),
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w900,
-            fontSize: 16,
-            letterSpacing: 1.2,
-            fontFamily: 'Syne',
-          ),
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            const Icon(Icons.history_edu_rounded, color: AppColors.accent, size: 18),
+            const SizedBox(width: 10),
+            Text(
+              _t('worldCupHistoryTitle'),
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+                letterSpacing: 1.5,
+                fontFamily: 'Syne',
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         
-        // --- FUN FACTS (Contextuels) ---
-        if (funFact1 != null || funFact2 != null) ...[
-          _buildFunFactCard(funFact1, funFact2),
-          const SizedBox(height: 16),
-        ],
-
-        // --- HISTORIQUE (Stats proposées par l'utilisateur) ---
-        if (history1 != null || history2 != null)
-          _buildHistoryComparison(history1, history2),
+        // --- DEUX CARTES SÉPARÉES (Une par équipe) ---
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (history1 != null) Expanded(child: _buildTeamHistoryCard(widget.match.t1, history1, funFact1)),
+            if (history1 != null && history2 != null) const SizedBox(width: 12),
+            if (history2 != null) Expanded(child: _buildTeamHistoryCard(widget.match.t2, history2, funFact2)),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildFunFactCard(String? f1, String? f2) {
+  Widget _buildTeamHistoryCard(String teamCode, TeamHistory history, String? funFact) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.accent.withValues(alpha: 0.15), Colors.transparent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.cardDark.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (f1 != null) _buildFactItem(widget.match.t1, f1),
-          if (f1 != null && f2 != null) const Divider(height: 24, color: AppColors.border),
-          if (f2 != null) _buildFactItem(widget.match.t2, f2),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFactItem(String team, String fact) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TeamFlagWidget(code: team, width: 20, height: 14, borderRadius: 2),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            fact,
-            style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.4, fontStyle: FontStyle.italic),
+          Row(
+            children: [
+              TeamFlagWidget(code: teamCode, width: 18, height: 12, borderRadius: 2),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppTranslations.getTeam(widget.lang, teamCode).toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHistoryComparison(TeamHistory? h1, TeamHistory? h2) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          _buildHistoryRow(_t('matchesPlayed'), h1?.played, h2?.played),
-          const SizedBox(height: 10),
-          _buildHistoryRow(_t('totalWins'), h1?.wins, h2?.wins),
-          const SizedBox(height: 10),
-          _buildHistoryRow(_t('goalsScored'), h1?.goalsFor, h2?.goalsFor),
-          const SizedBox(height: 10),
-          _buildHistoryRow(_t('goalsAgainst'), h1?.goalsAgainst, h2?.goalsAgainst),
+          const SizedBox(height: 12),
+          _buildSmallStatRow(_t('playedShort'), history.played),
+          _buildSmallStatRow(_t('winsShort'), history.wins),
+          _buildSmallStatRow(_t('goalsShort'), history.goalsFor),
+          if (funFact != null) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(color: AppColors.border, height: 1),
+            ),
+            Text(
+              funFact,
+              style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.8), fontSize: 9, height: 1.3, fontStyle: FontStyle.italic),
+            ),
+          ]
         ],
       ),
     );
   }
 
-  Widget _buildHistoryRow(String label, int? v1, int? v2) {
-    return Row(
-      children: [
-        SizedBox(width: 40, child: Text(v1?.toString() ?? '-', 
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
-        Expanded(child: Text(label, 
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.w600))),
-        SizedBox(width: 40, child: Text(v2?.toString() ?? '-', 
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
-      ],
+  Widget _buildSmallStatRow(String label, int value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 9, fontWeight: FontWeight.w600)),
+          Text(value.toString(), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+        ],
+      ),
     );
   }
 
@@ -958,8 +944,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   const SizedBox(height: 20),
                   _buildProbabilityBar(context),
                   const SizedBox(height: 20),
-                  _buildProInsightsSection(),
-                  const SizedBox(height: 20),
                   if (widget.match.isPlayed && widget.match.goals.isNotEmpty) ...[
                     Text(
                       AppTranslations.get(widget.lang, 'scorers').toUpperCase(),
@@ -1175,7 +1159,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
+
+                  // --- SECTION PRO INSIGHTS (TOUT EN BAS) ---
+                  _buildProInsightsSection(),
+                  const SizedBox(height: 48), // Espace final pour ne pas être collé au bord
                 ],
               ),
             ),
