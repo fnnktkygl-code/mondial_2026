@@ -257,6 +257,34 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     }
   }
 
+  Future<void> _resetMyPredictions() async {
+    setState(() => _isLoading = true);
+    try {
+      final preds = await PredictionService.loadPredictionData();
+      preds.matchPredictions.clear();
+      preds.championCode = null;
+      preds.goldenBootPlayer = null;
+      preds.topAssisterPlayer = null;
+      
+      await PredictionService.savePredictionData(preds);
+      
+      await WCFirebaseService.syncUserProfile(
+        username: preds.username,
+        supportedTeam: preds.supportedTeam,
+        points: 0,
+        streak: 0,
+        guruCount: 0,
+        avatar: preds.avatar,
+      );
+
+      _showSnackBar('Vos pronostics ont été réinitialisés !');
+    } catch (e) {
+      _showSnackBar('Erreur : $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   // ─── ACTION: User & Group Mocks ────────────────────────────────────────────
 
   Future<void> _generateMockUsers() async {
