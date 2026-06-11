@@ -5,15 +5,60 @@ import '../models/match.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/prediction_service.dart';
+import '../app_colors.dart';
+import '../app_constants.dart';
 
 // Player pools for simulation
 const Map<String, List<String>> playerPools = {
   'mx': ['H. Lozano', 'R. Jiménez', 'S. Giménez', 'U. Antuna'],
-  'pl': ['R. Lewandowski', 'P. Zieliński', 'K. Świderski'],
-  'ar': ['L. Messi', 'L. Martínez', 'J. Álvarez'],
+  'co': ['L. Díaz', 'J. Rodríguez', 'R. Borré', 'J. Arias'],
+  'cm': ['V. Aboubakar', 'K. Toko Ekambi', 'E. Choupo-Moting'],
+  'kr': ['H. Son', 'G. Cho', 'H. Hwang'],
+  'us': ['C. Pulisic', 'T. Weah', 'F. Balogun'],
+  'en': ['H. Kane', 'B. Saka', 'P. Foden', 'J. Bellingham'],
+  'ng': ['V. Osimhen', 'A. Lookman', 'M. Simon'],
+  'jp': ['K. Mitoma', 'K. Furuhashi', 'T. Kubo'],
+  'ca': ['J. David', 'C. Larin', 'A. Davies'],
   'fr': ['K. Mbappé', 'O. Giroud', 'O. Dembélé', 'A. Griezmann'],
-  // ... (rest unchanged in actual execution)
-
+  'sn': ['S. Mané', 'I. Sarr', 'B. Dia'],
+  'de': ['L. Sané', 'K. Havertz', 'J. Musiala'],
+  'br': ['Neymar Jr.', 'Vinícius Jr.', 'Rodrygo', 'Richarlison'],
+  'ar': ['L. Messi', 'L. Martínez', 'J. Álvarez'],
+  'ma': ['Y. En-Nesyri', 'H. Ziyech', 'S. Boufal'],
+  'es': ['A. Morata', 'Ferran', 'Dani Olmo', 'Gavi'],
+  'it': ['G. Scamacca', 'F. Chiesa', 'N. Barella'],
+  'pt': ['C. Ronaldo', 'B. Fernandes', 'R. Leão'],
+  'nl': ['M. Depay', 'C. Gakpo', 'X. Simons'],
+  'be': ['R. Lukaku', 'K. De Bruyne', 'J. Doku'],
+  'hr': ['A. Kramarić', 'L. Modrić', 'M. Kovačić'],
+  'uy': ['D. Núñez', 'F. Valverde', 'L. Suárez'],
+  'se': ['A. Isak', 'V. Gyökeres', 'D. Kulusevski'],
+  'ch': ['B. Embolo', 'X. Shaqiri', 'Z. Amdouni'],
+  'dk': ['R. Højlund', 'C. Eriksen', 'J. Wind'],
+  'pl': ['R. Lewandowski', 'P. Zieliński', 'K. Świderski'],
+  'ua': ['A. Dovbyk', 'M. Mudryk', 'V. Tsygankov'],
+  'dz': ['R. Mahrez', 'B. Bounedjah', 'Y. Belaïli'],
+  'eg': ['M. Salah', 'M. Mostafa', 'O. Marmoush'],
+  'tn': ['Y. Msakni', 'N. Sliti', 'E. Skhiri'],
+  'gh': ['I. Williams', 'M. Kudus', 'J. Ayew'],
+  'ci': ['S. Haller', 'S. Adingra', 'F. Kessié'],
+  'cl': ['A. Sánchez', 'E. Vargas', 'B. Brereton Díaz'],
+  'pe': ['G. Lapadula', 'A. Carrillo', 'C. Cueva'],
+  'ec': ['E. Valencia', 'J. Caicedo', 'K. Rodríguez'],
+  've': ['S. Rondón', 'D. Machís', 'Y. Soteldo'],
+  'au': ['M. Duke', 'C. Goodwin', 'J. Bos'],
+  'nz': ['C. Wood', 'B. Waine', 'K. Barbarouses'],
+  'sa': ['S. Al-Dawsari', 'S. Al-Shehri', 'F. Al-Buraikan'],
+  'ir': ['M. Taremi', 'S. Azmoun', 'A. Jahanbakhsh'],
+  'tr': ['C. Tosun', 'B. Yılmaz', 'H. Çalhanoğlu'],
+  'gr': ['V. Pavlidis', 'G. Masouras', 'T. Bakasetas'],
+  'cz': ['P. Schick', 'J. Kuchta', 'T. Souček'],
+  'at': ['M. Arnautović', 'M. Sabitzer', 'C. Baumgartner'],
+  'ro': ['D. Alibec', 'V. Mihăilă', 'N. Stanciu'],
+  'hu': ['B. Varga', 'R. Sallai', 'D. Szoboszlai'],
+  'bg': ['K. Despodov', 'G. Minchev', 'I. Gruev'],
+  'rs': ['A. Mitrović', 'D. Vlahović', 'D. Tadić']
+};
 
 class StagingPanelWidget extends StatefulWidget {
   const StagingPanelWidget({super.key});
@@ -106,7 +151,6 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
 
           if (match.isKnockout && score1 == score2) {
             wentToET = true;
-            // 50% chance of ending in extra time vs penalties
             if (random.nextBool()) {
               if (random.nextBool()) {
                 score1++;
@@ -139,11 +183,11 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       }
 
       await ApiService.saveMatchesToCache(matches);
-      _showSnackBar('Matchs et Stats simulés ! Redémarrez l\'app ou changez d\'onglet.');
+      _showSnackBar('Matchs et Stats simulés !');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -151,11 +195,11 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     setState(() => _isLoading = true);
     try {
       await ApiService.resetCache();
-      _showSnackBar('Simulations effacées ! Redémarrez l\'app.');
+      _showSnackBar('Simulations effacées !');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -180,17 +224,18 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
 
       preds.championCode = 'fr';
       preds.championPredictedAt = DateTime.now().subtract(const Duration(days: 30));
-      
-      preds.goldenBootWinner = 'pl'; // team
-      preds.goldenBootPlayer = 'Robert Lewandowski'; // Nom COMPLET (FIFA style)
+
+      preds.goldenBootWinner = 'fr'; // France
+      preds.goldenBootPlayer = 'Kylian Mbappé'; // Nom COMPLET (FIFA style)
       preds.goldenBootPredictedAt = DateTime.now().subtract(const Duration(days: 30));
 
-      preds.topAssisterWinner = 'ar'; // team
+      preds.topAssisterWinner = 'ar'; // Argentine
       preds.topAssisterPlayer = 'Lionel Messi'; // Nom COMPLET
       preds.topAssisterPredictedAt = DateTime.now().subtract(const Duration(days: 30));
 
+
       await PredictionService.savePredictionData(preds);
-      // Synchroniser immédiatement avec Firebase pour le classement
+      
       final totalPoints = PredictionService.calculateTotalPoints(preds, matches);
       final streak = PredictionService.calculateActiveStreak(preds, matches);
       final guruCount = PredictionService.calculateExactGuessesCount(preds, matches);
@@ -208,7 +253,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -222,7 +267,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       final firestore = FirebaseFirestore.instance;
       final random = Random();
       
-      int basePoints = 10; // Garantir au moins 10 points pour ne pas être caché
+      int basePoints = 10;
       if (level == 2) basePoints = 150;
       if (level == 3) basePoints = 400;
       if (level == 4) basePoints = 800;
@@ -230,33 +275,29 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       final List<String> mockPseudos = [
         'DarkNinja', 'SoccerFan', 'ElFideo', 'Capitan', 'GoalMachine', 
         'PronoKing', 'D10S_Messi', 'CR7_GOAT', 'Mbappe_Speed', 'BleuEtFier', 
-        'Zizou10', 'TikiTaka', 'LaPulga', 'MagicFoot', 'Sniper', 
-        'Goleador', 'ElMatador', 'FootAddict', 'Champion2026', 'Mondialiste',
-        'Maestro', 'GoldenBoot', 'Catenaccio', 'ButeurFou', 'LeStratege'
+        'Zizou10', 'TikiTaka', 'LaPulga', 'Maestro', 'GoldenBoot'
       ];
 
       for (int i = 0; i < count; i++) {
-        final pseudoBase = mockPseudos[random.nextInt(mockPseudos.length)];
-        final pseudo = '$pseudoBase${random.nextInt(999)}';
-        final avatarId = random.nextInt(32) + 1; // 1 à 32
+        final pseudo = '${mockPseudos[random.nextInt(mockPseudos.length)]}${random.nextInt(999)}';
+        final avatarId = random.nextInt(32) + 1;
         
-        final docRef = firestore.collection('users').doc('mock_user_${i}_${random.nextInt(10000)}');
-        await docRef.set({
+        await firestore.collection('users').add({
           'username': pseudo,
           'points': basePoints + random.nextInt(100),
           'streak': random.nextInt(5),
           'guruCount': random.nextInt(3),
-          'avatar': 'assets/avatars/$avatarId.png', // Assignation d'un vrai avatar
+          'avatar': 'assets/avatars/$avatarId.png',
           'isHidden': false,
-          'isMock': true, // Identifier for deletion
+          'isMock': true,
           'updatedAt': FieldValue.serverTimestamp(),
         });
       }
-      _showSnackBar('$count joueurs (Niveau $level) générés !');
+      _showSnackBar('$count joueurs générés !');
     } catch (e) {
-      _showSnackBar('Erreur (Vérifiez Firestore Rules) : $e');
+      _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -264,16 +305,15 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     setState(() => _isLoading = true);
     try {
       final firestore = FirebaseFirestore.instance;
-      // Supprime TOUT le monde, y compris le compte de test actuel
       final snapshot = await firestore.collection('users').get();
       for (final doc in snapshot.docs) {
         await doc.reference.delete();
       }
-      _showSnackBar('${snapshot.docs.length} joueurs (TOUS) ont été supprimés.');
+      _showSnackBar('Tous les joueurs supprimés.');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -285,14 +325,11 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       final firestore = FirebaseFirestore.instance;
       final random = Random();
 
-      // Récupérer quelques utilisateurs mock pour les ajouter aux groupes
       final mockUsersSnap = await firestore.collection('users').where('isMock', isEqualTo: true).limit(20).get();
       final List<String> availableMockUids = mockUsersSnap.docs.map((d) => d.id).toList();
 
       for (int i = 0; i < count; i++) {
         final List<String> members = [uid];
-        
-        // Ajouter 3 à 8 membres aléatoires par groupe
         if (availableMockUids.isNotEmpty) {
           final int membersToAdd = random.nextInt(min(8, availableMockUids.length)) + 3;
           final shuffled = List<String>.from(availableMockUids)..shuffle(random);
@@ -308,11 +345,11 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
           'createdAt': FieldValue.serverTimestamp(),
         });
       }
-      _showSnackBar('$count groupes générés avec des membres !');
+      _showSnackBar('$count groupes générés !');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -320,16 +357,15 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     setState(() => _isLoading = true);
     try {
       final firestore = FirebaseFirestore.instance;
-      // Supprime TOUS les groupes
       final snapshot = await firestore.collection('groups').get();
       for (final doc in snapshot.docs) {
         await doc.reference.delete();
       }
-      _showSnackBar('${snapshot.docs.length} groupes (TOUS) ont été supprimés.');
+      _showSnackBar('Tous les groupes supprimés.');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -346,39 +382,18 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              '🛠️ Panneau de Staging - Deep Mock',
+              '🛠️ Panneau de Staging',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.amber),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 10),
-            const Text(
-              'Génère de vraies données (Buteurs, stats, pronostics) pour tester toutes les fonctionnalités.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
             const SizedBox(height: 20),
-
-            // ─── Mes Pronostics ───
-            const Text('ÉTAPE 1 : Moi-même (Le Joueur Actuel)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _mockMyPredictions,
               icon: const Icon(Icons.edit_note),
               label: const Text('Générer MES propres pronostics'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             ),
-            const SizedBox(height: 10),
-            const Text('💡 Astuce: Pour que vous ayez des points et des badges quand les matchs se simulent, il faut d\'abord remplir vos pronostics ici !', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
             const Divider(height: 30),
-
-            // ─── Matchs ───
-            const Text('ÉTAPE 2 : Simulations des Matchs (Buteurs, Stats, Prols)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _isLoading ? null : () => _simulateMatches(allMatches: false),
-              child: const Text('Simuler Seulement Poules'),
-            ),
-            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _isLoading ? null : () => _simulateMatches(allMatches: true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
@@ -391,16 +406,11 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
               child: const Text('Réinitialiser les Matchs (0-0)'),
             ),
             const Divider(height: 30),
-
-            // ─── Utilisateurs ───
-            const Text('Joueurs Fictifs (Pour le Leaderboard)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const Text('Niveau d\'XP : 1=Rookie, 2=Tactician, 3=Master, 4=Special One', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(child: TextField(controller: _usersController, decoration: const InputDecoration(labelText: 'Nbr Joueurs', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
                 const SizedBox(width: 10),
-                Expanded(child: TextField(controller: _levelController, decoration: const InputDecoration(labelText: 'Rang XP (1-4)', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+                Expanded(child: TextField(controller: _levelController, decoration: const InputDecoration(labelText: 'Niveau (1-4)', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
               ],
             ),
             const SizedBox(height: 10),
@@ -412,12 +422,6 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
               ],
             ),
             const Divider(height: 30),
-
-            // ─── Groupes ───
-            const Text('Groupes Privés', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            TextField(controller: _groupsController, decoration: const InputDecoration(labelText: 'Nbr Groupes', border: OutlineInputBorder()), keyboardType: TextInputType.number),
-            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(child: ElevatedButton(onPressed: _isLoading ? null : _generateMockGroups, child: const Text('Générer Groupes'))),
@@ -425,7 +429,6 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
                 Expanded(child: ElevatedButton(onPressed: _isLoading ? null : _deleteAllGroups, style: ElevatedButton.styleFrom(backgroundColor: Colors.red), child: const Text('TOUT Purger'))),
               ],
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
