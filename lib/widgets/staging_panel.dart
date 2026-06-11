@@ -5,61 +5,45 @@ import '../models/match.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/prediction_service.dart';
-import 'wc2026_players.dart';
-import '../app_colors.dart';
-import '../app_constants.dart';
+
+import '../services/player_database_service.dart';
 
 // Player pools for simulation
-const Map<String, List<String>> playerPools = {
-  'mx': ['H. Lozano', 'R. Jiménez', 'S. Giménez', 'U. Antuna'],
-  'co': ['L. Díaz', 'J. Rodríguez', 'R. Borré', 'J. Arias'],
-  'cm': ['V. Aboubakar', 'K. Toko Ekambi', 'E. Choupo-Moting'],
-  'kr': ['H. Son', 'G. Cho', 'H. Hwang'],
-  'us': ['C. Pulisic', 'T. Weah', 'F. Balogun'],
-  'en': ['H. Kane', 'B. Saka', 'P. Foden', 'J. Bellingham'],
-  'ng': ['V. Osimhen', 'A. Lookman', 'M. Simon'],
-  'jp': ['K. Mitoma', 'K. Furuhashi', 'T. Kubo'],
-  'ca': ['J. David', 'C. Larin', 'A. Davies'],
-  'fr': ['K. Mbappé', 'O. Giroud', 'O. Dembélé', 'A. Griezmann'],
-  'sn': ['S. Mané', 'I. Sarr', 'B. Dia'],
-  'de': ['L. Sané', 'K. Havertz', 'J. Musiala'],
-  'br': ['Neymar Jr.', 'Vinícius Jr.', 'Rodrygo', 'Richarlison'],
-  'ar': ['L. Messi', 'L. Martínez', 'J. Álvarez'],
-  'ma': ['Y. En-Nesyri', 'H. Ziyech', 'S. Boufal'],
-  'es': ['A. Morata', 'Ferran', 'Dani Olmo', 'Gavi'],
-  'it': ['G. Scamacca', 'F. Chiesa', 'N. Barella'],
-  'pt': ['C. Ronaldo', 'B. Fernandes', 'R. Leão'],
-  'nl': ['M. Depay', 'C. Gakpo', 'X. Simons'],
-  'be': ['R. Lukaku', 'K. De Bruyne', 'J. Doku'],
-  'hr': ['A. Kramarić', 'L. Modrić', 'M. Kovačić'],
-  'uy': ['D. Núñez', 'F. Valverde', 'L. Suárez'],
-  'se': ['A. Isak', 'V. Gyökeres', 'D. Kulusevski'],
-  'ch': ['B. Embolo', 'X. Shaqiri', 'Z. Amdouni'],
-  'dk': ['R. Højlund', 'C. Eriksen', 'J. Wind'],
-  'pl': ['R. Lewandowski', 'P. Zieliński', 'K. Świderski'],
-  'ua': ['A. Dovbyk', 'M. Mudryk', 'V. Tsygankov'],
-  'dz': ['R. Mahrez', 'B. Bounedjah', 'Y. Belaïli'],
-  'eg': ['M. Salah', 'M. Mostafa', 'O. Marmoush'],
-  'tn': ['Y. Msakni', 'N. Sliti', 'E. Skhiri'],
-  'gh': ['I. Williams', 'M. Kudus', 'J. Ayew'],
-  'ci': ['S. Haller', 'S. Adingra', 'F. Kessié'],
-  'cl': ['A. Sánchez', 'E. Vargas', 'B. Brereton Díaz'],
-  'pe': ['G. Lapadula', 'A. Carrillo', 'C. Cueva'],
-  'ec': ['E. Valencia', 'J. Caicedo', 'K. Rodríguez'],
-  've': ['S. Rondón', 'D. Machís', 'Y. Soteldo'],
-  'au': ['M. Duke', 'C. Goodwin', 'J. Bos'],
-  'nz': ['C. Wood', 'B. Waine', 'K. Barbarouses'],
-  'sa': ['S. Al-Dawsari', 'S. Al-Shehri', 'F. Al-Buraikan'],
-  'ir': ['M. Taremi', 'S. Azmoun', 'A. Jahanbakhsh'],
-  'tr': ['C. Tosun', 'B. Yılmaz', 'H. Çalhanoğlu'],
-  'gr': ['V. Pavlidis', 'G. Masouras', 'T. Bakasetas'],
-  'cz': ['P. Schick', 'J. Kuchta', 'T. Souček'],
-  'at': ['M. Arnautović', 'M. Sabitzer', 'C. Baumgartner'],
-  'ro': ['D. Alibec', 'V. Mihăilă', 'N. Stanciu'],
-  'hu': ['B. Varga', 'R. Sallai', 'D. Szoboszlai'],
-  'bg': ['K. Despodov', 'G. Minchev', 'I. Gruev'],
-  'rs': ['A. Mitrović', 'D. Vlahović', 'D. Tadić']
+// REMOVED: Now using PlayerDatabaseService
+
+const Map<String, List<String>> groupsMap = {
+  'A': ['mx', 'co', 'cm', 'kr'],
+  'B': ['us', 'en', 'ng', 'jp'],
+  'C': ['ca', 'fr', 'sn', 'de'],
+  'D': ['br', 'ar', 'ma', 'es'],
+  'E': ['it', 'pt', 'nl', 'be'],
+  'F': ['hr', 'uy', 'se', 'ch'],
+  'G': ['dk', 'pl', 'ua', 'dz'],
+  'H': ['eg', 'tn', 'gh', 'ci'],
+  'I': ['cl', 'pe', 'ec', 've'],
+  'J': ['au', 'nz', 'sa', 'ir'],
+  'K': ['tr', 'gr', 'cz', 'at'],
+  'L': ['ro', 'hu', 'bg', 'rs']
 };
+
+const List<Map<String, String>> r32Pairings = [
+  {'id': 'm49', 't1': '1A', 't2': '3rd1'},
+  {'id': 'm50', 't1': '2B', 't2': '2C'},
+  {'id': 'm51', 't1': '1C', 't2': '3rd2'},
+  {'id': 'm52', 't1': '2A', 't2': '2D'},
+  {'id': 'm53', 't1': '1E', 't2': '3rd3'},
+  {'id': 'm54', 't1': '2F', 't2': '2G'},
+  {'id': 'm55', 't1': '1G', 't2': '3rd4'},
+  {'id': 'm56', 't1': '2H', 't2': '2I'},
+  {'id': 'm57', 't1': '1B', 't2': '3rd5'},
+  {'id': 'm58', 't1': '2E', 't2': '2J'},
+  {'id': 'm59', 't1': '1D', 't2': '3rd6'},
+  {'id': 'm60', 't1': '2K', 't2': '2L'},
+  {'id': 'm61', 't1': '1F', 't2': '3rd7'},
+  {'id': 'm62', 't1': '1H', 't2': '3rd8'},
+  {'id': 'm63', 't1': '1I', 't2': '1J'},
+  {'id': 'm64', 't1': '1K', 't2': '1L'}
+];
 
 class StagingPanelWidget extends StatefulWidget {
   const StagingPanelWidget({super.key});
@@ -74,6 +58,12 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   final _levelController = TextEditingController(text: '3');
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    PlayerDatabaseService.loadPlayers();
+  }
+
   void _showSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
@@ -84,37 +74,70 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   List<GoalEvent> _simulateGoals(String t1, String t2, int score1, int score2, Random rand) {
     final List<GoalEvent> goalsList = [];
     
-    final t1Players = kWC2026Players.where((p) => p.contains('($t1)')).toList();
-    final t2Players = kWC2026Players.where((p) => p.contains('($t2)')).toList();
+    // Team code to Full Name mapping (Matches JSON keys)
+    final Map<String, String> teamCodeToName = {
+      'mx': 'Mexico', 'co': 'Colombia', 'cm': 'Cameroon', 'kr': 'South Korea',
+      'us': 'USA', 'en': 'England', 'ng': 'Nigeria', 'jp': 'Japan',
+      'ca': 'Canada', 'fr': 'France', 'sn': 'Senegal', 'de': 'Germany',
+      'br': 'Brazil', 'ar': 'Argentina', 'ma': 'Morocco', 'es': 'Spain',
+      'it': 'Italy', 'pt': 'Portugal', 'nl': 'Netherlands', 'be': 'Belgium',
+      'hr': 'Croatia', 'uy': 'Uruguay', 'se': 'Sweden', 'ch': 'Switzerland',
+      'dk': 'Denmark', 'pl': 'Poland', 'ua': 'Ukraine', 'dz': 'Algeria',
+      'eg': 'Egypt', 'tn': 'Tunisia', 'gh': 'Ghana', 'ci': 'Ivory Coast',
+      'cl': 'Chile', 'pe': 'Peru', 'ec': 'Ecuador', 've': 'Venezuela',
+      'au': 'Australia', 'nz': 'New Zealand', 'sa': 'Saudi Arabia', 'ir': 'Iran',
+      'tr': 'Turkey', 'gr': 'Greece', 'cz': 'Czech Republic', 'at': 'Austria',
+      'ro': 'Romania', 'hu': 'Hungary', 'bg': 'Bulgaria', 'rs': 'Serbia'
+    };
 
+    final t1Name = teamCodeToName[t1.toLowerCase()] ?? 'Team ($t1)';
+    final t2Name = teamCodeToName[t2.toLowerCase()] ?? 'Team ($t2)';
+
+    final List<String> t1Pool = PlayerDatabaseService.getPlayersForTeam(t1Name);
+    final List<String> t2Pool = PlayerDatabaseService.getPlayersForTeam(t2Name);
+        
+    // Simulate for Team 1
     for (int i = 0; i < score1; i++) {
       String scorer;
-      if (t1.toLowerCase() == 'fr') {
-        scorer = 'Kylian Mbappé'; // Strict match
+      String? assistant;
+      
+      if (t1Pool.isNotEmpty) {
+        scorer = t1Pool[rand.nextInt(t1Pool.length)];
+        if (rand.nextBool() && t1Pool.length > 1) {
+          final candidates = t1Pool.where((p) => p != scorer).toList();
+          if (candidates.isNotEmpty) assistant = candidates[rand.nextInt(candidates.length)];
+        }
       } else {
-        scorer = t1Players.isNotEmpty ? t1Players[rand.nextInt(t1Players.length)] : 'Player A ($t1)';
+        scorer = t1Name; // Fallback to team name if no players found
       }
       
       goalsList.add(GoalEvent(
         team: 't1', 
-        scorer: _cleanNameForSimulation(scorer), 
-        assistant: null, 
+        scorer: scorer, 
+        assistant: assistant, 
         minute: rand.nextInt(90) + 1
       ));
     }
 
+    // Simulate for Team 2
     for (int i = 0; i < score2; i++) {
       String scorer;
-      if (t2.toLowerCase() == 'fr') {
-        scorer = 'Kylian Mbappé'; // Strict match
+      String? assistant;
+
+      if (t2Pool.isNotEmpty) {
+        scorer = t2Pool[rand.nextInt(t2Pool.length)];
+        if (rand.nextBool() && t2Pool.length > 1) {
+          final candidates = t2Pool.where((p) => p != scorer).toList();
+          if (candidates.isNotEmpty) assistant = candidates[rand.nextInt(candidates.length)];
+        }
       } else {
-        scorer = t2Players.isNotEmpty ? t2Players[rand.nextInt(t2Players.length)] : 'Player B ($t2)';
+        scorer = t2Name; // Fallback to team name if no players found
       }
 
       goalsList.add(GoalEvent(
         team: 't2', 
-        scorer: _cleanNameForSimulation(scorer), 
-        assistant: null, 
+        scorer: scorer, 
+        assistant: assistant, 
         minute: rand.nextInt(90) + 1
       ));
     }
@@ -123,87 +146,271 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     return goalsList;
   }
 
-  /// Garde le nom ENTIER pour éviter les bugs d'initiales
-  String _cleanNameForSimulation(String full) {
-    // On enlève juste le tag équipe final "(fr)" mais on garde TOUT le reste
-    return full.split(' (').first.trim();
-  }
-
   MatchStats _simulateStats(int score1, int score2, Random rand) {
     final possessionT1 = 35 + rand.nextInt(31); 
-    final shotsT1 = score1 + rand.nextInt(12);
-    final shotsT2 = score2 + rand.nextInt(12);
+    final shotsT1 = score1 + rand.nextInt(15);
+    final shotsT2 = score2 + rand.nextInt(15);
     return MatchStats(
       possessionT1: possessionT1,
       shotsT1: shotsT1,
       shotsT2: shotsT2,
-      shotsOnTargetT1: score1 + rand.nextInt(shotsT1 - score1 + 1),
-      shotsOnTargetT2: score2 + rand.nextInt(shotsT2 - score2 + 1),
-      foulsT1: 6 + rand.nextInt(14),
-      foulsT2: 6 + rand.nextInt(14),
-      yellowCardsT1: rand.nextInt(4),
-      yellowCardsT2: rand.nextInt(4),
-      redCardsT1: rand.nextInt(10) == 0 ? 1 : 0,
-      redCardsT2: rand.nextInt(10) == 0 ? 1 : 0,
+      shotsOnTargetT1: score1 + rand.nextInt(max(1, shotsT1 - score1 + 1)),
+      shotsOnTargetT2: score2 + rand.nextInt(max(1, shotsT2 - score2 + 1)),
+      foulsT1: 5 + rand.nextInt(15),
+      foulsT2: 5 + rand.nextInt(15),
+      yellowCardsT1: rand.nextInt(5),
+      yellowCardsT2: rand.nextInt(5),
+      redCardsT1: rand.nextInt(20) == 0 ? 1 : 0,
+      redCardsT2: rand.nextInt(20) == 0 ? 1 : 0,
     );
   }
 
   // ─── ACTION: Match Simulations ────────────────────────────────────────────────
 
-  Future<void> _simulateMatches({required bool allMatches}) async {
+  WorldCupMatch _simulateSingleMatch(WorldCupMatch match, Random random) {
+    int score1 = random.nextInt(4);
+    int score2 = random.nextInt(4);
+    
+    bool wentToET = false;
+    bool wentToPK = false;
+    String? etWinner;
+    String? pkWinner;
+
+    if (match.isKnockout && score1 == score2) {
+      wentToET = true;
+      if (random.nextBool()) {
+        // Extra time goal
+        if (random.nextBool()) {
+          score1++;
+          etWinner = match.t1;
+        } else {
+          score2++;
+          etWinner = match.t2;
+        }
+      } else {
+        // Penalties
+        wentToPK = true;
+        pkWinner = random.nextBool() ? match.t1 : match.t2;
+      }
+    }
+
+    final goals = _simulateGoals(match.t1, match.t2, score1, score2, random);
+    final stats = _simulateStats(score1, score2, random);
+
+    return match.copyWith(
+      t1Score: score1,
+      t2Score: score2,
+      goals: goals,
+      stats: stats,
+      wentToET: wentToET,
+      wentToPK: wentToPK,
+      etWinner: etWinner,
+      pkWinner: pkWinner,
+      status: 'FINISHED',
+    );
+  }
+
+  void _updateSimEntry(SimTeamEntry e1, SimTeamEntry e2, int s1, int s2) {
+    e1.played++; e2.played++;
+    e1.goalsFor += s1; e1.goalsAgainst += s2;
+    e2.goalsFor += s2; e2.goalsAgainst += s1;
+    if (s1 > s2) { e1.wins++; e2.losses++; }
+    else if (s1 < s2) { e2.wins++; e1.losses++; }
+    else { e1.draws++; e2.draws++; }
+  }
+
+  String _resolvePlaceholder(String placeholder, Map<String, List<SimTeamEntry>> standings, List<SimTeamEntry> thirdPlaces) {
+    if (placeholder.startsWith('1')) {
+      final key = placeholder.substring(1);
+      final group = standings[key];
+      if (group != null && group.isNotEmpty) return group[0].code;
+    }
+    if (placeholder.startsWith('2')) {
+      final key = placeholder.substring(1);
+      final group = standings[key];
+      if (group != null && group.length > 1) return group[1].code;
+    }
+    if (placeholder.startsWith('3rd')) {
+      final idxStr = placeholder.substring(3);
+      final idx = int.tryParse(idxStr);
+      if (idx != null && idx > 0 && idx <= thirdPlaces.length) {
+        return thirdPlaces[idx - 1].code;
+      }
+    }
+    return 'TBD';
+  }
+
+  String _getMatchWinner(WorldCupMatch m) {
+    if (m.wentToPK == true) return m.pkWinner!;
+    return (m.t1Score! > m.t2Score!) ? m.t1 : m.t2;
+  }
+
+  Future<void> _simulateMatches({required bool allMatches, bool stopAtQF = false}) async {
     setState(() => _isLoading = true);
+    debugPrint("StagingPanel: Starting simulation... stopAtQF: $stopAtQF");
+    await PlayerDatabaseService.loadPlayers(); 
+    debugPrint("StagingPanel: PlayerDatabaseService loaded.");
     try {
       final List<WorldCupMatch> matches = await ApiService.loadMatches(forceRefresh: false);
+      debugPrint("StagingPanel: Loaded ${matches.length} matches.");
       final random = Random();
 
-      for (int i = 0; i < matches.length; i++) {
-        final match = matches[i];
-        bool shouldSimulate = allMatches ? true : !match.isKnockout;
+      if (!allMatches) {
+        // Just group stage
+        for (int i = 0; i < matches.length; i++) {
+          final m = matches[i];
+          if (!m.isKnockout && m.t1 != 'TBD' && m.t2 != 'TBD') {
+            matches[i] = _simulateSingleMatch(m, random);
+          }
+        }
+      } else {
+        // FULL OR PARTIAL COMPETITION PROGRESSION
+        // 1. Group Stage
+        final Map<String, List<SimTeamEntry>> standings = {};
         
-        if (shouldSimulate && match.t1.isNotEmpty && match.t2.isNotEmpty && match.t1 != 'TBD' && match.t2 != 'TBD') {
-          int score1 = random.nextInt(4);
-          int score2 = random.nextInt(4);
-          
-          bool wentToET = false;
-          bool wentToPK = false;
-          String? etWinner;
-          String? pkWinner;
+        // Build standings entries dynamically from matches to be robust
+        for (final m in matches) {
+          if (!m.isKnockout && m.group != null && m.group!.isNotEmpty) {
+            standings.putIfAbsent(m.group!, () => []);
+            if (!standings[m.group!]!.any((e) => e.code == m.t1)) {
+              standings[m.group!]!.add(SimTeamEntry(m.t1));
+            }
+            if (!standings[m.group!]!.any((e) => e.code == m.t2)) {
+              standings[m.group!]!.add(SimTeamEntry(m.t2));
+            }
+          }
+        }
 
-          if (match.isKnockout && score1 == score2) {
-            wentToET = true;
-            if (random.nextBool()) {
-              if (random.nextBool()) {
-                score1++;
-                etWinner = match.t1;
-              } else {
-                score2++;
-                etWinner = match.t2;
+        for (int i = 0; i < matches.length; i++) {
+          final m = matches[i];
+          if (!m.isKnockout) {
+            final updated = _simulateSingleMatch(m, random);
+            matches[i] = updated;
+            
+            // Update standings safely
+            final group = standings[m.group];
+            if (group != null) {
+              final e1 = group.where((e) => e.code == updated.t1).firstOrNull;
+              final e2 = group.where((e) => e.code == updated.t2).firstOrNull;
+              if (e1 != null && e2 != null) {
+                _updateSimEntry(e1, e2, updated.t1Score ?? 0, updated.t2Score ?? 0);
               }
-            } else {
-              wentToPK = true;
-              pkWinner = random.nextBool() ? match.t1 : match.t2;
+            }
+          }
+        }
+        debugPrint("StagingPanel: Group stage simulation complete.");
+
+        // Sort groups
+        standings.forEach((g, list) {
+          list.sort((a, b) {
+            if (b.points != a.points) return b.points.compareTo(a.points);
+            if (b.goalDifference != a.goalDifference) return b.goalDifference.compareTo(a.goalDifference);
+            return b.goalsFor.compareTo(a.goalsFor);
+          });
+        });
+
+        // Best 3rd places (safe access)
+        final thirdPlaces = standings.values
+            .where((list) => list.length >= 3)
+            .map((list) => list[2])
+            .toList();
+        thirdPlaces.sort((a, b) {
+          if (b.points != a.points) return b.points.compareTo(a.points);
+          if (b.goalDifference != a.goalDifference) return b.goalDifference.compareTo(a.goalDifference);
+          return b.goalsFor.compareTo(a.goalsFor);
+        });
+
+        // 2. Round of 32
+        final Map<String, String> winners = {};
+        for (final pair in r32Pairings) {
+          final mIdx = matches.indexWhere((m) => m.id == pair['id']);
+          if (mIdx != -1) {
+            final t1 = _resolvePlaceholder(pair['t1']!, standings, thirdPlaces);
+            final t2 = _resolvePlaceholder(pair['t2']!, standings, thirdPlaces);
+            final updated = _simulateSingleMatch(matches[mIdx].copyWith(t1: t1, t2: t2), random);
+            matches[mIdx] = updated;
+            winners[updated.id] = _getMatchWinner(updated);
+          }
+        }
+
+        // 3. Round of 16
+        final List<List<String>> r16Pairs = [
+          ['m49', 'm50'], ['m51', 'm52'], ['m53', 'm54'], ['m55', 'm56'],
+          ['m57', 'm58'], ['m59', 'm60'], ['m61', 'm62'], ['m63', 'm64']
+        ];
+        for (int i = 0; i < r16Pairs.length; i++) {
+          final id = 'm${65 + i}';
+          final mIdx = matches.indexWhere((m) => m.id == id);
+          if (mIdx != -1) {
+            final t1 = winners[r16Pairs[i][0]] ?? 'TBD';
+            final t2 = winners[r16Pairs[i][1]] ?? 'TBD';
+            final updated = _simulateSingleMatch(matches[mIdx].copyWith(t1: t1, t2: t2), random);
+            matches[mIdx] = updated;
+            winners[updated.id] = _getMatchWinner(updated);
+          }
+        }
+
+        // 4. Quarter-Finals
+        final List<List<String>> qfPairs = [
+          ['m65', 'm66'], ['m67', 'm68'], ['m69', 'm70'], ['m71', 'm72']
+        ];
+        for (int i = 0; i < qfPairs.length; i++) {
+          final id = 'm${73 + i}';
+          final mIdx = matches.indexWhere((m) => m.id == id);
+          if (mIdx != -1) {
+            final t1 = winners[qfPairs[i][0]] ?? 'TBD';
+            final t2 = winners[qfPairs[i][1]] ?? 'TBD';
+            final updated = _simulateSingleMatch(matches[mIdx].copyWith(t1: t1, t2: t2), random);
+            matches[mIdx] = updated;
+            winners[updated.id] = _getMatchWinner(updated);
+          }
+        }
+
+        // Stop here if requested
+        if (!stopAtQF) {
+          // 5. Semi-Finals
+          final List<List<String>> sfPairs = [
+            ['m73', 'm74'], ['m75', 'm76']
+          ];
+          for (int i = 0; i < sfPairs.length; i++) {
+            final id = 'm${77 + i}';
+            final mIdx = matches.indexWhere((m) => m.id == id);
+            if (mIdx != -1) {
+              final t1 = winners[sfPairs[i][0]] ?? 'TBD';
+              final t2 = winners[sfPairs[i][1]] ?? 'TBD';
+              final updated = _simulateSingleMatch(matches[mIdx].copyWith(t1: t1, t2: t2), random);
+              matches[mIdx] = updated;
+              winners[updated.id] = _getMatchWinner(updated);
             }
           }
 
-          final goals = _simulateGoals(match.t1, match.t2, score1, score2, random);
-          final stats = _simulateStats(score1, score2, random);
-
-          matches[i] = match.copyWith(
-            t1Score: score1,
-            t2Score: score2,
-            goals: goals,
-            stats: stats,
-            wentToET: wentToET,
-            wentToPK: wentToPK,
-            etWinner: etWinner,
-            pkWinner: pkWinner,
-            status: 'FINISHED',
-          );
+          // 6. 3rd Place & Final
+          final m79Idx = matches.indexWhere((m) => m.id == 'm79');
+          final m80Idx = matches.indexWhere((m) => m.id == 'm80');
+          
+          if (m79Idx != -1 && m80Idx != -1) {
+             final sf1Idx = matches.indexWhere((m) => m.id == 'm77');
+             final sf2Idx = matches.indexWhere((m) => m.id == 'm78');
+             
+             if (sf1Idx != -1 && sf2Idx != -1) {
+               final sf1 = matches[sf1Idx];
+               final sf2 = matches[sf2Idx];
+               
+               final w1 = winners['m77'] ?? 'TBD';
+               final l1 = sf1.t1 == w1 ? sf1.t2 : sf1.t1;
+               
+               final w2 = winners['m78'] ?? 'TBD';
+               final l2 = sf2.t1 == w2 ? sf2.t2 : sf2.t1;
+               
+               matches[m79Idx] = _simulateSingleMatch(matches[m79Idx].copyWith(t1: l1, t2: l2), random);
+               matches[m80Idx] = _simulateSingleMatch(matches[m80Idx].copyWith(t1: w1, t2: w2), random);
+             }
+          }
         }
       }
 
       await ApiService.saveMatchesToCache(matches);
-      _showSnackBar('Matchs et Stats simulés !');
+      _showSnackBar(stopAtQF ? 'Simulé jusqu\'aux quarts !' : 'Tournoi complet simulé !');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {
@@ -242,17 +449,28 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
         );
       }
 
-      preds.championCode = 'fr';
+      // Identify winners from simulated matches (if played)
+      final stats = TournamentStats.compute(matches);
+      final String actualScorer = stats.scorers.isNotEmpty ? stats.scorers.first.name : 'Kylian Mbappé';
+      final String actualAssister = stats.assists.isNotEmpty ? stats.assists.first.name : 'Lionel Messi';
+      
+      final finalMatch = matches.firstWhere((m) => m.id == 'm80', orElse: () => matches[0]);
+      String actualChampion = 'fr';
+      if (finalMatch.isPlayed) {
+        actualChampion = finalMatch.wentToPK == true ? finalMatch.pkWinner! : 
+                        (finalMatch.t1Score! > finalMatch.t2Score! ? finalMatch.t1 : finalMatch.t2);
+      }
+
+      preds.championCode = actualChampion;
       preds.championPredictedAt = DateTime.now().subtract(const Duration(days: 30));
 
-      preds.goldenBootWinner = 'fr'; // France
-      preds.goldenBootPlayer = 'Kylian Mbappé'; // Nom COMPLET (FIFA style)
+      preds.goldenBootWinner = actualScorer;
+      // preds.goldenBootPlayer = actualScorer; // REMOVED: Do not overwrite user's prediction
       preds.goldenBootPredictedAt = DateTime.now().subtract(const Duration(days: 30));
 
-      preds.topAssisterWinner = 'ar'; // Argentine
-      preds.topAssisterPlayer = 'Lionel Messi'; // Nom COMPLET
+      preds.topAssisterWinner = actualAssister;
+      // preds.topAssisterPlayer = actualAssister; // REMOVED
       preds.topAssisterPredictedAt = DateTime.now().subtract(const Duration(days: 30));
-
 
       await PredictionService.savePredictionData(preds);
       
@@ -370,6 +588,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     try {
       final int count = int.tryParse(_groupsController.text) ?? 10;
       final uid = await WCFirebaseService.getOrCreateUserId();
+      debugPrint("StagingPanel: Generating groups for UID: $uid");
       final firestore = FirebaseFirestore.instance;
       final random = Random();
 
@@ -456,6 +675,12 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
+              onPressed: _isLoading ? null : () => _simulateMatches(allMatches: true, stopAtQF: true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.black),
+              child: const Text('Simuler jusqu\'aux Quarts'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
               onPressed: _isLoading ? null : _resetMatches,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               child: const Text('Réinitialiser les Matchs (0-0)'),
@@ -489,4 +714,18 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       ),
     );
   }
+}
+
+class SimTeamEntry {
+  final String code;
+  int played = 0;
+  int wins = 0;
+  int draws = 0;
+  int losses = 0;
+  int goalsFor = 0;
+  int goalsAgainst = 0;
+  int get points => wins * 3 + draws;
+  int get goalDifference => goalsFor - goalsAgainst;
+
+  SimTeamEntry(this.code);
 }

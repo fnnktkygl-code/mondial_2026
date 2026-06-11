@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +10,9 @@ import '../app_constants.dart';
 class ApiService {
   static const String _cacheKey = kMatchesCacheKey;
   static const String _lastUpdatedKey = 'wc_matches_last_updated';
+
+  // Toggle this from your Staging Panel to intercept live calls
+  static bool isStagingMode = false;
 
   /// Load tournament matches. Priority:
   /// 1. Local SharedPreferences cache (if fresh enough)
@@ -50,10 +55,10 @@ class ApiService {
     final lastFetch = prefs.getString(_lastUpdatedKey);
     final bool shouldFetch =
         forceRefresh ||
-        cachedJson == null ||
-        (lastFetch != null &&
-            DateTime.now().difference(DateTime.parse(lastFetch)) >
-                kCacheRefreshInterval);
+            cachedJson == null ||
+            (lastFetch != null &&
+                DateTime.now().difference(DateTime.parse(lastFetch)) >
+                    kCacheRefreshInterval);
 
     if (shouldFetch) {
       try {
@@ -70,24 +75,80 @@ class ApiService {
   }
 
   /// Fetch schedule updates from the remote GitHub JSON.
+  /// Includes Exponential Backoff and Staging Interceptor.
   static Future<List<WorldCupMatch>> fetchRemoteMatches() async {
-    try {
-      final response = await http.get(Uri.parse(kApiUrl)).timeout(kApiTimeout);
-      if (response.statusCode == 200) {
-        final jsonStr = response.body;
-        final matches = _parseMatchesJson(jsonStr);
-        if (matches.isNotEmpty) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_cacheKey, jsonStr);
-          await prefs.setString(
-            _lastUpdatedKey,
-            DateTime.now().toIso8601String(),
-          );
-          return matches;
+    if (isStagingMode) {
+      return _fetchMockStagingMatches();
+    }
+
+    const int maxRetries = 3;
+    int retryCount = 0;
+
+    while (retryCount < maxRetries) {
+      try {
+        final response = await http.get(Uri.parse(kApiUrl)).timeout(kApiTimeout);
+        if (response.statusCode == 200) {
+          final jsonStr = response.body;
+          final matches = _parseMatchesJson(jsonStr);
+          if (matches.isNotEmpty) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(_cacheKey, jsonStr);
+            await prefs.setString(
+              _lastUpdatedKey,
+              DateTime.now().toIso8601String(),
+            );
+            return matches;
+          }
+        } else {
+          throw Exception('Non-200 status code: ${response.statusCode}');
         }
+      } catch (e) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          break;
+        }
+        // Exponential backoff: 1s, 2s, 4s
+        await Future.delayed(Duration(seconds: math.pow(2, retryCount - 1).toInt()));
       }
-    } catch (_) {
-      // Return empty list on failure; caller will use cache
+    }
+    return [];
+  }
+
+  /// Staging interceptor to simulate live matches without real network calls
+  static Future<List<WorldCupMatch>> _fetchMockStagingMatches() async {
+    await Future.delayed(const Duration(milliseconds: 800)); // Simulate network delay
+
+    final prefs = await SharedPreferences.getInstance();
+    final cachedJson = prefs.getString(_cacheKey);
+
+    if (cachedJson != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(cachedJson) as List<dynamic>;
+        bool modified = false;
+
+        // Find the first TIMED match and transition it to IN_PLAY to simulate live staging
+        for (var item in decoded) {
+          if (item['status'] == 'TIMED') {
+            item['status'] = 'IN_PLAY';
+            item['t1Score'] = 1; // Simulate a goal
+            item['t2Score'] = 0;
+            modified = true;
+            break;
+          }
+        }
+
+        if (modified) {
+          final newJsonStr = jsonEncode(decoded);
+          // Temporarily save to cache so UI updates naturally in staging
+          await prefs.setString(_cacheKey, newJsonStr);
+          await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
+          return _parseMatchesJson(newJsonStr);
+        } else {
+          return _parseMatchesJson(cachedJson);
+        }
+      } catch (e) {
+        debugPrint('Error in staging mock: $e');
+      }
     }
     return [];
   }

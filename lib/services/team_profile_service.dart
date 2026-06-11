@@ -1,6 +1,7 @@
 import 'package:mondial_2026/l10n/translations.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'insights_service.dart';
 
 class TeamProfileData {
   final String teamCode;
@@ -13,6 +14,7 @@ class TeamProfileData {
   final String profileUrl;
   final String? mediaUrl;
   final String? imageUrl;
+  final TeamHistory? worldCupRecord;
 
   TeamProfileData({
     required this.teamCode,
@@ -25,11 +27,21 @@ class TeamProfileData {
     required this.profileUrl,
     required this.mediaUrl,
     required this.imageUrl,
+    this.worldCupRecord,
   });
 }
 
 class WCTeamProfileService {
   static Map<String, Map<String, dynamic>> _mediaMap = {};
+
+  // List of 48 Qualified Teams for World Cup 2026
+  static const Set<String> qualifiedTeams = {
+    'mx', 'de', 'us', 'en', 'ca', 'jp', 'fr', 'br', 'sn', 'ar', 
+    'ma', 'es', 'pt', 'nl', 'be', 'hr', 'uy', 'co', 'kr', 'cm', 
+    'ng', 'se', 'ch', 'dk', 'pl', 'dz', 'eg', 'tn', 'gh', 'ci', 
+    'cl', 'pe', 'ec', 've', 'au', 'nz', 'sa', 'ir', 'tr', 'cz', 
+    'at', 'ro', 'ba', 'cd', 'cw', 'cv', 'jo', 'uz', 'iq', 'qa', 'za', 'ht', 'pa'
+  };
 
   static Future<void> loadMediaMap() async {
     try {
@@ -43,7 +55,7 @@ class WCTeamProfileService {
     final lowerCode = code.toLowerCase();
     final cleanCode = lowerCode.replaceAll('g_', '');
     final lookupCode = cleanCode == 'gb-sct' ? 'sco' : (cleanCode == 'cu' ? 'cw' : cleanCode);
-    
+
     // Fetch nickname using local method
     final nickname = _getNickname(lookupCode, lang);
 
@@ -61,7 +73,7 @@ class WCTeamProfileService {
 
     final mediaEntry = _mediaMap[lookupCode];
     final profileUrl = mediaEntry?['profile_url'] ?? 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/$lookupCode-team-profile-history';
-    
+
     // Correction spécifique pour l'Écosse si le lien par défaut est brisé
     String finalProfileUrl = profileUrl;
     if (lookupCode == 'sco' && mediaEntry == null) {
@@ -69,6 +81,9 @@ class WCTeamProfileService {
     }
     final mediaUrl = mediaEntry?['media_url'];
     final imageUrl  = mediaEntry?['image_url'] as String?;
+
+    // World Cup historical record (Played/Wins/Draws/Losses/Goals, appearances)
+    final worldCupRecord = WCInsightsService.getHistory(lookupCode);
 
     return TeamProfileData(
       teamCode: lookupCode,
@@ -81,6 +96,7 @@ class WCTeamProfileService {
       profileUrl: finalProfileUrl,
       mediaUrl: mediaUrl,
       imageUrl: imageUrl,
+      worldCupRecord: worldCupRecord,
     );
   }
 
@@ -117,7 +133,7 @@ class WCTeamProfileService {
       'ci': {'fr': 'L\'Éléphant d\'Afrique', 'en': 'The African Elephant', 'es': 'El Elefante africano'},
       'nl': {'fr': 'Le Lion Rampant Couronné', 'en': 'The Crowned Rampant Lion', 'es': 'El León Rampante Coronado'},
       'se': {'fr': 'Les Trois Couronnes de l\'Armorial', 'en': 'The Three Crowns', 'es': 'Las Tres Coronas'},
-      'tn': {'fr': 'Le Navire Punique & Le Lion', 'en': 'The Punic Ship & Lion', 'es': 'El Barco Púnico y el León'},
+      'tn': {'fr': 'Le Navire Punique & Le Lion', 'en': 'The Punic Ship & Lion', 'es': 'El Barco Púnico y le León'},
       'pt': {'fr': 'Les Cinq Écussons Quinas', 'en': 'The Quinas Shields', 'es': 'Las Quinas'},
       'cd': {'fr': 'La Tête de Léopard, Lance et Flèche', 'en': 'The Leopard Head & Spears', 'es': 'La Cabeza de Leopardo y Lanzas'},
       'uz': {'fr': 'L\'Oiseau Humo mythologique', 'en': 'The Khumo Bird', 'es': 'El Ave Humo'},
@@ -135,7 +151,7 @@ class WCTeamProfileService {
       'ec': {'fr': 'Le Condor des Andes sur les Armes', 'en': 'The Condor over the Shield', 'es': 'El Cóndor sobre el Escudo'},
       'ba': {'fr': 'Fleur de Lys héraldique', 'en': 'Fleur-de-lis', 'es': 'Flor de Lis'},
       'py': {'fr': 'L\'Étoile Jaune entourée de Palme et d\'Olivier', 'en': 'The Star, Palm & Olive Branch', 'es': 'La Estrella, Palma y Olivo'},
-      'pl': {'fr': 'L\'Aigle Blanc Couronné', 'en': 'Le White Eagle Couronné', 'es': 'El Águila Blanca Coronada'},
+      'pl': {'fr': 'L\'Aigle Blanc Couronné', 'en': 'L\'Aigle Blanc Couronné', 'es': 'El Águila Blanca Coronada'},
       'cv': {'fr': 'Les Dix Étoiles en Cercle', 'en': 'The Ten Stars Circle', 'es': 'Las Diez Estrellas en Círculo'},
     };
 
@@ -210,13 +226,13 @@ class WCTeamProfileService {
 
   static int _getAppearances(String code) {
     final Map<String, int> apps = {
-      'br': 22, 'de': 20, 'ar': 18, 'it': 18, 'mx': 17, 'fr': 16, 'gb': 16, 'es': 16,
-      'uy': 14, 'be': 14, 'se': 12, 'ch': 12, 'rs': 12, 'us': 11, 'nl': 11, 'kr': 11,
-      'pl': 9, 'cl': 9, 'pe': 9, 'hu': 9, 'cz': 9, 'cm': 8, 'pt': 8, 'sco': 8,
-      'py': 8, 'au': 6, 'sa': 6, 'ir': 6, 'ma': 6, 'co': 6, 'ng': 6, 'dk': 6, 'ro': 6,
-      'bg': 7, 'at': 7, 'tn': 6, 'dz': 4, 'gh': 4, 'ci': 3, 'eg': 3, 'sn': 3, 'za': 3,
-      'nz': 2, 'pa': 1, 'ba': 1, 'cd': 1, 'ht': 1, 'iq': 1, 'qa': 1, 'ua': 1,
-      'cw': 0, 'cv': 0, 'jo': 0, 'uz': 0, 've': 0,
+      'br': 22, 'de': 20, 'ar': 18, 'it': 18, 'mx': 17, 'fr': 16, 'es': 16,
+      'uy': 14, 'be': 14, 'se': 12, 'ch': 12, 'us': 11, 'nl': 11, 'kr': 11,
+      'pl': 9, 'cz': 9, 'cm': 8, 'pt': 8, 'sco': 8,
+      'py': 8, 'au': 6, 'sa': 6, 'ir': 6, 'ma': 6, 'co': 6, 'ng': 6, 'dk': 6,
+      'at': 7, 'tn': 6, 'dz': 4, 'gh': 4, 'ci': 3, 'eg': 3, 'sn': 3, 'za': 3,
+      'nz': 2, 'pa': 1, 'ba': 1, 'cd': 1, 'ht': 1, 'iq': 1, 'qa': 1,
+      'cw': 0, 'cv': 0, 'jo': 0, 'uz': 0, 'no': 3,
     };
     return apps[code] ?? 0;
   }
@@ -232,7 +248,6 @@ class WCTeamProfileService {
       'en': {'fr': 'Vainqueur (1966)', 'en': 'Winner (1966)', 'es': 'Campeón (1966)'},
       'es': {'fr': 'Vainqueur (2010)', 'en': 'Winner (2010)', 'es': 'Campeón (2010)'},
       'nl': {'fr': 'Finaliste (1974, 1978, 2010)', 'en': 'Runner-up (1974, 1978, 2010)', 'es': 'Subcampeón (1974, 1978, 2010)'},
-      'hu': {'fr': 'Finaliste (1938, 1954)', 'en': 'Runner-up (1938, 1954)', 'es': 'Subcampeón (1938, 1954)'},
       'cz': {'fr': 'Finaliste (1934, 1962)', 'en': 'Runner-up (1934, 1962)', 'es': 'Subcampeón (1934, 1962)'},
       'se': {'fr': 'Finaliste (1958)', 'en': 'Runner-up (1958)', 'es': 'Subcampeón (1958)'},
       'hr': {'fr': 'Finaliste (2018)', 'en': 'Runner-up (2018)', 'es': 'Subcampeón (2018)'},
@@ -241,29 +256,22 @@ class WCTeamProfileService {
       'be': {'fr': '3e place (2018)', 'en': '3rd Place (2018)', 'es': '3er Puesto (2018)'},
       'tr': {'fr': '3e place (2002)', 'en': '3rd Place (2002)', 'es': '3er Puesto (2002)'},
       'pl': {'fr': '3e place (1974, 1982)', 'en': '3rd Place (1974, 1982)', 'es': '3er Puesto (1974, 1982)'},
-      'cl': {'fr': '3e place (1962)', 'en': '3rd Place (1962)', 'es': '3er Puesto (1962)'},
       'ma': {'fr': '4e place (2022)', 'en': '4th Place (2022)', 'es': '4to Puesto (2022)'},
       'kr': {'fr': '4e place (2002)', 'en': '4th Place (2002)', 'es': '4to Puesto (2002)'},
-      'bg': {'fr': '4e place (1994)', 'en': '4th Place (1994)', 'es': '4to Puesto (1994)'},
-      'rs': {'fr': '4e place (1930, 1962)', 'en': '4th Place (1930, 1962)', 'es': '4to Puesto (1930, 1962)'},
       'cm': {'fr': 'Quart de finale (1990)', 'en': 'Quarter-final (1990)', 'es': 'Cuartos de final (1990)'},
       'co': {'fr': 'Quart de finale (2014)', 'en': 'Quarter-final (2014)', 'es': 'Cuartos de final (2014)'},
       'sn': {'fr': 'Quart de finale (2002)', 'en': 'Quarter-final (2002)', 'es': 'Cuartos de final (2002)'},
       'gh': {'fr': 'Quart de finale (2010)', 'en': 'Quarter-final (2010)', 'es': 'Cuartos de final (2010)'},
-      'ua': {'fr': 'Quart de finale (2006)', 'en': 'Quarter-final (2006)', 'es': 'Cuartos de final (2006)'},
-      'pe': {'fr': 'Quart de finale (1970)', 'en': 'Quarter-final (1970)', 'es': 'Cuartos de final (1970)'},
       'ch': {'fr': 'Quart de finale (1934, 1938, 1954)', 'en': 'Quarter-final (1934, 1938, 1954)', 'es': 'Cuartos de final (1934, 1938, 1954)'},
-      'ro': {'fr': 'Quart de finale (1994)', 'en': 'Quarter-final (1994)', 'es': 'Cuartos de final (1994)'},
-      'dk': {'fr': 'Quart de finale (1998)', 'en': 'Quarter-final (1998)', 'es': 'Cuartos de final (1998)'},
       'py': {'fr': 'Quart de finale (2010)', 'en': 'Quarter-final (2010)', 'es': 'Cuartos de final (2010)'},
       'cw': {'fr': 'Premier Tournoi en 2026', 'en': 'Tournament Debut in 2026', 'es': 'Debut en el Torneo en 2026'},
       'cv': {'fr': 'Premier Tournoi en 2026', 'en': 'Tournament Debut in 2026', 'es': 'Debut en el Torneo en 2026'},
       'jo': {'fr': 'Premier Tournoi en 2026', 'en': 'Tournament Debut in 2026', 'es': 'Debut en el Torneo en 2026'},
       'uz': {'fr': 'Premier Tournoi en 2026', 'en': 'Tournament Debut in 2026', 'es': 'Debut en el Torneo en 2026'},
-      've': {'fr': 'Premier Tournoi en 2026', 'en': 'Tournament Debut in 2026', 'es': 'Debut en el Torneo en 2026'},
+      'no': {'fr': 'Huitième de finale (1998)', 'en': 'Round of 16 (1998)', 'es': 'Octavos de final (1998)'},
     };
 
-      final entry = finishes[code];
+    final entry = finishes[code];
     if (entry != null) {
       return entry[lang] ?? entry['en'] ?? '';
     }
@@ -309,9 +317,9 @@ class WCTeamProfileService {
         'es': ['1x Copa Mundial de la FIFA'],
       },
       'uy': {
-        'fr': ['2x Coupe du Monde de la FIFA', '15x Copa América', '2x Médaille d\'Or Olympique (titres mondiaux historiques)'],
-        'en': ['2x FIFA World Cup', '15x Copa América', '2x Olympic Gold Medals (recognized as historic world titles)'],
-        'es': ['2x Copa Mundial de la FIFA', '15x Copa América', '2x Medallas de Oro Olímpicas (títulos mundiales históricos)'],
+        'fr': ['2x Coupe du Monde de la FIFA', '15x Copa América', '2x Médaille d\'Or Olympique'],
+        'en': ['2x FIFA World Cup', '15x Copa América', '2x Olympic Gold Medals'],
+        'es': ['2x Copa Mundial de la FIFA', '15x Copa América', '2x Medallas de Oro Olímpicas'],
       },
       'mx': {
         'fr': ['12x Coupe d\'Or de la CONCACAF', '1x Coupe des Confédérations'],
@@ -363,21 +371,6 @@ class WCTeamProfileService {
         'en': ['3x Africa Cup of Nations (1992, 2015, 2023)'],
         'es': ['3x Copa Africana de Naciones (1992, 2015, 2023)'],
       },
-      'cl': {
-        'fr': ['2x Copa América (2015, 2016)'],
-        'en': ['2x Copa América (2015, 2016)'],
-        'es': ['2x Copa América (2015, 2016)'],
-      },
-      'dk': {
-        'fr': ['1x Championnat d\'Europe (Euro 1992)', '1x Coupe des Confédérations (1995)'],
-        'en': ['1x UEFA European Championship (1992)', '1x FIFA Confederations Cup (1995)'],
-        'es': ['1x Eurocopa (1992)', '1x Copa de las Confederaciones (1995)'],
-      },
-      'gr': {
-        'fr': ['1x Championnat d\'Europe (Euro 2004)'],
-        'en': ['1x UEFA European Championship (2004)'],
-        'es': ['1x Eurocopa (2004)'],
-      },
     };
 
     final entry = trophies[code];
@@ -396,35 +389,24 @@ class WCTeamProfileService {
       'us': 16, 'uy': 17, 'jp': 18, 'ch': 19, 'dk': 20,
       'ir': 21, 'kr': 22, 'ec': 23, 'tr': 24, 'at': 25,
       'ng': 26, 'au': 27, 'dz': 28, 'eg': 29, 'ca': 30,
-      'no': 31, 'ua': 32, 'pl': 33, 'pa': 34, 'ci': 35,
-      'py': 38, 'rs': 39, 'sco': 40, 'se': 41, 'hu': 42,
-      'cz': 43, 'tn': 44, 'cm': 45, 'gr': 46, 'cd': 48,
-      've': 49, 'uz': 50, 'cl': 52, 'pe': 54, 'ro': 55,
-      'qa': 56, 'iq': 59, 'za': 60, 'sa': 61, 'jo': 64,
+      'no': 31, 'pl': 33, 'pa': 34, 'ci': 35,
+      'py': 38, 'sco': 40, 'se': 41,
+      'cz': 43, 'tn': 44, 'cm': 45, 'cd': 48,
+      'uz': 50, 'qa': 56, 'iq': 59, 'za': 60, 'sa': 61, 'jo': 64,
       'ba': 66, 'cv': 69, 'gh': 74, 'cw': 82, 'ht': 83,
-      'nz': 85, 'bg': 86,
+      'nz': 85,
     };
     return rankings[code] ?? 999;
   }
 
   static List<String> get allTeams {
-    final Map<String, int> rankings = {
-      'fr': 1, 'es': 2, 'ar': 3, 'en': 4, 'pt': 5,
-      'br': 6, 'nl': 7, 'ma': 8, 'be': 9, 'de': 10,
-      'hr': 11, 'it': 12, 'co': 13, 'sn': 14, 'mx': 15,
-      'us': 16, 'uy': 17, 'jp': 18, 'ch': 19, 'dk': 20,
-      'ir': 21, 'kr': 22, 'ec': 23, 'tr': 24, 'at': 25,
-      'ng': 26, 'au': 27, 'dz': 28, 'eg': 29, 'ca': 30,
-      'no': 31, 'ua': 32, 'pl': 33, 'pa': 34, 'ci': 35,
-      'py': 38, 'rs': 39, 'sco': 40, 'se': 41, 'hu': 42,
-      'cz': 43, 'tn': 44, 'cm': 45, 'gr': 46, 'cd': 48,
-      've': 49, 'uz': 50, 'cl': 52, 'pe': 54, 'ro': 55,
-      'qa': 56, 'iq': 59, 'za': 60, 'sa': 61, 'jo': 64,
-      'ba': 66, 'cv': 69, 'gh': 74, 'cw': 82, 'ht': 83,
-      'nz': 85, 'bg': 86,
-    };
-    final sorted = rankings.keys.toList()
-      ..sort((a, b) => rankings[a]!.compareTo(rankings[b]!));
-    return sorted;
+    final List<String> qualified48 = [
+      'ar', 'at', 'au', 'ba', 'be', 'br', 'ca', 'cd', 'ch', 'ci', 'co', 'cv', 'cw', 'cz', 'de', 'dz', 
+      'ec', 'eg', 'en', 'es', 'fr', 'gh', 'hr', 'ht', 'iq', 'ir', 'jo', 'jp', 'kr', 'ma', 'mx', 'nl', 
+      'no', 'nz', 'pa', 'pt', 'py', 'qa', 'sa', 'sco', 'se', 'sn', 'tn', 'tr', 'us', 'uy', 'uz', 'za'
+    ];
+    
+    qualified48.sort((a, b) => getFifaRanking(a).compareTo(getFifaRanking(b)));
+    return qualified48;
   }
 }

@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import '../services/player_database_service.dart';
+
 class GoalEvent {
   final String team; // "t1" or "t2"
   final String scorer;
@@ -139,6 +141,14 @@ class WorldCupMatch {
   /// Team code of the penalty-shootout winner.
   final String? pkWinner;
 
+  /// Detailed scores for knockout stages
+  final int? t1Score90;
+  final int? t2Score90;
+  final int? t1ScoreET;
+  final int? t2ScoreET;
+  final int? t1ScorePK;
+  final int? t2ScorePK;
+
   WorldCupMatch({
     required this.id,
     required this.date,
@@ -158,6 +168,12 @@ class WorldCupMatch {
     this.wentToPK,
     this.etWinner,
     this.pkWinner,
+    this.t1Score90,
+    this.t2Score90,
+    this.t1ScoreET,
+    this.t2ScoreET,
+    this.t1ScorePK,
+    this.t2ScorePK,
   }) : _isKnockoutOverride = isKnockoutOverride;
 
   factory WorldCupMatch.fromJson(Map<String, dynamic> json) {
@@ -201,6 +217,24 @@ class WorldCupMatch {
       wentToPK: json['wentToPK'] as bool?,
       etWinner: json['etWinner'] as String?,
       pkWinner: json['pkWinner'] as String?,
+      t1Score90: json['t1Score90'] != null ? (json['t1Score90'] as num).toInt() : null,
+      t2Score90: json['t2Score90'] != null ? (json['t2Score90'] as num).toInt() : null,
+      t1ScoreET: json['t1ScoreET'] != null ? (json['t1ScoreET'] as num).toInt() : null,
+      t2ScoreET: json['t2ScoreET'] != null ? (json['t2ScoreET'] as num).toInt() : null,
+      t1ScorePK: json['t1ScorePK'] != null ? (json['t1ScorePK'] as num).toInt() : null,
+      t2ScorePK: json['t2ScorePK'] != null ? (json['t2ScorePK'] as num).toInt() : null,
+    );
+  }
+
+  factory WorldCupMatch.tbd(String id, String stage) {
+    return WorldCupMatch(
+      id: id,
+      date: DateTime.now(),
+      t1: 'TBD',
+      t2: 'TBD',
+      stage: stage,
+      isKnockoutOverride: true,
+      status: 'TIMED',
     );
   }
 
@@ -219,6 +253,16 @@ class WorldCupMatch {
       'status': status,
       'goals': goals.map((g) => g.toJson()).toList(),
       if (stats != null) 'stats': stats!.toJson(),
+      'wentToET': wentToET,
+      'wentToPK': wentToPK,
+      'etWinner': etWinner,
+      'pkWinner': pkWinner,
+      't1Score90': t1Score90,
+      't2Score90': t2Score90,
+      't1ScoreET': t1ScoreET,
+      't2ScoreET': t2ScoreET,
+      't1ScorePK': t1ScorePK,
+      't2ScorePK': t2ScorePK,
     };
   }
 
@@ -232,6 +276,19 @@ class WorldCupMatch {
   bool get isKnockout {
     if (_isKnockoutOverride != null) return _isKnockoutOverride;
     return stage != null && stage!.isNotEmpty;
+  }
+
+  String getWinner() {
+    if (!isPlayed) return '';
+    if (wentToPK == true && pkWinner != null) return pkWinner!;
+    if (wentToET == true && etWinner != null) return etWinner!;
+    if (t1Score! > t2Score!) return t1;
+    if (t2Score! > t1Score!) return t2;
+    return '';
+  }
+
+  bool isWinner(String teamCode) {
+    return getWinner().toLowerCase() == teamCode.toLowerCase();
   }
 
   String getFormattedTime() {
@@ -281,6 +338,12 @@ class WorldCupMatch {
     bool? wentToPK,
     String? etWinner,
     String? pkWinner,
+    int? t1Score90,
+    int? t2Score90,
+    int? t1ScoreET,
+    int? t2ScoreET,
+    int? t1ScorePK,
+    int? t2ScorePK,
   }) {
     return WorldCupMatch(
       id: id ?? this.id,
@@ -301,6 +364,93 @@ class WorldCupMatch {
       wentToPK: wentToPK ?? this.wentToPK,
       etWinner: etWinner ?? this.etWinner,
       pkWinner: pkWinner ?? this.pkWinner,
+      t1Score90: t1Score90 ?? this.t1Score90,
+      t2Score90: t2Score90 ?? this.t2Score90,
+      t1ScoreET: t1ScoreET ?? this.t1ScoreET,
+      t2ScoreET: t2ScoreET ?? this.t2ScoreET,
+      t1ScorePK: t1ScorePK ?? this.t1ScorePK,
+      t2ScorePK: t2ScorePK ?? this.t2ScorePK,
     );
+  }
+}
+
+class PlayerStat {
+  final String name;
+  final int value;
+  final String teamCode;
+
+  PlayerStat({required this.name, required this.value, required this.teamCode});
+}
+
+class TournamentStats {
+  final List<PlayerStat> scorers;
+  final List<PlayerStat> assists;
+
+  TournamentStats({required this.scorers, required this.assists});
+
+  factory TournamentStats.compute(List<WorldCupMatch> matches) {
+    final Map<String, int> goalCounts = {};
+    final Map<String, int> assistCounts = {};
+    final Map<String, String> playerTeams = {};
+
+    // Team code to Full Name mapping
+    final Map<String, String> teamCodeToName = {
+      'mx': 'Mexico', 'co': 'Colombia', 'cm': 'Cameroon', 'kr': 'South Korea',
+      'us': 'USA', 'en': 'England', 'ng': 'Nigeria', 'jp': 'Japan',
+      'ca': 'Canada', 'fr': 'France', 'sn': 'Senegal', 'de': 'Germany',
+      'br': 'Brazil', 'ar': 'Argentina', 'ma': 'Morocco', 'es': 'Spain',
+      'it': 'Italy', 'pt': 'Portugal', 'nl': 'Netherlands', 'be': 'Belgium',
+      'hr': 'Croatia', 'uy': 'Uruguay', 'se': 'Sweden', 'ch': 'Switzerland',
+      'dk': 'Denmark', 'pl': 'Poland', 'ua': 'Ukraine', 'dz': 'Algeria',
+      'eg': 'Egypt', 'tn': 'Tunisia', 'gh': 'Ghana', 'ci': 'Ivory Coast',
+      'cl': 'Chile', 'pe': 'Peru', 'ec': 'Ecuador', 've': 'Venezuela',
+      'au': 'Australia', 'nz': 'New Zealand', 'sa': 'Saudi Arabia', 'ir': 'Iran',
+      'tr': 'Turkey', 'gr': 'Greece', 'cz': 'Czech Republic', 'at': 'Austria',
+      'ro': 'Romania', 'hu': 'Hungary', 'bg': 'Bulgaria', 'rs': 'Serbia'
+    };
+
+    for (final match in matches) {
+      if (match.isPlayed) {
+        for (final goal in match.goals) {
+          final scorerName = goal.scorer.trim();
+          if (scorerName.isNotEmpty) {
+            final teamCode = goal.team == 't1' ? match.t1 : match.t2;
+            final teamName = teamCodeToName[teamCode.toLowerCase()] ?? 'Team ($teamCode)';
+            final normalized = PlayerDatabaseService.getBestMatchingName(teamName, scorerName) ?? scorerName;
+            
+            goalCounts[normalized] = (goalCounts[normalized] ?? 0) + 1;
+            playerTeams[normalized] = teamCode; // store code for teamCode field
+          }
+
+          final assistantName = goal.assistant?.trim();
+          if (assistantName != null && assistantName.isNotEmpty) {
+            final teamCode = goal.team == 't1' ? match.t1 : match.t2;
+            final teamName = teamCodeToName[teamCode.toLowerCase()] ?? 'Team ($teamCode)';
+            final normalized = PlayerDatabaseService.getBestMatchingName(teamName, assistantName) ?? assistantName;
+            
+            assistCounts[normalized] = (assistCounts[normalized] ?? 0) + 1;
+            playerTeams[normalized] = teamCode; // store code for teamCode field
+          }
+        }
+      }
+    }
+
+    final List<PlayerStat> scorersList = goalCounts.entries.map((e) {
+      return PlayerStat(
+        name: e.key,
+        value: e.value,
+        teamCode: playerTeams[e.key] ?? 'tbd',
+      );
+    }).toList()..sort((a, b) => b.value.compareTo(a.value));
+
+    final List<PlayerStat> assistsList = assistCounts.entries.map((e) {
+      return PlayerStat(
+        name: e.key,
+        value: e.value,
+        teamCode: playerTeams[e.key] ?? 'tbd',
+      );
+    }).toList()..sort((a, b) => b.value.compareTo(a.value));
+
+    return TournamentStats(scorers: scorersList, assists: assistsList);
   }
 }

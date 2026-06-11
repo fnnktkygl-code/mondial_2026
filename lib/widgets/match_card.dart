@@ -42,9 +42,11 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
 
   bool get _isLive {
     final now = DateTime.now();
+    // Explicitly convert to local to ensure the 105-minute window is perfectly accurate
+    final matchDateLocal = widget.match.date.toLocal();
     return !widget.match.isPlayed &&
-        now.isAfter(widget.match.date) &&
-        now.isBefore(widget.match.date.add(const Duration(minutes: 105)));
+        now.isAfter(matchDateLocal) &&
+        now.isBefore(matchDateLocal.add(const Duration(minutes: 105)));
   }
 
   @override
@@ -88,8 +90,14 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     );
   }
 
-  String _getFlagcdnUrl(String code) {
+  String? _getFlagcdnUrl(String code) {
     String cleanCode = code.toLowerCase().replaceAll('g_', '');
+
+    // Safety guard: Prevent 404 network calls for TBD and Knockout placeholders (e.g., 1A, W49)
+    if (cleanCode == 'tbd' || cleanCode.contains(RegExp(r'\d'))) {
+      return null;
+    }
+
     if (cleanCode == 'en') cleanCode = 'gb-eng';
     if (cleanCode == 'sco') cleanCode = 'gb-sct';
     if (cleanCode == 'wa') cleanCode = 'gb-wls';
@@ -114,6 +122,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     final String tooltipMessage;
     final IconData predIcon;
     final Color predColor;
+
     if (widget.match.isPlayed && hasPrediction) {
       switch (widget.predictionResult) {
         case 'exact':
@@ -141,6 +150,9 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
       tooltipMessage = AppTranslations.get(widget.lang, 'predictionPendingTooltip');
     }
 
+    final String? bgUrl1 = _getFlagcdnUrl(widget.match.t1);
+    final String? bgUrl2 = _getFlagcdnUrl(widget.match.t2);
+
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
@@ -164,21 +176,25 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Expanded(
                       child: Opacity(
                         opacity: 0.08,
-                        child: Image.network(
-                          _getFlagcdnUrl(widget.match.t1),
+                        child: bgUrl1 != null
+                            ? Image.network(
+                          bgUrl1,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-                        ),
+                        )
+                            : const SizedBox.shrink(),
                       ),
                     ),
                     Expanded(
                       child: Opacity(
                         opacity: 0.08,
-                        child: Image.network(
-                          _getFlagcdnUrl(widget.match.t2),
+                        child: bgUrl2 != null
+                            ? Image.network(
+                          bgUrl2,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-                        ),
+                        )
+                            : const SizedBox.shrink(),
                       ),
                     ),
                   ],
@@ -248,87 +264,133 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: widget.match.isPlayed
-                          ? Text('${widget.match.t1Score} - ${widget.match.t2Score}', style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 22))
+                          ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Safety: Fallback to '-' if a score is missing from the payload
+                          Text(
+                            '${widget.match.t1Score ?? '-'} - ${widget.match.t2Score ?? '-'}',
+                            style: const TextStyle(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 22,
+                            ),
+                          ),
+                          if (widget.match.wentToPK == true && widget.match.t1ScorePK != null && widget.match.t2ScorePK != null)
+                            Text(
+                              '(${widget.match.t1ScorePK} - ${widget.match.t2ScorePK} PK)',
+                              style: TextStyle(
+                                color: AppColors.accent.withValues(alpha: 0.7),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            )
+                          else if (widget.match.wentToET == true)
+                            const Text(
+                              '(AET)',
+                              style: TextStyle(
+                                color: AppColors.warning,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                        ],
+                      )
                           : const Text('VS', style: TextStyle(color: AppColors.borderStrong, fontWeight: FontWeight.w900, fontSize: 18)),
                     ),
                     Expanded(child: _buildTeamSection(widget.match.t2, t2Name, context, false)),
                   ],
                 ),
-                
-    // --- AJOUT UX PRONOSTIC UTILISATEUR ---
-    if (hasPrediction) ...[
-      const SizedBox(height: 12),
-      Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-        decoration: BoxDecoration(
-          color: widget.match.isPlayed 
-              ? predColor.withValues(alpha: 0.1) 
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: widget.match.isPlayed 
-                ? predColor.withValues(alpha: 0.3) 
-                : AppColors.border,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(predIcon, color: predColor, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              '${AppTranslations.get(widget.lang, 'myPrediction')} : ${widget.userPrediction!.t1Score} - ${widget.userPrediction!.t2Score}',
-              style: TextStyle(
-                color: widget.match.isPlayed ? predColor : AppColors.textDim,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-            if (widget.match.isPlayed) ...[
-              const SizedBox(width: 8),
-              Text(
-                widget.predictionResult == 'wrong' 
-                  ? '0 pts'
-                  : '+${PredictionService.evaluatePoints(widget.match, widget.userPrediction!)} pts',
-                style: TextStyle(
-                  color: predColor,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                ),
-              ),
-            ]
-          ],
-        ),
-      ),
-    ] else if (widget.match.isPlayed) ...[
-      // Cas où le match est fini mais aucun prono n'a été fait
-      const SizedBox(height: 12),
-      Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.help_outline_rounded, color: AppColors.textDim, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              AppTranslations.get(widget.lang, 'noPredictionMade'),
-              style: const TextStyle(
-                color: AppColors.textDim,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ],
-    // --------------------------------------
 
+                if (hasPrediction) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: widget.match.isPlayed
+                          ? predColor.withValues(alpha: 0.1)
+                          : AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: widget.match.isPlayed
+                            ? predColor.withValues(alpha: 0.3)
+                            : AppColors.border,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(predIcon, color: predColor, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${AppTranslations.get(widget.lang, 'myPrediction')} : ${widget.userPrediction!.t1Score} - ${widget.userPrediction!.t2Score}',
+                              style: TextStyle(
+                                color: widget.match.isPlayed ? predColor : AppColors.textDim,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (widget.match.isPlayed) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                widget.predictionResult == 'wrong'
+                                    ? '0 pts'
+                                    : '+${PredictionService.evaluatePoints(widget.match, widget.userPrediction!)} pts',
+                                style: TextStyle(
+                                  color: predColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ]
+                          ],
+                        ),
+                        if (widget.userPrediction!.extraTimeWinner != null || widget.userPrediction!.penaltyWinner != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              widget.userPrediction!.penaltyWinner != null
+                                  ? '(+ PK)'
+                                  : '(+ ET)',
+                              style: TextStyle(
+                                color: (widget.match.isPlayed ? predColor : AppColors.textDim).withValues(alpha: 0.7),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ] else if (widget.match.isPlayed) ...[
+                  // Cas où le match est fini mais aucun prono n'a été fait
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border, width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.help_outline_rounded, color: AppColors.textDim, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          AppTranslations.get(widget.lang, 'noPredictionMade'),
+                          style: const TextStyle(
+                            color: AppColors.textDim,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -339,7 +401,12 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
 
   Widget _buildTeamSection(String teamCode, String teamName, BuildContext context, bool isLeft) {
     return GestureDetector(
-      onTap: () => WCTeamProfileDialog.show(context, teamCode, widget.lang),
+      onTap: () {
+        // Guard against opening profiles for placeholder teams
+        if (teamCode.toLowerCase() != 'tbd' && !teamCode.contains(RegExp(r'\d'))) {
+          WCTeamProfileDialog.show(context, teamCode, widget.lang);
+        }
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

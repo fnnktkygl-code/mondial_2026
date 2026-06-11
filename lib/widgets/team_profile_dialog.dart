@@ -21,6 +21,21 @@ class WCTeamProfileDialog extends StatefulWidget {
   });
 
   static void show(BuildContext context, String teamCode, String lang) {
+    final cleanCode = teamCode.toLowerCase().replaceAll('g_', '');
+    final isPlaceholder = cleanCode == 'tbd' ||
+        cleanCode.contains(RegExp(r'\d')) ||
+        (cleanCode.length > 2 && cleanCode != 'sco' && cleanCode != 'gb-sct');
+
+    if (isPlaceholder) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This team is yet to be determined.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.85),
@@ -87,8 +102,8 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                   children: [
                     Hero(
                       tag: 'profile_flag_$cleanCode',
-                      child: TeamFlagWidget(
-                        code: cleanCode == 'gb-sct' ? 'sco' : cleanCode,
+                      child: TeamFlagWidget.flag(
+                        cleanCode,
                         width: isDesktop ? 90 : 64,
                         height: isDesktop ? 60 : 44,
                         borderRadius: 8,
@@ -152,6 +167,18 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
         _buildSectionTitle(AppTranslations.get(widget.lang, 'generalInformation')),
         const SizedBox(height: 16),
         _buildGeneralInfoGrid(profile),
+        if (profile.worldCupRecord != null) ...[
+          const SizedBox(height: 32),
+          _buildSectionTitle(AppTranslations.get(widget.lang, 'worldCupRecord')),
+          const SizedBox(height: 16),
+          _buildWorldCupRecordCard(profile),
+          if (profile.worldCupRecord!.funFacts.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            _buildSectionTitle(AppTranslations.get(widget.lang, 'triviaTitle')),
+            const SizedBox(height: 16),
+            _buildFunFactsSection(profile.worldCupRecord!.funFacts),
+          ],
+        ],
         if (profile.trophies.isNotEmpty) ...[
           const SizedBox(height: 32),
           _buildSectionTitle(AppTranslations.get(widget.lang, 'majorTrophies')),
@@ -190,6 +217,18 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
               _buildSectionTitle(AppTranslations.get(widget.lang, 'generalInformation')),
               const SizedBox(height: 16),
               _buildGeneralInfoGrid(profile),
+              if (profile.worldCupRecord != null) ...[
+                const SizedBox(height: 32),
+                _buildSectionTitle(AppTranslations.get(widget.lang, 'worldCupRecord')),
+                const SizedBox(height: 16),
+                _buildWorldCupRecordCard(profile),
+                if (profile.worldCupRecord!.funFacts.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _buildSectionTitle(AppTranslations.get(widget.lang, 'triviaTitle')),
+                  const SizedBox(height: 16),
+                  _buildFunFactsSection(profile.worldCupRecord!.funFacts),
+                ],
+              ],
               const SizedBox(height: 40),
               _buildSectionTitle(AppTranslations.get(widget.lang, 'mediaHistory')),
               const SizedBox(height: 16),
@@ -286,6 +325,152 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     );
   }
 
+  Widget _buildWorldCupRecordCard(TeamProfileData profile) {
+    final record = profile.worldCupRecord;
+    if (record == null) return const SizedBox.shrink();
+
+    final hasAppearanceInfo = record.firstWorldCup != null && record.participationRank != null;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasAppearanceInfo) ...[
+            // First WC + Appearances row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildRecordHighlight(
+                    label: AppTranslations.get(widget.lang, 'firstWorldCup'),
+                    value: record.firstWorldCup.toString(),
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: AppColors.border,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                Expanded(
+                  child: _buildRecordHighlight(
+                    label: AppTranslations.get(widget.lang, 'appearances'),
+                    value: record.participations.toString(),
+                    caption: record.participationRankLabel,
+                  ),
+                ),
+              ],
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Divider(color: AppColors.border, height: 1),
+            ),
+          ],
+          Text(
+            AppTranslations.get(widget.lang, 'worldCupRecord').toUpperCase(),
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildRecordStat(AppTranslations.get(widget.lang, 'playedShort'), record.played, Colors.white)),
+              Expanded(child: _buildRecordStat(AppTranslations.get(widget.lang, 'winsShort'), record.wins, Colors.greenAccent)),
+              Expanded(child: _buildRecordStat(AppTranslations.get(widget.lang, 'drawsShort'), record.draws, Colors.amberAccent)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildRecordStat(AppTranslations.get(widget.lang, 'lossesShort'), record.losses, Colors.redAccent)),
+              Expanded(child: _buildRecordStat(AppTranslations.get(widget.lang, 'goalsScoredShort'), record.goalsFor, Colors.white)),
+              Expanded(child: _buildRecordStat(AppTranslations.get(widget.lang, 'goalsConcededShort'), record.goalsAgainst, AppColors.textDim)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecordHighlight({required String label, required String value, String? caption}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            color: AppColors.textDim,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                fontFamily: 'monospace',
+              ),
+            ),
+            if (caption != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                caption,
+                style: const TextStyle(
+                  color: AppColors.textDim,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecordStat(String label, int value, Color valueColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textDim,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value.toString(),
+          style: TextStyle(
+            color: valueColor,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'monospace',
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTrophiesList(TeamProfileData profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -355,19 +540,19 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                     if (hasImage) ...[
                       isLocalAsset
                           ? Image.asset(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
-                            )
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                      )
                           : Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
-                            ),
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                      ),
                     ] else
                       _buildImagePlaceholder(),
                     Positioned.fill(
@@ -432,6 +617,47 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFunFactsSection(List<String> facts) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: facts.map((fact) {
+          final bool isLast = facts.last == fact;
+          return Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 2),
+                  child: const Icon(Icons.auto_awesome, color: AppColors.accent, size: 16),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    fact,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -626,8 +852,8 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
                             Text(
                               isCurrent
                                   ? (isPlaying
-                                      ? (AppTranslations.get(widget.lang, 'nowPlaying'))
-                                      : (AppTranslations.get(widget.lang, 'paused')))
+                                  ? (AppTranslations.get(widget.lang, 'nowPlaying'))
+                                  : (AppTranslations.get(widget.lang, 'paused')))
                                   : (AppTranslations.get(widget.lang, 'readyToListen')),
                               style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.w600),
                             ),
@@ -777,7 +1003,7 @@ class _SoundwaveVisualizerState extends State<SoundwaveVisualizer>
         mainAxisSize: MainAxisSize.min,
         children: List.generate(
           _heights.length,
-          (i) => Container(
+              (i) => Container(
             margin: const EdgeInsets.symmetric(horizontal: 2),
             width: 3,
             height: 4,
@@ -797,7 +1023,7 @@ class _SoundwaveVisualizerState extends State<SoundwaveVisualizer>
           mainAxisSize: MainAxisSize.min,
           children: List.generate(
             _heights.length,
-            (i) {
+                (i) {
               final scale = 0.3 + 0.7 * sin((_controller.value * 2 * pi) + (i * 0.4)).abs();
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 2),

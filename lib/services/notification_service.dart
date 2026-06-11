@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -9,10 +10,18 @@ import '../models/match.dart';
 import '../services/team_profile_service.dart';
 import '../services/firebase_service.dart';
 import '../l10n/translations.dart';
+import '../../firebase_options.dart';
+
+// Must be a top-level or static function to avoid execution failure when app is terminated
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint("Handling a background message: ${message.messageId}");
+}
 
 class WCNotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -20,7 +29,7 @@ class WCNotificationService {
     // E.g. 'm12' -> 12, 'm12_ht' -> 121, 'm12_ft' -> 122
     final RegExp digitRegex = RegExp(r'\d+');
     final match = digitRegex.firstMatch(matchId);
-    
+
     int baseId = 0;
     if (match != null) {
       baseId = int.parse(match.group(0)!);
@@ -127,12 +136,9 @@ class WCNotificationService {
         final dynamic tzResult = await FlutterTimezone.getLocalTimezone();
         String timeZoneName = tzResult.toString();
 
-        // Handle weird macOS/iOS strings like "TimezoneInfo(Europe/Paris, ...)" 
-        // or "locale: fr_FR"
         if (timeZoneName.contains('(') && timeZoneName.contains(',')) {
           timeZoneName = timeZoneName.split('(').last.split(',').first.trim();
         } else if (timeZoneName.contains('locale:')) {
-          // Fallback to UTC or a generic zone if macOS returns a locale instead of a timezone
           timeZoneName = 'UTC';
         }
 
@@ -147,14 +153,14 @@ class WCNotificationService {
     }
 
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
-        );
+    DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
@@ -187,7 +193,6 @@ class WCNotificationService {
       }
     });
 
-    // Optionally save the token to Firestore for the backend
     FirebaseMessaging.instance.getToken().then((token) async {
       if (token != null) {
         try {
@@ -200,8 +205,6 @@ class WCNotificationService {
       }
     });
 
-    // Keeping Firestore listener as a fallback for specific in-app notifications
-    // if backend isn't sending direct FCM. However, FCM is preferred.
     _startFirestoreListener();
   }
 
@@ -214,32 +217,31 @@ class WCNotificationService {
         .where('read', isEqualTo: false)
         .snapshots()
         .listen((snapshot) {
-          for (var change in snapshot.docChanges) {
-            if (change.type == DocumentChangeType.added) {
-              final data = change.doc.data();
-              if (data != null) {
-                final title = data['title'] as String? ?? 'Notification';
-                final body = data['body'] as String? ?? '';
-                showInstantNotification(
-                  id: change.doc.id,
-                  title: title,
-                  body: body,
-                );
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data();
+          if (data != null) {
+            final title = data['title'] as String? ?? 'Notification';
+            final body = data['body'] as String? ?? '';
+            showInstantNotification(
+              id: change.doc.id,
+              title: title,
+              body: body,
+            );
 
-                // Mark as read so we don't show it again
-                change.doc.reference.update({'read': true});
-              }
-            }
+            change.doc.reference.update({'read': true});
           }
-        });
+        }
+      }
+    });
   }
 
   static Future<bool> requestPermissions() async {
     try {
       final ios = _plugin
           .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >();
+          IOSFlutterLocalNotificationsPlugin
+      >();
       if (ios != null) {
         final granted = await ios.requestPermissions(
           alert: true,
@@ -251,8 +253,8 @@ class WCNotificationService {
 
       final mac = _plugin
           .resolvePlatformSpecificImplementation<
-            MacOSFlutterLocalNotificationsPlugin
-          >();
+          MacOSFlutterLocalNotificationsPlugin
+      >();
       if (mac != null) {
         final granted = await mac.requestPermissions(
           alert: true,
@@ -264,8 +266,8 @@ class WCNotificationService {
 
       final android = _plugin
           .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+          AndroidFlutterLocalNotificationsPlugin
+      >();
       if (android != null) {
         final granted = await android.requestNotificationsPermission();
         if (granted == true) return true;
@@ -330,9 +332,10 @@ class WCNotificationService {
     required String body,
     required DateTime scheduledDate,
   }) async {
-    if (kIsWeb) return; // flutter_local_notifications doesn't support Web
-    
+    if (kIsWeb) return;
+
     final tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
+    // Ensure we do not attempt to schedule a notification in the past
     if (tzDate.isBefore(tz.TZDateTime.now(tz.local))) return;
 
     try {
@@ -352,7 +355,7 @@ class WCNotificationService {
 
   static Future<void> cancelNotification(String matchId) async {
     if (kIsWeb) return;
-    
+
     try {
       await _plugin.cancel(id: generateStableId(matchId));
       await _plugin.cancel(id: generateStableId('${matchId}_ht'));

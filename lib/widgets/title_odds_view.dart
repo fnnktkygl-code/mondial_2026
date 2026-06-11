@@ -28,7 +28,7 @@ class WCTitleOddsView extends StatefulWidget {
 class _WCTitleOddsViewState extends State<WCTitleOddsView> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _showExplanation = true; // Gère l'affichage du guide pour les débutants
+  bool _showExplanation = true;
 
   @override
   void dispose() {
@@ -39,7 +39,8 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
   @override
   Widget build(BuildContext context) {
     // 1. Filter and sort teams
-    final List<MapEntry<String, double>> sortedTeams = widget.currentOdds.entries.toList();
+    final List<MapEntry<String, double>> sortedTeams =
+    widget.currentOdds.entries.toList();
 
     // Sort:
     // 1. Odds descending (higher odds first)
@@ -53,12 +54,11 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
       return nameA.compareTo(nameB);
     });
 
-    // Filter by search query and eliminate teams with 0.0 odds
+    // Filter by search query — teams at 0.0 are eliminated and hidden
     final filteredTeams = sortedTeams.where((entry) {
-      // Si la cote est à 0.0, l'équipe est mathématiquement éliminée de la course au titre
       if (entry.value <= 0.0) return false;
-
-      final teamName = AppTranslations.getTeam(widget.lang, entry.key).toLowerCase();
+      final teamName =
+      AppTranslations.getTeam(widget.lang, entry.key).toLowerCase();
       final teamCode = entry.key.toLowerCase();
       final query = _searchQuery.toLowerCase();
       return teamName.contains(query) || teamCode.contains(query);
@@ -66,6 +66,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
 
     return Column(
       children: [
+        // ── Search bar ──────────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
           child: TextField(
@@ -73,11 +74,14 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
             style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               hintText: AppTranslations.get(widget.lang, 'searchTeams'),
-              hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
-              prefixIcon: const Icon(Icons.search, color: AppColors.textDim, size: 20),
+              hintStyle:
+              const TextStyle(color: AppColors.textDim, fontSize: 14),
+              prefixIcon:
+              const Icon(Icons.search, color: AppColors.textDim, size: 20),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
-                icon: const Icon(Icons.clear, color: AppColors.textDim, size: 18),
+                icon: const Icon(Icons.clear,
+                    color: AppColors.textDim, size: 18),
                 onPressed: () {
                   setState(() {
                     _searchController.clear();
@@ -88,18 +92,22 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                   : null,
               filled: true,
               fillColor: AppColors.surface,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+              contentPadding: const EdgeInsets.symmetric(
+                  vertical: 12.0, horizontal: 16.0),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.0),
-                borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                borderSide:
+                const BorderSide(color: AppColors.border, width: 1.5),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.0),
-                borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                borderSide:
+                const BorderSide(color: AppColors.border, width: 1.5),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.0),
-                borderSide: const BorderSide(color: AppColors.accent, width: 2.0),
+                borderSide:
+                const BorderSide(color: AppColors.accent, width: 2.0),
               ),
             ),
             onChanged: (val) {
@@ -110,29 +118,36 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           ),
         ),
 
-        // Info Banner pour les utilisateurs novices (méthode de contextualisation avec police adaptée)
+        // ── Contextual banner (shown once, dismissible) ─────────────────────
         if (_showExplanation) _buildContextualBanner(),
 
+        // ── Team list ───────────────────────────────────────────────────────
         Expanded(
           child: filteredTeams.isEmpty
               ? Center(
             child: Text(
               AppTranslations.get(widget.lang, 'noTeamsFound'),
-              style: const TextStyle(color: AppColors.textDim, fontSize: 14),
+              style: const TextStyle(
+                  color: AppColors.textDim, fontSize: 14),
             ),
           )
               : ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0),
+            padding:
+            const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0),
             itemCount: filteredTeams.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 10),
+            separatorBuilder: (context, index) =>
+            const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final entry = filteredTeams[index];
               final code = entry.key;
               final odds = entry.value;
-              final mapIndex = sortedTeams.indexWhere((e) => e.key == code);
-              final prevOdds = widget.previousOdds?[code] ?? odds;
+              final mapIndex =
+              sortedTeams.indexWhere((e) => e.key == code);
+              final prevOdds =
+                  widget.previousOdds?[code] ?? odds;
 
-              return _buildTeamOddsCard(context, mapIndex + 1, code, odds, prevOdds);
+              return _buildTeamOddsCard(
+                  context, mapIndex + 1, code, odds, prevOdds);
             },
           ),
         ),
@@ -140,9 +155,23 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
     );
   }
 
+  // ── Banner ────────────────────────────────────────────────────────────────
+
   Widget _buildContextualBanner() {
-    final viewTitle = AppTranslations.get(widget.lang, 'oddsViewTitle');
-    final viewDesc = AppTranslations.get(widget.lang, 'oddsViewExplanation');
+    final viewTitle =
+    AppTranslations.get(widget.lang, 'oddsViewTitle');
+    final viewSubtitle =
+    AppTranslations.get(widget.lang, 'oddsViewSubtitle');
+    final viewDesc =
+    AppTranslations.get(widget.lang, 'oddsViewExplanation');
+    final labelRating =
+    AppTranslations.get(widget.lang, 'oddsLegendRating');
+    final labelStage =
+    AppTranslations.get(widget.lang, 'oddsLegendStage');
+    final labelPoints =
+    AppTranslations.get(widget.lang, 'oddsLegendPoints');
+    final labelHow =
+    AppTranslations.get(widget.lang, 'oddsHowItWorks');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
@@ -150,59 +179,136 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.borderMid,
-            width: 1.5,
-          ),
+          border: Border.all(color: AppColors.borderMid, width: 1.5),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0), // Augmentation du padding pour aérer
-          child: Row(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 2.0),
-                child: Icon(
-                  Icons.emoji_events_outlined,
-                  color: AppColors.accent,
-                  size: 24, // Augmenté de 20 à 24 pour la visibilité
-                ),
-              ),
-              const SizedBox(width: 14), // Espacement horizontal augmenté de 12 à 14
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      viewTitle,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15, // Augmenté de 13 à 15 pour une lecture optimale
+
+              // ── Header: icon + title + subtitle + close ──────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tinted icon container
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.emoji_events_outlined,
+                      color: AppColors.accent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Title + subtitle
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          viewTitle,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          viewSubtitle,
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Close button
+                  GestureDetector(
+                    onTap: () =>
+                        setState(() => _showExplanation = false),
+                    child: const Padding(
+                      padding: EdgeInsets.only(left: 8.0, top: 2.0),
+                      child: Icon(
+                        Icons.close,
+                        color: AppColors.textMuted,
+                        size: 18,
                       ),
                     ),
-                    const SizedBox(height: 6), // Espacement vertical augmenté de 4 à 6
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Explanation text ─────────────────────────────────────────
+              Text(
+                viewDesc,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ── Divider ──────────────────────────────────────────────────
+              Container(
+                height: 1,
+                color: AppColors.border.withValues(alpha: 0.5),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Legend: 3 model factors ──────────────────────────────────
+              Row(
+                children: [
+                  _buildLegendChip(AppColors.accent, labelRating),
+                  const SizedBox(width: 8),
+                  _buildLegendChip(AppColors.accentLight, labelStage),
+                  const SizedBox(width: 8),
+                  _buildLegendChip(AppColors.warning, labelPoints),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── "How it works" link ──────────────────────────────────────
+              GestureDetector(
+                onTap: () {
+                  // TODO: ouvre un bottom sheet ou une page explicative
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.tune_rounded,
+                      color: AppColors.accent,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 5),
                     Text(
-                      viewDesc,
+                      labelHow,
                       style: const TextStyle(
-                        color: AppColors.textSecondary, // Remplacement de textDim par textSecondary pour plus de contraste
-                        fontSize: 13, // Augmenté de 11 à 13 pour la lisibilité sur mobile
-                        height: 1.45, // Augmentation de la hauteur de ligne pour aérer le bloc
+                        color: AppColors.accent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.close, color: AppColors.textMuted, size: 20), // Augmenté de 16 à 20 pour faciliter la zone de clic
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  setState(() {
-                    _showExplanation = false;
-                  });
-                },
               ),
             ],
           ),
@@ -210,6 +316,34 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
       ),
     );
   }
+
+  // ── Legend chip helper ────────────────────────────────────────────────────
+
+  Widget _buildLegendChip(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 7,
+          height: 7,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Team odds card ────────────────────────────────────────────────────────
 
   Widget _buildTeamOddsCard(
       BuildContext context,
@@ -219,27 +353,31 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
       double prevOdds,
       ) {
     final teamName = AppTranslations.getTeam(widget.lang, code);
-    final isFav = widget.supportedTeamCode?.toLowerCase() == code.toLowerCase();
+    final isFav =
+        widget.supportedTeamCode?.toLowerCase() == code.toLowerCase();
     final isEliminated = odds == 0.0;
 
-    // Calculate Trend
+    // Calculate trend
     Widget trendWidget;
     Color trendColor;
     final double diff = odds - prevOdds;
 
     if (isEliminated) {
       trendWidget = Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: AppColors.danger.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
+          border: Border.all(
+              color: AppColors.danger.withValues(alpha: 0.4)),
         ),
         child: Text(
-          AppTranslations.get(widget.lang, 'eliminated').toUpperCase(),
+          AppTranslations.get(widget.lang, 'eliminated')
+              .toUpperCase(),
           style: const TextStyle(
             color: AppColors.danger,
-            fontSize: 11, // Augmenté de 9 à 11 pour l'accessibilité mobile
+            fontSize: 11,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
           ),
@@ -254,7 +392,10 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           const SizedBox(width: 2),
           Text(
             '+${diff.toStringAsFixed(1)}%',
-            style: TextStyle(color: trendColor, fontSize: 11, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: trendColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold),
           ),
         ],
       );
@@ -267,20 +408,28 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
           const SizedBox(width: 2),
           Text(
             '${diff.toStringAsFixed(1)}%',
-            style: TextStyle(color: trendColor, fontSize: 11, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: trendColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold),
           ),
         ],
       );
     } else {
       trendWidget = const Text(
         '—',
-        style: TextStyle(color: AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.bold),
+        style: TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 12,
+            fontWeight: FontWeight.bold),
       );
     }
 
     return Container(
       decoration: BoxDecoration(
-        color: isFav ? AppColors.accent.withValues(alpha: 0.06) : AppColors.card,
+        color: isFav
+            ? AppColors.accent.withValues(alpha: 0.06)
+            : AppColors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isFav
@@ -304,15 +453,19 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
               children: [
                 Row(
                   children: [
-                    // Rank indicator
+                    // Rank
                     SizedBox(
-                      width: 28, // Augmenté de 26 à 28
+                      width: 28,
                       child: Text(
                         isEliminated ? '—' : '#$rank',
                         style: TextStyle(
-                          color: isEliminated ? AppColors.textMuted : (rank <= 3 ? AppColors.accent : Colors.white),
+                          color: isEliminated
+                              ? AppColors.textMuted
+                              : (rank <= 3
+                              ? AppColors.accent
+                              : Colors.white),
                           fontWeight: FontWeight.w900,
-                          fontSize: 14, // Augmenté de 13 à 14
+                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -329,7 +482,7 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                     ),
                     const SizedBox(width: 12),
 
-                    // Team Name
+                    // Team name
                     Expanded(
                       child: Row(
                         children: [
@@ -338,15 +491,20 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                               teamName,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: isFav ? AppColors.accent : Colors.white,
-                                fontWeight: isFav ? FontWeight.w900 : FontWeight.bold,
-                                fontSize: 15, // Augmenté de 14 à 15 pour être plus lisible
+                                color: isFav
+                                    ? AppColors.accent
+                                    : Colors.white,
+                                fontWeight: isFav
+                                    ? FontWeight.w900
+                                    : FontWeight.bold,
+                                fontSize: 15,
                               ),
                             ),
                           ),
                           if (isFav) ...[
                             const SizedBox(width: 6),
-                            const Icon(Icons.star, color: Colors.amber, size: 14),
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 14),
                           ],
                         ],
                       ),
@@ -357,20 +515,24 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                     trendWidget,
                     const SizedBox(width: 12),
 
-                    // Odds percentage
+                    // Percentage
                     Text(
-                      isEliminated ? '0.0%' : '${odds.toStringAsFixed(1)}%',
+                      isEliminated
+                          ? '0.0%'
+                          : '${odds.toStringAsFixed(1)}%',
                       style: TextStyle(
-                        color: isEliminated ? AppColors.textMuted : Colors.white,
+                        color: isEliminated
+                            ? AppColors.textMuted
+                            : Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 16, // Augmenté de 15 à 16 pour un aspect premium
+                        fontSize: 16,
                         fontFamily: 'monospace',
                       ),
                     ),
                   ],
                 ),
 
-                // Linear probability bar
+                // Probability bar
                 if (!isEliminated) ...[
                   const SizedBox(height: 12),
                   ClipRRect(
@@ -381,7 +543,8 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: FractionallySizedBox(
-                          widthFactor: (odds / 100.0).clamp(0.0, 1.0),
+                          widthFactor:
+                          (odds / 100.0).clamp(0.0, 1.0),
                           child: Container(
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(

@@ -6,6 +6,7 @@ import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:mondial_2026/services/player_database_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -83,6 +84,7 @@ void main() async {
   await initializeDateFormatting('en', null);
   await initializeDateFormatting('es', null);
   await WCTeamProfileService.loadMediaMap();
+  await PlayerDatabaseService.loadPlayers();
   runApp(const MyApp());
 }
 
@@ -320,19 +322,23 @@ class _MyHomePageState extends State<MyHomePage> {
         final base64Payload = queryParams['group']!;
         if (base64Payload.isNotEmpty) {
           await PredictionService.joinCustomGroup(base64Payload);
-          if (mounted) setState(() => _activeTab = 'challenge');
+          if (!mounted) return;
+          setState(() => _activeTab = 'challenge');
         }
       }
     } catch (e) {
       debugPrint("Deep link error: $e");
     }
 
+    if (!mounted) return;
+
     // 3. Odds & Notifications
     _updateTournamentOddsAndCheckNotifications();
 
     // 4. Update Check (non-web only)
-    if (!kIsWeb) {
-      WCUpdateService.checkUpdate(context, _lang).catchError((_) => null);
+    if (!kIsWeb && mounted) {
+      if (!context.mounted) return;
+      WCUpdateService.checkUpdate(context, _lang);
     }
 
     // 5. Notifications Permissions & Scheduling
@@ -349,9 +355,11 @@ class _MyHomePageState extends State<MyHomePage> {
     // 6. First Launch Profile Modal
     try {
       final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
       final firstShown = prefs.getBool('wc2026_first_profile_shown') ?? false;
       if (!firstShown) {
         await prefs.setBool('wc2026_first_profile_shown', true);
+        if (!mounted) return;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showProfileModal();
         });
@@ -827,8 +835,8 @@ class _MyHomePageState extends State<MyHomePage> {
           activeAlert: _alerts[match.id],
           onSaveAlert: (alertType) => _saveAlert(match.id, alertType),
           prediction: _userPreds?.matchPredictions[match.id],
-          onPredictionChanged: (t1Score, t2Score) =>
-              _saveDirectPrediction(match.id, t1Score, t2Score),
+          onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner) =>
+              _saveDirectPrediction(match.id, t1Score, t2Score, etWinner, pkWinner),
         );
       },
     );
@@ -839,6 +847,8 @@ class _MyHomePageState extends State<MyHomePage> {
     String matchId,
     int t1Score,
     int t2Score,
+    String? etWinner,
+    bool? pkWinner,
   ) async {
     if (_userPreds == null) return;
 
@@ -847,6 +857,8 @@ class _MyHomePageState extends State<MyHomePage> {
         matchId: matchId,
         t1Score: t1Score,
         t2Score: t2Score,
+        extraTimeWinner: etWinner,
+        penaltyWinner: pkWinner,
       );
     });
 
@@ -887,38 +899,50 @@ class _MyHomePageState extends State<MyHomePage> {
       final double oldProb = _currentOdds[favCode] ?? 0.0;
       final double newProb = newOdds[favCode] ?? 0.0;
 
-      if (oldProb.toStringAsFixed(1) != newProb.toStringAsFixed(1)) {
+      // Only notify if odds changed by at least 1.5% to avoid spam, or if eliminated
+      if ((newProb - oldProb).abs() >= 1.5 || (newProb == 0.0 && oldProb > 0.0)) {
         final flag = _getCountryFlagEmoji(favCode);
         final nickname = WCNotificationService.getTeamNickname(favCode, _lang);
 
+        // Check if we are at least in the Quarter-Finals stage
+        final hasReachedQF = _resolvedMatches.any((m) => 
+          (m.stage == 'Quarter-Final' || m.stage == 'Semi-Final' || m.stage == 'Final') && 
+          (m.isPlayed || m.status == 'IN_PLAY' || m.status == 'PAUSED')
+        );
+
         String title = '';
         String body = '';
+        bool shouldNotify = false;
 
-        if (newProb == 0.0) {
+        if (newProb == 0.0 && oldProb > 0.0) {
           title = AppTranslations.get(_lang, 'eliminationTitle');
           body = AppTranslations.get(
             _lang,
             'eliminationBody',
           ).replaceAll('{nickname}', nickname).replaceAll('{flag}', flag);
-        } else if (newProb > oldProb) {
-          title = AppTranslations.get(_lang, 'oddsRisingTitle');
-          body = AppTranslations.get(_lang, 'oddsRisingBody')
-              .replaceAll('{nickname}', nickname)
-              .replaceAll('{flag}', flag)
-              .replaceAll('{prob}', newProb.toStringAsFixed(1));
-        } else {
-          title = AppTranslations.get(_lang, 'oddsFallingTitle');
-          body = AppTranslations.get(_lang, "oddsFallingBody")
-              .replaceAll("{nickname}", nickname)
-              .replaceAll("{flag}", flag)
-              .replaceAll("{prob}", newProb.toStringAsFixed(1));
+          shouldNotify = true;
+        } else if (hasReachedQF && oldProb > 0.0 && newProb > 0.0) {
+          shouldNotify = true;
+          if (newProb > oldProb) {
+            title = AppTranslations.get(_lang, 'oddsRisingTitle');
+            body = AppTranslations.get(_lang, 'oddsRisingBody')
+                .replaceAll('{nickname}', nickname)
+                .replaceAll('{flag}', flag);
+          } else {
+            title = AppTranslations.get(_lang, 'oddsFallingTitle');
+            body = AppTranslations.get(_lang, "oddsFallingBody")
+                .replaceAll("{nickname}", nickname)
+                .replaceAll("{flag}", flag);
+          }
         }
 
-        WCNotificationService.showNotification(
-          id: 9999,
-          title: title,
-          body: body,
-        );
+        if (shouldNotify) {
+          WCNotificationService.showNotification(
+            id: 9999,
+            title: title,
+            body: body,
+          );
+        }
       }
     }
 
@@ -1669,8 +1693,8 @@ class _MyHomePageState extends State<MyHomePage> {
         matches: _resolvedMatches,
         lang: _lang,
         onMatchTap: _showMatchDetails,
-        supportedTeamCode:
-            _userPreds?.supportedTeam, // Ajoutez cette ligne manquante
+        supportedTeamCode: _userPreds?.supportedTeam,
+        predictions: _userPreds?.matchPredictions,
       );
     }
 

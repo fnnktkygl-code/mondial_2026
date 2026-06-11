@@ -57,6 +57,15 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   }
 
   @override
+  void didUpdateWidget(ChallengeViewWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If matches change (e.g. after simulation), reload everything
+    if (oldWidget.matches != widget.matches) {
+      _loadData();
+    }
+  }
+
+  @override
   void dispose() {
     _codeController.dispose();
     _newGroupController.dispose();
@@ -65,16 +74,26 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
   // ── Données ───────────────────────────────────────────────────────────────
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    final preds = await PredictionService.loadPredictionData();
-    final groups = await PredictionService.loadChallengeGroups(preds, widget.matches);
-    final uid = await WCFirebaseService.getOrCreateUserId();
-    setState(() {
-      _userPreds = preds;
-      _groups = groups;
-      _myUserId = uid;
-      _isLoading = false;
-    });
+    // Only show full loading indicator if we don't have data yet
+    final showFullLoading = _groups.isEmpty && _userPreds.username == kDefaultUsername;
+    if (showFullLoading) setState(() => _isLoading = true);
+
+    try {
+      final preds = await PredictionService.loadPredictionData();
+      final groups = await PredictionService.loadChallengeGroups(preds, widget.matches);
+      final uid = await WCFirebaseService.getOrCreateUserId();
+      if (mounted) {
+        setState(() {
+          _userPreds = preds;
+          _groups = groups;
+          _myUserId = uid;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading challenge data: $e");
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _syncProfileWithStats(int totalPoints, String? teamCode, String username) async {
@@ -188,12 +207,17 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          _buildProfileStrip(totalPoints, xpInfo),
-          _buildTabNav(),
-          Expanded(child: _buildTabContent()),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        color: AppColors.accent,
+        backgroundColor: AppColors.card,
+        child: Column(
+          children: [
+            _buildProfileStrip(totalPoints, xpInfo),
+            _buildTabNav(),
+            Expanded(child: _buildTabContent()),
+          ],
+        ),
       ),
     );
   }
@@ -848,8 +872,19 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text('${m.t1Score ?? 0} — ${m.t2Score ?? 0}',
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('${m.t1Score ?? 0} — ${m.t2Score ?? 0}',
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
+                  if (m.wentToPK == true && m.t1ScorePK != null)
+                    Text('(${m.t1ScorePK} - ${m.t2ScorePK} PK)',
+                        style: TextStyle(color: AppColors.accent.withValues(alpha: 0.7), fontSize: 11, fontWeight: FontWeight.bold))
+                  else if (m.wentToET == true)
+                    const Text('(AET)',
+                        style: TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
             Expanded(
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -975,10 +1010,10 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   }
 
   Widget _buildGlobalGroupCard(FriendGroup grp) {
-    final myIdx = grp.members.indexWhere((m) => m.isUser);
-    final myRank = myIdx >= 0 ? myIdx + 1 : null;
-    final topMembers = grp.members.take(3).toList();
-    final showUserSeparate = myRank != null && myRank > 3;
+    final myRank = grp.globalRank;
+    final topMembers = grp.members.where((m) => grp.members.indexOf(m) < 3).toList();
+    final userInTop3 = grp.members.take(3).any((m) => m.isUser);
+    final userMember = grp.members.firstWhere((m) => m.isUser, orElse: () => grp.members.first);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1000,7 +1035,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                         style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
                     const SizedBox(height: 2),
                     Text(
-                      '${grp.members.length} ${AppTranslations.get(widget.lang, 'playersLabel')}',
+                      AppTranslations.get(widget.lang, 'globalCup'),
                       style: const TextStyle(color: AppColors.textDim, fontSize: 11),
                     ),
                   ],
@@ -1031,12 +1066,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           const Divider(color: AppColors.border, height: 1),
           const SizedBox(height: 8),
           ...topMembers.asMap().entries.map((e) => _buildMemberRow(e.value, e.key + 1, isGlobal: true)),
-          if (showUserSeparate && myIdx < grp.members.length) ...[
+          if (!userInTop3 && myRank != null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: const Text('···', style: TextStyle(color: AppColors.borderStrong, fontSize: 14)),
             ),
-            _buildMemberRow(grp.members[myIdx], myRank, isGlobal: true),
+            _buildMemberRow(userMember, myRank, isGlobal: true),
           ],
         ],
       ),

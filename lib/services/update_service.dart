@@ -13,6 +13,7 @@ class WCUpdateService {
   static Future<void> checkUpdate(BuildContext context, String lang) async {
     try {
       final response = await http.get(Uri.parse(_updateUrl));
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final String latestVersion = data['version'] ?? '1.0.0';
@@ -21,6 +22,7 @@ class WCUpdateService {
         final String releaseNotes = data['releaseNotes']?[lang] ?? data['releaseNotes']?['en'] ?? '';
 
         final packageInfo = await PackageInfo.fromPlatform();
+        if (!context.mounted) return;
         final currentVersion = packageInfo.version;
         final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
 

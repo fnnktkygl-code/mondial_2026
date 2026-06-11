@@ -30,6 +30,7 @@ dependencies:
   package_info_plus: ^10.1.0
   firebase_analytics: ^12.4.2
   firebase_crashlytics: ^5.2.3
+  permission_handler: ^12.0.3
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,7 @@ flutter:
     - assets/avatars/
     - assets/team_profile_preview/
     - assets/app_icon.png
+    - lib/widgets/wc2026_players.json
 
 flutter_launcher_icons:
   android: "ic_launcher"

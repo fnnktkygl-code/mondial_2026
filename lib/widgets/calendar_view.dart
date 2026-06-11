@@ -58,6 +58,12 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     super.dispose();
   }
 
+  bool _isPlaceholder(String code) {
+    return (code.length > 2 && code.toLowerCase() != 'sco' && code.toLowerCase() != 'gb-sct') ||
+        code.toLowerCase() == 'tbd' ||
+        code.contains(RegExp(r'\d'));
+  }
+
   void _setInitialWeekToNextMatch() {
     final now = DateTime.now();
     if (widget.matches.isEmpty) {
@@ -69,7 +75,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     WorldCupMatch? nextMatch;
     try {
       nextMatch = widget.matches.firstWhere(
-        (m) => !m.isPlayed && m.date.isAfter(now),
+            (m) => !m.isPlayed && m.date.isAfter(now),
       );
     } catch (_) {
       if (widget.matches.isNotEmpty) {
@@ -120,12 +126,12 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     const double rowHeight = 110.0;
     final hoursList = widget.matches
         .where((m) {
-          final end = _currentWeekStart.add(const Duration(days: 6));
-          return m.date.isAfter(
-                _currentWeekStart.subtract(const Duration(milliseconds: 1)),
-              ) &&
-              m.date.isBefore(end.add(const Duration(days: 1)));
-        })
+      final end = _currentWeekStart.add(const Duration(days: 6));
+      return m.date.isAfter(
+        _currentWeekStart.subtract(const Duration(milliseconds: 1)),
+      ) &&
+          m.date.isBefore(end.add(const Duration(days: 1)));
+    })
         .map((m) => m.date.hour)
         .toList();
 
@@ -150,7 +156,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
       _currentWeekStart = _currentWeekStart.add(Duration(days: days));
     });
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _scrollToFirstMatchOfTargetDay(),
+          (_) => _scrollToFirstMatchOfTargetDay(),
     );
   }
 
@@ -177,7 +183,6 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
         ? 'GMT'
         : 'GMT$sign${hours.abs()}:${minutes.toString().padLeft(2, '0')}';
 
-    // Label de fuseau horaire traduit pour l'en-tête
     String tzSubtitle = AppTranslations.get(
       widget.lang,
       'allTimesIn',
@@ -203,8 +208,8 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     final weekMatches = widget.matches.where((m) {
       return m.date.isAfter(
-            _currentWeekStart.subtract(const Duration(milliseconds: 1)),
-          ) &&
+        _currentWeekStart.subtract(const Duration(milliseconds: 1)),
+      ) &&
           m.date.isBefore(weekEnd);
     }).toList();
 
@@ -223,8 +228,8 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     double? timelineNowTop;
     int? timelineNowDayIdx;
     if (now.isAfter(
-          _currentWeekStart.subtract(const Duration(milliseconds: 1)),
-        ) &&
+      _currentWeekStart.subtract(const Duration(milliseconds: 1)),
+    ) &&
         now.isBefore(weekEnd)) {
       timelineNowDayIdx = now.weekday - DateTime.monday;
       timelineNowTop = ((now.hour - minHour) + (now.minute / 60)) * rowHeight;
@@ -239,7 +244,6 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // ── Navigation Header (Statique & Information Complète) ──────────
           Container(
             color: AppColors.cardDark,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -300,7 +304,6 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
             ),
           ),
 
-          // ── Scrollable Grid ──────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
               controller: _verticalScrollController,
@@ -309,7 +312,6 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Hour labels (Colonne fixe gauche) ──────────────────
                   Container(
                     width: 65,
                     color: AppColors.surface,
@@ -365,7 +367,6 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                     ),
                   ),
 
-                  // ── Les colonnes de jours (Défilement horizontal) ─────────────────
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -384,7 +385,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                             final dayMatches = widget.matches
                                 .where(
                                   (m) => dayFormat.format(m.date) == dateStr,
-                                )
+                            )
                                 .toList();
 
                             return Container(
@@ -405,7 +406,6 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Day header
                                   Container(
                                     height: 48,
                                     width: colWidth,
@@ -413,10 +413,10 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                       color: isTargetDay
                                           ? AppColors.accent.withValues(alpha: 0.08)
                                           : (dayMatches.isNotEmpty
-                                                ? AppColors.border.withValues(alpha:
-                                                    0.2,
-                                                  )
-                                                : Colors.transparent),
+                                          ? AppColors.border.withValues(alpha:
+                                      0.2,
+                                      )
+                                          : Colors.transparent),
                                       border: Border(
                                         bottom: BorderSide(
                                           color: isTargetDay
@@ -433,15 +433,14 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                         color: isTargetDay
                                             ? AppColors.accent
                                             : (dayMatches.isNotEmpty
-                                                  ? Colors.white
-                                                  : AppColors.textDim),
+                                            ? Colors.white
+                                            : AppColors.textDim),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),
                                     ),
                                   ),
 
-                                  // Grid + match blocks
                                   SizedBox(
                                     height: gridHeight + 100,
                                     width: colWidth,
@@ -470,17 +469,17 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                           final topOffset =
                                               ((m.date.hour - minHour) +
                                                   (m.date.minute / 60)) *
-                                              rowHeight;
+                                                  rowHeight;
                                           final blockHeight =
                                               matchDuration * rowHeight;
                                           final simultaneous = dayMatches
                                               .where(
                                                 (x) =>
-                                                    x.date.hour ==
-                                                        m.date.hour &&
-                                                    x.date.minute ==
-                                                        m.date.minute,
-                                              )
+                                            x.date.hour ==
+                                                m.date.hour &&
+                                                x.date.minute ==
+                                                    m.date.minute,
+                                          )
                                               .toList();
                                           final int totalSimultaneous =
                                               simultaneous.length;
@@ -488,7 +487,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                               .indexWhere((x) => x.id == m.id);
 
                                           final widthFactor =
-                                              (0.94 / totalSimultaneous);
+                                          (0.94 / totalSimultaneous);
                                           final leftMargin =
                                               0.03 + (colIndex * widthFactor);
 
@@ -496,39 +495,40 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                           final hasPredicted = widget
                                               .hasPredicted(m);
 
-                                          // Même logique LIVE que MatchCard (limité à 105 min)
                                           final live =
                                               !m.isPlayed &&
-                                              now.isAfter(m.date) &&
-                                              now.isBefore(
-                                                m.date.add(
-                                                  const Duration(minutes: 105),
-                                                ),
-                                              );
+                                                  now.isAfter(m.date) &&
+                                                  now.isBefore(
+                                                    m.date.add(
+                                                      const Duration(minutes: 105),
+                                                    ),
+                                                  );
 
-                                          // Mise en évidence équipe supportée — identique à MatchCard
                                           final isUserTeam =
                                               widget.supportedTeamCode !=
                                                   null &&
-                                              (m.t1.toLowerCase() ==
+                                                  (m.t1.toLowerCase() ==
                                                       widget.supportedTeamCode!
                                                           .toLowerCase() ||
-                                                  m.t2.toLowerCase() ==
-                                                      widget.supportedTeamCode!
-                                                          .toLowerCase());
+                                                      m.t2.toLowerCase() ==
+                                                          widget.supportedTeamCode!
+                                                              .toLowerCase());
 
-                                          // Phase — identique à MatchCard
                                           final stageText = m.isKnockout
                                               ? (m.stage ?? '')
                                               : '${AppTranslations.get(widget.lang, 'group')} ${m.group ?? ''}';
 
-                                          // Icône pronostic avec états de résultat — identique à MatchCard
                                           final IconData predIcon;
                                           final Color predColor;
                                           final String tooltipMessage;
+
                                           if (m.isPlayed && hasPredicted) {
-                                            final predResult = widget.alertType
-                                                ?.call(m);
+                                            // Correction logic Pronostic
+                                            final predResult = PredictionService.getPredictionResult(
+                                              m,
+                                              PredictionData(matchPredictions: widget.userPredictions ?? {}),
+                                            );
+
                                             if (predResult == 'exact') {
                                               predIcon = Icons.star_rounded;
                                               predColor = Colors.amber;
@@ -575,244 +575,214 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                 );
                                           }
 
-                                          // Couleurs du bloc — isUserTeam prioritaire, puis hasAlert, puis défaut
                                           final blockColor = isUserTeam
                                               ? AppColors.accent.withValues(alpha:
-                                                  0.06,
-                                                )
+                                          0.06,
+                                          )
                                               : (hasAlert
-                                                    ? const Color(0xFF0F2D21)
-                                                    : AppColors.border);
+                                              ? const Color(0xFF0F2D21)
+                                              : AppColors.border);
                                           final borderColor = live
                                               ? AppColors.accent
                                               : (isUserTeam
-                                                    ? AppColors.accent
-                                                    : (hasAlert
-                                                          ? AppColors.accent
-                                                          : AppColors
-                                                                .borderMid));
+                                              ? AppColors.accent
+                                              : (hasAlert
+                                              ? AppColors.accent
+                                              : AppColors
+                                              .borderMid));
                                           final borderWidth =
-                                              (live || isUserTeam) ? 2.0 : 1.5;
+                                          (live || isUserTeam) ? 2.0 : 1.5;
 
                                           return Positioned(
                                             top: topOffset + 2,
                                             left: colWidth * leftMargin,
                                             width:
-                                                colWidth * (widthFactor - 0.02),
+                                            colWidth * (widthFactor - 0.02),
                                             height: blockHeight - 4,
                                             child: GestureDetector(
                                               onTap: () => widget.onMatchTap(m),
                                               child: Container(
                                                 padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 8,
-                                                    ),
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 8,
+                                                ),
                                                 decoration: BoxDecoration(
                                                   color: blockColor,
                                                   borderRadius:
-                                                      BorderRadius.circular(14),
+                                                  BorderRadius.circular(14),
                                                   border: Border.all(
                                                     color: borderColor,
                                                     width: borderWidth,
                                                   ),
                                                 ),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    // Header : heure (ou LIVE) + icônes
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        if (live)
-                                                          const Text(
-                                                            '⚽ LIVE',
-                                                            style: TextStyle(
-                                                              color: AppColors
-                                                                  .accent,
-                                                              fontSize: 9,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w900,
-                                                              letterSpacing:
-                                                                  0.8,
-                                                            ),
-                                                          )
-                                                        else
-                                                          Text(
-                                                            m.getFormattedTime(),
-                                                            style: const TextStyle(
-                                                              color: AppColors
-                                                                  .textMuted,
-                                                              fontSize: 10,
-                                                              fontFamily:
-                                                                  'monospace',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
+                                                child: Center(
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    child: ConstrainedBox(
+                                                      constraints: BoxConstraints(
+                                                        maxHeight: blockHeight - 20,
+                                                        maxWidth: colWidth * widthFactor - 16,
+                                                      ),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        crossAxisAlignment:
+                                                        CrossAxisAlignment.center,
+                                                        children: [
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                            MainAxisAlignment.center,
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              if (live)
+                                                                const Text(
+                                                                  '⚽ LIVE',
+                                                                  style: TextStyle(
+                                                                    color: AppColors.accent,
+                                                                    fontSize: 9,
+                                                                    fontWeight: FontWeight.w900,
+                                                                    letterSpacing: 0.8,
+                                                                  ),
+                                                                )
+                                                              else
+                                                                Text(
+                                                                  m.getFormattedTime(),
+                                                                  style: const TextStyle(
+                                                                    color: AppColors.textMuted,
+                                                                    fontSize: 10,
+                                                                    fontFamily: 'monospace',
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                              const SizedBox(width: 4),
+                                                              WCTooltip(
+                                                                message: tooltipMessage,
+                                                                triggerMode: TooltipTriggerMode.tap,
+                                                                preferBelow: false,
+                                                                child: Icon(
+                                                                  predIcon,
+                                                                  color: predColor,
+                                                                  size: 12,
+                                                                ),
+                                                              ),
+                                                              if (hasAlert) ...[
+                                                                const SizedBox(width: 4),
+                                                                const Icon(
+                                                                  Icons.notifications_active,
+                                                                  color: AppColors.accent,
+                                                                  size: 10,
+                                                                ),
+                                                              ],
+                                                            ],
                                                           ),
-                                                        Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            WCTooltip(
-                                                              message:
-                                                                  tooltipMessage,
-                                                              triggerMode:
-                                                                  TooltipTriggerMode
-                                                                      .tap,
-                                                              preferBelow:
-                                                                  false,
-                                                              child: Icon(
-                                                                predIcon,
-                                                                color:
-                                                                    predColor,
-                                                                size: 12,
+
+                                                          if (stageText.isNotEmpty) ...[
+                                                            const SizedBox(height: 4),
+                                                            Text(
+                                                              stageText,
+                                                              style: const TextStyle(
+                                                                color: AppColors.textMuted,
+                                                                fontSize: 9,
+                                                                fontWeight: FontWeight.w600,
                                                               ),
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
+                                                              textAlign: TextAlign.center,
                                                             ),
-                                                            if (hasAlert) ...[
-                                                              const SizedBox(
-                                                                width: 4,
-                                                              ),
-                                                              const Icon(
-                                                                Icons
-                                                                    .notifications_active,
-                                                                color: AppColors
-                                                                    .accent,
-                                                                size: 10,
+                                                          ],
+
+                                                          const SizedBox(height: 6),
+                                                          Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              _buildFlag(m.t1),
+                                                              const SizedBox(height: 2),
+                                                              Text(
+                                                                AppTranslations.getTeam(widget.lang, m.t1),
+                                                                style: TextStyle(
+                                                                  color: _isPlaceholder(m.t1) ? AppColors.textDim : Colors.white,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  fontSize: 11,
+                                                                  height: 1.1,
+                                                                ),
+                                                                maxLines: 1,
+                                                                overflow: TextOverflow.ellipsis,
+                                                                textAlign: TextAlign.center,
                                                               ),
                                                             ],
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-
-                                                    // Phase (groupe ou knockout)
-                                                    if (stageText.isNotEmpty)
-                                                      Text(
-                                                        stageText,
-                                                        style: const TextStyle(
-                                                          color: AppColors
-                                                              .textMuted,
-                                                          fontSize: 9,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-
-                                                    // Équipe 1
-                                                    Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        _buildFlag(m.t1),
-                                                        const SizedBox(
-                                                          height: 2,
-                                                        ),
-                                                        Text(
-                                                          AppTranslations.getTeam(
-                                                            widget.lang,
-                                                            m.t1,
                                                           ),
-                                                          style:
-                                                              const TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 11,
-                                                                height: 1.1,
-                                                              ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
-                                                      ],
-                                                    ),
 
-                                                    // Score ou VS
-                                                    m.isPlayed
-                                                        ? Text(
-                                                            '${m.t1Score} - ${m.t2Score}',
-                                                            style:
-                                                                const TextStyle(
-                                                                  color: AppColors
-                                                                      .accent,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w900,
+                                                          const SizedBox(height: 4),
+                                                          m.isPlayed
+                                                              ? Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              Text(
+                                                                '${m.t1Score ?? '-'} - ${m.t2Score ?? '-'}',
+                                                                style: const TextStyle(
+                                                                  color: AppColors.accent,
+                                                                  fontWeight: FontWeight.w900,
                                                                   fontSize: 12,
                                                                 ),
-                                                            textAlign: TextAlign
-                                                                .center,
+                                                                textAlign: TextAlign.center,
+                                                              ),
+                                                              if (m.wentToPK == true && m.t1ScorePK != null)
+                                                                Text(
+                                                                  '(${m.t1ScorePK}-${m.t2ScorePK} PK)',
+                                                                  style: TextStyle(
+                                                                    color: AppColors.accent.withValues(alpha: 0.7),
+                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 8,
+                                                                  ),
+                                                                )
+                                                              else if (m.wentToET == true)
+                                                                const Text(
+                                                                  '(AET)',
+                                                                  style: TextStyle(
+                                                                    color: AppColors.warning,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 8,
+                                                                  ),
+                                                                ),
+                                                            ],
                                                           )
-                                                        : Text(
+                                                              : Text(
                                                             'VS',
                                                             style: TextStyle(
-                                                              color: AppColors
-                                                                  .accent
-                                                                  .withValues(alpha:
-                                                                    0.5,
-                                                                  ),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w900,
+                                                              color: AppColors.accent.withValues(alpha: 0.5),
+                                                              fontWeight: FontWeight.w900,
                                                               fontSize: 8.5,
-                                                              letterSpacing:
-                                                                  0.5,
+                                                              letterSpacing: 0.5,
                                                             ),
-                                                            textAlign: TextAlign
-                                                                .center,
+                                                            textAlign: TextAlign.center,
                                                           ),
 
-                                                    // Équipe 2
-                                                    Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        _buildFlag(m.t2),
-                                                        const SizedBox(
-                                                          height: 2,
-                                                        ),
-                                                        Text(
-                                                          AppTranslations.getTeam(
-                                                            widget.lang,
-                                                            m.t2,
-                                                          ),
-                                                          style:
-                                                              const TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 11,
-                                                                height: 1.1,
+                                                          const SizedBox(height: 4),
+                                                          Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              _buildFlag(m.t2),
+                                                              const SizedBox(height: 2),
+                                                              Text(
+                                                                AppTranslations.getTeam(widget.lang, m.t2),
+                                                                style: TextStyle(
+                                                                  color: _isPlaceholder(m.t2) ? AppColors.textDim : Colors.white,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  fontSize: 11,
+                                                                  height: 1.1,
+                                                                ),
+                                                                maxLines: 1,
+                                                                overflow: TextOverflow.ellipsis,
+                                                                textAlign: TextAlign.center,
                                                               ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
-                                                      ],
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -839,12 +809,12 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                     width: 10,
                                                     height: 10,
                                                     decoration:
-                                                        const BoxDecoration(
-                                                          color:
-                                                              Colors.redAccent,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
+                                                    const BoxDecoration(
+                                                      color:
+                                                      Colors.redAccent,
+                                                      shape:
+                                                      BoxShape.circle,
+                                                    ),
                                                   ),
                                                 ),
                                               ],

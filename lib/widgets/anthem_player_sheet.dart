@@ -6,6 +6,7 @@ import '../models/match.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../services/audio_service.dart';
+import '../services/insights_service.dart';
 import 'team_flag.dart';
 
 class AnthemPlayerSheet extends StatefulWidget {
@@ -52,11 +53,35 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
     // Sort alphabetically by translated name
     _allTeams = teamCodes.toList()
       ..sort(
-        (a, b) => AppTranslations.getTeam(
+            (a, b) => AppTranslations.getTeam(
           widget.lang,
           a,
         ).compareTo(AppTranslations.getTeam(widget.lang, b)),
       );
+  }
+
+  String _getFlagCdnUrl(String code) {
+    String c = code.toLowerCase().replaceAll('g_', '');
+    if (c == 'en') c = 'gb-eng';
+    if (c == 'sco') c = 'gb-sct';
+    if (c == 'wa') c = 'gb-wls';
+    return 'https://flagcdn.com/w80/$c.png';
+  }
+
+  void _playPrev() {
+    final code = _audioService.currentPlayingTeamCode.value;
+    if (code == null) return;
+    final teams = _getFilteredTeams();
+    final idx = teams.indexOf(code);
+    if (idx > 0) _audioService.playAnthem(teams[idx - 1]);
+  }
+
+  void _playNext() {
+    final code = _audioService.currentPlayingTeamCode.value;
+    if (code == null) return;
+    final teams = _getFilteredTeams();
+    final idx = teams.indexOf(code);
+    if (idx >= 0 && idx < teams.length - 1) _audioService.playAnthem(teams[idx + 1]);
   }
 
   @override
@@ -89,11 +114,20 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
           ),
         ],
       ),
-      child: TeamFlagWidget(
-        code: code,
-        width: size * 1.4,
-        height: size,
-        borderRadius: 6,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.network(
+          _getFlagCdnUrl(code),
+          width: size * 1.4,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => TeamFlagWidget(
+            code: code,
+            width: size * 1.4,
+            height: size,
+            borderRadius: 6,
+          ),
+        ),
       ),
     );
   }
@@ -171,12 +205,12 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
-                              Icons.clear,
-                              color: AppColors.textDim,
-                            ),
-                            onPressed: () => _searchController.clear(),
-                          )
+                      icon: const Icon(
+                        Icons.clear,
+                        color: AppColors.textDim,
+                      ),
+                      onPressed: () => _searchController.clear(),
+                    )
                         : null,
                     filled: true,
                     fillColor: AppColors.surface,
@@ -250,7 +284,7 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                     .opaque, // IMPORTANT : intercepte tout le rectangle
                                 onTap: () => _audioService.playAnthem(code),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                                   child: Row(
                                     children: [
                                       _buildFlag(code, 32),
@@ -258,19 +292,21 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                           mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                           children: [
                                             Text(
                                               name,
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 12,
+                                                fontSize: 11,
+                                                height: 1.1,
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.visible,
+                                              softWrap: true,
                                             ),
                                             const SizedBox(height: 4),
                                             if (isCurrentlyPlaying)
@@ -289,7 +325,7 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                       // Small play/pause action button
                                       ValueListenableBuilder<bool>(
                                         valueListenable:
-                                            _audioService.isLoading,
+                                        _audioService.isLoading,
                                         builder: (context, loading, _) {
                                           if (isPlayingThis && loading) {
                                             return const SizedBox(
@@ -298,9 +334,9 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                      Color
-                                                    >(AppColors.accent),
+                                                AlwaysStoppedAnimation<
+                                                    Color
+                                                >(AppColors.accent),
                                               ),
                                             );
                                           }
@@ -347,6 +383,18 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
         }
 
         final String name = AppTranslations.getTeam(widget.lang, playingCode);
+        final history = WCInsightsService.getHistory(playingCode);
+        final String? funFact = WCInsightsService.getRandomFunFact(playingCode);
+
+        final teams = _getFilteredTeams();
+        final idx = teams.indexOf(playingCode);
+        final hasPrev = idx > 0;
+        final hasNext = idx >= 0 && idx < teams.length - 1;
+
+        // Build a clean subtitle: first WC year if known, otherwise participation count
+        final String subtitle = history?.firstWorldCup != null
+            ? 'Depuis ${history!.firstWorldCup}'
+            : AppTranslations.get(widget.lang, 'anthemsTitle');
 
         return Positioned(
           bottom: 24,
@@ -369,7 +417,7 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Info & Basic Controls
+                // Info & Controls row
                 Row(
                   children: [
                     _buildFlag(playingCode, 28),
@@ -389,7 +437,7 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            AppTranslations.get(widget.lang, 'anthemsTitle'),
+                            subtitle,
                             style: const TextStyle(
                               color: AppColors.textDim,
                               fontSize: 10,
@@ -397,6 +445,17 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                           ),
                         ],
                       ),
+                    ),
+                    // Prev button
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      icon: Icon(
+                        Icons.skip_previous_rounded,
+                        color: hasPrev ? AppColors.textMuted : AppColors.border,
+                        size: 26,
+                      ),
+                      onPressed: hasPrev ? _playPrev : null,
                     ),
                     // Loading spinner / Play-Pause Button
                     ValueListenableBuilder<bool>(
@@ -423,12 +482,14 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                           builder: (context, state, _) {
                             final isPlaying = state == PlayerState.playing;
                             return IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                               icon: Icon(
                                 isPlaying
                                     ? Icons.pause_circle
                                     : Icons.play_circle,
                                 color: AppColors.accent,
-                                size: 30,
+                                size: 32,
                               ),
                               onPressed: () =>
                                   _audioService.playAnthem(playingCode),
@@ -437,8 +498,21 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                         );
                       },
                     ),
+                    // Next button
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      icon: Icon(
+                        Icons.skip_next_rounded,
+                        color: hasNext ? AppColors.textMuted : AppColors.border,
+                        size: 26,
+                      ),
+                      onPressed: hasNext ? _playNext : null,
+                    ),
                     // Stop Button
                     IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                       icon: const Icon(
                         Icons.stop_circle_outlined,
                         color: AppColors.danger,
@@ -448,6 +522,32 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                     ),
                   ],
                 ),
+
+                // Fun fact strip — only when available
+                if (funFact != null) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      funFact,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 10,
+                        fontStyle: FontStyle.italic,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+
                 const SizedBox(height: 4),
 
                 // Progress Bar (Slider)
@@ -493,7 +593,7 @@ class _AnthemPlayerSheetState extends State<AnthemPlayerSheet> {
                               ),
                               child: Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     _formatDuration(pos),
@@ -598,26 +698,26 @@ class _SoundwaveVisualizerState extends State<SoundwaveVisualizer>
   void initState() {
     super.initState();
     _controller =
-        AnimationController(
-            vsync: this,
-            duration: const Duration(milliseconds: 300),
-          )
-          ..addListener(() {
-            setState(() {
-              for (int i = 0; i < 4; i++) {
-                // Smoothly interpolate height to target
-                _heights[i] = _heights[i] + (_targets[i] - _heights[i]) * 0.25;
-              }
-            });
-          })
-          ..repeat();
+    AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    )
+      ..addListener(() {
+        setState(() {
+          for (int i = 0; i < 4; i++) {
+            // Smoothly interpolate height to target
+            _heights[i] = _heights[i] + (_targets[i] - _heights[i]) * 0.25;
+          }
+        });
+      })
+      ..repeat();
 
     _timer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
       if (!mounted) return;
       for (int i = 0; i < 4; i++) {
         _targets[i] =
             3.0 +
-            _random.nextDouble() * 11.0; // Random heights between 3 and 14
+                _random.nextDouble() * 11.0; // Random heights between 3 and 14
       }
     });
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_colors.dart';
-import '../l10n/translations.dart';
 
 class LandingPage extends StatelessWidget {
   final VoidCallback onGetStarted;
@@ -10,8 +9,6 @@ class LandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String lang = 'fr'; // Default for landing preview
-
     return Scaffold(
       body: Stack(
         children: [
@@ -86,14 +83,22 @@ class LandingPage extends StatelessWidget {
                           Color(0xFFFF0000), // Canada Red
                         ],
                       ).createShader(bounds),
-                      child: Text(
-                        AppTranslations.get(lang, 'appTitle'),
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.syne(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w800,
-                          height: 1.0,
-                          color: Colors.white,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "PRONOS\nCHALLENGE",
+                            textAlign: TextAlign.center,
+                            softWrap: false,
+                            style: GoogleFonts.syne(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w900,
+                              height: 0.95,
+                              letterSpacing: -1.5,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),

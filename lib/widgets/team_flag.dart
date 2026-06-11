@@ -7,6 +7,7 @@ class TeamFlagWidget extends StatelessWidget {
   final double width;
   final double height;
   final double borderRadius;
+  final BoxFit fit;
 
   const TeamFlagWidget({
     super.key,
@@ -14,6 +15,7 @@ class TeamFlagWidget extends StatelessWidget {
     this.width = 24,
     this.height = 16,
     this.borderRadius = 4,
+    this.fit = BoxFit.contain,
   });
 
   /// Normalise un code équipe : strip g_, gb-sct → sco, lowercase.
@@ -22,23 +24,19 @@ class TeamFlagWidget extends StatelessWidget {
     return clean == 'gb-sct' ? 'sco' : clean;
   }
 
-  /// Retourne true si le code est un vrai drapeau connu.
-  static bool _isKnownCode(String normalized) {
-    return normalized.length <= 2 || normalized == 'sco';
-  }
-
   /// Factory centralisée — à utiliser partout à la place de _buildFlag().
   /// Gère le placeholder "FIFA" et le cas TBD de façon unique.
   static Widget flag(
-    String code, {
-    required double width,
-    required double height,
-    double borderRadius = 8,
-    double boxShadowOpacity = 0.0,
-  }) {
+      String code, {
+        required double width,
+        required double height,
+        double borderRadius = 8,
+        double boxShadowOpacity = 0.0,
+      }) {
     final normalized = normalizeCode(code);
 
-    if (!_isKnownCode(normalized) || normalized == 'tbd') {
+    // Safeguard for purely unknown/unresolved teams
+    if (normalized == 'tbd') {
       return Container(
         width: width,
         height: height,
@@ -64,6 +62,7 @@ class TeamFlagWidget extends StatelessWidget {
       width: width,
       height: height,
       borderRadius: borderRadius,
+      fit: (width == double.infinity) ? BoxFit.cover : BoxFit.contain,
     );
 
     if (boxShadowOpacity > 0) {
@@ -91,7 +90,7 @@ class TeamFlagWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolvedCode = normalizeCode(code);
 
-    if (!_isKnownCode(resolvedCode)) {
+    if (resolvedCode == 'tbd') {
       return const SizedBox.shrink();
     }
 
@@ -99,19 +98,25 @@ class TeamFlagWidget extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadius),
       child: Image.asset(
         getTeamLogoPath(resolvedCode),
-        width: width,
-        height: height,
-        fit: BoxFit.contain,
+        width: width == double.infinity ? null : width,
+        height: height == double.infinity ? null : height,
+        fit: fit,
+        // The errorBuilder acts as a perfect fallback for knockout placeholders (e.g., '1A', 'W49')
+        // that do not have physical PNG assets but need to be displayed as text.
         errorBuilder: (context, error, stackTrace) => Container(
-          width: width,
-          height: height,
-          color: Colors.grey.shade800,
+          width: width == double.infinity ? null : width,
+          height: height == double.infinity ? null : height,
           alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.borderStrong, width: 1.0),
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
           child: Text(
             resolvedCode.toUpperCase(),
             style: TextStyle(
-              color: Colors.white,
-              fontSize: (width * 0.35).clamp(8.0, 12.0),
+              color: AppColors.textMuted,
+              fontSize: width == double.infinity ? 24 : (width * 0.35).clamp(8.0, 12.0),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -121,7 +126,7 @@ class TeamFlagWidget extends StatelessWidget {
 
     // Special case: Senegal gets champion stars
     if (resolvedCode == 'sn') {
-      final double starSize = (width * 0.35).clamp(8.0, 12.0);
+      final double starSize = width == double.infinity ? 40 : (width * 0.35).clamp(8.0, 12.0);
       return Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,

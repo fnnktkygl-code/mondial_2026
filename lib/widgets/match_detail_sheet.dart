@@ -9,9 +9,9 @@ import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
 import '../services/audio_service.dart';
-import '../services/insights_service.dart';
 import 'team_flag.dart';
 import 'team_profile_dialog.dart';
+import '../services/insights_service.dart';
 
 class MatchDetailSheet extends StatefulWidget {
   final WorldCupMatch match;
@@ -19,7 +19,7 @@ class MatchDetailSheet extends StatefulWidget {
   final String? activeAlert;
   final Function(String alertType) onSaveAlert;
   final MatchPrediction? prediction;
-  final Function(int t1Score, int t2Score)? onPredictionChanged;
+  final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner)? onPredictionChanged;
 
   const MatchDetailSheet({
     super.key,
@@ -35,13 +35,21 @@ class MatchDetailSheet extends StatefulWidget {
   State<MatchDetailSheet> createState() => _MatchDetailSheetState();
 }
 
-class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerProviderStateMixin {
+class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProviderStateMixin {
   int? _localT1Score;
   int? _localT2Score;
+  String? _localEtWinner;
+  bool? _localPkWinner;
   bool _isEditing = false;
   Timer? _countdownTimer;
+  Timer? _funFactTimer;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  late AnimationController _factFadeController;
+  late Animation<double> _factFadeAnimation;
+
+  // 0 = t1 fact, 1 = t2 fact
+  int _activeFactTeam = 0;
 
   @override
   void initState() {
@@ -57,16 +65,232 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     _pulseController.repeat(reverse: true);
+
+    _factFadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _factFadeAnimation = CurvedAnimation(
+      parent: _factFadeController,
+      curve: Curves.easeInOut,
+    );
+    _factFadeController.forward();
+
+    _funFactTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      _cycleFactTeam();
+    });
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _funFactTimer?.cancel();
     _pulseController.dispose();
+    _factFadeController.dispose();
     super.dispose();
   }
 
-  // Helper localisé pour garantir la robustesse sans chaînes codées en dur
+  bool _isPlaceholder(String code) {
+    final c = code.toLowerCase().replaceAll('g_', '');
+    return (c.length > 2 && c != 'sco' && c != 'gb-sct') || c == 'tbd' || c.contains(RegExp(r'\d'));
+  }
+
+  void _cycleFactTeam() async {
+    await _factFadeController.reverse();
+    if (mounted) {
+      setState(() {
+        _activeFactTeam = 1 - _activeFactTeam;
+      });
+      _factFadeController.forward();
+    }
+  }
+
+  Widget _buildFunFactChip() {
+    final teamCode = _activeFactTeam == 0 ? widget.match.t1 : widget.match.t2;
+    final otherCode = _activeFactTeam == 0 ? widget.match.t2 : widget.match.t1;
+
+    // Do not show fun facts if both teams are placeholders
+    if (_isPlaceholder(teamCode) && _isPlaceholder(otherCode)) {
+      return const SizedBox.shrink();
+    }
+
+    final matchupFact = WCInsightsService.getMatchupFact(
+      widget.match.t1,
+      widget.match.t2,
+    );
+    final isMatchupMode = matchupFact != null;
+
+    final fact = isMatchupMode ? matchupFact : WCInsightsService.getRandomFunFact(teamCode);
+
+    Widget dots() {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _dot(0),
+          const SizedBox(width: 6),
+          _dot(1),
+        ],
+      );
+    }
+
+    final hasFact = fact != null || WCInsightsService.getRandomFunFact(otherCode) != null;
+    if (!hasFact) return const SizedBox.shrink();
+
+    final Map<String, String> labels = {
+      'fr': isMatchupMode ? 'FACE-À-FACE' : 'LE SAVIEZ-VOUS ?',
+      'en': isMatchupMode ? 'HEAD-TO-HEAD' : 'DID YOU KNOW?',
+      'es': isMatchupMode ? 'CARA A CARA' : '¿SABÍAS QUE?',
+    };
+    final headerLabel = labels[widget.lang] ?? labels['en']!;
+
+    return GestureDetector(
+      onTap: isMatchupMode ? null : _cycleFactTeam,
+      child: FadeTransition(
+        opacity: _factFadeAnimation,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF00BCD4).withValues(alpha: 0.45),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 3,
+                height: 60,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00BCD4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (isMatchupMode) ...[
+                          _buildTeamCodeBadge(widget.match.t1),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'vs',
+                            style: TextStyle(
+                              color: Color(0xFF00BCD4),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 9,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          _buildTeamCodeBadge(widget.match.t2),
+                        ] else
+                          _buildTeamCodeBadge(teamCode),
+                        const SizedBox(width: 8),
+                        Text(
+                          headerLabel,
+                          style: const TextStyle(
+                            color: Color(0xFF00BCD4),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    if (fact != null)
+                      _buildFactRichText(fact)
+                    else
+                      const SizedBox.shrink(),
+                    if (!isMatchupMode && !_isPlaceholder(otherCode)) ...[
+                      const SizedBox(height: 8),
+                      dots(),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamCodeBadge(String code) {
+    if (_isPlaceholder(code)) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00BCD4).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        code.replaceAll('g_', '').toUpperCase(),
+        style: const TextStyle(
+          color: Color(0xFF00BCD4),
+          fontWeight: FontWeight.w900,
+          fontSize: 10,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _dot(int index) {
+    final isActive = _activeFactTeam == index;
+    final code = index == 0 ? widget.match.t1 : widget.match.t2;
+    if (_isPlaceholder(code)) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: isActive ? null : _cycleFactTeam,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: isActive ? 1.0 : 0.35,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(
+              color: isActive
+                  ? const Color(0xFF00BCD4)
+                  : AppColors.borderStrong,
+              width: isActive ? 1.5 : 1.0,
+            ),
+          ),
+          child: TeamFlagWidget.flag(
+            code,
+            width: 22,
+            height: 15,
+            borderRadius: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFactRichText(String text) {
+    final parts = text.split('**');
+    final spans = <TextSpan>[];
+    for (int i = 0; i < parts.length; i++) {
+      spans.add(TextSpan(
+        text: parts[i],
+        style: TextStyle(
+          color: i.isEven ? AppColors.textSecondary : Colors.white,
+          fontWeight: i.isEven ? FontWeight.normal : FontWeight.bold,
+          fontSize: 13,
+          height: 1.45,
+          fontStyle: i.isEven ? FontStyle.italic : FontStyle.normal,
+        ),
+      ));
+    }
+    return RichText(text: TextSpan(children: spans));
+  }
+
   String _t(String key, {Map<String, String>? namedArgs}) {
     String res = AppTranslations.get(widget.lang, key);
     if (res == key) {
@@ -100,117 +324,33 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     return res;
   }
 
-  Widget _buildProInsightsSection() {
-    final history1 = WCInsightsService.getHistory(widget.match.t1);
-    final history2 = WCInsightsService.getHistory(widget.match.t2);
-    final funFact1 = WCInsightsService.getRandomFunFact(widget.match.t1);
-    final funFact2 = WCInsightsService.getRandomFunFact(widget.match.t2);
-
-    if (history1 == null && history2 == null && funFact1 == null && funFact2 == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            const Icon(Icons.history_edu_rounded, color: AppColors.accent, size: 18),
-            const SizedBox(width: 10),
-            Text(
-              _t('worldCupHistoryTitle'),
-              style: const TextStyle(
-                color: AppColors.accent,
-                fontWeight: FontWeight.w900,
-                fontSize: 14,
-                letterSpacing: 1.5,
-                fontFamily: 'Syne',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        
-        // --- DEUX CARTES SÉPARÉES (Une par équipe) ---
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (history1 != null) Expanded(child: _buildTeamHistoryCard(widget.match.t1, history1, funFact1)),
-            if (history1 != null && history2 != null) const SizedBox(width: 12),
-            if (history2 != null) Expanded(child: _buildTeamHistoryCard(widget.match.t2, history2, funFact2)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTeamHistoryCard(String teamCode, TeamHistory history, String? funFact) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.cardDark.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              TeamFlagWidget(code: teamCode, width: 18, height: 12, borderRadius: 2),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  AppTranslations.getTeam(widget.lang, teamCode).toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildSmallStatRow(_t('playedShort'), history.played),
-          _buildSmallStatRow(_t('winsShort'), history.wins),
-          _buildSmallStatRow(_t('goalsShort'), history.goalsFor),
-          if (funFact != null) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Divider(color: AppColors.border, height: 1),
-            ),
-            Text(
-              funFact,
-              style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.8), fontSize: 9, height: 1.3, fontStyle: FontStyle.italic),
-            ),
-          ]
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallStatRow(String label, int value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 9, fontWeight: FontWeight.w600)),
-          Text(value.toString(), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
-        ],
-      ),
-    );
-  }
-
   void _initLocalScores() {
     if (widget.prediction != null) {
       _localT1Score = widget.prediction!.t1Score;
       _localT2Score = widget.prediction!.t2Score;
+      _localEtWinner = widget.prediction!.extraTimeWinner;
+      _localPkWinner = widget.prediction!.penaltyWinner;
       _isEditing = true;
     } else {
       _localT1Score = 0;
       _localT2Score = 0;
+      _localEtWinner = null;
+      _localPkWinner = null;
       _isEditing = false;
     }
+  }
+
+  void _onPredictionChanged() {
+    if (_localT1Score != _localT2Score) {
+      _localEtWinner = null;
+      _localPkWinner = null;
+    }
+    widget.onPredictionChanged?.call(
+      _localT1Score!,
+      _localT2Score!,
+      _localEtWinner,
+      _localPkWinner,
+    );
   }
 
   void _startCountdown() {
@@ -251,51 +391,20 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
   }
 
   Widget _buildFlag(String code, double size) {
-    if (code.length > 2 || code == 'tbd') {
-      return Container(
-        width: size * 1.4,
-        height: size,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.borderMid, width: 1.5),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          'FIFA',
-          style: TextStyle(
-            color: AppColors.textMuted,
-            fontWeight: FontWeight.bold,
-            fontSize: size * 0.25,
-            letterSpacing: 1.5,
-          ),
-        ),
-      );
-    }
-
-    return Container(
+    return TeamFlagWidget.flag(
+      code,
       width: size * 1.4,
       height: size,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: TeamFlagWidget(
-        code: code,
-        width: size * 1.4,
-        height: size,
-        borderRadius: 10,
-      ),
+      borderRadius: 10,
+      boxShadowOpacity: 0.3,
     );
   }
 
   Map<String, double> _calculateProbability(String t1, String t2) {
+    if (_isPlaceholder(t1) || _isPlaceholder(t2)) {
+      return {'home': 0.333, 'draw': 0.334, 'away': 0.333};
+    }
+
     final int charSum1 = t1.codeUnits.fold(0, (sum, val) => sum + val);
     final int charSum2 = t2.codeUnits.fold(0, (sum, val) => sum + val);
 
@@ -391,8 +500,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
   }
 
   Widget _buildProbabilityBar(BuildContext context) {
-    final cleanT1 = widget.match.t1.replaceFirst('g_', '').toUpperCase();
-    final cleanT2 = widget.match.t2.replaceFirst('g_', '').toUpperCase();
+    final cleanT1 = _isPlaceholder(widget.match.t1) ? 'TBD' : widget.match.t1.replaceFirst('g_', '').toUpperCase();
+    final cleanT2 = _isPlaceholder(widget.match.t2) ? 'TBD' : widget.match.t2.replaceFirst('g_', '').toUpperCase();
+
     final probs = _calculateProbability(widget.match.t1, widget.match.t2);
     final pHome = (probs['home']! * 100).round();
     final pDraw = (probs['draw']! * 100).round();
@@ -482,10 +592,21 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
   }
 
   Widget _buildPredictionControlCard() {
-    final bool isMatchStarted = widget.match.date.isBefore(DateTime.now());
-    final bool isLocked = widget.match.isPlayed || isMatchStarted;
+    final bool isLocked = PredictionService.isPredictionLocked(widget.match);
 
     if (isLocked) {
+      String predText = widget.prediction != null
+          ? 'Prono : ${widget.prediction!.t1Score} - ${widget.prediction!.t2Score}'
+          : AppTranslations.get(widget.lang, 'noPrediction');
+
+      if (widget.prediction != null) {
+        if (widget.prediction!.penaltyWinner != null) {
+          predText += ' (PK)';
+        } else if (widget.prediction!.extraTimeWinner != null) {
+          predText += ' (ET)';
+        }
+      }
+
       return GestureDetector(
         onTap: () => _showInfoDialog(
             AppTranslations.get(widget.lang, 'predictionLocked'),
@@ -498,25 +619,31 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.border, width: 1.5),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.lock_outline, color: AppColors.warning, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    AppTranslations.get(widget.lang, 'predictionLocked'),
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.lock_outline, color: AppColors.warning, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppTranslations.get(widget.lang, 'predictionLocked'),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: widget.prediction != null
                       ? AppColors.accent.withValues(alpha: 0.12)
@@ -524,9 +651,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  widget.prediction != null
-                      ? 'Prono : ${widget.prediction!.t1Score} - ${widget.prediction!.t2Score}'
-                      : AppTranslations.get(widget.lang, 'noPrediction'),
+                  predText,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: widget.prediction != null ? AppColors.accent : AppColors.textDim,
                     fontWeight: FontWeight.bold,
@@ -560,7 +686,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
             setState(() {
               _isEditing = true;
             });
-            widget.onPredictionChanged?.call(_localT1Score!, _localT2Score!);
+            _onPredictionChanged();
           },
         ),
       );
@@ -595,7 +721,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                     _localT1Score = 0;
                     _localT2Score = 0;
                   });
-                  widget.onPredictionChanged?.call(0, 0);
+                  widget.onPredictionChanged?.call(0, 0, null, null);
                 },
                 child: const Icon(Icons.delete_sweep_outlined, color: AppColors.danger, size: 20),
               ),
@@ -605,47 +731,133 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildScoreAdjuster(_localT1Score!, (val) => setState(() => _localT1Score = val), true),
+              _buildScoreAdjuster(_localT1Score!, (val) => setState(() {
+                _localT1Score = val;
+                _onPredictionChanged();
+              }), true),
               const Text(
                 '-',
                 style: TextStyle(color: AppColors.borderStrong, fontSize: 28, fontWeight: FontWeight.bold),
               ),
-              _buildScoreAdjuster(_localT2Score!, (val) => setState(() => _localT2Score = val), false),
+              _buildScoreAdjuster(_localT2Score!, (val) => setState(() {
+                _localT2Score = val;
+                _onPredictionChanged();
+              }), false),
             ],
           ),
+          if (widget.match.isKnockout && _localT1Score == _localT2Score) ...[
+            const SizedBox(height: 20),
+            _buildKnockoutPredictionControls(),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildScoreAdjuster(int score, Function(int) onChanged, bool isT1) {
+  Widget _buildScoreAdjuster(int score, Function(int) onChanged, bool isT1, {bool small = false}) {
     return Row(
       children: [
         IconButton(
           onPressed: score > 0
               ? () {
             onChanged(score - 1);
-            widget.onPredictionChanged?.call(_localT1Score!, _localT2Score!);
           }
               : null,
-          icon: const Icon(Icons.remove_circle_outline, color: AppColors.textDim, size: 30),
+          icon: Icon(Icons.remove_circle_outline, color: AppColors.textDim, size: small ? 24 : 30),
         ),
         const SizedBox(width: 4),
         Text(
           '$score',
-          style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontSize: small ? 22 : 32, fontWeight: FontWeight.bold),
         ),
         const SizedBox(width: 4),
         IconButton(
           onPressed: score < 9
               ? () {
             onChanged(score + 1);
-            widget.onPredictionChanged?.call(_localT1Score!, _localT2Score!);
           }
               : null,
-          icon: const Icon(Icons.add_circle_outline, color: AppColors.accent, size: 30),
+          icon: Icon(Icons.add_circle_outline, color: isT1 ? AppColors.accent : AppColors.info, size: small ? 24 : 30),
         ),
       ],
+    );
+  }
+
+  Widget _buildKnockoutPredictionControls() {
+    return Column(
+      children: [
+        const Divider(color: AppColors.border, height: 32),
+        Text(
+          AppTranslations.get(widget.lang, 'whoQualifies').toUpperCase(),
+          style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.0),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildWinnerChip(widget.match.t1, AppTranslations.getTeam(widget.lang, widget.match.t1)),
+            const SizedBox(width: 12),
+            _buildWinnerChip(widget.match.t2, AppTranslations.getTeam(widget.lang, widget.match.t2)),
+          ],
+        ),
+        if (_localEtWinner != null) ...[
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                AppTranslations.get(widget.lang, 'viaPenalties'),
+                style: const TextStyle(color: AppColors.textDim, fontSize: 13),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: _localPkWinner != null,
+                activeThumbColor: AppColors.accent,
+                onChanged: (val) {
+                  setState(() {
+                    _localPkWinner = val ? (_localEtWinner == widget.match.t1) : null;
+                  });
+                  _onPredictionChanged();
+                },
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWinnerChip(String teamCode, String teamName) {
+    final isSelected = _localEtWinner == teamCode;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _localEtWinner = isSelected ? null : teamCode;
+            if (_localEtWinner == null) _localPkWinner = null;
+          });
+          _onPredictionChanged();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.accent.withValues(alpha: 0.1) : AppColors.cardDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isSelected ? AppColors.accent : AppColors.border),
+          ),
+          child: Column(
+            children: [
+              TeamFlagWidget.flag(teamCode, width: 24, height: 16, borderRadius: 2),
+              const SizedBox(height: 4),
+              Text(
+                teamName,
+                style: TextStyle(color: isSelected ? AppColors.accent : AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -778,6 +990,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
   }
 
   Widget _buildAnthemPlayButton(String teamCode) {
+    if (_isPlaceholder(teamCode)) return const SizedBox.shrink();
+
     final audioService = WCAudioService.instance;
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -821,7 +1035,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Subtle Background Flag
             Opacity(
               opacity: 0.04,
               child: Transform.scale(
@@ -833,7 +1046,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 ),
               ),
             ),
-            // Team Content
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
@@ -860,48 +1072,116 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     );
   }
 
-  Widget _buildFunFactHeader() {
-    final funFact1 = WCInsightsService.getRandomFunFact(widget.match.t1);
-    final funFact2 = WCInsightsService.getRandomFunFact(widget.match.t2);
-
-    if (funFact1 == null && funFact2 == null) {
-      return const SizedBox.shrink();
-    }
-
-    final String fact = funFact1 ?? funFact2!;
+  Widget _buildScoreBreakdown() {
+    final has90 = widget.match.t1Score90 != null;
+    final hasPK = widget.match.t1ScorePK != null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.08),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.lightbulb_outline_rounded, color: AppColors.accent, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _t('triviaTitle'),
-                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.0),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  fact,
-                  style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4, fontStyle: FontStyle.italic),
-                ),
-              ],
+          Text(
+            AppTranslations.get(widget.lang, 'matchFlow').toUpperCase(),
+            style: const TextStyle(
+              color: AppColors.warning,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              letterSpacing: 1.0,
             ),
           ),
+          const SizedBox(height: 12),
+          if (has90) ...[
+            _buildBreakdownRow('90 min', widget.match.t1Score90, widget.match.t2Score90),
+          ],
+          if (widget.match.wentToET == true) ...[
+            if (has90) const Divider(color: AppColors.border, height: 16),
+            _buildBreakdownRow(AppTranslations.get(widget.lang, 'extraTimeLabel'), widget.match.t1ScoreET ?? widget.match.t1Score, widget.match.t2ScoreET ?? widget.match.t2Score),
+          ],
+          if (widget.match.wentToPK == true) ...[
+            const Divider(color: AppColors.border, height: 16),
+            if (hasPK)
+              _buildBreakdownRow(AppTranslations.get(widget.lang, 'penaltiesLabel'), widget.match.t1ScorePK, widget.match.t2ScorePK, isAccent: true)
+            else if (widget.match.pkWinner != null)
+              _buildWinnerRow(AppTranslations.get(widget.lang, 'penaltiesLabel'), widget.match.pkWinner!, isAccent: true),
+          ],
         ],
       ),
     );
+  }
+
+  Widget _buildBreakdownRow(String label, int? s1, int? s2, {bool isAccent = false}) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 85,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isAccent ? AppColors.accent : AppColors.textDim,
+              fontWeight: isAccent ? FontWeight.bold : FontWeight.normal,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const Spacer(),
+        _buildMiniFlag(widget.match.t1),
+        const SizedBox(width: 8),
+        Text(
+          s1 != null && s2 != null ? '$s1 - $s2' : '-',
+          style: TextStyle(
+            color: isAccent ? AppColors.accent : AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(width: 8),
+        _buildMiniFlag(widget.match.t2),
+      ],
+    );
+  }
+
+  Widget _buildWinnerRow(String label, String winnerCode, {bool isAccent = false}) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 85,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isAccent ? AppColors.accent : AppColors.textDim,
+              fontWeight: isAccent ? FontWeight.bold : FontWeight.normal,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const Spacer(),
+        Text(
+          AppTranslations.get(widget.lang, 'winner').toUpperCase(),
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(width: 8),
+        _buildMiniFlag(winnerCode),
+        const SizedBox(width: 6),
+        Text(
+          AppTranslations.getTeam(widget.lang, winnerCode),
+          style: TextStyle(
+            color: isAccent ? AppColors.accent : AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMiniFlag(String code) {
+    return TeamFlagWidget.flag(code, width: 20, height: 14, borderRadius: 4);
   }
 
   @override
@@ -925,13 +1205,36 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: widget.match.isPlayed
-                      ? Text(
-                    '${widget.match.t1Score} - ${widget.match.t2Score}',
-                    style: const TextStyle(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 28,
-                    ),
+                      ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${widget.match.t1Score ?? '-'} - ${widget.match.t2Score ?? '-'}',
+                        style: const TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 28,
+                        ),
+                      ),
+                      if (widget.match.wentToPK == true && widget.match.t1ScorePK != null)
+                        Text(
+                          '(${widget.match.t1ScorePK} - ${widget.match.t2ScorePK} ${AppTranslations.get(widget.lang, 'penaltiesLabel')})',
+                          style: TextStyle(
+                            color: AppColors.accent.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        )
+                      else if (widget.match.wentToET == true)
+                        Text(
+                          '(${AppTranslations.get(widget.lang, 'extraTimeLabel')})',
+                          style: const TextStyle(
+                            color: AppColors.warning,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
                   )
                       : const Text(
                     'VS',
@@ -976,6 +1279,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
             ),
           ),
           const SizedBox(height: 12),
+          _buildFunFactChip(),
+          const SizedBox(height: 4),
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -984,9 +1289,12 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 children: [
                   Center(child: _buildCountdownWidget()),
                   const SizedBox(height: 4),
-                  _buildFunFactHeader(),
                   _buildPredictionControlCard(),
                   const SizedBox(height: 20),
+                  if (widget.match.isPlayed && widget.match.isKnockout && (widget.match.wentToET == true || widget.match.wentToPK == true)) ...[
+                    _buildScoreBreakdown(),
+                    const SizedBox(height: 20),
+                  ],
                   _buildProbabilityBar(context),
                   const SizedBox(height: 20),
                   if (widget.match.isPlayed && widget.match.goals.isNotEmpty) ...[
@@ -1204,10 +1512,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                       ),
                     ),
                   ],
-
-                  // --- SECTION PRO INSIGHTS (TOUT EN BAS) ---
-                  _buildProInsightsSection(),
-                  const SizedBox(height: 48), // Espace final pour ne pas être collé au bord
+                  const SizedBox(height: 48),
                 ],
               ),
             ),
