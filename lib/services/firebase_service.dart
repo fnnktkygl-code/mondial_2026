@@ -40,9 +40,9 @@ class WCFirebaseService {
 
   /// Sync the user profile to Firestore.
   static Future<void> syncUserProfile({
-    required String username,
+    String? username,
     String? supportedTeam,
-    required int points,
+    int? points,
     int streak = 0,
     int guruCount = 0,
     String avatar = '',
@@ -51,16 +51,19 @@ class WCFirebaseService {
     final uid = await getOrCreateUserId();
 
     final docRef = _firestore.collection('users').doc(uid);
-    await docRef.set({
-      'username': username,
-      'supportedTeam': supportedTeam,
-      'points': points,
+    final Map<String, dynamic> data = {
       'streak': streak,
       'guruCount': guruCount,
       'avatar': avatar,
       'isHidden': isHidden,
       'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    };
+
+    if (username != null) data['username'] = username;
+    if (supportedTeam != null) data['supportedTeam'] = supportedTeam;
+    if (points != null) data['points'] = points;
+
+    await docRef.set(data, SetOptions(merge: true));
   }
 
   /// Delete the user profile from Firestore.

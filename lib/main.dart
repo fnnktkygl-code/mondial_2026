@@ -36,6 +36,8 @@ import 'utils/fifa_rules.dart';
 import 'widgets/title_odds_view.dart';
 import 'widgets/mascots_dialog.dart';
 import 'widgets/landing_page.dart';
+import 'widgets/staging_panel.dart';
+import 'widgets/wc_tooltip.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
 
@@ -239,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Map<String, String> loadedAlerts = await AlertService.loadAlerts();
     final loadedMatches = await ApiService.loadMatches(
-      forceRefresh: kIsLiveMode,
+      forceRefresh: kIsLiveMode && !kIsStaging,
     );
 
     String? supportedTeam;
@@ -994,6 +996,7 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: false,
         titleSpacing: 16,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -1004,7 +1007,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(
+            Flexible(
               child: ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [
@@ -1022,6 +1025,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     fontSize: 20,
                     letterSpacing: -0.5,
                   ),
+                  maxLines: 1,
+                  softWrap: false,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -1029,6 +1034,27 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         actions: [
+          if (kIsStaging)
+            WCTooltip(
+              message: 'Staging Debug',
+              child: IconButton(
+                icon: const Icon(Icons.bug_report, color: Colors.amber),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: AppColors.background,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (ctx) => const StagingPanelWidget(),
+                  ).then((_) {
+                    // Rafraîchir les données pour que l'UI affiche les simulations !
+                    _loadInitialData();
+                  });
+                },
+              ),
+            ),
           // 1. Bouton sélecteur de langue dynamique
           PopupMenuButton<String>(
             padding: EdgeInsets.zero,
@@ -1342,62 +1368,66 @@ class _MyHomePageState extends State<MyHomePage> {
                               padding: const EdgeInsets.all(4),
                               child: Row(
                                 children: [
-                                  IconButton(
-                                    tooltip: AppTranslations.get(
+                                  WCTooltip(
+                                    message: AppTranslations.get(
                                       _lang,
                                       'listView',
                                     ),
-                                    icon: const Icon(
-                                      Icons.list_alt,
-                                      size: 20,
-                                      color: AppColors.accent,
-                                    ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: _viewMode == 'list'
-                                          ? AppColors.border
-                                          : Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.list_alt,
+                                        size: 20,
+                                        color: AppColors.accent,
                                       ),
-                                      minimumSize: Size.zero,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          kButtonRadius,
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: _viewMode == 'list'
+                                            ? AppColors.border
+                                            : Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 8,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            kButtonRadius,
+                                          ),
                                         ),
                                       ),
+                                      onPressed: () =>
+                                          setState(() => _viewMode = 'list'),
                                     ),
-                                    onPressed: () =>
-                                        setState(() => _viewMode = 'list'),
                                   ),
                                   const SizedBox(width: 4),
-                                  IconButton(
-                                    tooltip: AppTranslations.get(
+                                  WCTooltip(
+                                    message: AppTranslations.get(
                                       _lang,
                                       'calendarView',
                                     ),
-                                    icon: const Icon(
-                                      Icons.calendar_today_outlined,
-                                      size: 20,
-                                      color: AppColors.accent,
-                                    ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: _viewMode == 'calendar'
-                                          ? AppColors.border
-                                          : Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.calendar_today_outlined,
+                                        size: 20,
+                                        color: AppColors.accent,
                                       ),
-                                      minimumSize: Size.zero,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          kButtonRadius,
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: _viewMode == 'calendar'
+                                            ? AppColors.border
+                                            : Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 8,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            kButtonRadius,
+                                          ),
                                         ),
                                       ),
+                                      onPressed: () =>
+                                          setState(() => _viewMode = 'calendar'),
                                     ),
-                                    onPressed: () =>
-                                        setState(() => _viewMode = 'calendar'),
                                   ),
                                 ],
                               ),
@@ -1614,6 +1644,7 @@ class _MyHomePageState extends State<MyHomePage> {
         key: _challengeViewKey,
         matches: _resolvedMatches,
         lang: _lang,
+        onProfileTap: _showProfileModal,
         showSnackBar: (msg) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(msg), backgroundColor: AppColors.accent),
@@ -1709,10 +1740,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 match: m,
                 lang: _lang,
                 hasAlert: _hasAlert(m),
-                hasPrediction:
-                    _userPreds?.matchPredictions.containsKey(m.id) ?? false,
+                userPrediction: _userPreds?.matchPredictions[m.id],
                 alertType: (WorldCupMatch match) =>
                     PredictionService.getPredictionResult(match, _userPreds),
+                predictionResult:
+                    PredictionService.getPredictionResult(m, _userPreds),
                 supportedTeamCode: _supportedTeam,
                 onAlertToggle: () {
                   if (_hasAlert(m)) {

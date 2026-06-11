@@ -355,6 +355,22 @@ class PredictionService {
     return (kTopAssisterBonusPoints * getPenaltyMultiplier(predictedAt, starts)).round();
   }
 
+  /// Normalise un nom de joueur pour une comparaison robuste (minuscules, sans accents, sans espaces superflus).
+  static String normalizePlayerName(String name) {
+    String normalized = name.trim().toLowerCase();
+    // Suppression des accents courants
+    const accents = 'àáâãäåòóôõöøèéêëìíîïùúûüñç';
+    const without = 'aaaaaaooooooeeeeiiiiuuuunc';
+    for (int i = 0; i < accents.length; i++) {
+      normalized = normalized.replaceAll(accents[i], without[i]);
+    }
+    // Nettoyage des caractères spéciaux et points (ex: K. Mbappe -> k mbappe)
+    normalized = normalized.replaceAll(RegExp(r'[^a-z0-9\s]'), ' ');
+    // Réduction des espaces multiples
+    normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return normalized;
+  }
+
   static int calculateTotalPoints(PredictionData userPreds, List<WorldCupMatch> matches) {
     int score = 0;
     for (final match in matches) {
@@ -383,7 +399,7 @@ class PredictionService {
         goldenBootWinner.isNotEmpty &&
         userPreds.goldenBootPlayer != null &&
         userPreds.goldenBootPlayer!.isNotEmpty) {
-      if (userPreds.goldenBootPlayer!.trim().toLowerCase() == goldenBootWinner.trim().toLowerCase()) {
+      if (normalizePlayerName(userPreds.goldenBootPlayer!) == normalizePlayerName(goldenBootWinner)) {
         final mult = getPenaltyMultiplier(userPreds.goldenBootPredictedAt, starts);
         score += (kGoldenBootBonusPoints * mult).round();
       }
@@ -394,7 +410,7 @@ class PredictionService {
         topAssisterWinner.isNotEmpty &&
         userPreds.topAssisterPlayer != null &&
         userPreds.topAssisterPlayer!.isNotEmpty) {
-      if (userPreds.topAssisterPlayer!.trim().toLowerCase() == topAssisterWinner.trim().toLowerCase()) {
+      if (normalizePlayerName(userPreds.topAssisterPlayer!) == normalizePlayerName(topAssisterWinner)) {
         final mult = getPenaltyMultiplier(userPreds.topAssisterPredictedAt, starts);
         score += (kTopAssisterBonusPoints * mult).round();
       }

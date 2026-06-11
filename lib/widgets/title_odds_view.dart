@@ -53,8 +53,11 @@ class _WCTitleOddsViewState extends State<WCTitleOddsView> {
       return nameA.compareTo(nameB);
     });
 
-    // Filter by search query
+    // Filter by search query and eliminate teams with 0.0 odds
     final filteredTeams = sortedTeams.where((entry) {
+      // Si la cote est à 0.0, l'équipe est mathématiquement éliminée de la course au titre
+      if (entry.value <= 0.0) return false;
+
       final teamName = AppTranslations.getTeam(widget.lang, entry.key).toLowerCase();
       final teamCode = entry.key.toLowerCase();
       final query = _searchQuery.toLowerCase();

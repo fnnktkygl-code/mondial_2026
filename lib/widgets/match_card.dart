@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import '../models/match.dart';
+import '../services/prediction_service.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
 import 'team_flag.dart';
 import 'team_profile_dialog.dart';
+import 'wc_tooltip.dart';
 
 class MatchCard extends StatefulWidget {
   final WorldCupMatch match;
   final String lang;
   final bool hasAlert;
-  final bool hasPrediction;
+  final MatchPrediction? userPrediction;
   final String? Function(WorldCupMatch)? alertType;
   final String? predictionResult; // 'exact' | 'winner' | 'wrong' | null
   final VoidCallback onAlertToggle;
@@ -22,7 +24,7 @@ class MatchCard extends StatefulWidget {
     required this.match,
     required this.lang,
     required this.hasAlert,
-    this.hasPrediction = false,
+    this.userPrediction,
     this.alertType,
     this.predictionResult,
     required this.onAlertToggle,
@@ -107,10 +109,12 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
         ? (widget.match.stage ?? '')
         : '${AppTranslations.get(widget.lang, 'group')} ${widget.match.group ?? ''}';
 
+    final bool hasPrediction = widget.userPrediction != null;
+
     final String tooltipMessage;
     final IconData predIcon;
     final Color predColor;
-    if (widget.match.isPlayed && widget.hasPrediction) {
+    if (widget.match.isPlayed && hasPrediction) {
       switch (widget.predictionResult) {
         case 'exact':
           predIcon = Icons.star_rounded;
@@ -127,7 +131,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
           predColor = Colors.redAccent;
           tooltipMessage = AppTranslations.get(widget.lang, 'wrongPredictionTooltip');
       }
-    } else if (widget.hasPrediction) {
+    } else if (hasPrediction) {
       predIcon = Icons.check_circle_rounded;
       predColor = Colors.greenAccent;
       tooltipMessage = AppTranslations.get(widget.lang, 'predictionSavedTooltip');
@@ -216,7 +220,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     ),
                     Row(
                       children: [
-                        Tooltip(
+                        WCTooltip(
                           message: tooltipMessage,
                           triggerMode: TooltipTriggerMode.tap,
                           child: Icon(
@@ -250,6 +254,81 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Expanded(child: _buildTeamSection(widget.match.t2, t2Name, context, false)),
                   ],
                 ),
+                
+    // --- AJOUT UX PRONOSTIC UTILISATEUR ---
+    if (hasPrediction) ...[
+      const SizedBox(height: 12),
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        decoration: BoxDecoration(
+          color: widget.match.isPlayed 
+              ? predColor.withValues(alpha: 0.1) 
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: widget.match.isPlayed 
+                ? predColor.withValues(alpha: 0.3) 
+                : AppColors.border,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(predIcon, color: predColor, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              '${AppTranslations.get(widget.lang, 'myPrediction')} : ${widget.userPrediction!.t1Score} - ${widget.userPrediction!.t2Score}',
+              style: TextStyle(
+                color: widget.match.isPlayed ? predColor : AppColors.textDim,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+            if (widget.match.isPlayed) ...[
+              const SizedBox(width: 8),
+              Text(
+                widget.predictionResult == 'wrong' 
+                  ? '0 pts'
+                  : '+${PredictionService.evaluatePoints(widget.match, widget.userPrediction!)} pts',
+                style: TextStyle(
+                  color: predColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+            ]
+          ],
+        ),
+      ),
+    ] else if (widget.match.isPlayed) ...[
+      // Cas où le match est fini mais aucun prono n'a été fait
+      const SizedBox(height: 12),
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.help_outline_rounded, color: AppColors.textDim, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              AppTranslations.get(widget.lang, 'noPredictionMade'),
+              style: const TextStyle(
+                color: AppColors.textDim,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+    // --------------------------------------
+
               ],
             ),
           ),

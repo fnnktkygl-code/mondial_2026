@@ -96,8 +96,8 @@ class ScorersLeaderboardWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = list[index];
         final isUserChoice =
-            userPreds?.goldenBootPlayer?.trim().toLowerCase() ==
-            item.name.trim().toLowerCase();
+            PredictionService.normalizePlayerName(userPreds?.goldenBootPlayer ?? '') ==
+            PredictionService.normalizePlayerName(item.name);
         return _buildStatRow(context, index, item, '⚽', isUserChoice);
       },
     );
@@ -350,8 +350,8 @@ class AssistsLeaderboardWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = list[index];
         final isUserChoice =
-            userPreds?.topAssisterPlayer?.trim().toLowerCase() ==
-            item.name.trim().toLowerCase();
+            PredictionService.normalizePlayerName(userPreds?.topAssisterPlayer ?? '') ==
+            PredictionService.normalizePlayerName(item.name);
         return ScorersLeaderboardWidget(
           matches: matches,
           lang: lang,

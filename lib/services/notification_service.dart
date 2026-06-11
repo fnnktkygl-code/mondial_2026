@@ -125,8 +125,22 @@ class WCNotificationService {
     try {
       if (!kIsWeb) {
         final dynamic tzResult = await FlutterTimezone.getLocalTimezone();
-        final String timeZoneName = tzResult is String ? tzResult : tzResult.name;
-        tz.setLocalLocation(tz.getLocation(timeZoneName));
+        String timeZoneName = tzResult.toString();
+
+        // Handle weird macOS/iOS strings like "TimezoneInfo(Europe/Paris, ...)" 
+        // or "locale: fr_FR"
+        if (timeZoneName.contains('(') && timeZoneName.contains(',')) {
+          timeZoneName = timeZoneName.split('(').last.split(',').first.trim();
+        } else if (timeZoneName.contains('locale:')) {
+          // Fallback to UTC or a generic zone if macOS returns a locale instead of a timezone
+          timeZoneName = 'UTC';
+        }
+
+        try {
+          tz.setLocalLocation(tz.getLocation(timeZoneName));
+        } catch (_) {
+          tz.setLocalLocation(tz.getLocation('UTC'));
+        }
       }
     } catch (e) {
       debugPrint('Could not get local timezone: $e');

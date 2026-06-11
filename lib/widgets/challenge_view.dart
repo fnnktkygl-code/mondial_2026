@@ -8,6 +8,9 @@ import '../services/firebase_service.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
 import 'team_flag.dart';
+import 'profile_dialog.dart';
+import 'user_statistics.dart';
+import 'wc_tooltip.dart';
 
 class ChallengeViewWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
@@ -16,6 +19,7 @@ class ChallengeViewWidget extends StatefulWidget {
   final Function(String message) showSnackBar;
   final Function(Map<String, String> alerts) onAlertsChanged;
   final Function(String? teamCode) onSupportedTeamChanged;
+  final VoidCallback? onProfileTap;
 
   const ChallengeViewWidget({
     super.key,
@@ -25,6 +29,7 @@ class ChallengeViewWidget extends StatefulWidget {
     required this.showSnackBar,
     required this.onAlertsChanged,
     required this.onSupportedTeamChanged,
+    this.onProfileTap,
   });
 
   @override
@@ -193,7 +198,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Profil ────────────────────────────────────────────────────────────────
   Widget _buildProfileStrip(int points, Map<String, dynamic> xp) {
     final streak = PredictionService.calculateActiveStreak(_userPreds, widget.matches);
     final guruCount = PredictionService.calculateExactGuessesCount(_userPreds, widget.matches);
@@ -202,120 +206,107 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         ? AppTranslations.get(widget.lang, 'playerDefault')
         : _userPreds.username;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Avatar
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 44, height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(kCardRadius),
-                      border: Border.all(color: AppColors.accent, width: 1.5),
+    return GestureDetector(
+      onTap: widget.onProfileTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 11, 16, 9),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 42, height: 42,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(kCardRadius),
+                        border: Border.all(color: AppColors.accent, width: 1.5),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: hasAvatar
+                          ? Image.asset(_userPreds.avatar, width: 42, height: 42, fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.textDim, size: 22))
+                          : Text('L${xp['level']}', style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
-                    clipBehavior: Clip.antiAlias,
-                    child: hasAvatar
-                        ? Image.asset(_userPreds.avatar, width: 44, height: 44, fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.textDim, size: 24))
-                        : Text('L${xp['level']}',
-                        style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 17)),
-                  ),
-                  if (hasAvatar)
                     Positioned(
                       bottom: -4, right: -4,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
                           color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(5),
                           border: Border.all(color: AppColors.surface, width: 1.5),
                         ),
-                        child: Text('L${xp['level']}',
-                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 9)),
+                        child: Text('L${xp['level']}', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 8)),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: 12),
-              // Nom + rang + badges
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(username,
-                              style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                        ),
-                        // Badge des points
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text('$points pts',
-                              style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Text('${xp['rankName']}',
-                            style: const TextStyle(color: AppColors.rankGold, fontSize: 11, fontWeight: FontWeight.w600)),
-                        if (streak > 0) ...[
-                          const SizedBox(width: 8),
-                          _buildBadge('🔥 $streak', AppColors.danger),
-                        ],
-                        if (guruCount >= kGuruBadgeMinCount) ...[
-                          const SizedBox(width: 6),
-                          _buildBadge('🔮 Guru', AppColors.purple, textColor: AppColors.purpleLight),
-                        ],
-                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // Barre d'expérience (XP)
-          Stack(
-            children: [
-              Container(height: 4,
-                  decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2))),
-              FractionallySizedBox(
-                widthFactor: (xp['progress'] as double).clamp(0.0, 1.0),
-                child: Container(height: 4,
-                    decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(2))),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${xp['xp']} / ${xp['nextLevelXp']} XP',
-                  style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
-              Text('${AppTranslations.get(widget.lang, 'levelShort')} ${xp['level']} → ${(xp['level'] as int) + 1}',
-                  style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
-            ],
-          ),
-        ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ),
+                          const SizedBox(width: 8),
+                          if (streak >= 3) _buildBadge('🔥 $streak', AppColors.danger),
+                          if (guruCount >= 1) ...[const SizedBox(width: 6), _buildBadge('🎯', AppColors.accent)],
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Text('${xp['rankName']}', style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.w600)),
+                          const SizedBox(width: 6),
+                          _buildInlineBadgeChips(),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                  ),
+                  child: Text('$points pts', style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 13)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Stack(
+              children: [
+                Container(height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2))),
+                FractionallySizedBox(
+                  widthFactor: (xp['progress'] as double).clamp(0.0, 1.0),
+                  child: Container(height: 4, decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(2))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${xp['xp']} / ${xp['nextLevelXp']} XP', style: const TextStyle(color: AppColors.textDim, fontSize: 10)),
+                Text('${AppTranslations.get(widget.lang, 'levelShort')} ${xp['level']} → ${(xp['level'] as int) + 1}', style: const TextStyle(color: AppColors.textDim, fontSize: 10)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -333,6 +324,54 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
+  // ── Mini-chips de badges gagnés dans la ligne de rang ─────────────────────
+  Widget _buildInlineBadgeChips() {
+    final earnedBadges = computeEarnedBadges(
+      userPreds: _userPreds,
+      matches: widget.matches,
+    );
+    final earnedDefs = kUserBadgeDefs
+        .where((b) => earnedBadges.contains(b.id))
+        .toList();
+    if (earnedDefs.isEmpty) return const SizedBox.shrink();
+
+    const int maxVisible = 3;
+    final visible = earnedDefs.take(maxVisible).toList();
+    final remaining = earnedDefs.length - visible.length;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ...visible.map((badge) {
+          final borderColor = badge.isRare ? AppColors.purple : AppColors.warning;
+          final bgColor = badge.isRare
+              ? AppColors.purple.withValues(alpha: 0.10)
+              : AppColors.warning.withValues(alpha: 0.08);
+          return WCTooltip(
+            message: AppTranslations.get(widget.lang, badge.labelKey),
+            child: Container(
+              width: 18, height: 18,
+              margin: const EdgeInsets.only(right: 3),
+              decoration: BoxDecoration(
+                color: bgColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: borderColor, width: 1.5),
+              ),
+              alignment: Alignment.center,
+              child: Text(badge.icon, style: const TextStyle(fontSize: 9)),
+            ),
+          );
+        }),
+        if (remaining > 0)
+          Text('+$remaining',
+              style: const TextStyle(
+                  color: AppColors.textDim,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
   // ── Navigation par onglets ────────────────────────────────────────────────
   Widget _buildTabNav() {
     final l = widget.lang;
@@ -344,21 +383,16 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     return Container(
       decoration: const BoxDecoration(
           color: AppColors.background,
-          border: Border(bottom: BorderSide(color: AppColors.border))
-      ),
+          border: Border(bottom: BorderSide(color: AppColors.border))),
       child: Row(
         children: tabs.map((t) {
           final active = _subTab == t.$1;
           return Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () {
-                if (mounted) {
-                  setState(() => _subTab = t.$1);
-                }
-              },
+              onTap: () { if (mounted) setState(() => _subTab = t.$1); },
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 11),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -372,8 +406,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: active ? AppColors.accent : AppColors.textMuted,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                    fontSize: 13,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -404,12 +438,25 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       ..sort((a, b) => a.id.compareTo(b.id));
     final activeList = _predsFilter == 'group' ? groupStageMatches : knockoutMatches;
 
-    return Column(
+    return ListView(
+      padding: EdgeInsets.zero,
       children: [
         _buildBoosterPanel(),
+        
+        // --- AJOUT STATISTIQUES PERFORMANCE ---
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: WCUserStatisticsWidget(
+            userPreds: _userPreds, 
+            matches: widget.matches, 
+            lang: widget.lang
+          ),
+        ),
+        // --------------------------------------
+
         _buildPointsInfoPanel(),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
           child: Row(
             children: [
               _buildFilterButton('group',    AppTranslations.get(widget.lang, 'predGroupStage')),
@@ -418,16 +465,16 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             ],
           ),
         ),
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-            itemCount: activeList.length + 1,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (_, i) {
-              if (i == activeList.length) return _buildBonusSummaryCard();
-              return _buildPredictionCard(activeList[i]);
-            },
-          ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          itemCount: activeList.length + 1,
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          itemBuilder: (_, i) {
+            if (i == activeList.length) return _buildBonusSummaryCard();
+            return _buildPredictionCard(activeList[i]);
+          },
         ),
       ],
     );
@@ -614,21 +661,30 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
   Widget _buildFilterButton(String filter, String label) {
     final isSelected = _predsFilter == filter;
-    return ChoiceChip(
-      label: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-      selected: isSelected,
-      selectedColor: AppColors.accent.withValues(alpha: 0.2),
-      backgroundColor: AppColors.card,
-      labelStyle: TextStyle(color: isSelected ? AppColors.accent : AppColors.textDim),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(kButtonRadius),
-        side: BorderSide(color: isSelected ? AppColors.accent : AppColors.border),
+    return GestureDetector(
+      onTap: () { if (mounted) setState(() => _predsFilter = filter); },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.accent.withValues(alpha: 0.12)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : AppColors.border,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppColors.accent : AppColors.textDim,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
       ),
-      onSelected: (val) {
-        if (val && mounted) {
-          setState(() => _predsFilter = filter);
-        }
-      },
     );
   }
 
@@ -649,68 +705,87 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     }
 
     final stageLabel = m.isKnockout
-        ? AppTranslations.get(widget.lang, m.stage ?? '')
-        : '${AppTranslations.get(widget.lang, 'group')} ${m.group}';
+        ? AppTranslations.get(widget.lang, m.stage ?? '').toUpperCase()
+        : '${AppTranslations.get(widget.lang, 'group').toUpperCase()} ${m.group}';
+
+    // Border colour: booster > filled pred > default
+    final Color borderColor = isBooster
+        ? AppColors.warning.withValues(alpha: 0.55)
+        : (hasPred && !m.isPlayed
+        ? AppColors.accent.withValues(alpha: 0.22)
+        : AppColors.borderMid);
 
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(kCardRadius),
-        border: Border.all(
-          color: isBooster
-              ? AppColors.warning.withValues(alpha: 0.55)
-              : (isLocked ? AppColors.border : AppColors.borderMid),
-          width: 1.5,
-        ),
+        border: Border.all(color: borderColor, width: 1.5),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // ── En-tête ───────────────────────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(children: [
-                Text(stageLabel,
-                    style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.bold)),
-                if (isBooster) ...[
-                  const SizedBox(width: 6),
-                  const Icon(Icons.rocket_launch, size: 13, color: AppColors.warning),
-                ],
-              ]),
-              if (m.isPlayed && hasPred)
-                _buildPointsBadge(pointsEarned)
-              else
-                Text(m.getFormattedDate(widget.lang),
-                    style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
-            ],
+          // ── En-tête séparé avec fond légèrement différent ─────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            color: Colors.black.withValues(alpha: 0.15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(children: [
+                  Text(stageLabel,
+                      style: const TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4)),
+                  if (isBooster) ...[
+                    const SizedBox(width: 6),
+                    const Icon(Icons.rocket_launch, size: 11, color: AppColors.warning),
+                  ],
+                ]),
+                if (m.isPlayed && hasPred)
+                  _buildPointsBadge(pointsEarned)
+                else
+                  Text(m.getFormattedDate(widget.lang),
+                      style: const TextStyle(color: AppColors.textDim, fontSize: 10)),
+              ],
+            ),
           ),
-          const SizedBox(height: 14),
 
-          // ── Zone de score ─────────────────────────────────────────────────
-          if (!m.isPlayed) ...[
-            GestureDetector(
-              onTap: isLocked ? null : () => _updateMatchPred(m.id, p1Val < 9 ? 1 : 0, 0),
-              child: _buildTeamInputRow(m.t1, p1Val, hasPred, isLocked,
-                  onMinus: () => _updateMatchPred(m.id, -1, 0),
-                  onPlus:  () => _updateMatchPred(m.id,  1, 0)),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: isLocked ? null : () => _updateMatchPred(m.id, 0, p2Val < 9 ? 1 : 0),
-              child: _buildTeamInputRow(m.t2, p2Val, hasPred, isLocked,
-                  onMinus: () => _updateMatchPred(m.id, 0, -1),
-                  onPlus:  () => _updateMatchPred(m.id, 0,  1)),
-            ),
-          ] else ...[
-            _buildPlayedResultRows(m, pred, hasPred),
-          ],
+          // ── Zone de score ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Column(
+              children: [
+                if (!m.isPlayed) ...[
+                  GestureDetector(
+                    onTap: isLocked ? null : () => _updateMatchPred(m.id, p1Val < 9 ? 1 : 0, 0),
+                    child: _buildTeamInputRow(m.t1, p1Val, hasPred, isLocked,
+                        onMinus: () => _updateMatchPred(m.id, -1, 0),
+                        onPlus:  () => _updateMatchPred(m.id,  1, 0)),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
+                  ),
+                  GestureDetector(
+                    onTap: isLocked ? null : () => _updateMatchPred(m.id, 0, p2Val < 9 ? 1 : 0),
+                    child: _buildTeamInputRow(m.t2, p2Val, hasPred, isLocked,
+                        onMinus: () => _updateMatchPred(m.id, 0, -1),
+                        onPlus:  () => _updateMatchPred(m.id, 0,  1)),
+                  ),
+                ] else ...[
+                  _buildPlayedResultRows(m, pred, hasPred),
+                ],
 
-          // ── Sections Prolongations/Tirs au but ────────────────────────────
-          if (m.isKnockout && hasPred && !m.isPlayed && pred.t1Score == pred.t2Score)
-            _buildETPKPicker(m, pred, isLocked),
-          if (m.isKnockout && m.isPlayed && (m.wentToET ?? false))
-            _buildETPKResultRow(m, pred),
+                // ── ET/PK ────────────────────────────────────────────────
+                if (m.isKnockout && hasPred && !m.isPlayed && pred.t1Score == pred.t2Score)
+                  _buildETPKPicker(m, pred, isLocked),
+                if (m.isKnockout && m.isPlayed && (m.wentToET ?? false))
+                  _buildETPKResultRow(m, pred),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -991,83 +1066,360 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   Widget _buildPrivateGroupCard(FriendGroup grp) {
     final uid = _myUserId;
     final isCreator = uid != null && uid.isNotEmpty && grp.creatorId == uid;
+    final members = grp.members;
+    final topThree = members.take(3).toList();
+    final rest = members.length > 3 ? members.sublist(3) : <FriendScore>[];
+    final maxPts = members.isNotEmpty ? (members.first.points > 0 ? members.first.points : 1) : 1;
 
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(grp.name,
-                        style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
-                    const SizedBox(height: 5),
-                    Text(
-                      '${grp.members.length} ${AppTranslations.get(widget.lang, 'members')}',
-                      style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+          // ── Header ───────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(grp.name,
+                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${members.length} ${AppTranslations.get(widget.lang, 'members')}',
+                        style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _shareGroup(grp),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
                     ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.share_outlined, color: AppColors.accent, size: 13),
+                      const SizedBox(width: 5),
+                      Text(
+                        AppTranslations.get(widget.lang, 'invite'),
+                        style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ]),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: AppColors.textDim, size: 18),
+                  color: AppColors.card,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onSelected: (val) {
+                    if (val == 'edit')   _showEditGroupDialog(grp);
+                    if (val == 'delete') _showDeleteGroupDialog(grp);
+                    if (val == 'leave')  _showLeaveGroupDialog(grp);
+                  },
+                  itemBuilder: (_) => [
+                    if (isCreator) ...[
+                      PopupMenuItem(value: 'edit',
+                          child: Text(AppTranslations.get(widget.lang, 'edit'),
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13))),
+                      PopupMenuItem(value: 'delete',
+                          child: Text(AppTranslations.get(widget.lang, 'delete'),
+                              style: const TextStyle(color: AppColors.danger, fontSize: 13))),
+                    ] else
+                      PopupMenuItem(value: 'leave',
+                          child: Text(AppTranslations.get(widget.lang, 'leave'),
+                              style: const TextStyle(color: AppColors.danger, fontSize: 13))),
                   ],
                 ),
-              ),
-              GestureDetector(
-                onTap: () => _shareGroup(grp),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              ],
+            ),
+          ),
+
+          const Divider(color: AppColors.border, height: 1),
+
+          // ── Podium top 3 ─────────────────────────────────────────────────
+          if (topThree.isNotEmpty)
+            _buildPodium(topThree, maxPts),
+
+          // ── Reste du classement ──────────────────────────────────────────
+          if (rest.isNotEmpty) ...[
+            const Divider(color: AppColors.border, height: 1),
+            ...rest.asMap().entries.map((e) =>
+                _buildRestRow(e.value, e.key + 4, maxPts)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Podium (top 3) ────────────────────────────────────────────────────────
+  Widget _buildPodium(List<FriendScore> top, int maxPts) {
+    // Order: 2nd | 1st | 3rd
+    final slots = <({FriendScore member, int rank})>[];
+    if (top.length >= 2) slots.add((member: top[1], rank: 2));
+    if (top.isNotEmpty) slots.insert(top.length >= 2 ? 1 : 0, (member: top[0], rank: 1));
+    if (top.length >= 3) slots.add((member: top[2], rank: 3));
+
+    // Bar heights for each rank position
+    const double barHeight1 = 44.0;
+    const double barHeight2 = 30.0;
+    const double barHeight3 = 18.0;
+
+    final barHeights = {1: barHeight1, 2: barHeight2, 3: barHeight3};
+    final avatarSizes = {1: 52.0, 2: 42.0, 3: 36.0};
+    final avatarBorderColors = {
+      1: AppColors.rankGold,
+      2: AppColors.textMuted,
+      3: AppColors.warning,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: slots.map((slot) {
+          final m = slot.member;
+          final rank = slot.rank;
+          final avatarSize = avatarSizes[rank]!;
+          final barH = barHeights[rank]!;
+          final borderColor = avatarBorderColors[rank]!;
+          final isUser = m.isUser;
+
+          return Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Crown for #1
+                if (rank == 1)
+                  const Text('👑', style: TextStyle(fontSize: 16))
+                else
+                  const SizedBox(height: 22),
+                const SizedBox(height: 4),
+
+                // Avatar
+                Container(
+                  width: avatarSize, height: avatarSize,
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
-                  ),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.share_outlined, color: AppColors.accent, size: 13),
-                    const SizedBox(width: 5),
-                    Text(
-                      AppTranslations.get(widget.lang, 'invite'),
-                      style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.bold),
+                    shape: BoxShape.circle,
+                    color: isUser
+                        ? AppColors.accent.withValues(alpha: 0.12)
+                        : AppColors.surface,
+                    border: Border.all(
+                      color: isUser ? AppColors.accent : borderColor,
+                      width: isUser ? 2.0 : 1.5,
                     ),
-                  ]),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: m.emblem.isNotEmpty
+                      ? _buildEmblemWidget(m.emblem, size: avatarSize)
+                      : Center(
+                    child: Text(
+                      m.name.isNotEmpty ? m.name[0].toUpperCase() : '?',
+                      style: TextStyle(
+                        color: isUser ? AppColors.accent : AppColors.textSecondary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: avatarSize * 0.38,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // Name
+                Text(
+                  isUser
+                      ? '${m.name}${AppTranslations.get(widget.lang, 'meSuffix')}'
+                      : m.name,
+                  style: TextStyle(
+                    color: isUser ? AppColors.accent : AppColors.textSecondary,
+                    fontWeight: isUser ? FontWeight.bold : FontWeight.w600,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 2),
+
+                // Points
+                Text(
+                  '${m.points} ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
+                  style: TextStyle(
+                    color: isUser ? AppColors.accent : AppColors.textDim,
+                    fontSize: 10,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+
+                // Podium bar
+                Container(
+                  height: barH,
+                  decoration: BoxDecoration(
+                    color: rank == 1
+                        ? AppColors.rankGold.withValues(alpha: 0.12)
+                        : AppColors.surface,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      topRight: Radius.circular(6),
+                    ),
+                    border: Border(
+                      top: BorderSide(
+                        color: rank == 1
+                            ? AppColors.rankGold.withValues(alpha: 0.35)
+                            : AppColors.border,
+                      ),
+                      left: BorderSide(
+                        color: rank == 1
+                            ? AppColors.rankGold.withValues(alpha: 0.35)
+                            : AppColors.border,
+                      ),
+                      right: BorderSide(
+                        color: rank == 1
+                            ? AppColors.rankGold.withValues(alpha: 0.35)
+                            : AppColors.border,
+                      ),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$rank',
+                      style: TextStyle(
+                        color: rank == 1 ? AppColors.rankGold : AppColors.textDim,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ── Ligne rang 4+ ─────────────────────────────────────────────────────────
+  Widget _buildRestRow(FriendScore member, int rank, int maxPts) {
+    final isUser = member.isUser;
+    final pct = maxPts > 0 ? (member.points / maxPts).clamp(0.0, 1.0) : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: isUser ? AppColors.accent.withValues(alpha: 0.05) : Colors.transparent,
+        border: Border(
+          bottom: BorderSide(color: AppColors.border, width: 0.5),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Rank number
+          SizedBox(
+            width: 22,
+            child: Text(
+              '$rank',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isUser ? AppColors.accent : AppColors.textDim,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Avatar
+          Container(
+            width: 26, height: 26,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isUser
+                  ? AppColors.accent.withValues(alpha: 0.10)
+                  : AppColors.surface,
+              border: Border.all(
+                color: isUser ? AppColors.accent : AppColors.border,
+                width: 1,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: member.emblem.isNotEmpty
+                ? _buildEmblemWidget(member.emblem, size: 26)
+                : Center(
+              child: Text(
+                member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                style: TextStyle(
+                  color: isUser ? AppColors.accent : AppColors.textDim,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 6),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: AppColors.textDim, size: 18),
-                color: AppColors.card,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onSelected: (val) {
-                  if (val == 'edit')   _showEditGroupDialog(grp);
-                  if (val == 'delete') _showDeleteGroupDialog(grp);
-                  if (val == 'leave')  _showLeaveGroupDialog(grp);
-                },
-                itemBuilder: (_) => [
-                  if (isCreator) ...[
-                    PopupMenuItem(value: 'edit',
-                        child: Text(AppTranslations.get(widget.lang, 'edit'),
-                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13))),
-                    PopupMenuItem(value: 'delete',
-                        child: Text(AppTranslations.get(widget.lang, 'delete'),
-                            style: const TextStyle(color: AppColors.danger, fontSize: 13))),
-                  ] else
-                    PopupMenuItem(value: 'leave',
-                        child: Text(AppTranslations.get(widget.lang, 'leave'),
-                            style: const TextStyle(color: AppColors.danger, fontSize: 13))),
-                ],
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Name
+          Expanded(
+            child: Text(
+              isUser
+                  ? '${member.name}${AppTranslations.get(widget.lang, 'meSuffix')}'
+                  : member.name,
+              style: TextStyle(
+                color: isUser ? AppColors.accent : AppColors.textSecondary,
+                fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // Points + mini progress bar
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${member.points} ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
+                style: TextStyle(
+                  color: isUser ? AppColors.accent : AppColors.textMuted,
+                  fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Container(
+                width: 52, height: 3,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                child: FractionallySizedBox(
+                  widthFactor: pct,
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isUser ? AppColors.accent : AppColors.borderStrong,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Divider(color: AppColors.border, height: 1),
-          const SizedBox(height: 8),
-          ...grp.members.asMap().entries.map((e) => _buildMemberRow(e.value, e.key + 1, isGlobal: false)),
         ],
       ),
     );
@@ -1227,7 +1579,13 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         final docs = allDocs.where((doc) {
           final data = doc.data();
           final isHidden = data['isHidden'] as bool? ?? false;
-          return !isHidden || doc.id == _myUserId;
+          final points = data['points'] as int? ?? 0;
+          final username = (data['username'] as String? ?? '').trim();
+          // Always show the current user; hide ghost accounts (0 pts + no username) and hidden users
+          if (doc.id == _myUserId) return true;
+          if (isHidden) return false;
+          if (points == 0 && username.isEmpty) return false;
+          return true;
         }).take(50).toList();
 
         if (docs.isEmpty) {
@@ -1238,6 +1596,13 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         final myIdx  = docs.indexWhere((d) => d.id == _myUserId);
         final myRank = myIdx >= 0 ? myIdx + 1 : null;
         final myData = myIdx >= 0 ? docs[myIdx].data() : null;
+
+        // Max points from #1 for progress bars
+        final maxPts = docs.isNotEmpty
+            ? ((docs.first.data()['points'] as int? ?? 0) > 0
+            ? (docs.first.data()['points'] as int)
+            : 1)
+            : 1;
 
         return ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -1288,6 +1653,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             final storedAvatar = data['avatar']  as String? ?? '';
             final isMe = docs[idx].id == _myUserId;
             final rank = idx + 1;
+            final barPct = (points / maxPts).clamp(0.0, 1.0);
 
             Widget rankWidget;
             if (rank == 1) {
@@ -1330,13 +1696,36 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     maxLines: 1, overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(
-                  '$points ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
-                  style: TextStyle(
-                    color: isMe ? AppColors.accent : AppColors.textMuted,
-                    fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 13,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '$points ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
+                      style: TextStyle(
+                        color: isMe ? AppColors.accent : AppColors.textMuted,
+                        fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 52, height: 3,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: FractionallySizedBox(
+                        widthFactor: barPct,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isMe ? AppColors.accent : AppColors.borderStrong,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ]),
             );
@@ -1429,8 +1818,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     final lang = widget.lang;
     final champion = _userPreds.championCode;
     final scorer   = _userPreds.goldenBootPlayer;
+    final assister = _userPreds.topAssisterPlayer;
 
-    if (champion == null && scorer == null) {
+    if (champion == null && scorer == null && assister == null) {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -1448,6 +1838,10 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         ]),
       );
     }
+
+    // Check if tournament is finished
+    final finalMatch = widget.matches.firstWhere((m) => m.id == kFinalMatchId, orElse: () => widget.matches.last);
+    final bool tournamentFinished = finalMatch.isPlayed;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1467,48 +1861,90 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ]),
-          if (champion != null) ...[
-            const SizedBox(height: 10),
-            Row(children: [
-              const Text('🏆', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: 8),
-              TeamFlagWidget(code: champion, width: 20, height: 13, borderRadius: 2),
-              const SizedBox(width: 8),
-              Expanded(child: Text(AppTranslations.getTeam(lang, champion),
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text('+100 pts',
-                    style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.bold)),
-              ),
-            ]),
-          ],
-          if (scorer != null) ...[
-            const SizedBox(height: 8),
-            Row(children: [
-              const Text('👟', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: 8),
-              const Icon(Icons.sports_soccer, color: AppColors.textDim, size: 14),
-              const SizedBox(width: 8),
-              Expanded(child: Text(scorer,
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text('+50 pts',
-                    style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.bold)),
-              ),
-            ]),
-          ],
+          if (champion != null) 
+            _buildBonusItem(
+              icon: '🏆', 
+              label: AppTranslations.getTeam(lang, champion),
+              potential: kChampionBonusPoints,
+              isChampion: true,
+              teamCode: champion,
+              isFinished: tournamentFinished,
+              finalMatch: finalMatch,
+            ),
+          if (scorer != null)
+            _buildBonusItem(
+              icon: '👟',
+              label: scorer,
+              potential: kGoldenBootBonusPoints,
+              isFinished: tournamentFinished,
+              actualWinner: _userPreds.goldenBootWinner,
+            ),
+          if (assister != null)
+            _buildBonusItem(
+              icon: '🪄',
+              label: assister,
+              potential: kTopAssisterBonusPoints,
+              isFinished: tournamentFinished,
+              actualWinner: _userPreds.topAssisterWinner,
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBonusItem({
+    required String icon,
+    required String label,
+    required int potential,
+    bool isChampion = false,
+    String? teamCode,
+    required bool isFinished,
+    WorldCupMatch? finalMatch,
+    String? actualWinner,
+  }) {
+    bool? isCorrect;
+    if (isFinished) {
+      if (isChampion && finalMatch != null) {
+        final actualChamp = (finalMatch.t1Score ?? 0) > (finalMatch.t2Score ?? 0) ? finalMatch.t1 : finalMatch.t2;
+        isCorrect = teamCode?.toLowerCase() == actualChamp.toLowerCase();
+      } else if (actualWinner != null && actualWinner.isNotEmpty) {
+        isCorrect = label.trim().toLowerCase() == actualWinner.trim().toLowerCase();
+      }
+    }
+
+    final Color statusColor = isCorrect == null 
+        ? AppColors.accent 
+        : (isCorrect ? AppColors.accent : AppColors.danger);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(children: [
+        Text(icon, style: const TextStyle(fontSize: 14)),
+        const SizedBox(width: 8),
+        if (isChampion && teamCode != null) ...[
+          TeamFlagWidget(code: teamCode, width: 20, height: 13, borderRadius: 2),
+          const SizedBox(width: 8),
+        ],
+        Expanded(child: Text(label,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          decoration: BoxDecoration(
+            color: statusColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            isCorrect == null 
+                ? '+$potential pts' 
+                : (isCorrect ? '+$potential pts' : '0 pts'),
+            style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ),
+        if (isCorrect != null) ...[
+          const SizedBox(width: 6),
+          Icon(isCorrect ? Icons.check_circle : Icons.cancel, color: statusColor, size: 14),
+        ]
+      ]),
     );
   }
 

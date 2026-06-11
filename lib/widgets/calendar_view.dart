@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/match.dart';
+import '../services/prediction_service.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import 'team_flag.dart';
+import 'wc_tooltip.dart';
 
 class CalendarViewWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;
   final String lang;
   final bool Function(WorldCupMatch) hasAlert;
   final bool Function(WorldCupMatch) hasPredicted;
+  final Map<String, MatchPrediction>? userPredictions;
   final String? Function(WorldCupMatch)? alertType;
   final Function(WorldCupMatch match) onMatchTap;
   final String? supportedTeamCode;
@@ -20,6 +23,7 @@ class CalendarViewWidget extends StatefulWidget {
     required this.lang,
     required this.hasAlert,
     required this.hasPredicted,
+    this.userPredictions,
     this.alertType,
     required this.onMatchTap,
     this.supportedTeamCode,
@@ -209,7 +213,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     if (weekMatches.isNotEmpty) {
       final hoursList = weekMatches.map((m) => m.date.hour).toList();
       final min = hoursList.reduce((a, b) => a < b ? a : b) - 1;
-      final max = hoursList.reduce((a, b) => a > b ? a : b) + 2;
+      final max = hoursList.reduce((a, b) => a > b ? a : b) + 3;
       minHour = min.clamp(0, 23);
       maxHour = max.clamp(0, 23);
     }
@@ -336,7 +340,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                           ),
                         ),
                         SizedBox(
-                          height: gridHeight,
+                          height: gridHeight + 100,
                           width: 65,
                           child: Stack(
                             children: List.generate(hoursCount, (idx) {
@@ -439,7 +443,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
                                   // Grid + match blocks
                                   SizedBox(
-                                    height: gridHeight,
+                                    height: gridHeight + 100,
                                     width: colWidth,
                                     child: Stack(
                                       children: [
@@ -658,7 +662,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                           mainAxisSize:
                                                               MainAxisSize.min,
                                                           children: [
-                                                            Tooltip(
+                                                            WCTooltip(
                                                               message:
                                                                   tooltipMessage,
                                                               triggerMode:

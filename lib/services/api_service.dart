@@ -109,6 +109,8 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(matches.map((m) => m.toJson()).toList());
     await prefs.setString(_cacheKey, jsonStr);
+    // Force la date de mise à jour loin dans le futur pour que le staging garde son cache !
+    await prefs.setString(_lastUpdatedKey, DateTime.now().add(const Duration(days: 365)).toIso8601String());
   }
 
   /// Reset cache back to the initial bundled matches.

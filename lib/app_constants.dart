@@ -136,6 +136,9 @@ const double kLivePulseMin = 0.25;
 const double kLivePulseMax = 1.0;
 
 const bool kIsLiveMode = true;
+const bool kIsStaging = bool.fromEnvironment('STAGING', defaultValue: false);
+
+
 
 // ─── Assets / Logos ──────────────────────────────────────────────────────────
 // getTeamLogoPath() : utilisé par TeamFlagWidget pour les assets bundled.
