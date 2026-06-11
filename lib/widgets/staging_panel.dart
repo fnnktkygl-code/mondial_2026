@@ -5,6 +5,7 @@ import '../models/match.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/prediction_service.dart';
+import 'wc2026_players.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
 
