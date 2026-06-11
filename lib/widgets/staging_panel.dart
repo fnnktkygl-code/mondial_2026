@@ -88,15 +88,15 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     final t1Players = kWC2026Players.where((p) => p.contains('($t1)')).toList();
     final t2Players = kWC2026Players.where((p) => p.contains('($t2)')).toList();
 
-    // Fallback si l'équipe n'est pas dans la liste (ne devrait pas arriver)
-    final List<String> p1 = t1Players.isNotEmpty ? t1Players : ['Joueur A ($t1)', 'Joueur B ($t1)'];
-    final List<String> p2 = t2Players.isNotEmpty ? t2Players : ['Joueur C ($t2)', 'Joueur D ($t2)'];
+    // Fallback si l'équipe n'est pas dans la liste
+    final List<String> p1 = t1Players.isNotEmpty ? t1Players : ['Player A ($t1)', 'Player B ($t1)'];
+    final List<String> p2 = t2Players.isNotEmpty ? t2Players : ['Player C ($t2)', 'Player D ($t2)'];
 
     for (int i = 0; i < score1; i++) {
-      // FORCE MBAPPÉ : Si c'est la France (fr) et que Mbappé est dans la liste, il marque 80% du temps
+      // FORCE MBAPPÉ : Si c'est la France (fr), Mbappé marque quasi systématiquement pour le test
       String scorer;
       if (t1.toLowerCase() == 'fr') {
-        scorer = rand.nextDouble() < 0.8 ? 'Kylian Mbappé' : p1[rand.nextInt(p1.length)];
+        scorer = rand.nextDouble() < 0.9 ? 'Kylian Mbappé' : p1[rand.nextInt(p1.length)];
       } else {
         scorer = p1[rand.nextInt(p1.length)];
       }
@@ -111,9 +111,8 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
 
     for (int i = 0; i < score2; i++) {
       String scorer;
-      // On peut aussi forcer Messi pour l'Argentine pour varier les tests
-      if (t2.toLowerCase() == 'ar') {
-        scorer = rand.nextDouble() < 0.6 ? 'Lionel Messi' : p2[rand.nextInt(p2.length)];
+      if (t2.toLowerCase() == 'fr') {
+        scorer = rand.nextDouble() < 0.9 ? 'Kylian Mbappé' : p2[rand.nextInt(p2.length)];
       } else {
         scorer = p2[rand.nextInt(p2.length)];
       }
@@ -130,15 +129,22 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     return goalsList;
   }
 
-  /// Transforme "Kylian Mbappé" en "K. Mbappé" (style API)
+  /// Transforme "Kylian Mbappé (fr)" en "K. Mbappé"
   String _shortenName(String full) {
-    final parts = full.split(' ');
-    if (parts.length < 2) return full;
+    // 1. On retire le tag équipe entre parenthèses
+    String nameOnly = full.split('(').first.trim();
+    
+    // 2. On sépare Prénom et Nom
+    final parts = nameOnly.split(' ');
+    if (parts.length < 2) return nameOnly;
+    
     final firstName = parts.first;
     final lastName = parts.sublist(1).join(' ');
-    // On enlève le tag (team) si présent
-    final cleanLastName = lastName.split('(').first.trim();
-    return '${firstName[0]}. $cleanLastName';
+    
+    // Sécurité pour éviter les initiales vides ou bizarres
+    if (firstName.isEmpty) return lastName;
+    
+    return '${firstName[0]}. $lastName';
   }
 
   MatchStats _simulateStats(int score1, int score2, Random rand) {
