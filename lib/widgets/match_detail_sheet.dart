@@ -860,6 +860,50 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
     );
   }
 
+  Widget _buildFunFactHeader() {
+    final funFact1 = WCInsightsService.getRandomFunFact(widget.match.t1);
+    final funFact2 = WCInsightsService.getRandomFunFact(widget.match.t2);
+
+    if (funFact1 == null && funFact2 == null) {
+      return const SizedBox.shrink();
+    }
+
+    final String fact = funFact1 ?? funFact2!;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lightbulb_outline_rounded, color: AppColors.accent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _t('triviaTitle'),
+                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.0),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  fact,
+                  style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4, fontStyle: FontStyle.italic),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t1EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, widget.match.t1);
@@ -940,6 +984,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with SingleTickerPr
                 children: [
                   Center(child: _buildCountdownWidget()),
                   const SizedBox(height: 4),
+                  _buildFunFactHeader(),
                   _buildPredictionControlCard(),
                   const SizedBox(height: 20),
                   _buildProbabilityBar(context),
