@@ -550,8 +550,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final finalMatch = widget.matches.where((m) => m.id == kFinalMatchId).firstOrNull;
     bool? isCorrect;
     if (finalMatch != null && finalMatch.isPlayed && isLocked && widget.userPreds.goldenBootWinner != null) {
-      isCorrect = PredictionService.normalizePlayerName(widget.userPreds.goldenBootPlayer!) == 
-                 PredictionService.normalizePlayerName(widget.userPreds.goldenBootWinner!);
+      isCorrect = PredictionService.isSamePlayer(widget.userPreds.goldenBootPlayer, widget.userPreds.goldenBootWinner);
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _buildLabel(AppTranslations.get(widget.lang, 'goldenBootScorer')), const SizedBox(height: 8),
@@ -564,8 +563,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final finalMatch = widget.matches.where((m) => m.id == kFinalMatchId).firstOrNull;
     bool? isCorrect;
     if (finalMatch != null && finalMatch.isPlayed && isLocked && widget.userPreds.topAssisterWinner != null) {
-      isCorrect = PredictionService.normalizePlayerName(widget.userPreds.topAssisterPlayer!) == 
-                 PredictionService.normalizePlayerName(widget.userPreds.topAssisterWinner!);
+      isCorrect = PredictionService.isSamePlayer(widget.userPreds.topAssisterPlayer, widget.userPreds.topAssisterWinner);
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _buildLabel(AppTranslations.get(widget.lang, 'topAssister')), const SizedBox(height: 8),

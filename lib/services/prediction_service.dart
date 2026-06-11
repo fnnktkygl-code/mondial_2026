@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/match.dart';
 import '../app_constants.dart';
@@ -371,6 +372,51 @@ class PredictionService {
     return normalized;
   }
 
+  /// Compare deux noms de joueurs avec une logique "floue" pour gérer les abréviations (ex: R. Lewandowski vs Robert Lewandowski).
+  static bool isSamePlayer(String? nameA, String? nameB) {
+    if (nameA == null || nameB == null) return false;
+    if (nameA.isEmpty || nameB.isEmpty) return false;
+
+    final nA = normalizePlayerName(nameA);
+    final nB = normalizePlayerName(nameB);
+
+    // 1. Égalité exacte après normalisation
+    if (nA == nB) return true;
+
+    // 2. Logique d'abréviation (ex: "r lewandowski" vs "robert lewandowski")
+    final partsA = nA.split(' ');
+    final partsB = nB.split(' ');
+
+    // On cherche lequel est potentiellement l'abréviation (celui qui a une partie de 1 seule lettre)
+    final bool aIsShort = partsA.any((p) => p.length == 1);
+    final bool bIsShort = partsB.any((p) => p.length == 1);
+
+    if (aIsShort || bIsShort) {
+      final shortParts = aIsShort ? partsA : partsB;
+      final longParts = aIsShort ? partsB : partsA;
+
+      // Le nom de famille (dernière partie) doit être identique
+      final lastNameShort = shortParts.last;
+      final lastNameLong = longParts.last;
+
+      if (lastNameShort == lastNameLong) {
+        // L'initiale (première partie) doit correspondre à la première lettre du prénom long
+        final initial = shortParts.first;
+        final longFirstName = longParts.first;
+        if (longFirstName.startsWith(initial)) {
+          return true;
+        }
+      }
+    }
+
+    // 3. Contient l'un dans l'autre (ex: "lewandowski" contenu dans "robert lewandowski")
+    if (nA.length > 4 && nB.length > 4) {
+      if (nA.contains(nB) || nB.contains(nA)) return true;
+    }
+
+    return false;
+  }
+
   static int calculateTotalPoints(PredictionData userPreds, List<WorldCupMatch> matches) {
     int score = 0;
     for (final match in matches) {
@@ -399,7 +445,7 @@ class PredictionService {
         goldenBootWinner.isNotEmpty &&
         userPreds.goldenBootPlayer != null &&
         userPreds.goldenBootPlayer!.isNotEmpty) {
-      if (normalizePlayerName(userPreds.goldenBootPlayer!) == normalizePlayerName(goldenBootWinner)) {
+      if (isSamePlayer(userPreds.goldenBootPlayer, goldenBootWinner)) {
         final mult = getPenaltyMultiplier(userPreds.goldenBootPredictedAt, starts);
         score += (kGoldenBootBonusPoints * mult).round();
       }
@@ -410,7 +456,7 @@ class PredictionService {
         topAssisterWinner.isNotEmpty &&
         userPreds.topAssisterPlayer != null &&
         userPreds.topAssisterPlayer!.isNotEmpty) {
-      if (normalizePlayerName(userPreds.topAssisterPlayer!) == normalizePlayerName(topAssisterWinner)) {
+      if (isSamePlayer(userPreds.topAssisterPlayer, topAssisterWinner)) {
         final mult = getPenaltyMultiplier(userPreds.topAssisterPredictedAt, starts);
         score += (kTopAssisterBonusPoints * mult).round();
       }
@@ -487,49 +533,107 @@ class PredictionService {
 
   // ─── Groups (Firestore) ───────────────────────────────────────────────────────
 
-  static Future<List<FriendGroup>> loadChallengeGroups(PredictionData userData, List<WorldCupMatch> matches) async {
+  static Future<List<FriendGroup>> loadChallengeGroups(
+    PredictionData userData,
+    List<WorldCupMatch> matches,
+  ) async {
     final List<FriendGroup> groups = [];
     final userPoints = calculateTotalPoints(userData, matches);
-    final userEmblem = userData.avatar.isNotEmpty ? userData.avatar : kUserEmblem;
-    final uid = await WCFirebaseService.getOrCreateUserId();
+    final userEmblem =
+        userData.avatar.isNotEmpty ? userData.avatar : kUserEmblem;
+    final uid = await WCFirebaseService.getOrCreateUserId().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => 'anonymous_timeout',
+    );
 
-    groups.add(FriendGroup(
-      name: kGlobalGroupName,
-      code: kGlobalGroupCode,
-      members: [FriendScore(name: userData.username, points: userPoints, emblem: userEmblem, isUser: true, userId: uid)],
-    ));
+    groups.add(
+      FriendGroup(
+        name: kGlobalGroupName,
+        code: kGlobalGroupCode,
+        members: [
+          FriendScore(
+            name: userData.username,
+            points: userPoints,
+            emblem: userEmblem,
+            isUser: true,
+            userId: uid,
+          ),
+        ],
+      ),
+    );
+
+    if (uid == 'anonymous_timeout') return groups;
 
     final firestore = FirebaseFirestore.instance;
-    final groupsSnapshot = await firestore.collection('groups').where('members', arrayContains: uid).get();
+    try {
+      final groupsSnapshot = await firestore
+          .collection('groups')
+          .where('members', arrayContains: uid)
+          .get()
+          .timeout(const Duration(seconds: 8));
 
-    for (final doc in groupsSnapshot.docs) {
-      final data = doc.data();
-      final List<dynamic> memberIds = data['members'] ?? [];
-      final List<FriendScore> members = [];
-      for (final memberId in memberIds) {
-        final isUser = memberId == uid;
-        int points = 0; String mName = 'Unknown'; String mEmblem = '👤';
-        if (isUser) {
-          points = userPoints; mName = userData.username; mEmblem = userEmblem;
-        } else {
-          final userDoc = await firestore.collection('users').doc(memberId as String).get();
-          if (userDoc.exists) {
-            final uData = userDoc.data()!;
-            points = uData['points'] ?? 0;
-            mName = uData['username'] ?? 'Unknown';
-            mEmblem = uData['avatar'] ?? '👤';
+      for (final doc in groupsSnapshot.docs) {
+        final data = doc.data();
+        final List<dynamic> memberIds = data['members'] ?? [];
+        final List<FriendScore> members = [];
+
+        // Parallélisation de la récupération des membres
+        final memberDocsFutures = memberIds.map((id) async {
+          final memberId = id as String;
+          if (memberId == uid) {
+            return FriendScore(
+              name: userData.username,
+              points: userPoints,
+              emblem: userEmblem,
+              isUser: true,
+              userId: uid,
+            );
+          } else {
+            try {
+              final userDoc = await firestore
+                  .collection('users')
+                  .doc(memberId)
+                  .get()
+                  .timeout(const Duration(seconds: 3));
+              if (userDoc.exists) {
+                final uData = userDoc.data()!;
+                return FriendScore(
+                  name: uData['username'] ?? 'Unknown',
+                  points: uData['points'] ?? 0,
+                  emblem: uData['avatar'] ?? '👤',
+                  isUser: false,
+                  userId: memberId,
+                );
+              }
+            } catch (e) {
+              debugPrint("Error loading member $memberId: $e");
+            }
+            return FriendScore(
+              name: 'Unknown',
+              points: 0,
+              emblem: '👤',
+              isUser: false,
+              userId: memberId,
+            );
           }
-        }
-        members.add(FriendScore(name: mName, points: points, emblem: mEmblem, isUser: isUser, userId: memberId as String));
+        });
+
+        final resolvedMembers = await Future.wait(memberDocsFutures);
+        members.addAll(resolvedMembers);
+        members.sort((a, b) => b.points.compareTo(a.points));
+
+        groups.add(
+          FriendGroup(
+            name: data['name'] as String,
+            code: doc.id,
+            members: members,
+            inviteToken: data['inviteToken'] as String?,
+            creatorId: data['creatorId'] as String?,
+          ),
+        );
       }
-      members.sort((a, b) => b.points.compareTo(a.points));
-      groups.add(FriendGroup(
-        name: data['name'] as String,
-        code: doc.id,
-        members: members,
-        inviteToken: data['inviteToken'] as String?,
-        creatorId: data['creatorId'] as String?,
-      ));
+    } catch (e) {
+      debugPrint("Error loading challenge groups: $e");
     }
     return groups;
   }
