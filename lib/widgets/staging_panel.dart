@@ -84,67 +84,65 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   List<GoalEvent> _simulateGoals(String t1, String t2, int score1, int score2, Random rand) {
     final List<GoalEvent> goalsList = [];
     
-    // On récupère les joueurs réels depuis la liste officielle pour ces deux équipes
+    // On récupère les joueurs réels
     final t1Players = kWC2026Players.where((p) => p.contains('($t1)')).toList();
     final t2Players = kWC2026Players.where((p) => p.contains('($t2)')).toList();
 
-    // Fallback si l'équipe n'est pas dans la liste
-    final List<String> p1 = t1Players.isNotEmpty ? t1Players : ['Player A ($t1)', 'Player B ($t1)'];
-    final List<String> p2 = t2Players.isNotEmpty ? t2Players : ['Player C ($t2)', 'Player D ($t2)'];
-
     for (int i = 0; i < score1; i++) {
-      // FORCE MBAPPÉ : Si c'est la France (fr), Mbappé marque quasi systématiquement pour le test
       String scorer;
       if (t1.toLowerCase() == 'fr') {
-        scorer = rand.nextDouble() < 0.9 ? 'Kylian Mbappé' : p1[rand.nextInt(p1.length)];
+        // FORCE MBAPPÉ : Il marque systématiquement pour le test si la France marque
+        scorer = 'Kylian Mbappé (fr)';
       } else {
-        scorer = p1[rand.nextInt(p1.length)];
+        scorer = t1Players.isNotEmpty ? t1Players[rand.nextInt(t1Players.length)] : 'Player A ($t1)';
       }
       
-      String? assistant;
-      if (rand.nextBool()) {
-        final candidates = p1.where((p) => p != scorer).toList();
-        if (candidates.isNotEmpty) assistant = candidates[rand.nextInt(candidates.length)];
-      }
-      goalsList.add(GoalEvent(team: 't1', scorer: _shortenName(scorer), assistant: assistant != null ? _shortenName(assistant) : null, minute: rand.nextInt(90) + 1));
+      goalsList.add(GoalEvent(
+        team: 't1', 
+        scorer: _cleanNameForSimulation(scorer), 
+        assistant: null, 
+        minute: rand.nextInt(90) + 1
+      ));
     }
 
     for (int i = 0; i < score2; i++) {
       String scorer;
       if (t2.toLowerCase() == 'fr') {
-        scorer = rand.nextDouble() < 0.9 ? 'Kylian Mbappé' : p2[rand.nextInt(p2.length)];
+        scorer = 'Kylian Mbappé (fr)';
       } else {
-        scorer = p2[rand.nextInt(p2.length)];
+        scorer = t2Players.isNotEmpty ? t2Players[rand.nextInt(t2Players.length)] : 'Player B ($t2)';
       }
 
-      String? assistant;
-      if (rand.nextBool()) {
-        final candidates = p2.where((p) => p != scorer).toList();
-        if (candidates.isNotEmpty) assistant = candidates[rand.nextInt(candidates.length)];
-      }
-      goalsList.add(GoalEvent(team: 't2', scorer: _shortenName(scorer), assistant: assistant != null ? _shortenName(assistant) : null, minute: rand.nextInt(90) + 1));
+      goalsList.add(GoalEvent(
+        team: 't2', 
+        scorer: _cleanNameForSimulation(scorer), 
+        assistant: null, 
+        minute: rand.nextInt(90) + 1
+      ));
     }
 
     goalsList.sort((a, b) => a.minute.compareTo(b.minute));
     return goalsList;
   }
 
-  /// Transforme "Kylian Mbappé (fr)" en "K. Mbappé"
-  String _shortenName(String full) {
-    // 1. On retire le tag équipe entre parenthèses
+  /// Nettoie le nom de la liste "Nom Prénom (abc)" vers "K. Nom" ou "Nom"
+  String _cleanNameForSimulation(String full) {
+    // 1. On enlève le tag équipe "(fr)"
     String nameOnly = full.split('(').first.trim();
     
-    // 2. On sépare Prénom et Nom
+    // 2. Si c'est déjà une initiale (style "J. Doe"), on garde tel quel
+    if (nameOnly.contains('.') && nameOnly.length < 10) return nameOnly;
+
+    // 3. Transformation style API : "Kylian Mbappé" -> "K. Mbappé"
     final parts = nameOnly.split(' ');
-    if (parts.length < 2) return nameOnly;
-    
-    final firstName = parts.first;
-    final lastName = parts.sublist(1).join(' ');
-    
-    // Sécurité pour éviter les initiales vides ou bizarres
-    if (firstName.isEmpty) return lastName;
-    
-    return '${firstName[0]}. $lastName';
+    if (parts.length >= 2) {
+      final firstName = parts.first;
+      final lastName = parts.sublist(1).join(' ');
+      if (firstName.length > 1) {
+        return '${firstName[0]}. $lastName';
+      }
+    }
+    return nameOnly;
   }
 
   MatchStats _simulateStats(int score1, int score2, Random rand) {
