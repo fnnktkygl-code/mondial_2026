@@ -84,15 +84,13 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   List<GoalEvent> _simulateGoals(String t1, String t2, int score1, int score2, Random rand) {
     final List<GoalEvent> goalsList = [];
     
-    // On récupère les joueurs réels
     final t1Players = kWC2026Players.where((p) => p.contains('($t1)')).toList();
     final t2Players = kWC2026Players.where((p) => p.contains('($t2)')).toList();
 
     for (int i = 0; i < score1; i++) {
       String scorer;
       if (t1.toLowerCase() == 'fr') {
-        // FORCE MBAPPÉ : Il marque systématiquement pour le test si la France marque
-        scorer = 'Kylian Mbappé (fr)';
+        scorer = 'Kylian Mbappé'; // Strict match
       } else {
         scorer = t1Players.isNotEmpty ? t1Players[rand.nextInt(t1Players.length)] : 'Player A ($t1)';
       }
@@ -108,7 +106,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     for (int i = 0; i < score2; i++) {
       String scorer;
       if (t2.toLowerCase() == 'fr') {
-        scorer = 'Kylian Mbappé (fr)';
+        scorer = 'Kylian Mbappé'; // Strict match
       } else {
         scorer = t2Players.isNotEmpty ? t2Players[rand.nextInt(t2Players.length)] : 'Player B ($t2)';
       }
@@ -125,24 +123,10 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     return goalsList;
   }
 
-  /// Nettoie le nom de la liste "Nom Prénom (abc)" vers "K. Nom" ou "Nom"
+  /// Garde le nom ENTIER pour éviter les bugs d'initiales
   String _cleanNameForSimulation(String full) {
-    // 1. On enlève le tag équipe "(fr)"
-    String nameOnly = full.split('(').first.trim();
-    
-    // 2. Si c'est déjà une initiale (style "J. Doe"), on garde tel quel
-    if (nameOnly.contains('.') && nameOnly.length < 10) return nameOnly;
-
-    // 3. Transformation style API : "Kylian Mbappé" -> "K. Mbappé"
-    final parts = nameOnly.split(' ');
-    if (parts.length >= 2) {
-      final firstName = parts.first;
-      final lastName = parts.sublist(1).join(' ');
-      if (firstName.length > 1) {
-        return '${firstName[0]}. $lastName';
-      }
-    }
-    return nameOnly;
+    // On enlève juste le tag équipe final "(fr)" mais on garde TOUT le reste
+    return full.split(' (').first.trim();
   }
 
   MatchStats _simulateStats(int score1, int score2, Random rand) {
