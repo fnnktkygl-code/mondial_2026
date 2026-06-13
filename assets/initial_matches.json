@@ -208,32 +208,38 @@
     "date": "2026-06-13T19:00:00Z",
     "t1": "qa",
     "t2": "ch",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 1,
     "venue": null,
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-13T20:16:31.384Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-13T21:43:14.446Z",
     "goals": [
       {
         "team": "t2",
         "scorer": "Breel Embolo",
         "assistant": null,
         "minute": 17
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Khoukhi",
+        "assistant": null,
+        "minute": 90
       }
     ],
     "stats": {
-      "possessionT1": 46,
-      "shotsT1": 13,
-      "shotsT2": 13,
-      "shotsOnTargetT1": 1,
-      "shotsOnTargetT2": 2,
+      "possessionT1": 44,
+      "shotsT1": 8,
+      "shotsT2": 4,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 3,
       "foulsT1": 7,
-      "foulsT2": 11,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 2,
+      "foulsT2": 5,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 3,
       "redCardsT1": 0,
       "redCardsT2": 0
     }
