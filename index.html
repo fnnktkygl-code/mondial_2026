@@ -943,7 +943,7 @@
         </div>
         <div class="scoring-row">
           <div class="scoring-label">🚀 Joker Booster</div>
-          <div class="scoring-pts" style="color: var(--blue);">×2</div>
+          <div class="scoring-pts" style="color: var(--blue);">×2 ou -10 pts</div>
         </div>
       </div>
     </div>
@@ -1013,6 +1013,20 @@
       if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
     });
   });
+
+  // Preserve query parameters (like ?group=...) when navigating to the Web App (app.html)
+  (function() {
+    try {
+      const urlParams = window.location.search;
+      if (urlParams) {
+        document.querySelectorAll('a[href="app.html"]').forEach(a => {
+          a.href = "app.html" + urlParams;
+        });
+      }
+    } catch (e) {
+      console.error("Preserving parameters error:", e);
+    }
+  })();
 </script>
 </body>
 </html>
