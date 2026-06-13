@@ -42,11 +42,13 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
 
   bool get _isLive {
     final now = DateTime.now();
-    // Explicitly convert to local to ensure the 105-minute window is perfectly accurate
     final matchDateLocal = widget.match.date.toLocal();
+    final duration = widget.match.isKnockout 
+        ? const Duration(minutes: 180) 
+        : const Duration(minutes: 120);
     return !widget.match.isPlayed &&
         now.isAfter(matchDateLocal) &&
-        now.isBefore(matchDateLocal.add(const Duration(minutes: 105)));
+        now.isBefore(matchDateLocal.add(duration));
   }
 
   @override

@@ -190,7 +190,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     const double rowHeight = 110.0;
     const double colWidth = 175.0;
-    const double matchDuration = 1.6;
+    const double matchDuration = 2.0;
 
     final dayFormat = DateFormat('yyyy-MM-dd');
     final localizedDayFormat = DateFormat('E d MMM', widget.lang);
@@ -500,7 +500,9 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                                   now.isAfter(m.date) &&
                                                   now.isBefore(
                                                     m.date.add(
-                                                      const Duration(minutes: 105),
+                                                      m.isKnockout 
+                                                          ? const Duration(minutes: 180) 
+                                                          : const Duration(minutes: 120),
                                                     ),
                                                   );
 

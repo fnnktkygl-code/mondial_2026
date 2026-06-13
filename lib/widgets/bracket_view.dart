@@ -52,7 +52,7 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
       final localDate = m.date.toLocal();
       return !m.isPlayed &&
           now.isAfter(localDate) &&
-          now.isBefore(localDate.add(const Duration(minutes: 105)));
+          now.isBefore(localDate.add(const Duration(minutes: 180)));
     });
   }
 
@@ -106,7 +106,7 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     final localDate = m.date.toLocal();
     return !m.isPlayed &&
         now.isAfter(localDate) &&
-        now.isBefore(localDate.add(const Duration(minutes: 105)));
+        now.isBefore(localDate.add(const Duration(minutes: 180)));
   }
 
   bool _isPlaceholder(String code) {

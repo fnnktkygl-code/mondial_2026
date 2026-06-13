@@ -383,20 +383,53 @@ class WCNotificationService {
     for (final match in matches) {
       if (match.isPlayed || match.date.isBefore(now)) continue;
 
-      final htTime = match.date.add(const Duration(minutes: 45));
-      final ftTime = match.date.add(const Duration(minutes: 105));
+      final cleanT1 = match.t1.toLowerCase().replaceAll('g_', '');
+      final cleanT2 = match.t2.toLowerCase().replaceAll('g_', '');
+      final f1 = _getFlagEmoji(cleanT1);
+      final f2 = _getFlagEmoji(cleanT2);
+      final n1 = getTeamNickname(cleanT1, lang);
+      final n2 = getTeamNickname(cleanT2, lang);
+
+      final htTime = match.date.add(const Duration(minutes: 50));
+      final ftTime = match.date.add(
+        match.isKnockout 
+            ? const Duration(minutes: 175) 
+            : const Duration(minutes: 115),
+      );
+
+      String htTitle = '';
+      String htBody = '';
+      String ftTitle = '';
+      String ftBody = '';
+
+      if (lang == 'fr') {
+        htTitle = '⚽ Mi-temps : $f1 $n1 - $n2 $f2';
+        htBody = 'C\'est la mi-temps ! Score en direct, buteurs et statistiques disponibles dans l\'application.';
+        ftTitle = '🏆 Fin du match : $f1 $n1 - $n2 $f2';
+        ftBody = 'Le match est terminé ! Découvre les buteurs, statistiques et tes points de pronostic.';
+      } else if (lang == 'es') {
+        htTitle = '⚽ ¡Entretiempo: $f1 $n1 - $n2 $f2!';
+        htBody = '¡Final de la primera parte! Marcador en vivo y estadísticas en la aplicación.';
+        ftTitle = '🏆 ¡Fin del partido: $f1 $n1 - $n2 $f2!';
+        ftBody = '¡El partido ha terminado! Revisa los goleadores, estadísticas y tus puntos.';
+      } else {
+        htTitle = '⚽ Half-time: $f1 $n1 vs $n2 $f2';
+        htBody = 'First half is over! Check live score, scorers, and stats in the app.';
+        ftTitle = '🏆 Full-time: $f1 $n1 vs $n2 $f2';
+        ftBody = 'The match has finished! Check scorers, stats, and your prediction points now.';
+      }
 
       await scheduleMatchNotification(
         matchId: '${match.id}_ht',
-        title: AppTranslations.get(lang, 'halfTimeTitle'),
-        body: AppTranslations.get(lang, 'halfTimeBody'),
+        title: htTitle,
+        body: htBody,
         scheduledDate: htTime,
       );
 
       await scheduleMatchNotification(
         matchId: '${match.id}_ft',
-        title: AppTranslations.get(lang, 'fullTimeTitle'),
-        body: AppTranslations.get(lang, "fullTimeBody"),
+        title: ftTitle,
+        body: ftBody,
         scheduledDate: ftTime,
       );
     }
