@@ -10,6 +10,7 @@ import 'wc_tooltip.dart';
 
 class MatchCard extends StatefulWidget {
   final WorldCupMatch match;
+  final List<WorldCupMatch> matches;
   final String lang;
   final bool hasAlert;
   final MatchPrediction? userPrediction;
@@ -22,6 +23,7 @@ class MatchCard extends StatefulWidget {
   const MatchCard({
     super.key,
     required this.match,
+    required this.matches,
     required this.lang,
     required this.hasAlert,
     this.userPrediction,
@@ -406,7 +408,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
       onTap: () {
         // Guard against opening profiles for placeholder teams
         if (teamCode.toLowerCase() != 'tbd' && !teamCode.contains(RegExp(r'\d'))) {
-          WCTeamProfileDialog.show(context, teamCode, widget.lang);
+          WCTeamProfileDialog.show(context, teamCode, widget.lang, widget.matches);
         }
       },
       child: Column(

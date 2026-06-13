@@ -40,21 +40,25 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
   late DateTime _currentWeekStart;
   DateTime? _targetMatchDate;
   late ScrollController _verticalScrollController;
+  late ScrollController _horizontalScrollController;
 
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
+    _horizontalScrollController = ScrollController();
     _setInitialWeekToNextMatch();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToFirstMatchOfTargetDay();
+      _scrollToTargetDayHorizontal();
     });
   }
 
   @override
   void dispose() {
     _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -171,13 +175,42 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     );
   }
 
+  void _scrollToTargetDayHorizontal() {
+    if (_targetMatchDate == null || !_horizontalScrollController.hasClients) return;
+
+    final targetDate = DateTime(_targetMatchDate!.year, _targetMatchDate!.month, _targetMatchDate!.day);
+    final weekStartDate = DateTime(_currentWeekStart.year, _currentWeekStart.month, _currentWeekStart.day);
+    
+    final dayIndex = targetDate.difference(weekStartDate).inDays;
+    
+    if (dayIndex >= 0 && dayIndex < 7) {
+      const double colWidth = 175.0;
+      // Centrer le jour cible si possible
+      double scrollOffset = (dayIndex * colWidth);
+      
+      // Ajustement pour essayer de centrer le jour dans la vue
+      // La largeur totale du widget est inconnue ici, mais on peut faire une estimation
+      // ou simplement s'assurer que le jour est visible.
+      
+      final maxScroll = _horizontalScrollController.position.maxScrollExtent;
+      scrollOffset = scrollOffset.clamp(0.0, maxScroll);
+
+      _horizontalScrollController.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+  }
+
   void _changeWeek(int days) {
     setState(() {
       _currentWeekStart = _currentWeekStart.add(Duration(days: days));
     });
-    WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _scrollToFirstMatchOfTargetDay(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToFirstMatchOfTargetDay();
+      _scrollToTargetDayHorizontal();
+    });
   }
 
   String _getWeekLabel() {
@@ -389,6 +422,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
                   Expanded(
                     child: SingleChildScrollView(
+                      controller: _horizontalScrollController,
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
@@ -549,7 +583,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                             // Correction logic Pronostic
                                             final predResult = PredictionService.getPredictionResult(
                                               m,
-                                              PredictionData(matchPredictions: widget.userPredictions ?? {}),
+                                              PredictionData(preds: widget.userPredictions ?? {}),
                                             );
 
                                             if (predResult == 'exact') {

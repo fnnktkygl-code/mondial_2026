@@ -5,7 +5,7 @@ import '../models/match.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/prediction_service.dart';
-
+import '../l10n/translations.dart';
 import '../services/player_database_service.dart';
 
 // Player pools for simulation
@@ -428,22 +428,28 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       for (final match in matches) {
         if (match.t1.isEmpty || match.t2.isEmpty || match.t1 == 'TBD' || match.t2 == 'TBD') continue;
         
+        final t1En = AppTranslations.getTeam('en', match.t1);
+        final t2En = AppTranslations.getTeam('en', match.t2);
+        final squad = [...PlayerDatabaseService.getPlayersForTeam(t1En), ...PlayerDatabaseService.getPlayersForTeam(t2En)];
+        String? randomScorer;
+        if (squad.isNotEmpty) randomScorer = squad[random.nextInt(squad.length)];
+
         preds.matchPredictions[match.id] = MatchPrediction(
           matchId: match.id,
           t1Score: random.nextInt(4),
           t2Score: random.nextInt(4),
+          predictedScorers: randomScorer != null ? {randomScorer: 1} : null,
         );
       }
 
       // Identify winners from simulated matches (if played)
       final stats = TournamentStats.compute(matches);
       final String actualScorer = stats.scorers.isNotEmpty ? stats.scorers.first.name : 'Kylian Mbappé';
-      final String actualAssister = stats.assists.isNotEmpty ? stats.assists.first.name : 'Lionel Messi';
-      
+
       final finalMatch = matches.firstWhere((m) => m.id == 'm80', orElse: () => matches[0]);
       String actualChampion = 'fr';
       if (finalMatch.isPlayed) {
-        actualChampion = finalMatch.wentToPK == true ? finalMatch.pkWinner! : 
+        actualChampion = finalMatch.wentToPK == true ? finalMatch.pkWinner! :
                         (finalMatch.t1Score! > finalMatch.t2Score! ? finalMatch.t1 : finalMatch.t2);
       }
 
@@ -451,15 +457,9 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       preds.championPredictedAt = DateTime.now().subtract(const Duration(days: 30));
 
       preds.goldenBootWinner = actualScorer;
-      // preds.goldenBootPlayer = actualScorer; // REMOVED: Do not overwrite user's prediction
       preds.goldenBootPredictedAt = DateTime.now().subtract(const Duration(days: 30));
 
-      preds.topAssisterWinner = actualAssister;
-      // preds.topAssisterPlayer = actualAssister; // REMOVED
-      preds.topAssisterPredictedAt = DateTime.now().subtract(const Duration(days: 30));
-
       await PredictionService.savePredictionData(preds);
-      
       final totalPoints = PredictionService.calculateTotalPoints(preds, matches);
       final streak = PredictionService.calculateActiveStreak(preds, matches);
       final guruCount = PredictionService.calculateExactGuessesCount(preds, matches);
@@ -488,7 +488,6 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       preds.matchPredictions.clear();
       preds.championCode = null;
       preds.goldenBootPlayer = null;
-      preds.topAssisterPlayer = null;
       
       await PredictionService.savePredictionData(preds);
       

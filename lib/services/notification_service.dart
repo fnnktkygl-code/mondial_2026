@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/match.dart';
 import '../services/team_profile_service.dart';
+import '../services/prediction_service.dart';
 import '../services/firebase_service.dart';
 import '../l10n/translations.dart';
 import '../../firebase_options.dart';
@@ -22,6 +23,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class WCNotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
   FlutterLocalNotificationsPlugin();
+  static Function(String)? _onTapCallback;
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -129,7 +131,8 @@ class WCNotificationService {
 
   // ─── Init & Permissions ─────────────────────────────────────────────────────
 
-  static Future<void> init() async {
+  static Future<void> init({Function(String)? onTap}) async {
+    _onTapCallback = onTap;
     tz.initializeTimeZones();
     try {
       if (!kIsWeb) {
@@ -171,7 +174,11 @@ class WCNotificationService {
     try {
       await _plugin.initialize(
         settings: initSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse _) {},
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          if (response.payload != null && _onTapCallback != null) {
+            _onTapCallback!(response.payload!);
+          }
+        },
       );
 
       _setupFirebaseMessaging();
@@ -185,11 +192,24 @@ class WCNotificationService {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
+        // Build payload from data map
+        String payload = '';
+        if (message.data.containsKey('action')) {
+          payload = message.data['action'];
+        }
+
         showInstantNotification(
           id: message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString(),
           title: message.notification!.title ?? 'Prono Challenge',
           body: message.notification!.body ?? '',
+          payload: payload,
         );
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (message.data.containsKey('action') && _onTapCallback != null) {
+        _onTapCallback!(message.data['action']);
       }
     });
 
@@ -304,14 +324,16 @@ class WCNotificationService {
     required int id,
     required String title,
     required String body,
+    String? payload,
   }) async {
-    await showInstantNotification(id: id.toString(), title: title, body: body);
+    await showInstantNotification(id: id.toString(), title: title, body: body, payload: payload);
   }
 
   static Future<void> showInstantNotification({
     required String id,
     required String title,
     required String body,
+    String? payload,
   }) async {
     try {
       final int stableId = generateStableId(id);
@@ -320,6 +342,7 @@ class WCNotificationService {
         title: title,
         body: body,
         notificationDetails: _details,
+        payload: payload,
       );
     } catch (e) {
       debugPrint('Error showing instant notification: $e');
@@ -331,6 +354,7 @@ class WCNotificationService {
     required String title,
     required String body,
     required DateTime scheduledDate,
+    String? payload,
   }) async {
     if (kIsWeb) return;
 
@@ -347,6 +371,7 @@ class WCNotificationService {
         scheduledDate: tzDate,
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: payload,
       );
     } catch (e) {
       debugPrint('Error scheduling notification: $e');
@@ -424,6 +449,7 @@ class WCNotificationService {
         title: htTitle,
         body: htBody,
         scheduledDate: htTime,
+        payload: 'match_${match.id}',
       );
 
       await scheduleMatchNotification(
@@ -431,7 +457,67 @@ class WCNotificationService {
         title: ftTitle,
         body: ftBody,
         scheduledDate: ftTime,
+        payload: 'match_${match.id}',
       );
+    }
+  }
+
+  static Future<void> schedulePredictionReminders({
+    required List<WorldCupMatch> matches,
+    required Map<String, MatchPrediction> userPredictions,
+    required String lang,
+  }) async {
+    if (kIsWeb) return;
+    final now = DateTime.now();
+
+    // Group matches by day (local time)
+    final Map<String, List<WorldCupMatch>> matchesByDay = {};
+    for (var m in matches) {
+      if (m.date.isBefore(now) || m.isPlayed) continue;
+      final dayKey = "${m.date.toLocal().year}-${m.date.toLocal().month}-${m.date.toLocal().day}";
+      matchesByDay.putIfAbsent(dayKey, () => []).add(m);
+    }
+
+    // For each of the next 3 days, check if any match is missing a prediction
+    final days = matchesByDay.keys.toList()..sort();
+    final next3Days = days.take(3);
+
+    for (var dayKey in next3Days) {
+      final dayMatches = matchesByDay[dayKey]!;
+      final missingPreds = dayMatches.where((m) => !userPredictions.containsKey(m.id)).toList();
+
+      if (missingPreds.isNotEmpty) {
+        // Find the earliest match of that day
+        missingPreds.sort((a, b) => a.date.compareTo(b.date));
+        final firstMatch = missingPreds.first;
+        
+        // Schedule reminder 1 hour before the first unpredicted match
+        final reminderTime = firstMatch.date.subtract(const Duration(minutes: 60));
+        
+        if (reminderTime.isAfter(now)) {
+          String title = '';
+          String body = '';
+
+          if (lang == 'fr') {
+            title = '🎯 N\'oublie pas tes pronos !';
+            body = 'Le premier match du jour commence dans 1h et tu n\'as pas encore voté pour ${missingPreds.length} match(s).';
+          } else if (lang == 'es') {
+            title = '🎯 ¡No olvides tus pronósticos!';
+            body = 'El primer partido del día comienza en 1h y aún no has votado en ${missingPreds.length} partido(s).';
+          } else {
+            title = '🎯 Don\'t forget your predictions!';
+            body = 'The first match of the day starts in 1h and you haven\'t predicted ${missingPreds.length} match(es) yet.';
+          }
+
+          await scheduleMatchNotification(
+            matchId: 'reminder_$dayKey',
+            title: title,
+            body: body,
+            scheduledDate: reminderTime,
+            payload: 'calendar',
+          );
+        }
+      }
     }
   }
 

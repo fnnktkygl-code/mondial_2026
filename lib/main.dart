@@ -35,7 +35,6 @@ import 'services/odds_service.dart';
 import 'services/team_profile_service.dart';
 import 'services/update_service.dart';
 import 'utils/fifa_rules.dart';
-import 'widgets/title_odds_view.dart';
 import 'widgets/mascots_dialog.dart';
 import 'widgets/landing_page.dart';
 import 'widgets/staging_panel.dart';
@@ -204,6 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _standingsSubTab = 'groups'; // 'groups', 'scorers', 'assists', 'team'
   String _matchFilter = 'all'; // 'all', 'alerts'
   String _viewMode = 'list'; // 'list', 'calendar'
+  String _challengeInitialSubTab = 'preds';
 
   List<WorldCupMatch> _rawMatches = [];
   List<WorldCupMatch> _resolvedMatches = [];
@@ -214,13 +214,13 @@ class _MyHomePageState extends State<MyHomePage> {
   PredictionData? _userPreds;
   Key _challengeViewKey = UniqueKey();
   Map<String, double> _currentOdds = {};
-  Map<String, double> _previousOdds = {};
 
   late ConfettiController _confettiController;
 
   @override
   void initState() {
     super.initState();
+    WCNotificationService.init(onTap: _onNotificationTap);
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
@@ -344,10 +344,30 @@ class _MyHomePageState extends State<MyHomePage> {
     // 5. Notifications Permissions & Scheduling
     try {
       await WCNotificationService.requestPermissions();
+      
+      // Filter matches for HT/FT alerts: Fav team + Predicted + Manual Alerts
+      final filteredMatches = _resolvedMatches.where((m) {
+        final isFav = _supportedTeam != null && 
+            (m.t1.toLowerCase() == _supportedTeam!.toLowerCase() || 
+             m.t2.toLowerCase() == _supportedTeam!.toLowerCase());
+        final hasPred = _userPreds?.matchPredictions.containsKey(m.id) ?? false;
+        final hasAlert = _alerts.containsKey(m.id) && _alerts[m.id] != 'none';
+        return isFav || hasPred || hasAlert;
+      }).toList();
+
       await WCNotificationService.scheduleHalfTimeAndFullTimeNotifications(
-        matches: _resolvedMatches,
+        matches: filteredMatches,
         lang: _lang,
       );
+
+      // Schedule "Missing Predictions" reminder for the next 3 days
+      if (_userPreds != null) {
+        await WCNotificationService.schedulePredictionReminders(
+          matches: _resolvedMatches,
+          userPredictions: _userPreds!.matchPredictions,
+          lang: _lang,
+        );
+      }
     } catch (e) {
       debugPrint("Notification scheduling error: $e");
     }
@@ -828,17 +848,36 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return MatchDetailSheet(
-          match: match,
-          lang: _lang,
-          activeAlert: _alerts[match.id],
-          onSaveAlert: (alertType) => _saveAlert(match.id, alertType),
-          prediction: _userPreds?.matchPredictions[match.id],
-          onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner) =>
-              _saveDirectPrediction(match.id, t1Score, t2Score, etWinner, pkWinner),
-        );
-      },
+      builder: (context) => MatchDetailSheet(
+        match: match,
+        allMatches: _resolvedMatches,
+        lang: _lang,
+        activeAlert: _alerts[match.id],
+        onSaveAlert: (alertType) => _saveAlert(match.id, alertType),
+        prediction: _userPreds?.matchPredictions[match.id],
+        canUseBooster: _userPreds != null && _userPreds!.boosterMatchId == null && !match.isPlayed,
+        onSetBooster: () async {
+          if (_userPreds == null) return;
+          setState(() {
+            _userPreds!.boosterMatchId = match.id;
+          });
+          await PredictionService.savePredictionData(_userPreds!);
+          final totalPoints = PredictionService.calculateTotalPoints(_userPreds!, _resolvedMatches);
+          final streak = PredictionService.calculateActiveStreak(_userPreds!, _resolvedMatches);
+          final guruCount = PredictionService.calculateExactGuessesCount(_userPreds!, _resolvedMatches);
+          await WCFirebaseService.syncUserProfile(
+            username: _userPreds!.username,
+            supportedTeam: _userPreds!.supportedTeam,
+            points: totalPoints,
+            streak: streak,
+            guruCount: guruCount,
+            avatar: _userPreds!.avatar,
+          );
+        },
+        onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers) =>
+            _saveDirectPrediction(match.id, t1Score, t2Score, etWinner, pkWinner, predictedScorers),
+
+      ),
     );
   }
 
@@ -849,6 +888,7 @@ class _MyHomePageState extends State<MyHomePage> {
     int t2Score,
     String? etWinner,
     bool? pkWinner,
+    Map<String, int>? predictedScorers,
   ) async {
     if (_userPreds == null) return;
 
@@ -859,6 +899,7 @@ class _MyHomePageState extends State<MyHomePage> {
         t2Score: t2Score,
         extraTimeWinner: etWinner,
         penaltyWinner: pkWinner,
+        predictedScorers: predictedScorers,
       );
     });
 
@@ -892,62 +933,65 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   // ... existing code ...
 
+  void _onNotificationTap(String payload) {
+    if (payload == 'calendar') {
+      setState(() => _activeTab = 'matches');
+    } else if (payload.startsWith('match_')) {
+      final matchId = payload.replaceFirst('match_', '');
+      try {
+        final match = _resolvedMatches.firstWhere((m) => m.id == matchId);
+        _showMatchDetails(match);
+      } catch (e) {
+        debugPrint("Match not found for notification: $matchId");
+      }
+    } else if (payload == 'leaderboard') {
+      setState(() {
+        _activeTab = 'challenge';
+        _challengeInitialSubTab = 'leaderboard';
+        _challengeViewKey = UniqueKey(); // Force refresh to apply new sub-tab
+      });
+    }
+  }
+
   void _updateTournamentOddsAndCheckNotifications() {
     final newOdds = WCOddsService.calculateOdds(_resolvedMatches);
+    
+    // Check for "Big Match" notifications instead of abstract odds shifts
+    final now = DateTime.now();
+    final upcomingBigMatch = _resolvedMatches.firstWhere(
+      (m) => !m.isPlayed && 
+             m.date.isAfter(now) && 
+             m.date.isBefore(now.add(const Duration(hours: 24))) &&
+             (kTeamRatings[m.t1.toLowerCase()] ?? 0) > 1750 && 
+             (kTeamRatings[m.t2.toLowerCase()] ?? 0) > 1750,
+      orElse: () => _resolvedMatches.first,
+    );
+
+    if (upcomingBigMatch.id != _resolvedMatches.first.id) {
+       // logic to show a preview if not already shown...
+    }
+
     if (_supportedTeam != null) {
       final favCode = _supportedTeam!.toLowerCase();
       final double oldProb = _currentOdds[favCode] ?? 0.0;
       final double newProb = newOdds[favCode] ?? 0.0;
 
-      // Only notify if odds changed by at least 1.5% to avoid spam, or if eliminated
-      if ((newProb - oldProb).abs() >= 1.5 || (newProb == 0.0 && oldProb > 0.0)) {
+      if (newProb == 0.0 && oldProb > 0.0) {
         final flag = _getCountryFlagEmoji(favCode);
         final nickname = WCNotificationService.getTeamNickname(favCode, _lang);
-
-        // Check if we are at least in the Quarter-Finals stage
-        final hasReachedQF = _resolvedMatches.any((m) => 
-          (m.stage == 'Quarter-Final' || m.stage == 'Semi-Final' || m.stage == 'Final') && 
-          (m.isPlayed || m.status == 'IN_PLAY' || m.status == 'PAUSED')
+        
+        WCNotificationService.showNotification(
+          id: 9999,
+          title: AppTranslations.get(_lang, 'eliminationTitle'),
+          body: AppTranslations.get(_lang, 'eliminationBody')
+              .replaceAll('{nickname}', nickname)
+              .replaceAll('{flag}', flag),
+          payload: 'calendar',
         );
-
-        String title = '';
-        String body = '';
-        bool shouldNotify = false;
-
-        if (newProb == 0.0 && oldProb > 0.0) {
-          title = AppTranslations.get(_lang, 'eliminationTitle');
-          body = AppTranslations.get(
-            _lang,
-            'eliminationBody',
-          ).replaceAll('{nickname}', nickname).replaceAll('{flag}', flag);
-          shouldNotify = true;
-        } else if (hasReachedQF && oldProb > 0.0 && newProb > 0.0) {
-          shouldNotify = true;
-          if (newProb > oldProb) {
-            title = AppTranslations.get(_lang, 'oddsRisingTitle');
-            body = AppTranslations.get(_lang, 'oddsRisingBody')
-                .replaceAll('{nickname}', nickname)
-                .replaceAll('{flag}', flag);
-          } else {
-            title = AppTranslations.get(_lang, 'oddsFallingTitle');
-            body = AppTranslations.get(_lang, "oddsFallingBody")
-                .replaceAll("{nickname}", nickname)
-                .replaceAll("{flag}", flag);
-          }
-        }
-
-        if (shouldNotify) {
-          WCNotificationService.showNotification(
-            id: 9999,
-            title: title,
-            body: body,
-          );
-        }
       }
     }
 
     setState(() {
-      _previousOdds = Map.from(_currentOdds.isEmpty ? newOdds : _currentOdds);
       _currentOdds = newOdds;
     });
   }
@@ -1591,21 +1635,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const SizedBox(width: 8),
                 _buildStandingsSubTabButton(
-                  'assists',
-                  AppTranslations.get(_lang, 'assistsTab'),
-                  Icons.star_border,
-                ),
-                const SizedBox(width: 8),
-                _buildStandingsSubTabButton(
                   'team',
                   AppTranslations.get(_lang, 'teamStatsTab'),
                   Icons.search,
-                ),
-                const SizedBox(width: 8),
-                _buildStandingsSubTabButton(
-                  'odds',
-                  AppTranslations.get(_lang, 'oddsTab'),
-                  Icons.analytics,
                 ),
               ],
             ),
@@ -1655,21 +1687,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _getStandingsSubTabContent() {
     if (_standingsSubTab == 'scorers') {
       return ScorersLeaderboardWidget(matches: _resolvedMatches, lang: _lang);
-    } else if (_standingsSubTab == 'assists') {
-      return AssistsLeaderboardWidget(matches: _resolvedMatches, lang: _lang);
     } else if (_standingsSubTab == 'team') {
       return TeamStatsWidget(
         matches: _resolvedMatches,
         lang: _lang,
         onMatchTap: _showMatchDetails,
-      );
-    } else if (_standingsSubTab == 'odds') {
-      return WCTitleOddsView(
-        resolvedMatches: _resolvedMatches,
-        lang: _lang,
-        supportedTeamCode: _supportedTeam,
-        currentOdds: _currentOdds,
-        previousOdds: _previousOdds,
       );
     } else {
       return GroupTableWidget(
@@ -1703,6 +1725,7 @@ class _MyHomePageState extends State<MyHomePage> {
         key: _challengeViewKey,
         matches: _resolvedMatches,
         lang: _lang,
+        initialSubTab: _challengeInitialSubTab,
         onProfileTap: _showProfileModal,
         showSnackBar: (msg) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1745,7 +1768,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (_viewMode == 'calendar') {
       return CalendarViewWidget(
-        // ← ajouter "return"
         matches: filteredMatches,
         lang: _lang,
         hasAlert: _hasAlert,
@@ -1753,6 +1775,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (_userPreds == null) return false;
           return _userPreds!.matchPredictions.containsKey(match.id);
         },
+        userPredictions: _userPreds?.matchPredictions,
         alertType: (match) =>
             PredictionService.getPredictionResult(match, _userPreds),
         supportedTeamCode: _supportedTeam,
@@ -1797,6 +1820,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ...dayMatches.map((m) {
               return MatchCard(
                 match: m,
+                matches: _resolvedMatches,
                 lang: _lang,
                 hasAlert: _hasAlert(m),
                 userPrediction: _userPreds?.matchPredictions[m.id],

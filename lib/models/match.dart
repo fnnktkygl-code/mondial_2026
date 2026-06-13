@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
-
 import '../services/player_database_service.dart';
+import '../l10n/translations.dart';
 
 class GoalEvent {
   final String team; // "t1" or "t2"
@@ -384,52 +384,24 @@ class PlayerStat {
 
 class TournamentStats {
   final List<PlayerStat> scorers;
-  final List<PlayerStat> assists;
 
-  TournamentStats({required this.scorers, required this.assists});
+  TournamentStats({required this.scorers});
 
   factory TournamentStats.compute(List<WorldCupMatch> matches) {
     final Map<String, int> goalCounts = {};
-    final Map<String, int> assistCounts = {};
     final Map<String, String> playerTeams = {};
-
-    // Team code to Full Name mapping
-    final Map<String, String> teamCodeToName = {
-      'mx': 'Mexico', 'co': 'Colombia', 'cm': 'Cameroon', 'kr': 'South Korea',
-      'us': 'USA', 'en': 'England', 'ng': 'Nigeria', 'jp': 'Japan',
-      'ca': 'Canada', 'fr': 'France', 'sn': 'Senegal', 'de': 'Germany',
-      'br': 'Brazil', 'ar': 'Argentina', 'ma': 'Morocco', 'es': 'Spain',
-      'it': 'Italy', 'pt': 'Portugal', 'nl': 'Netherlands', 'be': 'Belgium',
-      'hr': 'Croatia', 'uy': 'Uruguay', 'se': 'Sweden', 'ch': 'Switzerland',
-      'dk': 'Denmark', 'pl': 'Poland', 'ua': 'Ukraine', 'dz': 'Algeria',
-      'eg': 'Egypt', 'tn': 'Tunisia', 'gh': 'Ghana', 'ci': 'Ivory Coast',
-      'cl': 'Chile', 'pe': 'Peru', 'ec': 'Ecuador', 've': 'Venezuela',
-      'au': 'Australia', 'nz': 'New Zealand', 'sa': 'Saudi Arabia', 'ir': 'Iran',
-      'tr': 'Turkey', 'gr': 'Greece', 'cz': 'Czech Republic', 'at': 'Austria',
-      'ro': 'Romania', 'hu': 'Hungary', 'bg': 'Bulgaria', 'rs': 'Serbia'
-    };
 
     for (final match in matches) {
       if (match.isPlayed) {
         for (final goal in match.goals) {
+          final teamCode = (goal.team == 't1' ? match.t1 : match.t2).toLowerCase();
+          final teamNameEn = AppTranslations.getTeam('en', teamCode);
+          
           final scorerName = goal.scorer.trim();
           if (scorerName.isNotEmpty) {
-            final teamCode = goal.team == 't1' ? match.t1 : match.t2;
-            final teamName = teamCodeToName[teamCode.toLowerCase()] ?? 'Team ($teamCode)';
-            final normalized = PlayerDatabaseService.getBestMatchingName(teamName, scorerName) ?? scorerName;
-            
+            final normalized = PlayerDatabaseService.getBestMatchingName(teamNameEn, scorerName) ?? scorerName;
             goalCounts[normalized] = (goalCounts[normalized] ?? 0) + 1;
-            playerTeams[normalized] = teamCode; // store code for teamCode field
-          }
-
-          final assistantName = goal.assistant?.trim();
-          if (assistantName != null && assistantName.isNotEmpty) {
-            final teamCode = goal.team == 't1' ? match.t1 : match.t2;
-            final teamName = teamCodeToName[teamCode.toLowerCase()] ?? 'Team ($teamCode)';
-            final normalized = PlayerDatabaseService.getBestMatchingName(teamName, assistantName) ?? assistantName;
-            
-            assistCounts[normalized] = (assistCounts[normalized] ?? 0) + 1;
-            playerTeams[normalized] = teamCode; // store code for teamCode field
+            playerTeams[normalized] = teamCode;
           }
         }
       }
@@ -443,14 +415,6 @@ class TournamentStats {
       );
     }).toList()..sort((a, b) => b.value.compareTo(a.value));
 
-    final List<PlayerStat> assistsList = assistCounts.entries.map((e) {
-      return PlayerStat(
-        name: e.key,
-        value: e.value,
-        teamCode: playerTeams[e.key] ?? 'tbd',
-      );
-    }).toList()..sort((a, b) => b.value.compareTo(a.value));
-
-    return TournamentStats(scorers: scorersList, assists: assistsList);
+    return TournamentStats(scorers: scorersList);
   }
 }

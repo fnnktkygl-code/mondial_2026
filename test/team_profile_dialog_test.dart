@@ -19,7 +19,7 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: WCTeamProfileDialog(teamCode: 'de', lang: 'fr'),
+          body: WCTeamProfileDialog(teamCode: 'de', lang: 'fr', matches: []),
         ),
       ),
     );

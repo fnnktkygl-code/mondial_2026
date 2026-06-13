@@ -262,6 +262,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                               context,
                               entry.teamCode,
                               widget.lang,
+                              widget.matches,
                             );
                           },
                           child: Row(

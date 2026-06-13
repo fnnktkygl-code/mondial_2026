@@ -560,7 +560,7 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     final pred = widget.predictions?[m.id];
     final predResult = PredictionService.getPredictionResult(
       m,
-      PredictionData(matchPredictions: widget.predictions ?? {}),
+      PredictionData(preds: widget.predictions ?? {}),
     );
     final isCorrect = predResult == 'exact' || predResult == 'winner';
     final isWrong = m.isPlayed && predResult == 'wrong';

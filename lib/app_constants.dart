@@ -7,14 +7,10 @@
 /// │  STATIC (hardcoded ici) : règles du jeu, design system, config réseau, │
 /// │    gamification interne, fallbacks. Ne change pas en cours de compét.  │
 /// │                                                                         │
-/// │  DYNAMIC (API-Football, league=1 & season=2026) :                       │
-/// │    – Fixtures / calendrier  → GET /fixtures?league=1&season=2026        │
-/// │    – Standings              → GET /standings?league=1&season=2026       │
-/// │    – Top scorers            → GET /players/topscorers?league=1&...      │
-/// │    – Top assists            → GET /players/topassists?league=1&...      │
-/// │    – Crowd predictions      → GET /predictions?fixture=FIXTURE_ID       │
-/// │    – Team logos             → champ `team.logo` dans /teams             │
-/// │    – Match events (live)    → GET /fixtures?live=all                    │
+///  DYNAMIC (Source: worldcup26.ir, synced via GitHub) :
+///    – Fixtures / calendrier  → JSON distant (GitHub sync)
+///    – Match events (live)    → JSON distant mis à jour en direct
+
 /// │                                                                         │
 /// │  CACHE STRATEGY (plan Free = 100 req/jour) :                            │
 /// │    – Fixtures   : 1x au boot + refresh toutes les 5 min si live        │
@@ -24,26 +20,9 @@
 /// └─────────────────────────────────────────────────────────────────────────┘
 library;
 
-// ─── API-Football ─────────────────────────────────────────────────────────────
-// Clé API : variable `API_FOOTBALL_KEY` dans votre fichier .env (flutter_dotenv)
-// Usage dans les services : {'x-apisports-key': dotenv.env['API_FOOTBALL_KEY']!}
-const String kApiFootballBaseUrl = 'https://v3.football.api-sports.io';
-const int kApiFootballLeagueId = 1; // World Cup 2026
-const int kApiFootballSeason = 2026;
-const String kApiFootballHeader = 'x-apisports-key';
-
-// Endpoints (suffixes à concaténer avec kApiFootballBaseUrl)
-const String kEndpointFixtures = '/fixtures';
-const String kEndpointStandings = '/standings';
-const String kEndpointTopScorers = '/players/topscorers';
-const String kEndpointTopAssists = '/players/topassists';
-const String kEndpointPrediction = '/predictions';
-const String kEndpointRounds = '/fixtures/rounds';
-const String kEndpointTeams = '/teams';
-
-// ─── Legacy / Transitional API URL ───────────────────────────────────────────
-// Utilisé par ApiService pendant la migration vers API-Football.
-// À supprimer une fois ApiService entièrement migré.
+// ─── Live Data API ─────────────────────────────────────────────────────────────
+// Source: worldcup26.ir
+// Synced via GitHub raw JSON for high availability and free tier management.
 const String kApiUrl =
     'https://raw.githubusercontent.com/fnnktkygl-code/mondial_2026/main/assets/initial_matches.json';
 
@@ -79,9 +58,12 @@ const int kExtraTimeBonusPoints = 20;
 const int kPenaltyShootoutBonusPoints = 25;
 
 // Bonus tournoi entier
+const int kScorerMatchBonusPoints = 15;
 const int kChampionBonusPoints = 100;
 const int kGoldenBootBonusPoints = 50;
-const int kTopAssisterBonusPoints = 50;
+
+// Malus
+const int kBoosterPenaltyPoints = -10;
 
 // ─── XP / Niveaux ────────────────────────────────────────────────────────────
 const List<Map<String, dynamic>> kXpLevels = [
@@ -168,11 +150,8 @@ const String kGlobalGroupCode = 'GLOBAL-2026';
 const String kUserEmblem = '⚽';
 
 // ─── Crowd prediction — modèle maison (synchrone, fallback) ──────────────────
-// Utilisés dans _calculateProbability() (match_detail_sheet.dart) et
-// WCOddsService lorsque les données API-Football ne sont pas encore chargées.
-//
-// PRIORITÉ EN PROD : remplacer par GET /predictions?fixture=ID
-// → predictions.percent.{home,draw,away} (mis en cache Hive par fixture_id).
+// Utilisés dans _buildProbabilityBar() (match_detail_sheet.dart) et
+// WCOddsService lorsque les données distantes ne sont pas encore chargées.
 const double kDefaultDrawProbability = 0.20;
 const double kWinProbabilityScale = 0.80;
 

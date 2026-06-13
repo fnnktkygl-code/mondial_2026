@@ -20,6 +20,7 @@ class ChallengeViewWidget extends StatefulWidget {
   final Function(Map<String, String> alerts) onAlertsChanged;
   final Function(String? teamCode) onSupportedTeamChanged;
   final VoidCallback? onProfileTap;
+  final String initialSubTab;
 
   const ChallengeViewWidget({
     super.key,
@@ -30,6 +31,7 @@ class ChallengeViewWidget extends StatefulWidget {
     required this.onAlertsChanged,
     required this.onSupportedTeamChanged,
     this.onProfileTap,
+    this.initialSubTab = 'preds',
   });
 
   @override
@@ -41,7 +43,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   PredictionData _userPreds = PredictionData();
   List<FriendGroup> _groups = [];
   bool _isLoading = true;
-  String _subTab = 'preds'; // 'preds' | 'groups' | 'leaderboard'
+  late String _subTab; // 'preds' | 'groups' | 'leaderboard'
   String _predsFilter = 'group'; // 'group' | 'knockout'
   String? _myUserId;
 
@@ -53,6 +55,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   @override
   void initState() {
     super.initState();
+    _subTab = widget.initialSubTab;
     _loadData();
   }
 
@@ -127,8 +130,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     }
     setState(() {
       _userPreds.matchPredictions[matchId] = MatchPrediction(
-        matchId: matchId, t1Score: new1, t2Score: new2,
-        extraTimeWinner: etWinner, penaltyWinner: pkWinner,
+        matchId: matchId,
+        t1Score: new1,
+        t2Score: new2,
+        extraTimeWinner: etWinner,
+        penaltyWinner: pkWinner,
+        predictedScorers: existing?.predictedScorers,
       );
     });
     await PredictionService.savePredictionData(_userPreds);
@@ -143,8 +150,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     if (existing == null) return;
     setState(() {
       _userPreds.matchPredictions[matchId] = MatchPrediction(
-        matchId: matchId, t1Score: existing.t1Score, t2Score: existing.t2Score,
-        extraTimeWinner: etWinner, penaltyWinner: pkWinner,
+        matchId: matchId,
+        t1Score: existing.t1Score,
+        t2Score: existing.t2Score,
+        extraTimeWinner: etWinner,
+        penaltyWinner: pkWinner,
+        predictedScorers: existing.predictedScorers,
       );
     });
     await PredictionService.savePredictionData(_userPreds);
@@ -1853,9 +1864,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     final lang = widget.lang;
     final champion = _userPreds.championCode;
     final scorer   = _userPreds.goldenBootPlayer;
-    final assister = _userPreds.topAssisterPlayer;
 
-    if (champion == null && scorer == null && assister == null) {
+    if (champion == null && scorer == null) {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -1913,14 +1923,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               potential: kGoldenBootBonusPoints,
               isFinished: tournamentFinished,
               actualWinner: _userPreds.goldenBootWinner,
-            ),
-          if (assister != null)
-            _buildBonusItem(
-              icon: '🪄',
-              label: assister,
-              potential: kTopAssisterBonusPoints,
-              isFinished: tournamentFinished,
-              actualWinner: _userPreds.topAssisterWinner,
             ),
         ],
       ),

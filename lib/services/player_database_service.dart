@@ -351,13 +351,80 @@ class PlayerDatabaseService {
     return null;
   }
 
-  /// Fuzzy name match — useful for API data with slightly different spellings.
+  /// Advanced Fuzzy Match — Handles initials, inverted names (Asian conventions), and hyphenations.
+  /// E.g., API 'I.B. Hwang' will flawlessly match DB 'Hwang In-beom'.
   static String? getBestMatchingName(String teamName, String inputName) {
+    if (inputName.isEmpty) return null;
     final players = getPlayersForTeam(teamName);
-    final normalized = inputName.toLowerCase().replaceAll('.', '').replaceAll(' ', '');
+    if (players.isEmpty) return null;
+
+    final normInput = normalize(inputName).toLowerCase();
+    final inputTokens = normInput.split(RegExp(r'[\s\.\-]+')).where((t) => t.isNotEmpty).toList();
+
+    String? bestPlayer;
+    int bestScore = -1;
+
     for (final player in players) {
-      final np = player.toLowerCase().replaceAll('.', '').replaceAll(' ', '');
-      if (np.contains(normalized) || normalized.contains(np)) return player;
+      final normPlayer = normalize(player).toLowerCase();
+      final playerTokens = normPlayer.split(RegExp(r'[\s\.\-]+')).where((t) => t.isNotEmpty).toList();
+
+      int score = 0;
+      
+      // 1. Flat quick match (e.g. "Jovo Lukić" == "Jovo Lukić")
+      final flatInput = normInput.replaceAll(RegExp(r'[^a-z]'), '');
+      final flatPlayer = normPlayer.replaceAll(RegExp(r'[^a-z]'), '');
+      if (flatInput == flatPlayer) return player;
+      
+      if (flatPlayer.contains(flatInput) || flatInput.contains(flatPlayer)) {
+        score += 30; // Base score for partial flat match
+      }
+
+      // 2. Token scoring strategy
+      Set<int> usedDbIndices = {};
+      for (final iToken in inputTokens) {
+        int bestTokenScore = 0;
+        int? bestMatchedIndex;
+
+        for (int j = 0; j < playerTokens.length; j++) {
+          if (usedDbIndices.contains(j)) continue;
+          final pToken = playerTokens[j];
+
+          if (iToken.length == 1) {
+            // Initial match (e.g. 'i' matches 'in')
+            if (pToken.startsWith(iToken)) {
+              if (10 > bestTokenScore) {
+                bestTokenScore = 10;
+                bestMatchedIndex = j;
+              }
+            }
+          } else {
+            // Word match
+            if (pToken == iToken) {
+              bestTokenScore = 100;
+              bestMatchedIndex = j;
+              break; // Max score, stop searching for this token
+            } else if (pToken.contains(iToken) || iToken.contains(pToken)) {
+              if (50 > bestTokenScore) {
+                bestTokenScore = 50;
+                bestMatchedIndex = j;
+              }
+            }
+          }
+        }
+        score += bestTokenScore;
+        if (bestMatchedIndex != null) usedDbIndices.add(bestMatchedIndex);
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestPlayer = player;
+      }
+    }
+
+    // Require a minimum confidence score to avoid absurd false positives
+    // 10 = one initial (e.g. "M. Silva" vs "Martinez"), 50 = partial word, 100 = exact word.
+    if (bestScore >= 10) {
+      return bestPlayer;
     }
     return null;
   }

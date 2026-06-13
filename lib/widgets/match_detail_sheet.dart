@@ -1,6 +1,8 @@
-import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
+import 'dart:math';
+import '../services/odds_service.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../models/match.dart';
@@ -12,22 +14,29 @@ import '../services/audio_service.dart';
 import 'team_flag.dart';
 import 'team_profile_dialog.dart';
 import '../services/insights_service.dart';
+import '../services/player_database_service.dart';
 
 class MatchDetailSheet extends StatefulWidget {
   final WorldCupMatch match;
+  final List<WorldCupMatch> allMatches;
   final String lang;
   final String? activeAlert;
   final Function(String alertType) onSaveAlert;
   final MatchPrediction? prediction;
-  final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner)? onPredictionChanged;
+  final bool canUseBooster;
+  final VoidCallback? onSetBooster;
+  final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner, Map<String, int>? predictedScorers)? onPredictionChanged;
 
   const MatchDetailSheet({
     super.key,
     required this.match,
+    required this.allMatches,
     required this.lang,
     required this.activeAlert,
     required this.onSaveAlert,
     this.prediction,
+    this.canUseBooster = false,
+    this.onSetBooster,
     this.onPredictionChanged,
   });
 
@@ -50,11 +59,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   // 0 = t1 fact, 1 = t2 fact
   int _activeFactTeam = 0;
+  
+  Map<String, int> _localPredictedScorers = {};
 
   @override
   void initState() {
     super.initState();
     _initLocalScores();
+    _localPredictedScorers = Map.from(widget.prediction?.predictedScorers ?? {});
     _startCountdown();
 
     _pulseController = AnimationController(
@@ -330,27 +342,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       _localT2Score = widget.prediction!.t2Score;
       _localEtWinner = widget.prediction!.extraTimeWinner;
       _localPkWinner = widget.prediction!.penaltyWinner;
-      _isEditing = true;
+      _isEditing = false;
     } else {
       _localT1Score = 0;
       _localT2Score = 0;
       _localEtWinner = null;
       _localPkWinner = null;
-      _isEditing = false;
+      _isEditing = true;
     }
-  }
-
-  void _onPredictionChanged() {
-    if (_localT1Score != _localT2Score) {
-      _localEtWinner = null;
-      _localPkWinner = null;
-    }
-    widget.onPredictionChanged?.call(
-      _localT1Score!,
-      _localT2Score!,
-      _localEtWinner,
-      _localPkWinner,
-    );
   }
 
   void _startCountdown() {
@@ -400,41 +399,12 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     );
   }
 
-  Map<String, double> _calculateProbability(String t1, String t2) {
-    if (_isPlaceholder(t1) || _isPlaceholder(t2)) {
-      return {'home': 0.333, 'draw': 0.334, 'away': 0.333};
-    }
-
-    final int charSum1 = t1.codeUnits.fold(0, (sum, val) => sum + val);
-    final int charSum2 = t2.codeUnits.fold(0, (sum, val) => sum + val);
-
-    final double r1 = kTeamRatings[t1.replaceAll('g_', '').toLowerCase()] ?? (1300.0 + (charSum1 % 100));
-    final double r2 = kTeamRatings[t2.replaceAll('g_', '').toLowerCase()] ?? (1300.0 + (charSum2 % 100));
-
-    const double eloDivisor = 600.0;
-    final double diff = r1 - r2;
-    final double pHome = 1.0 / (1.0 + _pow10(-diff / eloDivisor));
-    final double pAway = 1.0 / (1.0 + _pow10(diff / eloDivisor));
-
-    final double pDraw = (0.28 - (diff.abs() / 3000.0)).clamp(0.16, 0.28);
-    final double scale = (1.0 - pDraw) / (pHome + pAway);
-
-    return {
-      'home': pHome * scale,
-      'draw': pDraw,
-      'away': pAway * scale,
-    };
-  }
-
-  double _pow10(double x) => math.pow(10.0, x).toDouble();
-
   Widget _buildCountdownWidget() {
     final now = DateTime.now();
-    if (widget.match.date.isBefore(now)) {
+    final difference = widget.match.date.difference(now);
+    if (difference.isNegative) {
       return const SizedBox.shrink();
     }
-
-    final difference = widget.match.date.difference(now);
     String label = '';
     bool isUrgent = false;
 
@@ -503,13 +473,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     final cleanT1 = _isPlaceholder(widget.match.t1) ? 'TBD' : widget.match.t1.replaceFirst('g_', '').toUpperCase();
     final cleanT2 = _isPlaceholder(widget.match.t2) ? 'TBD' : widget.match.t2.replaceFirst('g_', '').toUpperCase();
 
-    final probs = _calculateProbability(widget.match.t1, widget.match.t2);
-    final pHome = (probs['home']! * 100).round();
-    final pDraw = (probs['draw']! * 100).round();
-    final pAway = 100 - pHome - pDraw;
-
-    final String titleLabel = _t('probabilityTitle');
-    final String tooltipMsg = _t('probabilityExplanation');
+    final matchOdds = WCOddsService.calculateMatchOdds(widget.match.t1, widget.match.t2, widget.allMatches);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -525,7 +489,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                titleLabel,
+                AppTranslations.get(widget.lang, 'matchOddsTitle').toUpperCase(),
                 style: const TextStyle(
                   color: AppColors.textDim,
                   fontWeight: FontWeight.bold,
@@ -535,58 +499,50 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               ),
               GestureDetector(
                 onTap: () => _showInfoDialog(
-                    AppTranslations.get(widget.lang, 'aboutProbabilities'),
-                    tooltipMsg
+                  AppTranslations.get(widget.lang, 'matchOddsTitle'),
+                  AppTranslations.get(widget.lang, 'matchOddsExpl'),
                 ),
                 child: const Icon(Icons.info_outline_rounded, color: AppColors.accent, size: 16),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              height: 20,
-              child: Row(
-                children: [
-                  Expanded(flex: pHome, child: Container(color: AppColors.accent)),
-                  Expanded(flex: pDraw, child: Container(color: AppColors.borderStrong)),
-                  Expanded(flex: pAway, child: Container(color: AppColors.info)),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '$cleanT1 $pHome%',
-                style: const TextStyle(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-              Text(
-                '${AppTranslations.get(widget.lang, 'drawLabel')} $pDraw%',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-              Text(
-                '$cleanT2 $pAway%',
-                style: const TextStyle(
-                  color: AppColors.info,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
+              _buildOddBox(cleanT1, matchOdds['1']!, AppColors.accent),
+              const SizedBox(width: 12),
+              _buildOddBox(AppTranslations.get(widget.lang, 'drawLabel').toUpperCase(), matchOdds['X']!, AppColors.textMuted),
+              const SizedBox(width: 12),
+              _buildOddBox(cleanT2, matchOdds['2']!, AppColors.info),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOddBox(String label, double value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border, width: 1),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 10, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value.toStringAsFixed(2),
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -686,7 +642,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             setState(() {
               _isEditing = true;
             });
-            _onPredictionChanged();
           },
         ),
       );
@@ -721,7 +676,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     _localT1Score = 0;
                     _localT2Score = 0;
                   });
-                  widget.onPredictionChanged?.call(0, 0, null, null);
+                  widget.onPredictionChanged?.call(0, 0, null, null, null);
                 },
                 child: const Icon(Icons.delete_sweep_outlined, color: AppColors.danger, size: 20),
               ),
@@ -733,7 +688,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             children: [
               _buildScoreAdjuster(_localT1Score!, (val) => setState(() {
                 _localT1Score = val;
-                _onPredictionChanged();
+                if (_localT1Score != _localT2Score) {
+                  _localEtWinner = null;
+                  _localPkWinner = null;
+                }
               }), true),
               const Text(
                 '-',
@@ -741,16 +699,371 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               ),
               _buildScoreAdjuster(_localT2Score!, (val) => setState(() {
                 _localT2Score = val;
-                _onPredictionChanged();
+                if (_localT1Score != _localT2Score) {
+                  _localEtWinner = null;
+                  _localPkWinner = null;
+                }
               }), false),
             ],
           ),
+          const SizedBox(height: 20),
+          _buildScorerPredictionSection(),
           if (widget.match.isKnockout && _localT1Score == _localT2Score) ...[
             const SizedBox(height: 20),
             _buildKnockoutPredictionControls(),
           ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saveLocalPrediction,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Text(
+                AppTranslations.get(widget.lang, widget.prediction != null ? 'updatePrediction' : 'predictButton').toUpperCase(),
+                style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0),
+              ),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  void _onPredictionChanged() {
+    if (_localT1Score != _localT2Score) {
+      _localEtWinner = null;
+      _localPkWinner = null;
+    }
+    if (widget.onPredictionChanged != null) {
+      widget.onPredictionChanged!(
+        _localT1Score ?? 0,
+        _localT2Score ?? 0,
+        _localEtWinner,
+        _localPkWinner,
+        _localPredictedScorers,
+      );
+    }
+  }
+
+  void _saveLocalPrediction() async {
+    HapticFeedback.mediumImpact();
+    if (widget.onPredictionChanged != null) {
+      widget.onPredictionChanged!(
+        _localT1Score ?? 0,
+        _localT2Score ?? 0,
+        _localEtWinner,
+        _localPkWinner,
+        _localPredictedScorers,
+      );
+    }
+
+    
+    if (widget.canUseBooster && widget.onSetBooster != null) {
+      final confirmed = await _showProactiveBoosterDialog();
+      if (confirmed) {
+        widget.onSetBooster!();
+      }
+    }
+
+    if (mounted) {
+      setState(() => _isEditing = false);
+    }
+  }
+
+  Future<bool> _showProactiveBoosterDialog() async {
+    bool result = false;
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
+        title: Row(
+          children: [
+            const Icon(Icons.rocket_launch, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Text(AppTranslations.get(widget.lang, 'boosterLabel'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          widget.lang == 'fr' 
+            ? "Vous n'avez pas encore utilisé votre Joker. Voulez-vous l'activer pour ce match ?\n\n⚠️ C'est à double tranchant : les points sont doublés en cas de réussite, mais vous perdez 10 points si le pronostic est faux !" 
+            : (widget.lang == 'es' 
+                ? "Aún no has usado tu comodín. ¿Quieres activarlo para este partido?\n\n⚠️ Es un arma de doble filo: ¡duplica tus puntos si aciertas, pero pierdes 10 puntos si fallas!" 
+                : "You haven't used your Booster yet. Do you want to activate it for this match?\n\n⚠️ It's a double-edged sword: points are doubled if correct, but you lose 10 points if the prediction is completely wrong!"),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              result = false;
+              Navigator.pop(ctx);
+            },
+            child: Text(AppTranslations.get(widget.lang, 'cancel').toUpperCase(), style: const TextStyle(color: AppColors.textDim)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              result = true;
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
+            child: Text(
+              widget.lang == 'fr' ? "Activer le Joker" : (widget.lang == 'es' ? "Activar Comodín" : "Activate Booster"), 
+              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+            ),
+          ),
+        ],
+      ),
+    );
+    return result;
+  }
+
+  Widget _buildScorerPredictionSection() {
+    final bool isLocked = PredictionService.isPredictionLocked(widget.match);
+    final t1En = AppTranslations.getTeam('en', widget.match.t1);
+    final t2En = AppTranslations.getTeam('en', widget.match.t2);
+    final squad = [
+      ...PlayerDatabaseService.getPlayersForTeam(t1En),
+      ...PlayerDatabaseService.getPlayersForTeam(t2En)
+    ]..sort();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              AppTranslations.get(widget.lang, 'scorerPrediction').toUpperCase(),
+              style: const TextStyle(
+                color: AppColors.textDim,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (isLocked)
+          Column(
+            children: _localPredictedScorers.entries.map((e) => _buildScorerResultBadge(e.key, e.value)).toList(),
+          )
+        else
+          Column(
+            children: [
+              ..._localPredictedScorers.entries.map((entry) => _buildScorerInputRow(entry.key, entry.value)),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => _showScorerPicker(squad),
+                icon: const Icon(Icons.add_circle_outline, size: 18),
+                label: Text(AppTranslations.get(widget.lang, 'selectScorer')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.accent,
+                  side: const BorderSide(color: AppColors.accent),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              if (!isLocked && !widget.match.isPlayed)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.lightbulb_outline, size: 14, color: AppColors.textMuted),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          AppTranslations.get(widget.lang, 'lineupTip'),
+                          style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontStyle: FontStyle.italic),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildScorerInputRow(String playerName, int goalCount) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(child: Text(playerName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          IconButton(
+            icon: const Icon(Icons.remove_circle_outline, color: AppColors.textDim),
+            onPressed: () => setState(() {
+              if (goalCount > 1) {
+                _localPredictedScorers[playerName] = goalCount - 1;
+              } else {
+                _localPredictedScorers.remove(playerName);
+              }
+              _onPredictionChanged();
+            }),
+          ),
+          Text('$goalCount', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: AppColors.accent),
+            onPressed: () => setState(() {
+              _localPredictedScorers[playerName] = goalCount + 1;
+              _onPredictionChanged();
+            }),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+            onPressed: () => setState(() {
+              _localPredictedScorers.remove(playerName);
+              _onPredictionChanged();
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScorerResultBadge(String playerName, int predictedCount) {
+    // Check how many goals this predicted player actually scored
+    final actualCount = widget.match.goals.where((g) => PredictionService.isSamePlayer(g.scorer, playerName)).length;
+    
+    final bool hasScored = actualCount > 0;
+    final color = hasScored ? AppColors.accent : AppColors.danger;
+    final icon = hasScored ? Icons.check_circle_rounded : Icons.cancel_rounded;
+    final text = hasScored ? '$actualCount goals (+ ${min(predictedCount, actualCount) * kScorerMatchBonusPoints} pts)' : AppTranslations.get(widget.lang, 'wrongScorer');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showScorerPicker(List<String> squad) {
+    final t1En = AppTranslations.getTeam('en', widget.match.t1);
+    final t2En = AppTranslations.getTeam('en', widget.match.t2);
+    final s1 = PlayerDatabaseService.getPlayersForTeam(t1En)..sort();
+    final s2 = PlayerDatabaseService.getPlayersForTeam(t2En)..sort();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        String searchQuery = '';
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: DefaultTabController(
+            length: 2,
+            child: StatefulBuilder(
+              builder: (context, setPickerState) {
+                final f1 = s1.where((p) => p.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+                final f2 = s2.where((p) => p.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: TextField(
+                        autofocus: false,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: AppTranslations.get(widget.lang, 'searchPlayer'),
+                          prefixIcon: const Icon(Icons.search, color: AppColors.textDim),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                        onChanged: (val) => setPickerState(() => searchQuery = val),
+                      ),
+                    ),
+                    TabBar(
+                      indicatorColor: AppColors.accent,
+                      labelColor: AppColors.accent,
+                      unselectedLabelColor: AppColors.textDim,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      tabs: [
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TeamFlagWidget.flag(widget.match.t1, width: 20, height: 14),
+                              const SizedBox(width: 8),
+                              Flexible(child: Text(AppTranslations.getTeam(widget.lang, widget.match.t1), overflow: TextOverflow.ellipsis)),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TeamFlagWidget.flag(widget.match.t2, width: 20, height: 14),
+                              const SizedBox(width: 8),
+                              Flexible(child: Text(AppTranslations.getTeam(widget.lang, widget.match.t2), overflow: TextOverflow.ellipsis)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _buildScorerList(f1, setPickerState),
+                          _buildScorerList(f2, setPickerState),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildScorerList(List<String> players, StateSetter setPickerState) {
+    if (players.isEmpty) {
+      return const Center(child: Text('Aucun joueur trouvé', style: TextStyle(color: AppColors.textDim)));
+    }
+    return ListView.builder(
+      itemCount: players.length,
+      itemBuilder: (context, index) {
+        final p = players[index];
+        final isSelected = _localPredictedScorers.containsKey(p);
+        return ListTile(
+          title: Text(p, style: TextStyle(color: isSelected ? AppColors.accent : Colors.white)),
+          trailing: isSelected ? const Icon(Icons.check, color: AppColors.accent) : null,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            setState(() => _localPredictedScorers[p] = 1);
+            Navigator.pop(context);
+            _onPredictionChanged();
+          },
+
+        );
+      },
     );
   }
 
@@ -760,6 +1073,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         IconButton(
           onPressed: score > 0
               ? () {
+            HapticFeedback.selectionClick();
             onChanged(score - 1);
           }
               : null,
@@ -774,6 +1088,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         IconButton(
           onPressed: score < 9
               ? () {
+            HapticFeedback.selectionClick();
             onChanged(score + 1);
           }
               : null,
@@ -816,7 +1131,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                   setState(() {
                     _localPkWinner = val ? (_localEtWinner == widget.match.t1) : null;
                   });
-                  _onPredictionChanged();
                 },
               ),
             ],
@@ -835,7 +1149,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             _localEtWinner = isSelected ? null : teamCode;
             if (_localEtWinner == null) _localPkWinner = null;
           });
-          _onPredictionChanged();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1029,7 +1342,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   Widget _buildTeamDetailSection(String teamCode, String emblemName) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => WCTeamProfileDialog.show(context, teamCode, widget.lang),
+      onTap: () => WCTeamProfileDialog.show(context, teamCode, widget.lang, widget.allMatches),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Stack(

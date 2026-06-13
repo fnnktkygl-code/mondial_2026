@@ -135,7 +135,6 @@ class UserProfileDialog extends StatefulWidget {
 class _UserProfileDialogState extends State<UserProfileDialog> {
   late TextEditingController _nameController;
   late TextEditingController _scorerController;
-  late TextEditingController _assisterController;
   String? _supportedTeam;
   String? _championCode;
   String _avatar = '';
@@ -144,14 +143,12 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   bool _trophiesExpanded = false;
 
   final FocusNode _scorerFocusNode = FocusNode();
-  final FocusNode _assisterFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.userPreds.username);
     _scorerController = TextEditingController(text: widget.userPreds.goldenBootPlayer);
-    _assisterController = TextEditingController(text: widget.userPreds.topAssisterPlayer);
     _supportedTeam = widget.userPreds.supportedTeam;
     _championCode = widget.userPreds.championCode;
     _avatar = widget.userPreds.avatar;
@@ -162,9 +159,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   void dispose() {
     _nameController.dispose();
     _scorerController.dispose();
-    _assisterController.dispose();
     _scorerFocusNode.dispose();
-    _assisterFocusNode.dispose();
     super.dispose();
   }
 
@@ -242,14 +237,26 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     widget.userPreds.championCode = null;
     widget.userPreds.goldenBootPlayer = null;
     widget.userPreds.goldenBootWinner = null;
-    widget.userPreds.topAssisterPlayer = null;
     widget.userPreds.boosterMatchId = null;
     widget.userPreds.supportedTeam = null;
     await PredictionService.savePredictionData(widget.userPreds);
-    setState(() { _championCode = null; _supportedTeam = null; _scorerController.clear(); _assisterController.clear(); });
-    await WCFirebaseService.syncUserProfile(username: widget.userPreds.username, supportedTeam: null, points: 0, streak: 0, guruCount: 0, avatar: widget.userPreds.avatar, isHidden: _isHidden);
+    setState(() {
+      _championCode = null;
+      _supportedTeam = null;
+      _scorerController.clear();
+    });
+    await WCFirebaseService.syncUserProfile(
+        username: widget.userPreds.username,
+        supportedTeam: null,
+        points: 0,
+        streak: 0,
+        guruCount: 0,
+        avatar: widget.userPreds.avatar,
+        isHidden: _isHidden);
     if (!mounted) return;
-    widget.onSupportedTeamChanged(null); widget.onSaved(); Navigator.of(context).pop();
+    widget.onSupportedTeamChanged(null);
+    widget.onSaved();
+    Navigator.of(context).pop();
   }
 
   Future<void> _deleteProfile() async {
@@ -257,39 +264,54 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       title: AppTranslations.get(widget.lang, 'deleteProfile'),
       message: AppTranslations.get(widget.lang, 'deleteProfileConfirm'),
       confirmLabel: AppTranslations.get(widget.lang, 'delete'),
-      confirmColor: AppColors.danger, confirmTextColor: Colors.white,
+      confirmColor: AppColors.danger,
+      confirmTextColor: Colors.white,
     );
     if (!confirmed) return;
     widget.userPreds.matchPredictions.clear();
     widget.userPreds.championCode = null;
     widget.userPreds.goldenBootPlayer = null;
     widget.userPreds.goldenBootWinner = null;
-    widget.userPreds.topAssisterPlayer = null;
     widget.userPreds.boosterMatchId = null;
     widget.userPreds.username = '';
     widget.userPreds.avatar = '';
     widget.userPreds.supportedTeam = null;
     await PredictionService.savePredictionData(widget.userPreds);
-    setState(() { _championCode = null; _supportedTeam = null; _nameController.clear(); _scorerController.clear(); _assisterController.clear(); });
+    setState(() {
+      _championCode = null;
+      _supportedTeam = null;
+      _nameController.clear();
+      _scorerController.clear();
+    });
     await WCFirebaseService.deleteUserProfile();
     if (!mounted) return;
-    widget.onSupportedTeamChanged(null); widget.onSaved(); Navigator.of(context).pop();
+    widget.onSupportedTeamChanged(null);
+    widget.onSaved();
+    Navigator.of(context).pop();
   }
 
   Future<void> _saveProfile() async {
     FocusScope.of(context).unfocus();
     final name = _nameController.text.trim();
-    if (name.isEmpty) { widget.showSnackBar(AppTranslations.get(widget.lang, 'nicknameEmpty')); return; }
+    if (name.isEmpty) {
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'nicknameEmpty'));
+      return;
+    }
     final scorerInput = _scorerController.text.trim();
-    final canonicalScorer = PlayerDatabaseService.findCanonicalName(scorerInput);
-    final bool isNewScorer = widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
-    final assisterInput = _assisterController.text.trim();
-    final canonicalAssister = PlayerDatabaseService.findCanonicalName(assisterInput);
-    final bool isNewAssister = widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty;
-    if (isNewScorer && canonicalScorer == null) { widget.showSnackBar(AppTranslations.get(widget.lang, 'scorerNotFound')); return; }
-    if (isNewAssister && canonicalAssister == null) { widget.showSnackBar(AppTranslations.get(widget.lang, 'assisterNotFound')); return; }
-    if (isNewScorer || isNewAssister) {
-      final confirmed = await _showConfirmDialog(title: AppTranslations.get(widget.lang, 'confirmPredictions'), message: AppTranslations.get(widget.lang, 'confirmPredictionsWarning'), confirmLabel: AppTranslations.get(widget.lang, 'confirm'));
+    final canonicalScorer =
+        PlayerDatabaseService.findCanonicalName(scorerInput);
+    final bool isNewScorer =
+        widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
+    if (isNewScorer && canonicalScorer == null) {
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'scorerNotFound'));
+      return;
+    }
+    if (isNewScorer) {
+      final confirmed = await _showConfirmDialog(
+          title: AppTranslations.get(widget.lang, 'confirmPredictions'),
+          message: AppTranslations.get(
+              widget.lang, 'confirmPredictionsWarning'),
+          confirmLabel: AppTranslations.get(widget.lang, 'confirm'));
       if (!confirmed) return;
     }
     setState(() => _isSaving = true);
@@ -297,30 +319,59 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       widget.userPreds.username = name;
       widget.userPreds.avatar = _avatar;
       widget.userPreds.supportedTeam = _supportedTeam;
-      if (widget.userPreds.championCode == null && _championCode != null) { widget.userPreds.championCode = _championCode; widget.userPreds.championPredictedAt = DateTime.now(); }
-      if (widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty) { widget.userPreds.goldenBootPlayer = canonicalScorer; widget.userPreds.goldenBootPredictedAt = DateTime.now(); }
-      if (widget.userPreds.topAssisterPlayer == null && assisterInput.isNotEmpty) { widget.userPreds.topAssisterPlayer = canonicalAssister; widget.userPreds.topAssisterPredictedAt = DateTime.now(); }
+      if (widget.userPreds.championCode == null && _championCode != null) {
+        widget.userPreds.championCode = _championCode;
+        widget.userPreds.championPredictedAt = DateTime.now();
+      }
+      if (widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty) {
+        widget.userPreds.goldenBootPlayer = canonicalScorer;
+        widget.userPreds.goldenBootPredictedAt = DateTime.now();
+      }
       await PredictionService.savePredictionData(widget.userPreds);
-      final totalPoints = PredictionService.calculateTotalPoints(widget.userPreds, widget.matches);
-      final streak = PredictionService.calculateActiveStreak(widget.userPreds, widget.matches);
-      final guruCount = PredictionService.calculateExactGuessesCount(widget.userPreds, widget.matches);
-      await WCFirebaseService.syncUserProfile(username: name, supportedTeam: _supportedTeam, points: totalPoints, streak: streak, guruCount: guruCount, avatar: _avatar, isHidden: _isHidden);
+      final totalPoints = PredictionService.calculateTotalPoints(
+          widget.userPreds, widget.matches);
+      final streak = PredictionService.calculateActiveStreak(
+          widget.userPreds, widget.matches);
+      final guruCount = PredictionService.calculateExactGuessesCount(
+          widget.userPreds, widget.matches);
+      await WCFirebaseService.syncUserProfile(
+          username: name,
+          supportedTeam: _supportedTeam,
+          points: totalPoints,
+          streak: streak,
+          guruCount: guruCount,
+          avatar: _avatar,
+          isHidden: _isHidden);
       if (!mounted) return;
-      widget.onSupportedTeamChanged(_supportedTeam); widget.onSaved(); widget.showSnackBar(AppTranslations.get(widget.lang, 'saveSuccess')); Navigator.of(context).pop();
-    } catch (e) { widget.showSnackBar('Error saving profile: $e'); } finally { if (mounted) setState(() => _isSaving = false); }
+      widget.onSupportedTeamChanged(_supportedTeam);
+      widget.onSaved();
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'saveSuccess'));
+      Navigator.of(context).pop();
+    } catch (e) {
+      widget.showSnackBar('Error saving profile: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final totalPoints = PredictionService.calculateTotalPoints(widget.userPreds, widget.matches);
+    final totalPoints = PredictionService.calculateTotalPoints(
+        widget.userPreds, widget.matches);
     final xpInfo = PredictionService.getXpDetails(totalPoints, widget.lang);
-    final potC = PredictionService.getPotentialChampionPoints(now, widget.matches);
-    final potS = PredictionService.getPotentialGoldenBootPoints(now, widget.matches);
-    final potA = PredictionService.getPotentialTopAssisterPoints(now, widget.matches);
-    final lockC = widget.userPreds.championCode != null ? PredictionService.getPotentialChampionPoints(widget.userPreds.championPredictedAt, widget.matches) : null;
-    final lockS = widget.userPreds.goldenBootPlayer != null ? PredictionService.getPotentialGoldenBootPoints(widget.userPreds.goldenBootPredictedAt, widget.matches) : null;
-    final lockA = widget.userPreds.topAssisterPlayer != null ? PredictionService.getPotentialTopAssisterPoints(widget.userPreds.topAssisterPredictedAt, widget.matches) : null;
+    final potC =
+        PredictionService.getPotentialChampionPoints(now, widget.matches);
+    final potS =
+        PredictionService.getPotentialGoldenBootPoints(now, widget.matches);
+    final lockC = widget.userPreds.championCode != null
+        ? PredictionService.getPotentialChampionPoints(
+            widget.userPreds.championPredictedAt, widget.matches)
+        : null;
+    final lockS = widget.userPreds.goldenBootPlayer != null
+        ? PredictionService.getPotentialGoldenBootPoints(
+            widget.userPreds.goldenBootPredictedAt, widget.matches)
+        : null;
 
     final mediaQuery = MediaQuery.of(context);
     final isDesktop = mediaQuery.size.width > 900;
@@ -328,11 +379,25 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 16, vertical: 24),
+      insetPadding:
+          EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 16, vertical: 24),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: dialogWidth, maxHeight: mediaQuery.size.height - mediaQuery.viewInsets.bottom - 48),
+        constraints: BoxConstraints(
+            maxWidth: dialogWidth,
+            maxHeight: mediaQuery.size.height -
+                mediaQuery.viewInsets.bottom -
+                48),
         child: Container(
-          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(kDialogRadius), border: Border.all(color: AppColors.border, width: 1.5), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 24, offset: const Offset(0, 10))]),
+          decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(kDialogRadius),
+              border: Border.all(color: AppColors.border, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10))
+              ]),
           clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -340,27 +405,61 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
-                decoration: const BoxDecoration(color: AppColors.cardDark, border: Border(bottom: BorderSide(color: AppColors.border, width: 1))),
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(AppTranslations.get(widget.lang, 'profileTitle'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  _CloseButton(onTap: () => Navigator.of(context).pop(), tooltip: AppTranslations.get(widget.lang, 'close')),
-                ]),
+                decoration: const BoxDecoration(
+                    color: AppColors.cardDark,
+                    border: Border(
+                        bottom: BorderSide(color: AppColors.border, width: 1))),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppTranslations.get(widget.lang, 'profileTitle'),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold)),
+                      _CloseButton(
+                          onTap: () => Navigator.of(context).pop(),
+                          tooltip:
+                              AppTranslations.get(widget.lang, 'close')),
+                    ]),
               ),
               Flexible(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(24, 20, 24, 24 + mediaQuery.padding.bottom),
+                  padding: EdgeInsets.fromLTRB(
+                      24, 20, 24, 24 + mediaQuery.padding.bottom),
                   child: isDesktop
-                      ? _buildDesktopLayout(xpInfo, potC, potS, potA, lockC, lockS, lockA)
-                      : _buildMobileLayout(xpInfo, potC, potS, potA, lockC, lockS, lockA),
+                      ? _buildDesktopLayout(xpInfo, potC, potS, lockC, lockS)
+                      : _buildMobileLayout(xpInfo, potC, potS, lockC, lockS),
                 ),
               ),
               Container(
-                padding: EdgeInsets.fromLTRB(24, 14, 24, 14 + mediaQuery.padding.bottom),
-                decoration: const BoxDecoration(color: AppColors.cardDark, border: Border(top: BorderSide(color: AppColors.border, width: 1))),
+                padding: EdgeInsets.fromLTRB(
+                    24, 14, 24, 14 + mediaQuery.padding.bottom),
+                decoration: const BoxDecoration(
+                    color: AppColors.cardDark,
+                    border: Border(
+                        top: BorderSide(color: AppColors.border, width: 1))),
                 child: ElevatedButton(
                   onPressed: _isSaving ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.5), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)), elevation: 0),
-                  child: _isSaving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.0)) : Text(AppTranslations.get(widget.lang, 'save'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: Colors.black,
+                      disabledBackgroundColor:
+                          AppColors.accent.withValues(alpha: 0.5),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(kButtonRadius)),
+                      elevation: 0),
+                  child: _isSaving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.black, strokeWidth: 2.0))
+                      : Text(AppTranslations.get(widget.lang, 'save'),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
               ),
             ],
@@ -370,7 +469,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     );
   }
 
-  Widget _buildMobileLayout(Map<String, dynamic> xpInfo, int potC, int potS, int potA, int? lockC, int? lockS, int? lockA) {
+  Widget _buildMobileLayout(Map<String, dynamic> xpInfo, int potC, int potS, int? lockC, int? lockS) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -382,8 +481,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         _buildWarningBanner(), _buildNameInput(), const SizedBox(height: 20),
         _buildFavoriteTeam(), const SizedBox(height: 20),
         _buildWinnerPred(potC, lockC), const SizedBox(height: 20),
-        _buildScorerPred(potS, lockS), const SizedBox(height: 20),
-        _buildAssisterPred(potA, lockA), const SizedBox(height: 24),
+        _buildScorerPred(potS, lockS), const SizedBox(height: 24),
         const Divider(color: AppColors.border, height: 1), const SizedBox(height: 16),
         _buildVisibilitySwitch(), const SizedBox(height: 12),
         _buildActionButtons(),
@@ -391,7 +489,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     );
   }
 
-  Widget _buildDesktopLayout(Map<String, dynamic> xpInfo, int potC, int potS, int potA, int? lockC, int? lockS, int? lockA) {
+  Widget _buildDesktopLayout(Map<String, dynamic> xpInfo, int potC, int potS, int? lockC, int? lockS) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -407,8 +505,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         _buildLabel(AppTranslations.get(widget.lang, 'tournamentPredictions')), const SizedBox(height: 24),
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(child: _buildWinnerPred(potC, lockC)), const SizedBox(width: 24),
-          Expanded(child: _buildScorerPred(potS, lockS)), const SizedBox(width: 24),
-          Expanded(child: _buildAssisterPred(potA, lockA)),
+          Expanded(child: _buildScorerPred(potS, lockS)),
         ]),
         const SizedBox(height: 24), const Divider(color: AppColors.border, height: 1), const SizedBox(height: 16),
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [Expanded(child: _buildVisibilitySwitch()), const SizedBox(width: 40), _buildActionButtons()]),
@@ -558,20 +655,6 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       isLocked
           ? _buildLockedPlayerRow(widget.userPreds.goldenBootPlayer!, lockS!, isCorrect)
           : _buildPlayerAutocomplete(_scorerController, _scorerFocusNode, AppTranslations.get(widget.lang, 'searchScorer')),
-    ]);
-  }
-
-  Widget _buildAssisterPred(int potA, int? lockA) {
-    final isLocked = widget.userPreds.topAssisterPlayer != null;
-    bool? isCorrect;
-    if (isLocked) {
-      isCorrect = PredictionService.isAssisterPredictionCorrect(widget.userPreds.topAssisterPlayer, widget.matches);
-    }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _buildLabel(AppTranslations.get(widget.lang, 'topAssister')), const SizedBox(height: 8),
-      isLocked
-          ? _buildLockedPlayerRow(widget.userPreds.topAssisterPlayer!, lockA!, isCorrect)
-          : _buildPlayerAutocomplete(_assisterController, _assisterFocusNode, AppTranslations.get(widget.lang, 'searchAssister')),
     ]);
   }
 

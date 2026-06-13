@@ -14,7 +14,7 @@ class WCTooltip extends StatelessWidget {
     this.message,
     this.richMessage,
     required this.child,
-    this.triggerMode = TooltipTriggerMode.longPress,
+    this.triggerMode = TooltipTriggerMode.tap,
     this.preferBelow = false,
     this.title,
   });

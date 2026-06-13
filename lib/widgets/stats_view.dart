@@ -385,10 +385,7 @@ class _LeaderboardViewState extends State<_LeaderboardView> {
                           if (isUserPick) ...[
                             const SizedBox(height: 2),
                             Builder(builder: (context) {
-                              final bool isScorerView = widget.suffixIcon == '⚽';
-                              final bool isCorrect = isScorerView
-                                  ? PredictionService.isScorerPredictionCorrect(player.name, widget.matches)
-                                  : PredictionService.isAssisterPredictionCorrect(player.name, widget.matches);
+                              final bool isCorrect = PredictionService.isScorerPredictionCorrect(player.name, widget.matches);
                               return Text(
                                 isCorrect ? '✅' : '🎯',
                                 style: const TextStyle(fontSize: 12),
@@ -542,11 +539,7 @@ class _LeaderboardViewState extends State<_LeaderboardView> {
                         if (isUserChoice) ...[
                           const SizedBox(width: 6),
                           Builder(builder: (context) {
-                            // Check if it's scorer or assister view
-                            final bool isScorerView = widget.suffixIcon == '⚽';
-                            final bool isCorrect = isScorerView
-                                ? PredictionService.isScorerPredictionCorrect(item.name, widget.matches)
-                                : PredictionService.isAssisterPredictionCorrect(item.name, widget.matches);
+                            final bool isCorrect = PredictionService.isScorerPredictionCorrect(item.name, widget.matches);
 
                             return Container(
                               padding: const EdgeInsets.symmetric(
@@ -731,37 +724,6 @@ class ScorersLeaderboardWidget extends StatelessWidget {
   }
 }
 
-class AssistsLeaderboardWidget extends StatelessWidget {
-  final List<WorldCupMatch> matches;
-  final String lang;
-  final PredictionData? userPreds;
-
-  const AssistsLeaderboardWidget({
-    super.key,
-    required this.matches,
-    required this.lang,
-    this.userPreds,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final list = TournamentStats.compute(matches).assists;
-    final isFinished =
-    matches.any((m) => m.id == 'm80' && m.isPlayed);
-    return _LeaderboardView(
-      fullList: list,
-      matches: matches,
-      lang: lang,
-      suffixIcon: '👟',
-      emptyIcon: '👟',
-      emptyTitleKey: 'leaderboardUnavailable',
-      emptySubtitleKey: 'statsUnlockAssists',
-      userPickName: userPreds?.topAssisterPlayer,
-      isFinished: isFinished,
-    );
-  }
-}
-
 // ─── Team stats widget ────────────────────────────────────────────────────────
 
 class TeamStatsWidget extends StatefulWidget {
@@ -786,7 +748,19 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
   @override
   void initState() {
     super.initState();
-    _selectedTeam = 'fr';
+    _initializeDefaultTeam();
+  }
+
+  void _initializeDefaultTeam() {
+    // Try to find the first team that has played a match
+    String? firstPlayedTeam;
+    for (final m in widget.matches) {
+      if (m.isPlayed) {
+        firstPlayedTeam = m.t1.toLowerCase();
+        break;
+      }
+    }
+    _selectedTeam = firstPlayedTeam ?? 'fr';
   }
 
   List<String> _getSortedQualifiedTeams() {
@@ -883,11 +857,6 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
       }
     }
 
-    final stats = TournamentStats.compute(widget.matches);
-    final teamScorers =
-    stats.scorers.where((p) => p.teamCode == currentTeam).toList();
-    final teamAssists =
-    stats.assists.where((p) => p.teamCode == currentTeam).toList();
     final teamEmblemName =
     AppTranslations.getTeamWithEmblem(widget.lang, currentTeam);
     final teamRealGroup = _getTeamGroup(currentTeam);
@@ -1051,41 +1020,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
           ),
           const SizedBox(height: 24),
 
-          // 4. Squad leaders
-          Text(
-            AppTranslations.get(widget.lang, 'squadStats'),
-            style: const TextStyle(
-                color: AppColors.accent,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                letterSpacing: 0.5),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Scorers mini-list
-              Expanded(
-                child: _buildSquadLeaderCard(
-                  title: AppTranslations.get(widget.lang, 'scorers'),
-                  players: teamScorers,
-                  suffix: '⚽',
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Assists mini-list
-              Expanded(
-                child: _buildSquadLeaderCard(
-                  title: AppTranslations.get(widget.lang, 'assists'),
-                  players: teamAssists,
-                  suffix: '👟',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // 5. Team matches
+          // 4. Team matches
           Text(
             AppTranslations.get(widget.lang, 'allMatches'),
             style: const TextStyle(
@@ -1103,69 +1038,6 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             itemBuilder: (c, i) =>
                 _buildCompactMatchCard(context, teamMatches[i]),
           ),
-        ],
-      ),
-    );
-  }
-
-  /// Scorers / assists mini-list card inside the TeamStats view.
-  /// Uses [_resolvePlayerName] so names are always resolved correctly.
-  Widget _buildSquadLeaderCard({
-    required String title,
-    required List<PlayerStat> players,
-    required String suffix,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12)),
-          const Divider(color: AppColors.border, height: 16),
-          if (players.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('-',
-                  style:
-                  TextStyle(color: AppColors.textDim, fontSize: 12)),
-            )
-          else
-            ...players.map((p) {
-              final displayName = _resolvePlayerName(p, widget.lang);
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        displayName,
-                        style: const TextStyle(
-                            color: AppColors.textSecondary, fontSize: 11),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      '${p.value} $suffix',
-                      style: const TextStyle(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11),
-                    ),
-                  ],
-                ),
-              );
-            }),
         ],
       ),
     );

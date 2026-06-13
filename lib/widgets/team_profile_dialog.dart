@@ -8,19 +8,22 @@ import '../services/audio_service.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import 'team_flag.dart';
+import '../models/match.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WCTeamProfileDialog extends StatefulWidget {
   final String teamCode;
   final String lang;
+  final List<WorldCupMatch> matches;
 
   const WCTeamProfileDialog({
     super.key,
     required this.teamCode,
     required this.lang,
+    required this.matches,
   });
 
-  static void show(BuildContext context, String teamCode, String lang) {
+  static void show(BuildContext context, String teamCode, String lang, List<WorldCupMatch> matches) {
     final cleanCode = teamCode.toLowerCase().replaceAll('g_', '');
     final isPlaceholder = cleanCode == 'tbd' ||
         cleanCode.contains(RegExp(r'\d')) ||
@@ -42,6 +45,7 @@ class WCTeamProfileDialog extends StatefulWidget {
       builder: (context) => WCTeamProfileDialog(
         teamCode: teamCode,
         lang: lang,
+        matches: matches,
       ),
     );
   }
@@ -814,6 +818,12 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     } else if (lower.contains('arabe') || lower.contains('arab cup') || lower.contains('árabe')) {
       assetPath = 'assets/badges/arab_cup.png';
       fallbackAssetPath = 'assets/logos/fifa_logo_light.png';
+    } else if (lower.contains('finalissima') || lower.contains('artemio-franchi') || lower.contains('artemio franchi')) {
+      assetPath = 'assets/badges/finalissima.png';
+      fallbackAssetPath = 'assets/logos/fifa_logo_light.png';
+    } else if (lower.contains('panaméricain') || lower.contains('panamerican') || lower.contains('panamericano')) {
+      assetPath = 'assets/badges/panamerican.png';
+      fallbackAssetPath = 'assets/badges/conmebol.png';
     } else if (lower.contains('olympique') || lower.contains('olympic') || lower.contains('olímpica')) {
       assetPath = 'assets/badges/olympics.png';
       fallbackIcon = Icons.stars_rounded;
@@ -829,36 +839,48 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
     IconData fallbackIcon,
     Color fallbackColor,
   ) {
-    if (primaryPath == null) {
-      return _buildSecondaryBadge(secondaryPath, fallbackIcon, fallbackColor);
-    }
-
-    return Image.asset(
-      primaryPath,
-      width: 36,
-      height: 36,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        return _buildSecondaryBadge(secondaryPath, fallbackIcon, fallbackColor);
-      },
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: primaryPath == null
+            ? Center(child: _buildSecondaryBadgeContent(secondaryPath, fallbackIcon, fallbackColor))
+            : Image.asset(
+                primaryPath,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(child: _buildSecondaryBadgeContent(secondaryPath, fallbackIcon, fallbackColor));
+                },
+              ),
+      ),
     );
   }
 
-  Widget _buildSecondaryBadge(
+  Widget _buildSecondaryBadgeContent(
     String? path,
     IconData fallbackIcon,
     Color fallbackColor,
   ) {
     if (path == null) {
-      return Icon(fallbackIcon, color: fallbackColor, size: 32);
+      return Icon(fallbackIcon, color: fallbackColor, size: 28);
     }
     return Image.asset(
       path,
-      width: 36,
-      height: 36,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
-        return Icon(fallbackIcon, color: fallbackColor, size: 32);
+        return Icon(fallbackIcon, color: fallbackColor, size: 28);
       },
     );
   }

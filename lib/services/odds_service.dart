@@ -287,4 +287,117 @@ class WCOddsService {
 
     return normalizedOdds;
   }
+
+  /// Updates base Elo ratings based on tournament match results.
+  /// A win against a higher-rated team yields more points than against a lower-rated team.
+  static Map<String, double> getDynamicRatings(List<WorldCupMatch> resolvedMatches) {
+    final Map<String, double> currentRatings = Map.from(kTeamRatings);
+
+    // K-factor determines how much ratings change per match.
+    // World Cup matches have a very high K-factor (e.g., 50 or 60)
+    const double kFactor = 50.0;
+
+    // Filter only played matches, sorted by date to process chronologically
+    final playedMatches = resolvedMatches.where((m) => m.isPlayed && m.t1Score != null && m.t2Score != null).toList();
+    playedMatches.sort((a, b) => a.date.compareTo(b.date));
+
+    for (final m in playedMatches) {
+      final t1 = m.t1.toLowerCase().replaceAll('g_', '');
+      final t2 = m.t2.toLowerCase().replaceAll('g_', '');
+
+      if (!currentRatings.containsKey(t1) || !currentRatings.containsKey(t2)) continue;
+
+      final r1 = currentRatings[t1]!;
+      final r2 = currentRatings[t2]!;
+
+      // Expected scores (0 to 1)
+      final expected1 = 1.0 / (1.0 + pow(10, (r2 - r1) / 400.0));
+      final expected2 = 1.0 - expected1;
+
+      // Actual scores (1 for win, 0.5 for draw, 0 for loss)
+      double actual1 = 0.5;
+      double actual2 = 0.5;
+
+      if (m.t1Score! > m.t2Score!) {
+        actual1 = 1.0;
+        actual2 = 0.0;
+      } else if (m.t1Score! < m.t2Score!) {
+        actual1 = 0.0;
+        actual2 = 1.0;
+      } else {
+        // Draw in regulation
+        if (m.isKnockout) {
+          // Give a slight edge to the team that advanced via ET/PK
+          final advancer = m.etWinner?.toLowerCase() ?? m.pkWinner?.toLowerCase();
+          if (advancer == t1) {
+            actual1 = 0.75;
+            actual2 = 0.25;
+          } else if (advancer == t2) {
+            actual1 = 0.25;
+            actual2 = 0.75;
+          }
+        }
+      }
+
+      // Goal difference multiplier (Margin of Victory)
+      final margin = (m.t1Score! - m.t2Score!).abs();
+      double movMultiplier = 1.0;
+      if (margin == 2) {
+        movMultiplier = 1.5;
+      } else if (margin == 3) {
+        movMultiplier = 1.75;
+      } else if (margin > 3) {
+        movMultiplier = 1.75 + ((margin - 3) / 8.0);
+      }
+
+      // Update ratings
+      final newR1 = r1 + (kFactor * movMultiplier * (actual1 - expected1));
+      final newR2 = r2 + (kFactor * movMultiplier * (actual2 - expected2));
+
+      currentRatings[t1] = newR1;
+      currentRatings[t2] = newR2;
+    }
+
+    return currentRatings;
+  }
+
+  /// Calculates match-specific odds (1X2) based on dynamic team ratings.
+  static Map<String, double> calculateMatchOdds(String t1, String t2, [List<WorldCupMatch>? resolvedMatches]) {
+    final cleanT1 = t1.toLowerCase().replaceAll('g_', '');
+    final cleanT2 = t2.toLowerCase().replaceAll('g_', '');
+    
+    // Use dynamic ratings if provided, otherwise fallback to static
+    final ratings = resolvedMatches != null ? getDynamicRatings(resolvedMatches) : kTeamRatings;
+
+    final r1 = ratings[cleanT1] ?? 1500.0;
+    final r2 = ratings[cleanT2] ?? 1500.0;
+
+    // Basic Elo-based win probability formula
+    // We adjust the 400 constant to control the spread of odds
+    final double winProb1 = 1.0 / (1.0 + pow(10, (r2 - r1) / 400.0));
+    final double winProb2 = 1.0 - winProb1;
+
+    // Factor in a draw probability (roughly 25-30% in international football)
+    // Draw probability is higher when teams are closely matched
+    final double ratingDiff = (r1 - r2).abs();
+    final double drawProb = 0.28 * exp(-ratingDiff / 800.0);
+
+    // Adjust win probabilities to account for draw
+    final double adjWin1 = winProb1 * (1.0 - drawProb);
+    final double adjWin2 = winProb2 * (1.0 - drawProb);
+
+    // Convert probabilities to decimal odds (with a small margin/juice for realism)
+    const double margin = 0.05; // 5% juice
+    
+    double odd1 = 1.0 / (adjWin1 * (1.0 + margin));
+    double oddX = 1.0 / (drawProb * (1.0 + margin));
+    double odd2 = 1.0 / (adjWin2 * (1.0 + margin));
+
+    // Clamp to realistic range (1.01 to 50.0)
+    return {
+      '1': double.parse(odd1.clamp(1.01, 50.0).toStringAsFixed(2)),
+      'X': double.parse(oddX.clamp(1.01, 50.0).toStringAsFixed(2)),
+      '2': double.parse(odd2.clamp(1.01, 50.0).toStringAsFixed(2)),
+    };
+  }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -14,6 +15,7 @@ class MatchPrediction {
   final int t2Score;
   final String? extraTimeWinner;
   final bool? penaltyWinner;
+  final Map<String, int> predictedScorers;
 
   MatchPrediction({
     required this.matchId,
@@ -21,15 +23,30 @@ class MatchPrediction {
     required this.t2Score,
     this.extraTimeWinner,
     this.penaltyWinner,
-  });
+    Map<String, int>? predictedScorers,
+  }) : predictedScorers = predictedScorers ?? {};
 
   factory MatchPrediction.fromJson(Map<String, dynamic> json) {
+    Map<String, int> scorers = {};
+    
+    // Migration: Handle the old single string 'predictedScorer'
+    if (json.containsKey('predictedScorer') && json['predictedScorer'] != null) {
+      scorers[json['predictedScorer'] as String] = 1;
+    }
+    
+    // Handle the new map structure
+    if (json.containsKey('predictedScorers') && json['predictedScorers'] != null) {
+      final map = json['predictedScorers'] as Map<String, dynamic>;
+      map.forEach((k, v) => scorers[k] = v as int);
+    }
+
     return MatchPrediction(
       matchId: json['matchId'] as String,
       t1Score: json['t1Score'] as int,
       t2Score: json['t2Score'] as int,
       extraTimeWinner: json['extraTimeWinner'] as String?,
       penaltyWinner: json['penaltyWinner'] as bool?,
+      predictedScorers: scorers,
     );
   }
 
@@ -40,6 +57,7 @@ class MatchPrediction {
       't2Score': t2Score,
       if (extraTimeWinner != null) 'extraTimeWinner': extraTimeWinner,
       if (penaltyWinner != null) 'penaltyWinner': penaltyWinner,
+      if (predictedScorers.isNotEmpty) 'predictedScorers': predictedScorers,
     };
   }
 }
@@ -50,13 +68,10 @@ class PredictionData {
   String? championCode;
   String? goldenBootPlayer;
   String? goldenBootWinner;
-  String? topAssisterPlayer;
-  String? topAssisterWinner;
   String? supportedTeam;
   String? boosterMatchId;
   DateTime? championPredictedAt;
   DateTime? goldenBootPredictedAt;
-  DateTime? topAssisterPredictedAt;
   Map<String, MatchPrediction> matchPredictions;
 
   PredictionData({
@@ -65,15 +80,12 @@ class PredictionData {
     this.championCode,
     this.goldenBootPlayer,
     this.goldenBootWinner,
-    this.topAssisterPlayer,
-    this.topAssisterWinner,
     this.supportedTeam,
     this.boosterMatchId,
     this.championPredictedAt,
     this.goldenBootPredictedAt,
-    this.topAssisterPredictedAt,
-    Map<String, MatchPrediction>? matchPredictions,
-  }) : matchPredictions = matchPredictions ?? {};
+    Map<String, MatchPrediction>? preds,
+  }) : matchPredictions = preds ?? {};
 
   factory PredictionData.fromJson(Map<String, dynamic> json) {
     final Map<String, MatchPrediction> preds = {};
@@ -91,8 +103,6 @@ class PredictionData {
       championCode: json['championCode'] as String?,
       goldenBootPlayer: json['goldenBootPlayer'] as String?,
       goldenBootWinner: json['goldenBootWinner'] as String?,
-      topAssisterPlayer: json['topAssisterPlayer'] as String?,
-      topAssisterWinner: json['topAssisterWinner'] as String?,
       supportedTeam: json['supportedTeam'] as String?,
       boosterMatchId: json['boosterMatchId'] as String?,
       championPredictedAt: json['championPredictedAt'] != null
@@ -101,10 +111,7 @@ class PredictionData {
       goldenBootPredictedAt: json['goldenBootPredictedAt'] != null
           ? DateTime.tryParse(json['goldenBootPredictedAt'] as String)
           : null,
-      topAssisterPredictedAt: json['topAssisterPredictedAt'] != null
-          ? DateTime.tryParse(json['topAssisterPredictedAt'] as String)
-          : null,
-      matchPredictions: preds,
+      preds: preds,
     );
   }
 
@@ -120,16 +127,12 @@ class PredictionData {
       'championCode': championCode,
       'goldenBootPlayer': goldenBootPlayer,
       'goldenBootWinner': goldenBootWinner,
-      'topAssisterPlayer': topAssisterPlayer,
-      'topAssisterWinner': topAssisterWinner,
       'supportedTeam': supportedTeam,
       'boosterMatchId': boosterMatchId,
       if (championPredictedAt != null)
         'championPredictedAt': championPredictedAt!.toIso8601String(),
       if (goldenBootPredictedAt != null)
         'goldenBootPredictedAt': goldenBootPredictedAt!.toIso8601String(),
-      if (topAssisterPredictedAt != null)
-        'topAssisterPredictedAt': topAssisterPredictedAt!.toIso8601String(),
       'preds': predsJson,
     };
   }
@@ -222,6 +225,7 @@ class PredictionService {
                   matchId: newKey,
                   t1Score: pred.t1Score,
                   t2Score: pred.t2Score,
+                  predictedScorers: pred.predictedScorers,
                 );
                 migrated = true;
               }
@@ -297,6 +301,36 @@ class PredictionService {
       if (pred.penaltyWinner != null && predT1WinsPK == actualT1WinsPK) {
         score += kPenaltyShootoutBonusPoints;
       }
+    }
+
+    // 4. Multi-Scorer Match Bonus
+    if (pred.predictedScorers.isNotEmpty) {
+      // Create a map of actual goals per player
+      final actualGoalCounts = <String, int>{};
+      for (final goal in match.goals) {
+        // Just rely on exact strings for now, or use our fuzzy match if needed, but goals usually have consistent names per match
+        // A simple case-insensitive comparison works for counting within a single match
+        final key = goal.scorer.trim().toLowerCase();
+        actualGoalCounts[key] = (actualGoalCounts[key] ?? 0) + 1;
+      }
+
+      // Evaluate each predicted scorer
+      pred.predictedScorers.forEach((predictedName, predictedCount) {
+        // Find how many goals this predicted player actually scored
+        int actualCount = 0;
+        for (final entry in actualGoalCounts.entries) {
+          if (isSamePlayer(entry.key, predictedName)) {
+            actualCount = entry.value;
+            break;
+          }
+        }
+        
+        if (actualCount > 0) {
+          // Cap the rewarded goals to the predicted count (don't reward 3 goals if they only predicted 1)
+          final rewardedGoals = min(predictedCount, actualCount);
+          score += (rewardedGoals * kScorerMatchBonusPoints);
+        }
+      });
     }
 
     return score;
@@ -406,11 +440,6 @@ class PredictionService {
     return (kGoldenBootBonusPoints * getPenaltyMultiplier(predictedAt, starts)).round();
   }
 
-  static int getPotentialTopAssisterPoints(DateTime? predictedAt, List<WorldCupMatch> matches) {
-    final starts = getStageStartTimes(matches);
-    return (kTopAssisterBonusPoints * getPenaltyMultiplier(predictedAt, starts)).round();
-  }
-
   static String normalizePlayerName(String name) {
     String normalized = name.trim().toLowerCase();
     const accents = 'àáâãäåòóôõöøèéêëìíîïùúûüñç';
@@ -470,15 +499,6 @@ class PredictionService {
     return winners.any((w) => isSamePlayer(w, player));
   }
 
-  static bool isAssisterPredictionCorrect(String? player, List<WorldCupMatch> matches) {
-    if (player == null || player.isEmpty) return false;
-    final stats = TournamentStats.compute(matches);
-    if (stats.assists.isEmpty) return false;
-    final maxAssists = stats.assists.first.value;
-    final winners = stats.assists.where((a) => a.value == maxAssists).map((a) => a.name).toList();
-    return winners.any((w) => isSamePlayer(w, player));
-  }
-
   static int calculateTotalPoints(PredictionData userPreds, List<WorldCupMatch> matches) {
     int score = 0;
     for (final match in matches) {
@@ -486,7 +506,16 @@ class PredictionService {
         final pred = userPreds.matchPredictions[match.id];
         if (pred != null) {
           int matchPoints = evaluatePoints(match, pred);
-          if (userPreds.boosterMatchId == match.id) matchPoints *= 2;
+          
+          // Apply Booster Logic (Joker)
+          if (userPreds.boosterMatchId == match.id) {
+            if (matchPoints > 0) {
+              matchPoints *= 2; // Double points for a correct or partially correct prediction
+            } else {
+              matchPoints = kBoosterPenaltyPoints; // Double-edged sword: penalty for completely wrong prediction
+            }
+          }
+          
           score += matchPoints;
         }
       }
@@ -510,16 +539,6 @@ class PredictionService {
       if (topScorers.contains(userPreds.goldenBootPlayer!.toLowerCase().trim())) {
         final mult = getPenaltyMultiplier(userPreds.goldenBootPredictedAt, starts);
         score += (kGoldenBootBonusPoints * mult).round();
-      }
-    }
-
-    if (userPreds.topAssisterPlayer != null && userPreds.topAssisterPlayer!.isNotEmpty && stats.assists.isNotEmpty) {
-      final maxAssists = stats.assists.first.value;
-      final topAssisters = stats.assists.where((a) => a.value == maxAssists).map((a) => a.name.toLowerCase().trim()).toList();
-
-      if (topAssisters.contains(userPreds.topAssisterPlayer!.toLowerCase().trim())) {
-        final mult = getPenaltyMultiplier(userPreds.topAssisterPredictedAt, starts);
-        score += (kTopAssisterBonusPoints * mult).round();
       }
     }
 

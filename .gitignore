@@ -45,3 +45,9 @@ app.*.map.json
 /android/app/release
 web/*.apk
 web/*.zip
+
+# Node.js dependencies
+**/node_modules/
+
+# Local configuration
+local.properties
