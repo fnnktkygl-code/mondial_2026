@@ -84,6 +84,7 @@ class UserProfileDialog extends StatefulWidget {
   final Function(String msg) showSnackBar;
   final Function(String? teamCode) onSupportedTeamChanged;
   final Function() onSaved;
+  final bool isDismissible;
 
   const UserProfileDialog({
     super.key,
@@ -93,6 +94,7 @@ class UserProfileDialog extends StatefulWidget {
     required this.showSnackBar,
     required this.onSupportedTeamChanged,
     required this.onSaved,
+    this.isDismissible = true,
   });
 
   static void show(
@@ -297,6 +299,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       widget.showSnackBar(AppTranslations.get(widget.lang, 'nicknameEmpty'));
       return;
     }
+    if (_supportedTeam == null || _supportedTeam!.isEmpty) {
+      widget.showSnackBar(AppTranslations.get(widget.lang, 'supportedTeamEmpty'));
+      return;
+    }
     final scorerInput = _scorerController.text.trim();
     final canonicalScorer =
         PlayerDatabaseService.findCanonicalName(scorerInput);
@@ -377,52 +383,57 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final isDesktop = mediaQuery.size.width > 900;
     final dialogWidth = isDesktop ? 700.0 : 450.0;
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding:
-          EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxWidth: dialogWidth,
-            maxHeight: mediaQuery.size.height -
-                mediaQuery.viewInsets.bottom -
-                48),
-        child: Container(
-          decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(kDialogRadius),
-              border: Border.all(color: AppColors.border, width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10))
-              ]),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
-                decoration: const BoxDecoration(
-                    color: AppColors.cardDark,
-                    border: Border(
-                        bottom: BorderSide(color: AppColors.border, width: 1))),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppTranslations.get(widget.lang, 'profileTitle'),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      _CloseButton(
-                          onTap: () => Navigator.of(context).pop(),
-                          tooltip:
-                              AppTranslations.get(widget.lang, 'close')),
-                    ]),
-              ),
+    return PopScope(
+      canPop: widget.isDismissible,
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding:
+            EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              maxWidth: dialogWidth,
+              maxHeight: mediaQuery.size.height -
+                  mediaQuery.viewInsets.bottom -
+                  48),
+          child: Container(
+            decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(kDialogRadius),
+                border: Border.all(color: AppColors.border, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10))
+                ]),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
+                  decoration: const BoxDecoration(
+                      color: AppColors.cardDark,
+                      border: Border(
+                          bottom: BorderSide(color: AppColors.border, width: 1))),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(AppTranslations.get(widget.lang, 'profileTitle'),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        if (widget.isDismissible)
+                          _CloseButton(
+                              onTap: () => Navigator.of(context).pop(),
+                              tooltip:
+                                  AppTranslations.get(widget.lang, 'close'))
+                        else
+                          const SizedBox.shrink(),
+                      ]),
+                ),
               Flexible(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
@@ -466,8 +477,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMobileLayout(Map<String, dynamic> xpInfo, int potC, int potS, int? lockC, int? lockS) {
     return Column(

@@ -806,7 +806,46 @@ class PredictionService {
   }
 
   static Future<bool> joinCustomGroup(String inviteCode) async {
-    final parts = inviteCode.trim().split('_');
+    String cleanInput = inviteCode.trim();
+    if (cleanInput.isEmpty) return false;
+
+    // 1. If it's a URL, extract the query parameter 'group'
+    if (cleanInput.startsWith('http://') || cleanInput.startsWith('https://')) {
+      try {
+        final uri = Uri.parse(cleanInput);
+        final groupParam = uri.queryParameters['group'];
+        if (groupParam != null && groupParam.isNotEmpty) {
+          cleanInput = groupParam;
+        }
+      } catch (e) {
+        debugPrint("Error parsing group URL: $e");
+      }
+    }
+
+    // 2. Try to decode it as base64. If it's valid base64, decode it first.
+    String decoded = cleanInput;
+    try {
+      String normalized = cleanInput;
+      while (normalized.length % 4 != 0) {
+        normalized += '=';
+      }
+      final decodedBytes = base64Url.decode(normalized);
+      decoded = utf8.decode(decodedBytes);
+    } catch (_) {
+      try {
+        String normalized = cleanInput;
+        while (normalized.length % 4 != 0) {
+          normalized += '=';
+        }
+        final decodedBytes = base64.decode(normalized);
+        decoded = utf8.decode(decodedBytes);
+      } catch (_) {
+        decoded = cleanInput;
+      }
+    }
+
+    // 3. Split parts
+    final parts = decoded.trim().split('_');
     if (parts.length != 2) return false;
     final groupId = parts[0]; final token = parts[1];
     final uid = await WCFirebaseService.getOrCreateUserId();
@@ -819,6 +858,8 @@ class PredictionService {
         if (!members.contains(uid)) {
           await docRef.update({'members': FieldValue.arrayUnion([uid])});
           return true;
+        } else {
+          return true; // Already joined
         }
       }
     }

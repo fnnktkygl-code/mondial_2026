@@ -212,6 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isLoading = true;
   String _userTimezone = '';
   PredictionData? _userPreds;
+  String? _pendingGroupPayload;
   Key _challengeViewKey = UniqueKey();
   Map<String, double> _currentOdds = {};
 
@@ -321,9 +322,24 @@ class _MyHomePageState extends State<MyHomePage> {
       if (queryParams.containsKey('group')) {
         final base64Payload = queryParams['group']!;
         if (base64Payload.isNotEmpty) {
-          await PredictionService.joinCustomGroup(base64Payload);
-          if (!mounted) return;
-          setState(() => _activeTab = 'challenge');
+          if (userPreds.username.isEmpty || userPreds.supportedTeam == null || userPreds.supportedTeam!.isEmpty) {
+            _pendingGroupPayload = base64Payload;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _showProfileModal();
+                _showBeautifulSnackBar(AppTranslations.get(_lang, 'pleaseCompleteProfileToJoin'));
+              }
+            });
+          } else {
+            await PredictionService.joinCustomGroup(base64Payload);
+            if (!mounted) return;
+            setState(() {
+              _activeTab = 'challenge';
+              _challengeInitialSubTab = 'groups';
+              _challengeViewKey = UniqueKey();
+            });
+            _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
+          }
         }
       }
     } catch (e) {
@@ -408,14 +424,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _showProfileModal() {
     if (_userPreds == null) return;
+    final isDismissible = _pendingGroupPayload == null;
     showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: isDismissible,
       builder: (BuildContext context) {
         return UserProfileDialog(
           lang: _lang,
           matches: _resolvedMatches,
           userPreds: _userPreds!,
+          isDismissible: isDismissible,
           showSnackBar: (msg) => _showBeautifulSnackBar(msg),
           onSupportedTeamChanged: (teamCode) {
             setState(() {
@@ -431,6 +449,25 @@ class _MyHomePageState extends State<MyHomePage> {
               _challengeViewKey = UniqueKey();
             });
             _updateTournamentOddsAndCheckNotifications();
+
+            // Join the group if a payload was pending
+            if (_pendingGroupPayload != null) {
+              final payload = _pendingGroupPayload!;
+              _pendingGroupPayload = null;
+              final success = await PredictionService.joinCustomGroup(payload);
+              if (mounted) {
+                setState(() {
+                  _activeTab = 'challenge';
+                  _challengeInitialSubTab = 'groups';
+                  _challengeViewKey = UniqueKey();
+                });
+                if (success) {
+                  _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
+                } else {
+                  _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoinFailed'));
+                }
+              }
+            }
           },
         );
       },

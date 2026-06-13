@@ -1039,68 +1039,58 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
   Widget _buildGlobalGroupCard(FriendGroup grp) {
     final myRank = grp.globalRank;
-    final topMembers = grp.members.where((m) => grp.members.indexOf(m) < 3).toList();
-    final userInTop3 = grp.members.take(3).any((m) => m.isUser);
-    final userMember = grp.members.firstWhere((m) => m.isUser, orElse: () => grp.members.first);
+    if (myRank == null) return _buildGlobalGroupPlaceholder();
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(kCardRadius),
         border: Border.all(color: AppColors.accent.withValues(alpha: 0.22), width: 1.5),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(AppTranslations.get(widget.lang, 'globalCupHeader'),
-                        style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
-                    const SizedBox(height: 2),
-                    Text(
-                      AppTranslations.get(widget.lang, 'globalCup'),
-                      style: const TextStyle(color: AppColors.textDim, fontSize: 11),
-                    ),
-                  ],
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const Text('🌍', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppTranslations.get(widget.lang, 'globalRank'), // 'Votre rang mondial'
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              if (myRank != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text('#$myRank',
-                          style: const TextStyle(color: AppColors.accent, fontSize: 18, fontWeight: FontWeight.bold, height: 1.1)),
-                      Text(
-                        AppTranslations.get(widget.lang, 'yourRank'),
-                        style: const TextStyle(color: AppColors.accent, fontSize: 9, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Divider(color: AppColors.border, height: 1),
-          const SizedBox(height: 8),
-          ...topMembers.asMap().entries.map((e) => _buildMemberRow(e.value, e.key + 1, isGlobal: true)),
-          if (!userInTop3 && myRank != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: const Text('···', style: TextStyle(color: AppColors.borderStrong, fontSize: 14)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
             ),
-            _buildMemberRow(userMember, myRank, isGlobal: true),
-          ],
+            child: Text(
+              '#$myRank',
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                height: 1.1,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1548,79 +1538,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  Widget _buildMemberRow(FriendScore member, int rank, {bool isGlobal = false}) {
-    final isUser = member.isUser;
-    Widget rankWidget;
-    if (rank == 1) {
-      rankWidget = const Text('🥇', style: TextStyle(fontSize: 15));
-    } else if (rank == 2) {
-      rankWidget = const Text('🥈', style: TextStyle(fontSize: 15));
-    } else if (rank == 3) {
-      rankWidget = const Text('🥉', style: TextStyle(fontSize: 15));
-    } else {
-      rankWidget = SizedBox(
-          width: 22,
-          child: Text('#$rank', textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold)));
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          rankWidget,
-          if (isGlobal && isUser) ...[
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(AppTranslations.get(widget.lang, 'globalBadge'),
-                  style: const TextStyle(color: AppColors.accent, fontSize: 8, fontWeight: FontWeight.bold)),
-            ),
-          ],
-          if (!isGlobal && isUser) ...[
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.info.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(AppTranslations.get(widget.lang, 'groupBadge'),
-                  style: const TextStyle(color: AppColors.info, fontSize: 8, fontWeight: FontWeight.bold)),
-            ),
-          ],
-          const SizedBox(width: 10),
-          _buildEmblemWidget(member.emblem, size: 22),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              isUser
-                  ? '${member.name}${AppTranslations.get(widget.lang, 'meSuffix')}'
-                  : member.name,
-              style: TextStyle(
-                color: isUser ? AppColors.accent : AppColors.textSecondary,
-                fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
-              ),
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Text(
-            '${member.points} ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
-            style: TextStyle(
-              color: isUser ? AppColors.accent : AppColors.textMuted,
-              fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // ONGLET CLASSEMENT GENERAL
