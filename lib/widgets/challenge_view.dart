@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/match.dart';
+import 'match_detail_sheet.dart';
 import '../l10n/translations.dart';
 import '../services/prediction_service.dart';
 import '../services/firebase_service.dart';
@@ -112,57 +113,44 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  Future<void> _updateMatchPred(String matchId, int t1Offset, int t2Offset) async {
-    final existing = _userPreds.matchPredictions[matchId];
-    int new1 = 0, new2 = 0;
-    if (existing != null) {
-      new1 = (existing.t1Score + t1Offset).clamp(0, 9);
-      new2 = (existing.t2Score + t2Offset).clamp(0, 9);
-    } else {
-      new1 = t1Offset.clamp(0, 9);
-      new2 = t2Offset.clamp(0, 9);
-    }
-    String? etWinner = existing?.extraTimeWinner;
-    bool? pkWinner = existing?.penaltyWinner;
-    if (new1 != new2) {
-      etWinner = null;
-      pkWinner = null;
-    }
-    setState(() {
-      _userPreds.matchPredictions[matchId] = MatchPrediction(
-        matchId: matchId,
-        t1Score: new1,
-        t2Score: new2,
-        extraTimeWinner: etWinner,
-        penaltyWinner: pkWinner,
-        predictedScorers: existing?.predictedScorers,
-      );
-    });
-    await PredictionService.savePredictionData(_userPreds);
-    final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
-    await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
-    final groups = await PredictionService.loadChallengeGroups(_userPreds, widget.matches);
-    if (mounted) setState(() => _groups = groups);
-  }
-
-  Future<void> _updateKnockoutExtras(String matchId, String? etWinner, bool? pkWinner) async {
-    final existing = _userPreds.matchPredictions[matchId];
-    if (existing == null) return;
-    setState(() {
-      _userPreds.matchPredictions[matchId] = MatchPrediction(
-        matchId: matchId,
-        t1Score: existing.t1Score,
-        t2Score: existing.t2Score,
-        extraTimeWinner: etWinner,
-        penaltyWinner: pkWinner,
-        predictedScorers: existing.predictedScorers,
-      );
-    });
-    await PredictionService.savePredictionData(_userPreds);
-    final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
-    await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
-    final groups = await PredictionService.loadChallengeGroups(_userPreds, widget.matches);
-    if (mounted) setState(() => _groups = groups);
+  void _openPredictionDialog(WorldCupMatch match) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => MatchDetailSheet(
+        match: match,
+        allMatches: widget.matches,
+        lang: widget.lang,
+        activeAlert: null,
+        onSaveAlert: (_) {},
+        prediction: _userPreds.matchPredictions[match.id],
+        canUseBooster: _userPreds.boosterMatchId == null && !match.isPlayed,
+        onSetBooster: () async {
+          setState(() {
+            _userPreds.boosterMatchId = match.id;
+          });
+          await PredictionService.savePredictionData(_userPreds);
+          _loadData();
+        },
+        onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers) async {
+          setState(() {
+            _userPreds.matchPredictions[match.id] = MatchPrediction(
+              matchId: match.id,
+              t1Score: t1Score,
+              t2Score: t2Score,
+              extraTimeWinner: etWinner,
+              penaltyWinner: pkWinner,
+              predictedScorers: predictedScorers,
+            );
+          });
+          await PredictionService.savePredictionData(_userPreds);
+          final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
+          await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
+          _loadData();
+        },
+      ),
+    );
   }
 
   Future<void> _createNewGroup() async {
@@ -723,6 +711,26 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
+  Widget _buildTeamDisplayRow(String teamCode, int? score, bool hasPred) {
+    return Row(
+      children: [
+        TeamFlagWidget(code: teamCode, width: 32, height: 22, borderRadius: 6),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(AppTranslations.getTeam(widget.lang, teamCode),
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        Text(hasPred ? '$score' : '-',
+            style: TextStyle(
+              color: hasPred ? Colors.white : AppColors.textDim,
+              fontSize: 20, fontWeight: FontWeight.bold,
+            )),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
   // ── Carte de pronostic ────────────────────────────────────────────────────
   Widget _buildPredictionCard(WorldCupMatch m) {
     final pred = _userPreds.matchPredictions[m.id];
@@ -750,7 +758,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         ? AppColors.accent.withValues(alpha: 0.22)
         : AppColors.borderMid);
 
-    return Container(
+    final cardWidget = Container(
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(kCardRadius),
@@ -793,29 +801,70 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             child: Column(
               children: [
                 if (!m.isPlayed) ...[
-                  GestureDetector(
-                    onTap: isLocked ? null : () => _updateMatchPred(m.id, p1Val < 9 ? 1 : 0, 0),
-                    child: _buildTeamInputRow(m.t1, p1Val, hasPred, isLocked,
-                        onMinus: () => _updateMatchPred(m.id, -1, 0),
-                        onPlus:  () => _updateMatchPred(m.id,  1, 0)),
-                  ),
+                  _buildTeamDisplayRow(m.t1, hasPred ? p1Val : null, hasPred),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
                   ),
-                  GestureDetector(
-                    onTap: isLocked ? null : () => _updateMatchPred(m.id, 0, p2Val < 9 ? 1 : 0),
-                    child: _buildTeamInputRow(m.t2, p2Val, hasPred, isLocked,
-                        onMinus: () => _updateMatchPred(m.id, 0, -1),
-                        onPlus:  () => _updateMatchPred(m.id, 0,  1)),
-                  ),
+                  _buildTeamDisplayRow(m.t2, hasPred ? p2Val : null, hasPred),
+                  
+                  // Summary of prediction details if it exists
+                  if (hasPred) ...[
+                    // If knockout and predicted a tie, show predicted winner/qualifier
+                    if (m.isKnockout && p1Val == p2Val && (pred.extraTimeWinner != null || pred.penaltyWinner != null)) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.info_outline, size: 12, color: AppColors.warning),
+                          const SizedBox(width: 4),
+                          Text(
+                            pred.penaltyWinner != null
+                                ? '${AppTranslations.get(widget.lang, 'penaltiesLabel')}: ${AppTranslations.getTeam(widget.lang, pred.penaltyWinner == true ? m.t1 : m.t2)}'
+                                : '${AppTranslations.get(widget.lang, 'extraTimeLabel')}: ${AppTranslations.getTeam(widget.lang, pred.extraTimeWinner!)}',
+                            style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                    // Show scorers summary if any
+                    if (pred.predictedScorers.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        '${AppTranslations.get(widget.lang, 'scorers')}: ${pred.predictedScorers.entries.map((e) => "${e.key}${e.value > 1 ? ' x${e.value}' : ''}").join(', ')}',
+                        style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ] else ...[
+                    // Call to action: predict
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        widget.lang == 'fr' ? 'PRONOSTIQUER' : (widget.lang == 'es' ? 'PRONOSTICAR' : 'PREDICT'),
+                        style: const TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ],
                 ] else ...[
                   _buildPlayedResultRows(m, pred, hasPred),
                 ],
 
-                // ── ET/PK ────────────────────────────────────────────────
-                if (m.isKnockout && hasPred && !m.isPlayed && pred.t1Score == pred.t2Score)
-                  _buildETPKPicker(m, pred, isLocked),
                 if (m.isKnockout && m.isPlayed && (m.wentToET ?? false))
                   _buildETPKResultRow(m, pred),
               ],
@@ -824,44 +873,11 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         ],
       ),
     );
-  }
 
-  Widget _buildTeamInputRow(String teamCode, int score, bool hasPred, bool isLocked,
-      {required VoidCallback onMinus, required VoidCallback onPlus}) {
-    return Row(
-      children: [
-        TeamFlagWidget(code: teamCode, width: 32, height: 22, borderRadius: 6),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(AppTranslations.getTeam(widget.lang, teamCode),
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
-        ),
-        _buildIncrementButton(onMinus, Icons.remove_circle, isLocked),
-        SizedBox(
-          width: 36,
-          child: Center(
-            child: Text(hasPred ? '$score' : '-',
-                style: TextStyle(
-                  color: hasPred ? Colors.white : AppColors.textDim,
-                  fontSize: 20, fontWeight: FontWeight.bold,
-                )),
-          ),
-        ),
-        _buildIncrementButton(onPlus, Icons.add_circle, isLocked),
-      ],
-    );
-  }
-
-  Widget _buildIncrementButton(VoidCallback onTap, IconData icon, bool isLocked) {
-    if (isLocked) return const SizedBox(width: 36);
-    return SizedBox(
-      width: 36, height: 36,
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        icon: Icon(icon, color: AppColors.accent, size: 28),
-        onPressed: onTap,
-      ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isLocked ? null : () => _openPredictionDialog(m),
+      child: cardWidget,
     );
   }
 
@@ -1985,107 +2001,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  Widget _buildETPKPicker(WorldCupMatch m, MatchPrediction pred, bool isLocked) {
-    final etWinner  = pred.extraTimeWinner;
-    final goesToPK  = pred.penaltyWinner != null;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(color: AppColors.border, height: 20),
-        Row(children: [
-          const Icon(Icons.access_time, size: 12, color: AppColors.accent),
-          const SizedBox(width: 6),
-          Text(AppTranslations.get(widget.lang, 'whoWinsET'),
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.bold)),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text('+20 pts', style: TextStyle(color: AppColors.accent, fontSize: 9, fontWeight: FontWeight.bold)),
-          ),
-        ]),
-        const SizedBox(height: 8),
-        Row(children: [
-          _buildETTeamChip(m, m.t1, etWinner, isLocked),
-          const SizedBox(width: 8),
-          _buildETTeamChip(m, m.t2, etWinner, isLocked),
-        ]),
-        if (etWinner != null) ...[
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(children: [
-                Icon(Icons.sports_score, size: 12,
-                    color: goesToPK ? AppColors.warning : AppColors.borderStrong),
-                const SizedBox(width: 6),
-                Text(AppTranslations.get(widget.lang, 'penaltiesLabel'),
-                    style: TextStyle(
-                      color: goesToPK ? AppColors.warning : AppColors.borderStrong,
-                      fontSize: 11, fontWeight: FontWeight.bold,
-                    )),
-                const SizedBox(width: 6),
-                Text('+25 pts', style: TextStyle(color: AppColors.borderStrong, fontSize: 9)),
-              ]),
-              Switch(
-                value: goesToPK,
-                activeThumbColor: AppColors.warning,
-                activeTrackColor: AppColors.warning.withValues(alpha: 0.2),
-                inactiveThumbColor: AppColors.borderStrong,
-                inactiveTrackColor: AppColors.border,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                onChanged: isLocked ? null : (val) => _updateKnockoutExtras(
-                    m.id, etWinner, val ? (etWinner == m.t1) : null),
-              ),
-            ],
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildETTeamChip(WorldCupMatch m, String teamCode, String? selected, bool isLocked) {
-    final isSelected = selected == teamCode;
-    return Expanded(
-      child: GestureDetector(
-        onTap: isLocked ? null : () => _updateKnockoutExtras(m.id, teamCode, null),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surface,
-            borderRadius: BorderRadius.circular(kButtonRadius),
-            border: Border.all(
-              color: isSelected ? AppColors.accent : AppColors.border,
-              width: isSelected ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TeamFlagWidget(code: teamCode, width: 16, height: 10, borderRadius: 2),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  AppTranslations.getTeam(widget.lang, teamCode),
-                  style: TextStyle(
-                    color: isSelected ? AppColors.accent : AppColors.textDim,
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildETPKResultRow(WorldCupMatch m, MatchPrediction? pred) {
     final etWinner = m.etWinner;
