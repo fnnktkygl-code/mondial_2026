@@ -208,16 +208,35 @@
     "date": "2026-06-13T19:00:00Z",
     "t1": "qa",
     "t2": "ch",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 0,
+    "t2Score": 1,
     "venue": null,
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-13T20:16:31.384Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Breel Embolo",
+        "assistant": null,
+        "minute": 17
+      }
+    ],
+    "stats": {
+      "possessionT1": 46,
+      "shotsT1": 13,
+      "shotsT2": 13,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 7,
+      "foulsT2": 11,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537339",
