@@ -143,6 +143,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   bool _isSaving = false;
   bool _isHidden = false;
   bool _trophiesExpanded = false;
+  String? _validationError;
 
   final FocusNode _scorerFocusNode = FocusNode();
 
@@ -294,13 +295,14 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
   Future<void> _saveProfile() async {
     FocusScope.of(context).unfocus();
+    setState(() => _validationError = null);
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'nicknameEmpty'));
+      setState(() => _validationError = AppTranslations.get(widget.lang, 'nicknameEmpty'));
       return;
     }
     if (_supportedTeam == null || _supportedTeam!.isEmpty) {
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'supportedTeamEmpty'));
+      setState(() => _validationError = AppTranslations.get(widget.lang, 'supportedTeamEmpty'));
       return;
     }
     final scorerInput = _scorerController.text.trim();
@@ -309,7 +311,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     final bool isNewScorer =
         widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
     if (isNewScorer && canonicalScorer == null) {
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'scorerNotFound'));
+      setState(() => _validationError = AppTranslations.get(widget.lang, 'scorerNotFound'));
       return;
     }
     if (isNewScorer) {
@@ -354,7 +356,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       widget.showSnackBar(AppTranslations.get(widget.lang, 'saveSuccess'));
       Navigator.of(context).pop();
     } catch (e) {
-      widget.showSnackBar('Error saving profile: $e');
+      setState(() => _validationError = 'Error saving profile: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -434,7 +436,37 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                           const SizedBox.shrink(),
                       ]),
                 ),
-              Flexible(
+                if (_validationError != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                    decoration: BoxDecoration(
+                      color: AppColors.danger.withValues(alpha: 0.15),
+                      border: const Border(
+                          bottom: BorderSide(color: AppColors.border, width: 1)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: AppColors.danger, size: 16),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _validationError!,
+                            style: const TextStyle(
+                                color: AppColors.danger,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => setState(() => _validationError = null),
+                          child: const Icon(Icons.close, color: AppColors.danger, size: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                Flexible(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
                       24, 20, 24, 24 + mediaQuery.padding.bottom),

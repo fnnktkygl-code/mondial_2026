@@ -5,6 +5,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prono Challenge — Coupe du Monde 2026</title>
+  <script>
+    // Automatically redirect to the native app custom URL scheme on mobile/macOS if there's a group query parameter
+    (function() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupPayload = urlParams.get('group');
+        if (groupPayload) {
+          const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          const isMac = /Macintosh|MacIntel|MacPPC|MacIPHONE/i.test(navigator.userAgent);
+          if (isMobile || isMac) {
+            const customScheme = "mondial2026://group?group=" + groupPayload;
+            window.location.href = customScheme;
+            console.log("Redirecting to custom scheme: " + customScheme);
+          }
+        }
+      } catch (e) {
+        console.error("Deep link redirect error:", e);
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
