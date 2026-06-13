@@ -41,6 +41,7 @@ import 'widgets/staging_panel.dart';
 import 'widgets/wc_tooltip.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
+import 'package:app_links/app_links.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -216,6 +217,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Key _challengeViewKey = UniqueKey();
   Map<String, double> _currentOdds = {};
 
+  final _appLinks = AppLinks();
+  StreamSubscription<Uri>? _linkSubscription;
+
   late ConfettiController _confettiController;
 
   @override
@@ -225,11 +229,13 @@ class _MyHomePageState extends State<MyHomePage> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
+    _initDeepLinks();
     _loadInitialData();
   }
 
   @override
   void dispose() {
+    _linkSubscription?.cancel();
     _confettiController.dispose();
     WCAudioService.instance.dispose();
     super.dispose();
@@ -317,33 +323,55 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // 2. Deep Links
-    try {
-      final queryParams = Uri.base.queryParameters;
-      if (queryParams.containsKey('group')) {
-        final base64Payload = queryParams['group']!;
-        if (base64Payload.isNotEmpty) {
-          if (userPreds.username.isEmpty || userPreds.supportedTeam == null || userPreds.supportedTeam!.isEmpty) {
-            _pendingGroupPayload = base64Payload;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                _showProfileModal();
-                _showBeautifulSnackBar(AppTranslations.get(_lang, 'pleaseCompleteProfileToJoin'));
-              }
-            });
-          } else {
-            await PredictionService.joinCustomGroup(base64Payload);
-            if (!mounted) return;
-            setState(() {
-              _activeTab = 'challenge';
-              _challengeInitialSubTab = 'groups';
-              _challengeViewKey = UniqueKey();
-            });
-            _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
+    if (_pendingGroupPayload != null) {
+      final payload = _pendingGroupPayload!;
+      if (userPreds.username.isEmpty || userPreds.supportedTeam == null || userPreds.supportedTeam!.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _showProfileModal();
+            _showBeautifulSnackBar(AppTranslations.get(_lang, 'pleaseCompleteProfileToJoin'));
+          }
+        });
+      } else {
+        _pendingGroupPayload = null;
+        await PredictionService.joinCustomGroup(payload);
+        if (!mounted) return;
+        setState(() {
+          _activeTab = 'challenge';
+          _challengeInitialSubTab = 'groups';
+          _challengeViewKey = UniqueKey();
+        });
+        _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
+      }
+    } else {
+      try {
+        final queryParams = Uri.base.queryParameters;
+        if (queryParams.containsKey('group')) {
+          final base64Payload = queryParams['group']!;
+          if (base64Payload.isNotEmpty) {
+            if (userPreds.username.isEmpty || userPreds.supportedTeam == null || userPreds.supportedTeam!.isEmpty) {
+              _pendingGroupPayload = base64Payload;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _showProfileModal();
+                  _showBeautifulSnackBar(AppTranslations.get(_lang, 'pleaseCompleteProfileToJoin'));
+                }
+              });
+            } else {
+              await PredictionService.joinCustomGroup(base64Payload);
+              if (!mounted) return;
+              setState(() {
+                _activeTab = 'challenge';
+                _challengeInitialSubTab = 'groups';
+                _challengeViewKey = UniqueKey();
+              });
+              _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
+            }
           }
         }
+      } catch (e) {
+        debugPrint("Deep link error: $e");
       }
-    } catch (e) {
-      debugPrint("Deep link error: $e");
     }
 
     if (!mounted) return;
@@ -405,6 +433,62 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     
     debugPrint("INIT: All background tasks completed");
+  }
+
+  void _initDeepLinks() {
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      debugPrint("Deep link received: $uri");
+      _handleDeepLinkUri(uri);
+    }, onError: (err) {
+      debugPrint("Deep link error: $err");
+    });
+
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        debugPrint("Cold start deep link: $uri");
+        _handleDeepLinkUri(uri);
+      }
+    }).catchError((err) {
+      debugPrint("Cold start deep link error: $err");
+    });
+  }
+
+  void _handleDeepLinkUri(Uri uri) async {
+    try {
+      final queryParams = uri.queryParameters;
+      if (queryParams.containsKey('group')) {
+        final base64Payload = queryParams['group']!;
+        if (base64Payload.isNotEmpty) {
+          final upreds = _userPreds;
+          // If predictions/profile is not loaded yet or username is empty, store as pending
+          if (upreds == null || upreds.username.isEmpty || upreds.supportedTeam == null || upreds.supportedTeam!.isEmpty) {
+            _pendingGroupPayload = base64Payload;
+            // Only show modal if app is already initialized
+            if (!_isLoading && mounted) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showProfileModal();
+                _showBeautifulSnackBar(AppTranslations.get(_lang, 'pleaseCompleteProfileToJoin'));
+              });
+            }
+          } else {
+            final success = await PredictionService.joinCustomGroup(base64Payload);
+            if (!mounted) return;
+            setState(() {
+              _activeTab = 'challenge';
+              _challengeInitialSubTab = 'groups';
+              _challengeViewKey = UniqueKey();
+            });
+            if (success) {
+              _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
+            } else {
+              _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoinFailed'));
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error handling deep link: $e");
+    }
   }
 
   void _showAnthemsModal() {

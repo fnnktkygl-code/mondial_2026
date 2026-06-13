@@ -779,17 +779,23 @@ class PredictionService {
     return groups;
   }
 
-  static Future<void> createCustomGroup(String groupName) async {
-    final uid = await WCFirebaseService.getOrCreateUserId();
-    final firestore = FirebaseFirestore.instance;
-    final token = const Uuid().v4().substring(0, 8);
-    await firestore.collection('groups').add({
-      'name': groupName,
-      'creatorId': uid,
-      'members': [uid],
-      'inviteToken': token,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+  static Future<bool> createCustomGroup(String groupName) async {
+    try {
+      final uid = await WCFirebaseService.getOrCreateUserId();
+      final firestore = FirebaseFirestore.instance;
+      final token = const Uuid().v4().substring(0, 8);
+      await firestore.collection('groups').add({
+        'name': groupName,
+        'creatorId': uid,
+        'members': [uid],
+        'inviteToken': token,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint("Error in createCustomGroup: $e");
+      return false;
+    }
   }
 
   static Future<void> editCustomGroup(String groupId, String newName) async {
@@ -806,64 +812,73 @@ class PredictionService {
   }
 
   static Future<bool> joinCustomGroup(String inviteCode) async {
-    String cleanInput = inviteCode.trim();
-    if (cleanInput.isEmpty) return false;
-
-    // 1. If it's a URL, extract the query parameter 'group'
-    if (cleanInput.startsWith('http://') || cleanInput.startsWith('https://')) {
-      try {
-        final uri = Uri.parse(cleanInput);
-        final groupParam = uri.queryParameters['group'];
-        if (groupParam != null && groupParam.isNotEmpty) {
-          cleanInput = groupParam;
-        }
-      } catch (e) {
-        debugPrint("Error parsing group URL: $e");
-      }
-    }
-
-    // 2. Try to decode it as base64. If it's valid base64, decode it first.
-    String decoded = cleanInput;
     try {
-      String normalized = cleanInput;
-      while (normalized.length % 4 != 0) {
-        normalized += '=';
+      String cleanInput = inviteCode.trim();
+      if (cleanInput.isEmpty) return false;
+
+      // 1. Extract payload from URL/text using RegExp if present, otherwise fallback to URL parser
+      final groupRegExp = RegExp(r'[?&]group=([a-zA-Z0-9_-]+)');
+      final match = groupRegExp.firstMatch(cleanInput);
+      if (match != null) {
+        cleanInput = match.group(1)!;
+      } else if (cleanInput.startsWith('http://') || cleanInput.startsWith('https://')) {
+        try {
+          final uri = Uri.parse(cleanInput);
+          final groupParam = uri.queryParameters['group'];
+          if (groupParam != null && groupParam.isNotEmpty) {
+            cleanInput = groupParam;
+          }
+        } catch (e) {
+          debugPrint("Error parsing group URL: $e");
+        }
       }
-      final decodedBytes = base64Url.decode(normalized);
-      decoded = utf8.decode(decodedBytes);
-    } catch (_) {
+
+      // 2. Try to decode it as base64. If it's valid base64, decode it first.
+      String decoded = cleanInput;
       try {
         String normalized = cleanInput;
         while (normalized.length % 4 != 0) {
           normalized += '=';
         }
-        final decodedBytes = base64.decode(normalized);
+        final decodedBytes = base64Url.decode(normalized);
         decoded = utf8.decode(decodedBytes);
       } catch (_) {
-        decoded = cleanInput;
-      }
-    }
-
-    // 3. Split parts
-    final parts = decoded.trim().split('_');
-    if (parts.length != 2) return false;
-    final groupId = parts[0]; final token = parts[1];
-    final uid = await WCFirebaseService.getOrCreateUserId();
-    final docRef = FirebaseFirestore.instance.collection('groups').doc(groupId);
-    final docSnap = await docRef.get();
-    if (docSnap.exists) {
-      final data = docSnap.data()!;
-      if (data['inviteToken'] == token) {
-        final List<dynamic> members = data['members'] ?? [];
-        if (!members.contains(uid)) {
-          await docRef.update({'members': FieldValue.arrayUnion([uid])});
-          return true;
-        } else {
-          return true; // Already joined
+        try {
+          String normalized = cleanInput;
+          while (normalized.length % 4 != 0) {
+            normalized += '=';
+          }
+          final decodedBytes = base64.decode(normalized);
+          decoded = utf8.decode(decodedBytes);
+        } catch (_) {
+          decoded = cleanInput;
         }
       }
+
+      // 3. Split parts
+      final parts = decoded.trim().split('_');
+      if (parts.length != 2) return false;
+      final groupId = parts[0]; final token = parts[1];
+      final uid = await WCFirebaseService.getOrCreateUserId();
+      final docRef = FirebaseFirestore.instance.collection('groups').doc(groupId);
+      final docSnap = await docRef.get();
+      if (docSnap.exists) {
+        final data = docSnap.data()!;
+        if (data['inviteToken'] == token) {
+          final List<dynamic> members = data['members'] ?? [];
+          if (!members.contains(uid)) {
+            await docRef.update({'members': FieldValue.arrayUnion([uid])});
+            return true;
+          } else {
+            return true; // Already joined
+          }
+        }
+      }
+      return false;
+    } catch (e) {
+      debugPrint("Error in joinCustomGroup: $e");
+      return false;
     }
-    return false;
   }
 
   static String generateSharePayload(String inviteId, String token) => '${inviteId}_$token';

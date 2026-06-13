@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prono Challenge — Coupe du Monde 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ─────────────── */
+    :root {
+      --bg:         #0A0E1A;
+      --surface:    #0F172A;
+      --card:       #131E35;
+      --card-deep:  #0A0F1D;
+      --accent:     #10B981;
+      --accent-dim: rgba(16,185,129,.12);
+      --accent-glow:rgba(16,185,129,.25);
+      --blue:       #3B82F6;
+      --border:     #1E293B;
+      --border-mid: #334155;
+      --text-1:     #F8FAFC;
+      --text-2:     #E2E8F0;
+      --text-3:     #94A3B8;
+      --radius-lg:  24px;
+      --radius-xl:  32px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, .syne { font-family: 'Syne', sans-serif; }
+
+    /* ─── UTILITY ─────────────────────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent-dim); border: 1px solid rgba(16,185,129,.3);
+      color: var(--accent); font-size: 11px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 99px;
+    }
+    .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.4s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .host-gradient {
+      background: linear-gradient(to right, 
+        #006847 0%, #006847 33%,
+        #002868 33%, #002868 66%,
+        #FF0000 66%, #FF0000 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    /* ─── NAV ─────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 12px 0;
+      background: rgba(10,14,26,.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .inner {
+      max-width: 1160px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 12px;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .logo img { width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 0 20px var(--accent-glow); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent); color: #000; font-weight: 700; font-size: 14px;
+      padding: 9px 22px; border-radius: 99px; text-decoration: none;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .nav-cta:hover { box-shadow: 0 0 24px var(--accent-glow); transform: translateY(-1px); }
+
+    /* ─── HERO ────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 24px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(16,185,129,.15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 15% 80%, rgba(59,130,246,.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 40% at 85% 70%, rgba(16,185,129,.08) 0%, transparent 50%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+    }
+    #hero > * { position: relative; z-index: 1; }
+    .hero-tag { margin-bottom: 28px; }
+    .hero-title {
+      font-weight: 800;
+      font-size: clamp(44px, 8vw, 92px); line-height: 0.95;
+      letter-spacing: -0.04em; margin-bottom: 24px;
+      text-transform: none;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2.2vw, 20px); color: var(--text-2);
+      max-width: 600px; margin: 0 auto 40px;
+      font-weight: 400;
+    }
+    .hero-actions {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 64px;
+    }
+    .btn-primary {
+      background: var(--accent); color: #000; font-weight: 700; font-size: 16px;
+      padding: 16px 36px; border-radius: 99px; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .btn-primary:hover { box-shadow: 0 0 40px var(--accent-glow); transform: translateY(-2px); }
+    .btn-secondary {
+      background: transparent; color: var(--text-1); font-weight: 600; font-size: 16px;
+      padding: 16px 36px; border-radius: 99px; text-decoration: none;
+      border: 1.5px solid var(--border-mid);
+      display: flex; align-items: center; gap: 10px;
+      transition: border-color .2s, background .2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: var(--accent-dim); }
+
+    /* ─── FLOATING ASSETS ───────────────────────────────── */
+    .float-asset {
+        position: absolute; z-index: 1; pointer-events: none;
+        animation: float 6s ease-in-out infinite;
+        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
+    }
+    .mascot-clutch { width: 180px; top: 10%; left: 5%; animation-delay: 0s; }
+    .mascot-maple { width: 170px; bottom: 10%; right: 5%; animation-delay: 1.5s; }
+    .mascot-zayu { width: 190px; top: 15%; right: 5%; animation-delay: 3s; }
+    .logo-hero { width: 100px; top: 16%; left: 10%; animation-delay: 4.5s; border-radius: 22px; box-shadow: 0 0 30px var(--accent-glow); }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0); }
+        50% { transform: translateY(-20px) rotate(3deg); }
+    }
+
+    /* ─── HERO DEVICE SHOWCASE ──────────────────────────── */
+    .hero-devices {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 24px; width: 100%; max-width: 960px; margin: 0 auto;
+    }
+    .device-phone {
+      width: 220px; flex-shrink: 0;
+      background: var(--card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+      position: relative;
+      transition: transform .3s ease;
+    }
+    .device-phone:hover { transform: translateY(-6px); }
+    .device-phone.featured { transform: scale(1.08); z-index: 2; box-shadow: 0 32px 100px rgba(0,0,0,.7), 0 0 40px rgba(16,185,129,.15); }
+    .device-phone.featured:hover { transform: scale(1.08) translateY(-6px); }
+    .device-notch {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 80px; height: 22px; background: #000;
+      border-radius: 0 0 14px 14px; z-index: 10;
+    }
+    .device-screen {
+      aspect-ratio: 9/19.5;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      background: #000;
+    }
+    .device-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .device-tablet {
+      flex: 1; min-width: 0; max-width: 500px;
+      background: var(--card);
+      border: 1.5px solid var(--border-mid);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+      transition: transform .3s ease;
+    }
+    .device-tablet-bar {
+      height: 36px; background: var(--card-deep);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .device-tablet-bar span { font-size: 11px; color: var(--text-3); font-weight: 600; }
+    .device-tablet-screen { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #000; }
+    .device-tablet-screen img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    /* ─── FEATURES FLIP CARDS ───────────────────────────── */
+    #features { background: var(--surface); padding: 120px 0; }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-grid { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 32px;
+        grid-auto-flow: dense;
+        align-items: start;
+        justify-items: center;
+    }
+    
+    .flip-card {
+        background-color: transparent;
+        perspective: 1200px;
+        cursor: pointer;
+        width: 100%;
+        max-width: 260px;
+        aspect-ratio: 9 / 19.5;
+    }
+
+    .flip-card.desktop {
+        max-width: 100%;
+        aspect-ratio: unset;
+        height: 480px;
+        grid-column: span 2;
+        justify-self: stretch;
+    }
+
+    .flip-card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+        transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        overflow: hidden;
+    }
+
+    .flip-card:not(.desktop) .flip-card-front,
+    .flip-card:not(.desktop) .flip-card-back {
+        border-radius: 40px;
+        border: 2px solid var(--border-mid);
+        box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    .flip-card-front {
+        background: var(--card);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 24px;
+        text-align: center;
+    }
+
+    /* Common Smartphone Mockup Decoration */
+    .phone-mockup-notch {
+        position: absolute;
+        top: 12px; left: 50%; transform: translateX(-50%);
+        width: 60px; height: 18px;
+        background: #000;
+        border-radius: 0 0 12px 12px;
+        z-index: 10;
+    }
+
+    .flip-card-back {
+        background: #000;
+        transform: rotateY(180deg);
+        position: relative;
+    }
+
+    .flip-card-back img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .flip-card.desktop .flip-card-front,
+    .flip-card.desktop .flip-card-back {
+        border-radius: 24px;
+        border: 2px solid var(--border-mid);
+        overflow: hidden;
+    }
+
+    .flip-card.desktop .flip-card-front {
+        background: var(--card);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    .macbook-wrap {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .macbook-lid {
+        width: 100%;
+        background: #111;
+        border-radius: 12px 12px 0 0;
+        border: 2px solid #333;
+        border-bottom: none;
+        position: relative;
+        padding: 2.5% 2.5% 3.5%;
+        box-shadow: inset 0 0 0 1px #222;
+    }
+
+    .macbook-camera {
+        position: absolute;
+        top: 1.2%; left: 50%; transform: translateX(-50%);
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+    }
+
+    .macbook-screen {
+        aspect-ratio: 16 / 10;
+        background: #000;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .macbook-screen img, .macbook-screen video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .macbook-base {
+        width: 110%;
+        margin-left: -5%;
+        height: 12px;
+        background: linear-gradient(to bottom, #222, #111);
+        border: 1px solid #333;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .feature-icon {
+        width: 64px; height: 64px; border-radius: 18px;
+        background: var(--accent-dim); border: 1px solid rgba(16,185,129,.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; margin-bottom: 24px;
+    }
+    .feature-title { font-weight: 700; font-size: 22px; margin-bottom: 12px; color: var(--text-1); }
+    .feature-desc { color: var(--text-3); font-size: 15px; line-height: 1.6; }
+    .flip-hint { margin-top: 24px; font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    @media (max-width: 1100px) {
+        .features-grid { grid-template-columns: repeat(2, 1fr); }
+        .flip-card.desktop { grid-column: span 2; }
+    }
+    @media (max-width: 768px) {
+        .features-grid { grid-template-columns: 1fr; }
+        .flip-card.desktop { grid-column: span 1; height: 460px; }
+    }
+
+    /* ─── MACBOOK VIDEO SHOWCASE (Full 3D) ─────────────── */
+    .macbook-showcase {
+        max-width: 1000px;
+        margin: 60px auto 0;
+        perspective: 2000px;
+        padding: 0 20px;
+    }
+
+    .mb-lid {
+        background: #111;
+        border-radius: 20px 20px 0 0;
+        padding: 2% 2% 3%;
+        position: relative;
+        box-shadow: inset 0 0 0 1px #333, 0 -2px 20px rgba(0,0,0,0.8);
+        z-index: 2;
+        transform: rotateX(-2deg);
+        transform-origin: bottom center;
+    }
+
+    .mb-camera {
+        position: absolute;
+        top: 1%; left: 50%; transform: translateX(-50%);
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+    }
+
+    .mb-screen {
+        aspect-ratio: 16 / 10;
+        background: #000;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+    }
+
+    .mb-screen video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mb-base {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 0.65;
+        transform-style: preserve-3d;
+        transform: rotateX(65deg);
+        transform-origin: top center;
+        z-index: 1;
+    }
+
+    .mb-base-top {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #222, #111);
+        border-radius: 0 0 30px 30px;
+        box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+        padding: 5% 6% 4%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mb-keyboard {
+        width: 100%;
+        height: 55%;
+        background: #080808;
+        border-radius: 12px;
+        padding: 2%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5%;
+        box-shadow: inset 0 4px 20px rgba(0,0,0,0.9);
+    }
+
+    .mb-row { display: flex; flex: 1; gap: 1%; }
+    .mb-key {
+        background: #111;
+        flex: 1;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .mb-key.k-glow {
+        background: #FFF !important;
+        box-shadow: 0 0 15px #FFF, 0 0 25px var(--accent);
+        position: relative;
+    }
+    .mb-key.k-glow::after {
+        content: attr(data-key);
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: #000; font-size: 9px; font-weight: 900;
+    }
+
+    .mb-key.k-space { flex: 6; }
+    .mb-key.k-fn { flex: 1.5; }
+
+    .mb-trackpad {
+        margin-top: 6%;
+        width: 35%; height: 35%;
+        background: #181818;
+        border-radius: 10px;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .mb-base-front {
+        position: absolute;
+        top: 100%; left: 0; right: 0; height: 16px;
+        background: linear-gradient(to right, #111, #222, #111);
+        transform-origin: top center;
+        transform: rotateX(-90deg);
+        border-radius: 0 0 24px 24px;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+    }
+
+    .mb-notch-front {
+        position: absolute;
+        top: 0; left: 50%; transform: translateX(-50%);
+        width: 15%; height: 8px;
+        background: #080808;
+        border-radius: 0 0 6px 6px;
+    }
+
+    .mb-glow {
+        position: absolute;
+        top: 85%; left: 5%; right: 5%; height: 25%;
+        background: rgba(16, 185, 129, 0.2);
+        filter: blur(50px);
+        z-index: 0;
+    }
+
+    /* ─── SCORING ─────────────────────────────────────────── */
+    #scoring { padding: 120px 0; }
+    .scoring-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .scoring-card {
+      background: var(--card); border: 2px solid var(--border);
+      border-radius: var(--radius-xl); padding: 40px; overflow: hidden; position: relative;
+    }
+    .scoring-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .scoring-row:last-child { border-bottom: none; }
+    .scoring-label { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); font-weight: 500; }
+    .scoring-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--accent); }
+
+    /* ─── CTA ─────────────────────────────────────────────── */
+    #cta { text-align: center; padding: 140px 24px; }
+    .cta-glow {
+      display: inline-block;
+      background: linear-gradient(145deg, var(--card), var(--card-deep));
+      border: 1.5px solid var(--border-mid);
+      border-radius: 48px; padding: 80px 40px; max-width: 860px; width: 100%;
+      position: relative; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    }
+    .cta-logo { width: 120px; height: 120px; border-radius: 28px; margin-bottom: 24px; box-shadow: 0 0 40px var(--accent-glow); }
+    .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: none; }
+    
+    .cta-sub { color: var(--text-2); font-size: 18px; margin-bottom: 40px; }
+    .download-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .dl-btn {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--text-1); color: #000; font-weight: 700; font-size: 15px;
+      padding: 14px 28px; border-radius: 18px; text-decoration: none;
+      transition: transform .15s, box-shadow .2s;
+      min-width: 210px; text-align: left;
+    }
+    .dl-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+    .dl-btn.web { background: var(--accent); }
+    .dl-btn.android { background: #E2E8F0; }
+    .dl-btn.macos { background: #1A1C23; color: #FFF; border: 1px solid var(--border-mid); }
+    .dl-btn.ios { background: #FFF; opacity: 0.5; cursor: not-allowed; }
+    .dl-btn .store-icon { font-size: 24px; }
+    .dl-btn-sub { font-size: 10px; font-weight: 600; text-transform: uppercase; opacity: 0.7; display: block; }
+    .dl-btn-main { font-size: 16px; font-weight: 800; display: block; }
+
+    /* ─── FOOTER ─────────────────────────────────────────── */
+    footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
+    footer strong { color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; }
+
+    .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="logo">
+      <img src="assets/app_icon.png" alt="Prono Challenge Logo">
+      <span class="host-gradient">Prono Challenge</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Fonctionnalités</a>
+      <a href="#scoring">Points</a>
+      <a href="#cta">Télécharger</a>
+    </div>
+    <a href="#cta" class="nav-cta">JOUER</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <img src="assets/mascots/clutch.png" alt="Clutch" class="float-asset mascot-clutch">
+  <img src="assets/mascots/maple.png" alt="Maple" class="float-asset mascot-maple">
+  <img src="assets/mascots/zayu.png" alt="Zayu" class="float-asset mascot-zayu">
+  <img src="assets/app_icon.png" alt="Logo" class="float-asset logo-hero">
+
+  <div class="hero-tag">
+    <span class="tag">Coupe du Monde 2026 · USA / Canada / Mexique</span>
+  </div>
+
+  <h1 class="hero-title">
+    <span class="host-gradient">Prono</span><br />
+    <span class="host-gradient">Challenge</span>
+  </h1>
+
+  <p class="hero-sub">
+    Vivez la Coupe du Monde 2026 comme jamais. Prédictions en direct, groupes privés et classement mondial. Le tournoi est entre vos mains.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#cta" class="btn-primary">
+      <span>📱</span> Obtenir l'app officielle
+    </a>
+    <a href="app.html" class="btn-secondary">
+      <span>🌐</span> Jouer sur navigateur
+    </a>
+  </div>
+
+  <!-- Device mockups -->
+  <div class="hero-devices">
+    <div class="device-phone reveal">
+      <div class="device-notch"></div>
+      <div class="device-screen">
+        <img src="screenshots/01_home.jpeg" alt="Accueil App">
+      </div>
+    </div>
+
+    <div class="device-tablet reveal">
+      <div class="device-tablet-bar">
+        <span>⚽ Prono Challenge — Bracket interactif</span>
+      </div>
+      <div class="device-tablet-screen">
+         <img src="screenshots/04_bracket_desktop.png" alt="Bracket Desktop">
+      </div>
+    </div>
+
+    <div class="device-phone featured reveal">
+      <div class="device-notch"></div>
+      <div class="device-screen">
+        <img src="screenshots/03_leaderboard.jpeg" alt="Classement App">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES INTERACTIVE -->
+<section id="features">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="tag section-tag">L'app ultime</div>
+      <h2 class="section-title" style="margin-top: 16px;">Explorez les fonctionnalités</h2>
+      <p style="color: var(--text-3); max-width: 500px; margin: 0 auto;">Cliquez sur les cartes pour voir l'interface réelle de l'application.</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="phone-mockup-notch"></div>
+            <div class="feature-icon">🎯</div>
+            <h3 class="feature-title">Score exact</h3>
+            <p class="feature-desc">Prédisez le score final. Verrouillage automatique au coup d'envoi pour une équité totale.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="phone-mockup-notch"></div>
+            <img src="screenshots/02_match_detail.jpeg" alt="Détail Match">
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="phone-mockup-notch"></div>
+            <div class="feature-icon">👥</div>
+            <h3 class="feature-title">Ligues privées</h3>
+            <p class="feature-desc">Créez votre groupe, invitez vos amis et dominez votre classement interne.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="phone-mockup-notch"></div>
+            <img src="screenshots/06_groups.jpeg" alt="Groupes Privés">
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="phone-mockup-notch"></div>
+            <div class="feature-icon">🌍</div>
+            <h3 class="feature-title">Équipes & Hymnes</h3>
+            <p class="feature-desc">Découvrez les 48 nations avec leurs hymnes nationaux et statistiques complètes.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="phone-mockup-notch"></div>
+            <img src="screenshots/05_team_profile.jpeg" alt="Profil Équipe">
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="macbook-wrap">
+              <div class="macbook-lid">
+                <div class="macbook-camera"></div>
+                <div class="macbook-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--card);padding:20px;">
+                  <div class="feature-icon">🏆</div>
+                  <h3 class="feature-title">Tableau Final Interactif</h3>
+                  <p class="feature-desc">Visualisez tout le parcours de la compétition sur un bracket large et détaillé.</p>
+                  <div class="flip-hint">Cliquer pour voir →</div>
+                </div>
+              </div>
+              <div class="macbook-base"></div>
+            </div>
+          </div>
+          <div class="flip-card-back">
+            <div class="macbook-wrap">
+              <div class="macbook-lid">
+                <div class="macbook-camera"></div>
+                <div class="macbook-screen">
+                  <img src="screenshots/04_bracket_desktop.png" alt="Tableau Desktop">
+                </div>
+              </div>
+              <div class="macbook-base"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="phone-mockup-notch"></div>
+            <div class="feature-icon">📈</div>
+            <h3 class="feature-title">Probabilités Live</h3>
+            <p class="feature-desc">Analyse des cotes et probabilités FIFA en temps réel pour chaque rencontre.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="phone-mockup-notch"></div>
+            <img src="screenshots/08_stats.jpeg" alt="Statistiques">
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="macbook-wrap">
+              <div class="macbook-lid">
+                <div class="macbook-camera"></div>
+                <div class="macbook-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--card);padding:20px;">
+                  <div class="feature-icon">📅</div>
+                  <h3 class="feature-title">Calendrier Global</h3>
+                  <p class="feature-desc">Une vue d'ensemble de tous les matchs par jour et par stade, optimisée pour grand écran.</p>
+                  <div class="flip-hint">Cliquer pour voir →</div>
+                </div>
+              </div>
+              <div class="macbook-base"></div>
+            </div>
+          </div>
+          <div class="flip-card-back">
+            <div class="macbook-wrap">
+              <div class="macbook-lid">
+                <div class="macbook-camera"></div>
+                <div class="macbook-screen">
+                  <img src="screenshots/calendar_desktop.png" alt="Calendrier Desktop">
+                </div>
+              </div>
+              <div class="macbook-base"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="phone-mockup-notch"></div>
+            <div class="feature-icon">🎵</div>
+            <h3 class="feature-title">Hymnes Nationaux</h3>
+            <p class="feature-desc">Écoutez les hymnes officiels de chaque nation directement dans l'application.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="phone-mockup-notch"></div>
+            <img src="screenshots/hymnes.jpeg" alt="Hymnes">
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card desktop reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="macbook-wrap">
+              <div class="macbook-lid">
+                <div class="macbook-camera"></div>
+                <div class="macbook-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--card);padding:20px;">
+                  <div class="feature-icon">🔢</div>
+                  <h3 class="feature-title">Phase de Groupes</h3>
+                  <p class="feature-desc">Suivez les 12 groupes de 4 équipes et simulez les qualifications en direct.</p>
+                  <div class="flip-hint">Cliquer pour voir →</div>
+                </div>
+              </div>
+              <div class="macbook-base"></div>
+            </div>
+          </div>
+          <div class="flip-card-back">
+            <div class="macbook-wrap">
+              <div class="macbook-lid">
+                <div class="macbook-camera"></div>
+                <div class="macbook-screen">
+                  <img src="screenshots/pool_desktop.png" alt="Pools Desktop">
+                </div>
+              </div>
+              <div class="macbook-base"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card reveal" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="phone-mockup-notch"></div>
+            <div class="feature-icon">⚙️</div>
+            <h3 class="feature-title">Personnalisation</h3>
+            <p class="feature-desc">Gérez votre profil, changez d'avatar et paramétrez vos alertes intelligentes.</p>
+            <div class="flip-hint">Cliquer pour voir →</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="phone-mockup-notch"></div>
+            <img src="screenshots/03_leaderboard.jpeg" alt="Paramètres">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO SHOWCASE 3D -->
+<section id="video" style="padding-bottom: 120px;">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="tag section-tag">Démo</div>
+      <h2 class="section-title">Vois l'app en action</h2>
+    </div>
+    
+    <div class="macbook-showcase reveal">
+      <div class="mb-glow"></div>
+      
+      <div class="mb-lid">
+        <div class="mb-camera"></div>
+        <div class="mb-screen">
+          <video controls playsinline autoplay loop muted>
+            <source src="videos/demo.mp4" type="video/mp4">
+            Votre navigateur ne supporte pas la lecture de vidéos.
+          </video>
+        </div>
+      </div>
+      
+      <div class="mb-base">
+        <div class="mb-base-top">
+          <div class="mb-keyboard">
+            <div class="mb-row" style="height: 12%;">
+              <div class="mb-key k-fn" style="flex: 1.5"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div><div class="mb-key k-fn"></div>
+              <div class="mb-key k-fn" style="flex: 1.5"></div>
+            </div>
+            <div class="mb-row">
+              <div class="mb-key k-tab"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="E"></div><div class="mb-key k-glow" data-key="R"></div><div class="mb-key"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="O"></div><div class="mb-key k-glow" data-key="P"></div>
+              <div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-tab"></div>
+            </div>
+            <div class="mb-row">
+              <div class="mb-key k-caps"></div>
+              <div class="mb-key k-glow" data-key="A"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="G"></div>
+              <div class="mb-key k-glow" data-key="H"></div><div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="L"></div>
+              <div class="mb-key"></div>
+              <div class="mb-key k-enter"></div>
+            </div>
+            <div class="mb-row">
+              <div class="mb-key k-shift"></div>
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key k-glow" data-key="C"></div><div class="mb-key"></div><div class="mb-key"></div>
+              <div class="mb-key k-glow" data-key="N"></div><div class="mb-key"></div>
+              <div class="mb-key k-shift"></div>
+            </div>
+            <div class="mb-row">
+              <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key" style="flex: 1.2"></div>
+              <div class="mb-key k-space"></div>
+              <div class="mb-key" style="flex: 1.2"></div><div class="mb-key"></div>
+              <div style="flex: 2; display: flex; flex-direction: column; gap: 10%; background: transparent; box-shadow: none;">
+                <div style="display:flex; justify-content:center; flex:1;"><div class="mb-key" style="width: 30%;"></div></div>
+                <div style="display:flex; gap: 10%; flex:1;">
+                  <div class="mb-key"></div><div class="mb-key"></div><div class="mb-key"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-trackpad"></div>
+        </div>
+        <div class="mb-base-front">
+          <div class="mb-notch-front"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCORING -->
+<section id="scoring">
+  <div class="container">
+    <div class="scoring-layout">
+      <div class="reveal">
+        <div class="tag section-tag">Barème de points</div>
+        <h2 class="section-title">Comment gagner ?</h2>
+        <p style="color: var(--text-3); margin-bottom: 24px;">Un système complet pour récompenser l'expertise à chaque étape du tournoi.</p>
+      </div>
+      <div class="scoring-card reveal">
+        <div class="scoring-row">
+          <div class="scoring-label">🎯 Score exact (Poules)</div>
+          <div class="scoring-pts">+30 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">✅ Résultat correct (Poules)</div>
+          <div class="scoring-pts">+10 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">🔥 Score exact (Finales)</div>
+          <div class="scoring-pts">+40 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">✨ Résultat correct (Finales)</div>
+          <div class="scoring-pts">+15 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">⏱️ Vainqueur Prolongations</div>
+          <div class="scoring-pts">+20 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">🥅 Vainqueur Tirs au but</div>
+          <div class="scoring-pts">+25 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">🏆 Champion du Monde</div>
+          <div class="scoring-pts">+100 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">👟 Meilleur Buteur</div>
+          <div class="scoring-pts">+50 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">🪄 Meilleur Passeur</div>
+          <div class="scoring-pts">+50 pts</div>
+        </div>
+        <div class="scoring-row">
+          <div class="scoring-label">🚀 Joker Booster</div>
+          <div class="scoring-pts" style="color: var(--blue);">×2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta">
+  <div class="container" style="display:flex; justify-content:center;">
+    <div class="cta-glow reveal">
+      <img src="assets/app_icon.png" alt="App Icon" class="cta-logo">
+      <h2 class="cta-title"><span class="host-gradient">Prono Challenge</span></h2>
+      <p class="cta-sub">Télécharge Prono Challenge et commence tes prédictions dès aujourd'hui.</p>
+      <div class="download-buttons">
+        <a href="app.html" class="dl-btn web">
+          <span class="store-icon">🌐</span>
+          <span>
+            <span class="dl-btn-sub">Jouer maintenant</span>
+            <span class="dl-btn-main">Web App</span>
+          </span>
+        </a>
+        <a href="app-release.apk" class="dl-btn android">
+          <span class="store-icon">🤖</span>
+          <span>
+            <span class="dl-btn-sub">Télécharger l'APK</span>
+            <span class="dl-btn-main">Android SDK</span>
+          </span>
+        </a>
+        <a href="PronoChallenge-macOS.zip" class="dl-btn macos">
+          <span class="store-icon">💻</span>
+          <span>
+            <span class="dl-btn-sub">Télécharger pour</span>
+            <span class="dl-btn-main">macOS</span>
+          </span>
+        </a>
+        <a href="#" class="dl-btn ios" onclick="return false;">
+          <span class="store-icon">🍎</span>
+          <span>
+            <span class="dl-btn-sub">Bientôt sur</span>
+            <span class="dl-btn-main">App Store</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>⚽ <strong class="syne host-gradient">Prono Challenge</strong> — Coupe du Monde 2026</p>
+    <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">Développé avec passion pour les fans du ballon rond.</p>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>

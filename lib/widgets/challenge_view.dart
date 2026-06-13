@@ -157,13 +157,17 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   Future<void> _createNewGroup() async {
     final name = _newGroupController.text.trim();
     if (name.isNotEmpty) {
-      await PredictionService.createCustomGroup(name);
+      final success = await PredictionService.createCustomGroup(name);
       if (!mounted) return;
-      _newGroupController.clear();
-      Navigator.of(context).pop();
-      await _loadData();
-      if (!mounted) return;
-      widget.showSnackBar(AppTranslations.get(widget.lang, 'groupCreated'));
+      if (success) {
+        _newGroupController.clear();
+        Navigator.of(context).pop();
+        await _loadData();
+        if (!mounted) return;
+        widget.showSnackBar(AppTranslations.get(widget.lang, 'groupCreated'));
+      } else {
+        widget.showSnackBar(AppTranslations.get(widget.lang, 'groupCreateFailed'));
+      }
     }
   }
 
@@ -980,8 +984,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSectionLabel(AppTranslations.get(widget.lang, 'globalCup')),
-        const SizedBox(height: 8),
         globalGroup != null ? _buildGlobalGroupCard(globalGroup) : _buildGlobalGroupPlaceholder(),
         const SizedBox(height: 22),
 
