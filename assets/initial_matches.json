@@ -249,16 +249,41 @@
     "date": "2026-06-13T22:00:00Z",
     "t1": "br",
     "t2": "ma",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 1,
+    "t2Score": 1,
     "venue": null,
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-13T22:46:40.050Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "I. Saibari",
+        "assistant": null,
+        "minute": 21
+      },
+      {
+        "team": "t1",
+        "scorer": "V. Júnior",
+        "assistant": null,
+        "minute": 32
+      }
+    ],
+    "stats": {
+      "possessionT1": 46,
+      "shotsT1": 12,
+      "shotsT2": 1,
+      "shotsOnTargetT1": 11,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 13,
+      "foulsT2": 19,
+      "yellowCardsT1": 4,
+      "yellowCardsT2": 4,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537340",
