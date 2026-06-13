@@ -416,11 +416,7 @@ class _MyHomePageState extends State<MyHomePage> {
           lang: _lang,
           matches: _resolvedMatches,
           userPreds: _userPreds!,
-          showSnackBar: (msg) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(msg), backgroundColor: AppColors.accent),
-            );
-          },
+          showSnackBar: (msg) => _showBeautifulSnackBar(msg),
           onSupportedTeamChanged: (teamCode) {
             setState(() {
               _supportedTeam = teamCode;
@@ -881,6 +877,39 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _showBeautifulSnackBar(String message, {String emoji = '🎯'}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.card,
+        elevation: 4,
+        margin: const EdgeInsets.all(12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.accent, width: 1.5),
+        ),
+        content: Row(
+          children: [
+            Text('$emoji ', style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Saves a prediction directly from the match details modal sheet and triggers Firestore sync.
   Future<void> _saveDirectPrediction(
     String matchId,
@@ -930,6 +959,11 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _challengeViewKey = UniqueKey();
     });
+
+    _showBeautifulSnackBar(
+      AppTranslations.get(_lang, 'predictionSavedTooltip'),
+      emoji: '🎯',
+    );
   }
   // ... existing code ...
 
@@ -1727,11 +1761,7 @@ class _MyHomePageState extends State<MyHomePage> {
         lang: _lang,
         initialSubTab: _challengeInitialSubTab,
         onProfileTap: _showProfileModal,
-        showSnackBar: (msg) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(msg), backgroundColor: AppColors.accent),
-          );
-        },
+        showSnackBar: (msg) => _showBeautifulSnackBar(msg),
         onAlertsChanged: (updatedAlerts) {
           setState(() {
             _alerts = updatedAlerts;

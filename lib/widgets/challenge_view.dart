@@ -148,6 +148,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           final totalPoints = PredictionService.calculateTotalPoints(_userPreds, widget.matches);
           await _syncProfileWithStats(totalPoints, _userPreds.supportedTeam, _userPreds.username);
           _loadData();
+          widget.showSnackBar(AppTranslations.get(widget.lang, 'predictionSavedTooltip'));
         },
       ),
     );
