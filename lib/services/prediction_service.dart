@@ -267,15 +267,20 @@ class PredictionService {
     int score = 0;
 
     // 1. Base score at 90m
+    bool is90mOutcomeCorrect = false;
     if (actual1 == pred1 && actual2 == pred2) {
       score += kExactScoreKnockoutPoints;
+      is90mOutcomeCorrect = true;
     } else {
       final actual90Outcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
       final pred90Outcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
       if (actual90Outcome == pred90Outcome) {
         score += kCorrectOutcomeKnockoutPts;
+        is90mOutcomeCorrect = true;
       }
     }
+
+    if (!is90mOutcomeCorrect) return 0;
 
     // 2. Extra Time bonus
     if (match.wentToET == true && pred.extraTimeWinner != null) {

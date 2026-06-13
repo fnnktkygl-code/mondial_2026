@@ -15,7 +15,7 @@ const WORLDCUP_IR_URL = 'https://worldcup26.ir/get/games';
 
 const teamCodeToName = {
   'mx': 'Mexico', 'co': 'Colombia', 'cm': 'Cameroon', 'kr': 'South Korea',
-  'us': 'USA', 'en': 'England', 'ng': 'Nigeria', 'jp': 'Japan',
+  'us': 'United States', 'en': 'England', 'ng': 'Nigeria', 'jp': 'Japan',
   'ca': 'Canada', 'fr': 'France', 'sn': 'Senegal', 'de': 'Germany',
   'br': 'Brazil', 'ar': 'Argentina', 'ma': 'Morocco', 'es': 'Spain',
   'it': 'Italy', 'pt': 'Portugal', 'nl': 'Netherlands', 'be': 'Belgium',
@@ -24,26 +24,11 @@ const teamCodeToName = {
   'eg': 'Egypt', 'tn': 'Tunisia', 'gh': 'Ghana', 'ci': 'Ivory Coast',
   'cl': 'Chile', 'pe': 'Peru', 'ec': 'Ecuador', 've': 'Venezuela',
   'au': 'Australia', 'nz': 'New Zealand', 'sa': 'Saudi Arabia', 'ir': 'Iran',
-  'tr': 'Turkey', 'gr': 'Greece', 'cz': 'Czechia', 'at': 'Austria',
+  'tr': 'Turkey', 'gr': 'Greece', 'cz': 'Czech Republic', 'at': 'Austria',
   'ro': 'Romania', 'hu': 'Hungary', 'bg': 'Bulgaria', 'rs': 'Serbia',
-  'ba': 'Bosnia & Herzegovina', 'cd': 'DR Congo', 'cw': 'Curaçao', 'cv': 'Cape Verde',
+  'ba': 'Bosnia and Herzegovina', 'cd': 'Democratic Republic of the Congo', 'cw': 'Curaçao', 'cv': 'Cape Verde',
   'jo': 'Jordan', 'uz': 'Uzbekistan', 'iq': 'Iraq', 'qa': 'Qatar', 'za': 'South Africa',
   'ht': 'Haiti', 'pa': 'Panama', 'py': 'Paraguay', 'sco': 'Scotland', 'gb-sct': 'Scotland'
-};
-
-const groupsMap = {
-  'A': ['mx', 'co', 'cm', 'kr'],
-  'B': ['us', 'en', 'ng', 'jp'],
-  'C': ['ca', 'fr', 'sn', 'de'],
-  'D': ['br', 'ar', 'ma', 'es'],
-  'E': ['it', 'pt', 'nl', 'be'],
-  'F': ['hr', 'uy', 'se', 'ch'],
-  'G': ['dk', 'pl', 'ua', 'dz'],
-  'H': ['eg', 'tn', 'gh', 'ci'],
-  'I': ['cl', 'pe', 'ec', 've'],
-  'J': ['au', 'nz', 'sa', 'ir'],
-  'K': ['tr', 'gr', 'cz', 'at'],
-  'L': ['ro', 'hu', 'bg', 'rs']
 };
 
 const r32Pairings = [
@@ -160,10 +145,24 @@ function generateStatsForScore(score1, score2) {
 
 function calculateStandings(matches) {
   const standings = {};
-  for (const group in groupsMap) {
-    standings[group] = groupsMap[group].map(code => ({
-      code, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0
-    }));
+  
+  // Extraire dynamiquement les groupes et les équipes depuis initial_matches.json
+  for (const m of matches) {
+    if (!m.isKnockout && m.group) {
+      if (!standings[m.group]) {
+        standings[m.group] = [];
+      }
+      if (!standings[m.group].some(e => e.code === m.t1)) {
+        standings[m.group].push({
+          code: m.t1, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0
+        });
+      }
+      if (!standings[m.group].some(e => e.code === m.t2)) {
+        standings[m.group].push({
+          code: m.t2, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0
+        });
+      }
+    }
   }
 
   for (const m of matches) {
@@ -191,33 +190,47 @@ function calculateStandings(matches) {
     standings[group].sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
       if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-      return b.goalsFor - a.goalsFor;
+      if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+      return a.code.localeCompare(b.code);
     });
   }
   return standings;
 }
 
-function resolvePlaceholder(placeholder, standings, thirdPlaces) {
-  if (placeholder.startsWith('1')) {
-    return standings[placeholder.substring(1)][0].code;
-  }
-  if (placeholder.startsWith('2')) {
-    return standings[placeholder.substring(1)][1].code;
+function resolvePlaceholder(placeholder, standings, thirdPlaces, groupFinishedCounts, completedGroupsCount) {
+  if (placeholder.startsWith('1') || placeholder.startsWith('2')) {
+    const group = placeholder.substring(1);
+    if (groupFinishedCounts[group] === 6) {
+      const idx = placeholder.startsWith('1') ? 0 : 1;
+      return standings[group] && standings[group][idx] ? standings[group][idx].code : 'TBD';
+    } else {
+      return placeholder;
+    }
   }
   if (placeholder.startsWith('3rd')) {
-    const idx = parseInt(placeholder.substring(3)) - 1;
-    return thirdPlaces[idx] ? thirdPlaces[idx].code : 'TBD';
+    if (completedGroupsCount === 12) {
+      const idx = parseInt(placeholder.substring(3)) - 1;
+      return thirdPlaces[idx] ? thirdPlaces[idx].code : 'TBD';
+    } else {
+      return placeholder;
+    }
   }
   return 'TBD';
 }
 
 function getMatchWinner(m) {
+  if (m.status !== 'FINISHED') {
+    return 'w' + m.normalizedId.replace('m', '');
+  }
   if (m.wentToPK) return m.pkWinner;
   if (m.wentToET) return m.etWinner;
   return m.t1Score > m.t2Score ? m.t1 : m.t2;
 }
 
 function getMatchLoser(m) {
+  if (m.status !== 'FINISHED') {
+    return 'l' + m.normalizedId.replace('m', '');
+  }
   const w = getMatchWinner(m);
   return m.t1 === w ? m.t2 : m.t1;
 }
@@ -253,10 +266,32 @@ async function updateMatches() {
       const localMatch = matches[i];
       const t1Name = teamCodeToName[localMatch.t1.toLowerCase()];
       const t2Name = teamCodeToName[localMatch.t2.toLowerCase()];
+
+      if (!t1Name || !t2Name) {
+        // Si l'une des deux équipes est un placeholder (ex: '1A', '3rd1', 'TBD'),
+        // le match n'a pas encore d'équipes réelles qualifiées, donc il ne peut pas
+        // être joué. On s'assure que ses scores sont null et son statut est TIMED.
+        const hasScoreChanged = localMatch.t1Score !== null || localMatch.t2Score !== null;
+        const hasStatusChanged = localMatch.status !== 'TIMED';
+        if (hasScoreChanged || hasStatusChanged) {
+          updatedCount++;
+          matches[i] = {
+            ...localMatch,
+            t1Score: null,
+            t2Score: null,
+            status: 'TIMED',
+            goals: [],
+            stats: null,
+            lastUpdated: new Date().toISOString()
+          };
+        }
+        continue;
+      }
+
       const t1NameNorm = normalizeName(t1Name);
       const t2NameNorm = normalizeName(t2Name);
 
-      // 1. Chercher par correspondance de nom d'équipes
+      // Chercher par correspondance de nom d'équipes
       let apiMatch = remoteGames.find(g => {
         const hNorm = normalizeName(g.home_team_name_en);
         const aNorm = normalizeName(g.away_team_name_en);
@@ -264,20 +299,9 @@ async function updateMatches() {
                (hNorm === t2NameNorm && aNorm === t1NameNorm);
       });
 
-      // 2. Fallback par index de match si TBD
-      if (!apiMatch) {
-        apiMatch = remoteGames[i];
-      }
-
       if (apiMatch) {
         const isReversed = normalizeName(apiMatch.home_team_name_en) === t2NameNorm;
         
-        const homeScore = apiMatch.home_score !== 'null' && apiMatch.home_score !== null ? parseInt(apiMatch.home_score) : null;
-        const awayScore = apiMatch.away_score !== 'null' && apiMatch.away_score !== null ? parseInt(apiMatch.away_score) : null;
-
-        const scoreT1 = isReversed ? awayScore : homeScore;
-        const scoreT2 = isReversed ? homeScore : awayScore;
-
         const finished = apiMatch.finished === 'TRUE';
         const isLive = !finished && apiMatch.time_elapsed !== 'notstarted' && apiMatch.time_elapsed !== null;
         
@@ -285,28 +309,37 @@ async function updateMatches() {
         if (finished) newStatus = 'FINISHED';
         else if (isLive) newStatus = 'IN_PLAY';
 
+        // Extraction des scores réels uniquement si le match est commencé/fini
+        const homeScore = (finished || isLive) && apiMatch.home_score !== 'null' && apiMatch.home_score !== null ? parseInt(apiMatch.home_score) : null;
+        const awayScore = (finished || isLive) && apiMatch.away_score !== 'null' && apiMatch.away_score !== null ? parseInt(apiMatch.away_score) : null;
+
+        const scoreT1 = isReversed ? awayScore : homeScore;
+        const scoreT2 = isReversed ? homeScore : awayScore;
+
         // Détecter les buts réels
         const goals = [];
-        const rawHomeGoals = parseScorersString(apiMatch.home_scorers);
-        const rawAwayGoals = parseScorersString(apiMatch.away_scorers);
+        if (scoreT1 !== null && scoreT2 !== null) {
+          const rawHomeGoals = parseScorersString(apiMatch.home_scorers);
+          const rawAwayGoals = parseScorersString(apiMatch.away_scorers);
 
-        for (const g of rawHomeGoals) {
-          goals.push({
-            team: isReversed ? 't2' : 't1',
-            scorer: g.name,
-            assistant: null,
-            minute: g.minute
-          });
+          for (const g of rawHomeGoals) {
+            goals.push({
+              team: isReversed ? 't2' : 't1',
+              scorer: g.name,
+              assistant: null,
+              minute: g.minute
+            });
+          }
+          for (const g of rawAwayGoals) {
+            goals.push({
+              team: isReversed ? 't1' : 't2',
+              scorer: g.name,
+              assistant: null,
+              minute: g.minute
+            });
+          }
+          goals.sort((a, b) => a.minute - b.minute);
         }
-        for (const g of rawAwayGoals) {
-          goals.push({
-            team: isReversed ? 't1' : 't2',
-            scorer: g.name,
-            assistant: null,
-            minute: g.minute
-          });
-        }
-        goals.sort((a, b) => a.minute - b.minute);
 
         // Mettre à jour si des données ont changé
         const hasScoreChanged = localMatch.t1Score !== scoreT1 || localMatch.t2Score !== scoreT2;
@@ -316,8 +349,12 @@ async function updateMatches() {
           updatedCount++;
           
           let stats = localMatch.stats;
-          if (scoreT1 !== null && scoreT2 !== null && (!stats || hasScoreChanged)) {
-            stats = generateStatsForScore(scoreT1, scoreT2);
+          if (scoreT1 !== null && scoreT2 !== null) {
+            if (!stats || hasScoreChanged) {
+              stats = generateStatsForScore(scoreT1, scoreT2);
+            }
+          } else {
+            stats = null;
           }
 
           matches[i] = {
@@ -330,6 +367,42 @@ async function updateMatches() {
             lastUpdated: new Date().toISOString()
           };
         }
+      } else {
+        // Si non trouvé dans l'API mais qu'on a des équipes définies, on s'assure qu'il est clean s'il n'a pas commencé
+        const hasScoreChanged = localMatch.t1Score !== null || localMatch.t2Score !== null;
+        const hasStatusChanged = localMatch.status !== 'TIMED';
+        if (hasScoreChanged || hasStatusChanged) {
+          updatedCount++;
+          matches[i] = {
+            ...localMatch,
+            t1Score: null,
+            t2Score: null,
+            status: 'TIMED',
+            goals: [],
+            stats: null,
+            lastUpdated: new Date().toISOString()
+          };
+        }
+      }
+    }
+
+    // Compter les matchs terminés par groupe pour savoir si un groupe est complété
+    const groupFinishedCounts = {};
+    for (const m of matches) {
+      if (!m.isKnockout && m.group) {
+        if (!groupFinishedCounts[m.group]) {
+          groupFinishedCounts[m.group] = 0;
+        }
+        if (m.status === 'FINISHED') {
+          groupFinishedCounts[m.group]++;
+        }
+      }
+    }
+
+    let completedGroupsCount = 0;
+    for (const group in groupFinishedCounts) {
+      if (groupFinishedCounts[group] === 6) {
+        completedGroupsCount++;
       }
     }
 
@@ -342,7 +415,8 @@ async function updateMatches() {
     thirdPlaces.sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
       if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-      return b.goalsFor - a.goalsFor;
+      if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+      return a.code.localeCompare(b.code);
     });
 
     const winners = {};
@@ -350,16 +424,14 @@ async function updateMatches() {
     for (const pair of r32Pairings) {
       const idx = matches.findIndex(m => m.normalizedId === pair.id);
       if (idx !== -1) {
-        const t1 = resolvePlaceholder(pair.t1, standings, thirdPlaces);
-        const t2 = resolvePlaceholder(pair.t2, standings, thirdPlaces);
+        const t1 = resolvePlaceholder(pair.t1, standings, thirdPlaces, groupFinishedCounts, completedGroupsCount);
+        const t2 = resolvePlaceholder(pair.t2, standings, thirdPlaces, groupFinishedCounts, completedGroupsCount);
         if (matches[idx].t1 !== t1 || matches[idx].t2 !== t2) {
           matches[idx].t1 = t1;
           matches[idx].t2 = t2;
           updatedCount++;
         }
-        if (matches[idx].status === 'FINISHED') {
-          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-        }
+        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
       }
     }
 
@@ -378,9 +450,7 @@ async function updateMatches() {
           matches[idx].t2 = t2;
           updatedCount++;
         }
-        if (matches[idx].status === 'FINISHED') {
-          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-        }
+        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
       }
     }
 
@@ -398,9 +468,7 @@ async function updateMatches() {
           matches[idx].t2 = t2;
           updatedCount++;
         }
-        if (matches[idx].status === 'FINISHED') {
-          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-        }
+        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
       }
     }
 
@@ -418,9 +486,7 @@ async function updateMatches() {
           matches[idx].t2 = t2;
           updatedCount++;
         }
-        if (matches[idx].status === 'FINISHED') {
-          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-        }
+        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
       }
     }
 
@@ -431,7 +497,7 @@ async function updateMatches() {
       const sf1 = matches.find(m => m.normalizedId === 'm77');
       const sf2 = matches.find(m => m.normalizedId === 'm78');
 
-      if (sf1 && sf2 && sf1.status === 'FINISHED' && sf2.status === 'FINISHED') {
+      if (sf1 && sf2) {
         const w1 = winners['m77'];
         const l1 = getMatchLoser(sf1);
         const w2 = winners['m78'];

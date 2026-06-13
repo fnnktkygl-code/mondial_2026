@@ -430,12 +430,16 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
             ),
             if (caption != null) ...[
               const SizedBox(width: 8),
-              Text(
-                caption,
-                style: const TextStyle(
-                  color: AppColors.textDim,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  caption,
+                  style: const TextStyle(
+                    color: AppColors.textDim,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
