@@ -4,16 +4,13 @@ const path = require('path');
 
 /**
  * Script de synchronisation des matchs pour Mondial 2026.
- * Essaie de récupérer les données depuis API-Football. En cas d'échec (plan Free, limite, etc.),
- * il bascule automatiquement en mode Simulation temporel (basé sur la date/heure actuelle).
+ * Récupère les vraies données de match (scores et buteurs réels) depuis l'API gratuite et ouverte worldcup26.ir.
+ * Si cette API est indisponible, il bascule sur le simulateur temporel automatique comme fallback.
  */
 
-const API_KEY = process.env.FOOTBALL_API_KEY;
-const BASE_URL = 'https://v3.football.api-sports.io';
-const LEAGUE_ID = 1; // World Cup
-const SEASON = 2026;
 const MATCHES_FILE = path.join(__dirname, '../assets/initial_matches.json');
 const DART_SQUAD_FILE = path.join(__dirname, '../lib/services/player_database_service.dart');
+const WORLDCUP_IR_URL = 'https://worldcup26.ir/get/games';
 
 const teamCodeToName = {
   'mx': 'Mexico', 'co': 'Colombia', 'cm': 'Cameroon', 'kr': 'South Korea',
@@ -67,11 +64,24 @@ const r32Pairings = [
   {'id': 'm64', 't1': '1K', 't2': '1L'}
 ];
 
+function normalizeName(name) {
+  if (!name) return "";
+  let normalized = name.trim().toLowerCase();
+  const accents = 'àáâãäåòóôõöøèéêëìíîïùúûüñç';
+  const without = 'aaaaaaooooooeeeeiiiiuuuunc';
+  for (let i = 0; i < accents.length; i++) {
+    normalized = normalized.split(accents[i]).join(without[i]);
+  }
+  normalized = normalized.replace(/[^a-z0-9\s]/g, ' ');
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  return normalized;
+}
+
 // Parser des effectifs depuis le fichier Dart
 function parseSquads() {
   try {
     if (!fs.existsSync(DART_SQUAD_FILE)) {
-      console.warn('⚠️ Fichier des squads Dart introuvable. Utilisation de pools vides.');
+      console.warn('⚠️ Fichier des squads Dart introuvable.');
       return {};
     }
     const content = fs.readFileSync(DART_SQUAD_FILE, 'utf8');
@@ -94,6 +104,28 @@ function parseSquads() {
     console.error('❌ Erreur lors du parsing des effectifs :', e.message);
     return {};
   }
+}
+
+function parseScorersString(str) {
+  if (!str || str === 'null' || str === '{}') return [];
+  let clean = str.replace(/[\{\}\"“”]/g, '');
+  if (!clean.trim()) return [];
+  
+  const items = clean.split(',').map(item => item.trim());
+  const goals = [];
+  
+  for (const item of items) {
+    const match = item.match(/^(.+?)\s+(\d+)(?:\+(\d+))?'/);
+    if (match) {
+      const name = match[1].trim();
+      const minute = parseInt(match[2]) + (match[3] ? parseInt(match[3]) : 0);
+      const isOG = item.includes('(OG)');
+      goals.push({ name, minute, isOG });
+    } else {
+      goals.push({ name: item, minute: 45, isOG: false });
+    }
+  }
+  return goals;
 }
 
 function normalizeMatchIds(matches) {
@@ -134,8 +166,28 @@ function normalizeMatchIds(matches) {
   });
 }
 
+function generateStatsForScore(score1, score2) {
+  const possessionT1 = 35 + Math.floor(Math.random() * 31);
+  const shotsT1 = score1 + Math.floor(Math.random() * 15);
+  const shotsT2 = score2 + Math.floor(Math.random() * 15);
+
+  return {
+    possessionT1,
+    shotsT1,
+    shotsT2,
+    shotsOnTargetT1: score1 + Math.floor(Math.random() * Math.max(1, shotsT1 - score1 + 1)),
+    shotsOnTargetT2: score2 + Math.floor(Math.random() * Math.max(1, shotsT2 - score2 + 1)),
+    foulsT1: 5 + Math.floor(Math.random() * 15),
+    foulsT2: 5 + Math.floor(Math.random() * 15),
+    yellowCardsT1: Math.floor(Math.random() * 5),
+    yellowCardsT2: Math.floor(Math.random() * 5),
+    redCardsT1: Math.random() > 0.95 ? 1 : 0,
+    redCardsT2: Math.random() > 0.95 ? 1 : 0
+  };
+}
+
+// SIMULATION DE MATCH (FALLBACK COMPLET)
 function simulateSingleMatch(match, squads) {
-  // Distribution de scores réalistes
   const score1 = Math.floor(Math.random() * 4);
   const score2 = Math.floor(Math.random() * 4);
   
@@ -163,7 +215,6 @@ function simulateSingleMatch(match, squads) {
     }
   }
 
-  // Buts et passeurs
   const goals = [];
   const t1Name = teamCodeToName[match.t1.toLowerCase()] || match.t1;
   const t2Name = teamCodeToName[match.t2.toLowerCase()] || match.t2;
@@ -172,60 +223,20 @@ function simulateSingleMatch(match, squads) {
 
   for (let i = 0; i < finalScore1; i++) {
     const scorer = t1Pool.length > 0 ? t1Pool[Math.floor(Math.random() * t1Pool.length)] : t1Name;
-    let assistant = null;
-    if (Math.random() > 0.5 && t1Pool.length > 1) {
-      const candidates = t1Pool.filter(p => p !== scorer);
-      assistant = candidates[Math.floor(Math.random() * candidates.length)];
-    }
-    goals.push({
-      team: 't1',
-      scorer,
-      assistant,
-      minute: Math.floor(Math.random() * 90) + 1
-    });
+    goals.push({ team: 't1', scorer, assistant: null, minute: Math.floor(Math.random() * 90) + 1 });
   }
-
   for (let i = 0; i < finalScore2; i++) {
     const scorer = t2Pool.length > 0 ? t2Pool[Math.floor(Math.random() * t2Pool.length)] : t2Name;
-    let assistant = null;
-    if (Math.random() > 0.5 && t2Pool.length > 1) {
-      const candidates = t2Pool.filter(p => p !== scorer);
-      assistant = candidates[Math.floor(Math.random() * candidates.length)];
-    }
-    goals.push({
-      team: 't2',
-      scorer,
-      assistant,
-      minute: Math.floor(Math.random() * 90) + 1
-    });
+    goals.push({ team: 't2', scorer, assistant: null, minute: Math.floor(Math.random() * 90) + 1 });
   }
   goals.sort((a, b) => a.minute - b.minute);
-
-  // Statistiques de match
-  const possessionT1 = 35 + Math.floor(Math.random() * 31);
-  const shotsT1 = finalScore1 + Math.floor(Math.random() * 15);
-  const shotsT2 = finalScore2 + Math.floor(Math.random() * 15);
-
-  const stats = {
-    possessionT1,
-    shotsT1,
-    shotsT2,
-    shotsOnTargetT1: finalScore1 + Math.floor(Math.random() * Math.max(1, shotsT1 - finalScore1 + 1)),
-    shotsOnTargetT2: finalScore2 + Math.floor(Math.random() * Math.max(1, shotsT2 - finalScore2 + 1)),
-    foulsT1: 5 + Math.floor(Math.random() * 15),
-    foulsT2: 5 + Math.floor(Math.random() * 15),
-    yellowCardsT1: Math.floor(Math.random() * 5),
-    yellowCardsT2: Math.floor(Math.random() * 5),
-    redCardsT1: Math.random() > 0.95 ? 1 : 0,
-    redCardsT2: Math.random() > 0.95 ? 1 : 0
-  };
 
   return {
     ...match,
     t1Score: finalScore1,
     t2Score: finalScore2,
     goals,
-    stats,
+    stats: generateStatsForScore(finalScore1, finalScore2),
     status: 'FINISHED',
     wentToET,
     wentToPK,
@@ -239,15 +250,7 @@ function calculateStandings(matches) {
   const standings = {};
   for (const group in groupsMap) {
     standings[group] = groupsMap[group].map(code => ({
-      code,
-      played: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      points: 0,
-      goalDifference: 0
+      code, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0
     }));
   }
 
@@ -259,27 +262,13 @@ function calculateStandings(matches) {
       const t2Entry = groupList.find(e => e.code === m.t2);
 
       if (t1Entry && t2Entry) {
-        t1Entry.played++;
-        t2Entry.played++;
-        t1Entry.goalsFor += m.t1Score;
-        t1Entry.goalsAgainst += m.t2Score;
-        t2Entry.goalsFor += m.t2Score;
-        t2Entry.goalsAgainst += m.t1Score;
+        t1Entry.played++; t2Entry.played++;
+        t1Entry.goalsFor += m.t1Score; t1Entry.goalsAgainst += m.t2Score;
+        t2Entry.goalsFor += m.t2Score; t2Entry.goalsAgainst += m.t1Score;
 
-        if (m.t1Score > m.t2Score) {
-          t1Entry.wins++;
-          t1Entry.points += 3;
-          t2Entry.losses++;
-        } else if (m.t1Score < m.t2Score) {
-          t2Entry.wins++;
-          t2Entry.points += 3;
-          t1Entry.losses++;
-        } else {
-          t1Entry.draws++;
-          t1Entry.points += 1;
-          t2Entry.draws++;
-          t2Entry.points += 1;
-        }
+        if (m.t1Score > m.t2Score) { t1Entry.wins++; t1Entry.points += 3; t2Entry.losses++; }
+        else if (m.t1Score < m.t2Score) { t2Entry.wins++; t2Entry.points += 3; t1Entry.losses++; }
+        else { t1Entry.draws++; t1Entry.points += 1; t2Entry.draws++; t2Entry.points += 1; }
         t1Entry.goalDifference = t1Entry.goalsFor - t1Entry.goalsAgainst;
         t2Entry.goalDifference = t2Entry.goalsFor - t2Entry.goalsAgainst;
       }
@@ -293,18 +282,15 @@ function calculateStandings(matches) {
       return b.goalsFor - a.goalsFor;
     });
   }
-
   return standings;
 }
 
 function resolvePlaceholder(placeholder, standings, thirdPlaces) {
   if (placeholder.startsWith('1')) {
-    const group = placeholder.substring(1);
-    return standings[group][0].code;
+    return standings[placeholder.substring(1)][0].code;
   }
   if (placeholder.startsWith('2')) {
-    const group = placeholder.substring(1);
-    return standings[group][1].code;
+    return standings[placeholder.substring(1)][1].code;
   }
   if (placeholder.startsWith('3rd')) {
     const idx = parseInt(placeholder.substring(3)) - 1;
@@ -324,9 +310,9 @@ function getMatchLoser(m) {
   return m.t1 === w ? m.t2 : m.t1;
 }
 
-// SIMULATEUR AUTOMATIQUE TEMPOREL
+// BASCULE DE SIMULATION TEMPORELLE (FALLBACK)
 function runSimulationFallback() {
-  console.log('🤖 DÉBUT DU MODE SIMULATION AUTOMATIQUE (BASCULE...)');
+  console.log('🤖 MODE SIMULATION AUTOMATIQUE (FALLBACK...)');
   const squads = parseSquads();
   
   if (!fs.existsSync(MATCHES_FILE)) {
@@ -337,8 +323,6 @@ function runSimulationFallback() {
   const localData = JSON.parse(fs.readFileSync(MATCHES_FILE, 'utf8'));
   const matches = normalizeMatchIds(localData);
   const now = new Date();
-
-  console.log(`Données locales : ${matches.length} matchs. Heure actuelle : ${now.toISOString()}`);
 
   let simulatedCount = 0;
 
@@ -355,8 +339,6 @@ function runSimulationFallback() {
   }
 
   const standings = calculateStandings(matches);
-  
-  // Meilleurs 3èmes
   const thirdPlaces = [];
   for (const group in standings) {
     if (standings[group][2]) thirdPlaces.push(standings[group][2]);
@@ -472,10 +454,8 @@ function runSimulationFallback() {
       const w2 = winners['m78'];
       const l2 = getMatchLoser(sf2);
 
-      matches[m79Idx].t1 = l1;
-      matches[m79Idx].t2 = l2;
-      matches[m80Idx].t1 = w1;
-      matches[m80Idx].t2 = w2;
+      matches[m79Idx].t1 = l1; matches[m79Idx].t2 = l2;
+      matches[m80Idx].t1 = w1; matches[m80Idx].t2 = w2;
 
       if (new Date(matches[m79Idx].date) <= now && matches[m79Idx].status !== 'FINISHED') {
         matches[m79Idx] = simulateSingleMatch(matches[m79Idx], squads);
@@ -488,17 +468,14 @@ function runSimulationFallback() {
     }
   }
 
-  // Supprimer la clé temporaire 'normalizedId' avant l'écriture
   const finalMatches = matches.map(m => {
     const copy = { ...m };
     delete copy.normalizedId;
     return copy;
   });
 
-  // Sauvegarder
   fs.writeFileSync(MATCHES_FILE, JSON.stringify(finalMatches, null, 2));
 
-  // Mettre à jour matches_meta.json
   const metaFile = path.join(__dirname, '../assets/matches_meta.json');
   if (fs.existsSync(metaFile)) {
     const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
@@ -506,21 +483,15 @@ function runSimulationFallback() {
     meta.finishedMatches = finalMatches.filter(m => m.status === 'FINISHED').length;
     meta.source = 'auto-simulation';
     fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2));
-    console.log('✅ assets/matches_meta.json mis à jour.');
   }
 
-  console.log(`✅ Mode Simulation terminé : ${simulatedCount} nouveaux matchs simulés.`);
-  process.exit(0); // Exit code 0 pour que GitHub Actions n'affiche pas d'erreur
+  console.log(`✅ Fallback simulation terminé : ${simulatedCount} matchs.`);
+  process.exit(0);
 }
 
+// SYNCHRONISATION VIA VRAIE API GRATUITE WORLDCUP26.IR
 async function updateMatches() {
-  if (!API_KEY) {
-    console.warn('⚠️ FOOTBALL_API_KEY non définie.');
-    runSimulationFallback();
-    return;
-  }
-
-  console.log('--- SYNCHRONISATION DES MATCHS via API-FOOTBALL ---');
+  console.log('📡 RÉCUPÉRATION DES VRAIES DONNÉES DE MATCH DEPUIS WORLDCUP26.IR...');
 
   try {
     if (!fs.existsSync(MATCHES_FILE)) {
@@ -528,128 +499,252 @@ async function updateMatches() {
       process.exit(1);
     }
     const localData = JSON.parse(fs.readFileSync(MATCHES_FILE, 'utf8'));
-    console.log(`Fichier local chargé : ${localData.length} matchs.`);
+    const squads = parseSquads();
 
-    console.log(`Récupération des données API (League ${LEAGUE_ID}, Season ${SEASON})...`);
-    const response = await axios.get(`${BASE_URL}/fixtures`, {
-      headers: { 'x-apisports-key': API_KEY },
-      params: { league: LEAGUE_ID, season: SEASON }
-    }).catch(err => {
-      if (err.response) {
-        console.error(`❌ Erreur API (${err.response.status}):`, JSON.stringify(err.response.data));
-      } else {
-        console.error(`❌ Erreur Réseau :`, err.message);
-      }
+    const response = await axios.get(WORLDCUP_IR_URL).catch(err => {
+      console.error(`❌ Erreur Réseau sur worldcup26.ir :`, err.message);
       throw err;
     });
 
-    const remoteFixtures = response.data.response;
-    if (!remoteFixtures || remoteFixtures.length === 0) {
-      console.warn('❌ Erreur : Aucun match trouvé sur l\'API ou quota dépassé.');
-      if (response.data.errors) console.warn('Détails des erreurs API:', JSON.stringify(response.data.errors));
+    const remoteGames = response.data.games;
+    if (!remoteGames || remoteGames.length === 0) {
+      console.warn('❌ Aucun match retourné par worldcup26.ir. Bascule en fallback...');
       runSimulationFallback();
       return;
     }
 
-    console.log(`✅ ${remoteFixtures.length} matchs récupérés depuis l'API.`);
+    console.log(`✅ ${remoteGames.length} vrais matchs récupérés.`);
+
+    // D'abord, on normalise les ID pour pouvoir reconstruire l'arbre de la phase finale si besoin
+    const matches = normalizeMatchIds(localData);
 
     let updatedCount = 0;
-    let matchFoundCount = 0;
-    const updatedMatches = localData.map(localMatch => {
-      const apiId = parseInt(localMatch.id.replace('g_', ''));
-      const apiMatch = remoteFixtures.find(f => f.fixture.id === apiId);
+
+    for (let i = 0; i < matches.length; i++) {
+      const localMatch = matches[i];
+      const t1Name = teamCodeToName[localMatch.t1.toLowerCase()];
+      const t2Name = teamCodeToName[localMatch.t2.toLowerCase()];
+      const t1NameNorm = normalizeName(t1Name);
+      const t2NameNorm = normalizeName(t2Name);
+
+      // 1. Chercher par correspondance de nom d'équipes
+      let apiMatch = remoteGames.find(g => {
+        const hNorm = normalizeName(g.home_team_name_en);
+        const aNorm = normalizeName(g.away_team_name_en);
+        return (hNorm === t1NameNorm && aNorm === t2NameNorm) ||
+               (hNorm === t2NameNorm && aNorm === t1NameNorm);
+      });
+
+      // 2. Fallback par index de match si TBD
+      if (!apiMatch) {
+        apiMatch = remoteGames[i];
+      }
 
       if (apiMatch) {
-        matchFoundCount++;
+        // Détecter si le match est inversé par rapport à notre sens local
+        const isReversed = normalizeName(apiMatch.home_team_name_en) === t2NameNorm;
         
-        const statusChanged = localMatch.status !== (apiMatch.fixture.status.short === 'FT' ? 'FINISHED' : 
-                               (apiMatch.fixture.status.short === 'NS' ? 'TIMED' : 'LIVE'));
-        const scoreChanged = localMatch.t1Score !== apiMatch.goals.home || localMatch.t2Score !== apiMatch.goals.away;
+        const homeScore = apiMatch.home_score !== 'null' && apiMatch.home_score !== null ? parseInt(apiMatch.home_score) : null;
+        const awayScore = apiMatch.away_score !== 'null' && apiMatch.away_score !== null ? parseInt(apiMatch.away_score) : null;
 
-        if (statusChanged || scoreChanged) {
-          updatedCount++;
-        }
+        const scoreT1 = isReversed ? awayScore : homeScore;
+        const scoreT2 = isReversed ? homeScore : awayScore;
+
+        const finished = apiMatch.finished === 'TRUE';
+        const isLive = !finished && apiMatch.time_elapsed !== 'notstarted' && apiMatch.time_elapsed !== null;
         
-        let stats = null;
-        if (apiMatch.statistics && apiMatch.statistics.length > 0) {
-          const s1 = apiMatch.statistics[0].statistics;
-          const s2 = apiMatch.statistics[1].statistics;
-          
-          const getVal = (statsArray, type) => {
-            const found = statsArray.find(s => s.type === type);
-            if (!found || found.value === null) return 0;
-            return parseInt(found.value.toString().replace('%', '')) || 0;
-          };
+        let newStatus = 'TIMED';
+        if (finished) newStatus = 'FINISHED';
+        else if (isLive) newStatus = 'IN_PLAY';
 
-          stats = {
-            possessionT1: getVal(s1, 'Ball Possession'),
-            shotsT1: getVal(s1, 'Total Shots'),
-            shotsT2: getVal(s2, 'Total Shots'),
-            shotsOnTargetT1: getVal(s1, 'Shots on Goal'),
-            shotsOnTargetT2: getVal(s2, 'Shots on Goal'),
-            foulsT1: getVal(s1, 'Fouls'),
-            foulsT2: getVal(s2, 'Fouls'),
-            yellowCardsT1: getVal(s1, 'Yellow Cards'),
-            yellowCardsT2: getVal(s2, 'Yellow Cards'),
-            redCardsT1: getVal(s1, 'Red Cards'),
-            redCardsT2: getVal(s2, 'Red Cards')
-          };
-        }
-
+        // Détecter les buts réels
         const goals = [];
-        if (apiMatch.events) {
-          apiMatch.events.forEach(event => {
-            if (event.type === 'Goal') {
-              goals.push({
-                team: event.team.id === apiMatch.teams.home.id ? 't1' : 't2',
-                scorer: event.player.name,
-                assistant: event.assist.name || null,
-                minute: event.time.elapsed + (event.time.extra || 0)
-              });
-            }
+        const rawHomeGoals = parseScorersString(apiMatch.home_scorers);
+        const rawAwayGoals = parseScorersString(apiMatch.away_scorers);
+
+        for (const g of rawHomeGoals) {
+          goals.push({
+            team: isReversed ? 't2' : 't1',
+            scorer: g.name,
+            assistant: null, // Pas d'assistant fourni, géré en null
+            minute: g.minute
           });
         }
+        for (const g of rawAwayGoals) {
+          goals.push({
+            team: isReversed ? 't1' : 't2',
+            scorer: g.name,
+            assistant: null,
+            minute: g.minute
+          });
+        }
+        goals.sort((a, b) => a.minute - b.minute);
 
-        return {
-          ...localMatch,
-          t1Score: apiMatch.goals.home,
-          t2Score: apiMatch.goals.away,
-          status: apiMatch.fixture.status.short === 'FT' ? 'FINISHED' : 
-                  (apiMatch.fixture.status.short === 'NS' ? 'TIMED' : 'LIVE'),
-          wentToET: apiMatch.fixture.status.short === 'AET',
-          wentToPK: apiMatch.fixture.status.short === 'PEN',
-          etWinner: apiMatch.fixture.status.short === 'AET' ? 
-                    (apiMatch.teams.home.winner ? localMatch.t1 : localMatch.t2) : null,
-          pkWinner: apiMatch.fixture.status.short === 'PEN' ? 
-                    (apiMatch.teams.home.winner ? localMatch.t1 : localMatch.t2) : null,
-          lastUpdated: new Date().toISOString(),
-          goals: goals,
-          stats: stats
-        };
+        // Mettre à jour si des données ont changé
+        const hasScoreChanged = localMatch.t1Score !== scoreT1 || localMatch.t2Score !== scoreT2;
+        const hasStatusChanged = localMatch.status !== newStatus;
+
+        if (hasScoreChanged || hasStatusChanged || localMatch.goals.length !== goals.length) {
+          updatedCount++;
+          
+          let stats = localMatch.stats;
+          // Si le match a été joué mais qu'on a pas de stats locales, on génère des stats de match réalistes
+          if (scoreT1 !== null && scoreT2 !== null && (!stats || hasScoreChanged)) {
+            stats = generateStatsForScore(scoreT1, scoreT2);
+          }
+
+          matches[i] = {
+            ...localMatch,
+            t1Score: scoreT1,
+            t2Score: scoreT2,
+            status: newStatus,
+            goals: goals,
+            stats: stats,
+            lastUpdated: new Date().toISOString()
+          };
+        }
       }
-      return localMatch;
+    }
+
+    // Reconstruction du tableau final de manière dynamique à partir des résultats réels obtenus
+    const standings = calculateStandings(matches);
+    const thirdPlaces = [];
+    for (const group in standings) {
+      if (standings[group][2]) thirdPlaces.push(standings[group][2]);
+    }
+    thirdPlaces.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+      return b.goalsFor - a.goalsFor;
     });
 
-    fs.writeFileSync(MATCHES_FILE, JSON.stringify(updatedMatches, null, 2));
+    const winners = {};
+
+    // Mettre à jour la structure des qualifiés pour le Round of 32 et phases suivantes si les matchs sont résolus
+    for (const pair of r32Pairings) {
+      const idx = matches.findIndex(m => m.normalizedId === pair.id);
+      if (idx !== -1) {
+        const t1 = resolvePlaceholder(pair.t1, standings, thirdPlaces);
+        const t2 = resolvePlaceholder(pair.t2, standings, thirdPlaces);
+        // Si les équipes ont changé / ont été résolues, on met à jour
+        if (matches[idx].t1 !== t1 || matches[idx].t2 !== t2) {
+          matches[idx].t1 = t1;
+          matches[idx].t2 = t2;
+          updatedCount++;
+        }
+        if (matches[idx].status === 'FINISHED') {
+          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
+        }
+      }
+    }
+
+    const r16Pairs = [
+      ['m49', 'm50'], ['m51', 'm52'], ['m53', 'm54'], ['m55', 'm56'],
+      ['m57', 'm58'], ['m59', 'm60'], ['m61', 'm62'], ['m63', 'm64']
+    ];
+    for (let i = 0; i < r16Pairs.length; i++) {
+      const id = `m${65 + i}`;
+      const idx = matches.findIndex(m => m.normalizedId === id);
+      if (idx !== -1) {
+        const t1 = winners[r16Pairs[i][0]] || 'TBD';
+        const t2 = winners[r16Pairs[i][1]] || 'TBD';
+        if (matches[idx].t1 !== t1 || matches[idx].t2 !== t2) {
+          matches[idx].t1 = t1;
+          matches[idx].t2 = t2;
+          updatedCount++;
+        }
+        if (matches[idx].status === 'FINISHED') {
+          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
+        }
+      }
+    }
+
+    const qfPairs = [
+      ['m65', 'm66'], ['m67', 'm68'], ['m69', 'm70'], ['m71', 'm72']
+    ];
+    for (let i = 0; i < qfPairs.length; i++) {
+      const id = `m${73 + i}`;
+      const idx = matches.findIndex(m => m.normalizedId === id);
+      if (idx !== -1) {
+        const t1 = winners[qfPairs[i][0]] || 'TBD';
+        const t2 = winners[qfPairs[i][1]] || 'TBD';
+        if (matches[idx].t1 !== t1 || matches[idx].t2 !== t2) {
+          matches[idx].t1 = t1;
+          matches[idx].t2 = t2;
+          updatedCount++;
+        }
+        if (matches[idx].status === 'FINISHED') {
+          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
+        }
+      }
+    }
+
+    const sfPairs = [
+      ['m73', 'm74'], ['m75', 'm76']
+    ];
+    for (let i = 0; i < sfPairs.length; i++) {
+      const id = `m${77 + i}`;
+      const idx = matches.findIndex(m => m.normalizedId === id);
+      if (idx !== -1) {
+        const t1 = winners[sfPairs[i][0]] || 'TBD';
+        const t2 = winners[sfPairs[i][1]] || 'TBD';
+        if (matches[idx].t1 !== t1 || matches[idx].t2 !== t2) {
+          matches[idx].t1 = t1;
+          matches[idx].t2 = t2;
+          updatedCount++;
+        }
+        if (matches[idx].status === 'FINISHED') {
+          winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
+        }
+      }
+    }
+
+    const m79Idx = matches.findIndex(m => m.normalizedId === 'm79');
+    const m80Idx = matches.findIndex(m => m.normalizedId === 'm80');
     
+    if (m79Idx !== -1 && m80Idx !== -1) {
+      const sf1 = matches.find(m => m.normalizedId === 'm77');
+      const sf2 = matches.find(m => m.normalizedId === 'm78');
+
+      if (sf1 && sf2 && sf1.status === 'FINISHED' && sf2.status === 'FINISHED') {
+        const w1 = winners['m77'];
+        const l1 = getMatchLoser(sf1);
+        const w2 = winners['m78'];
+        const l2 = getMatchLoser(sf2);
+
+        if (matches[m79Idx].t1 !== l1 || matches[m79Idx].t2 !== l2) {
+          matches[m79Idx].t1 = l1; matches[m79Idx].t2 = l2;
+          updatedCount++;
+        }
+        if (matches[m80Idx].t1 !== w1 || matches[m80Idx].t2 !== w2) {
+          matches[m80Idx].t1 = w1; matches[m80Idx].t2 = w2;
+          updatedCount++;
+        }
+      }
+    }
+
+    // Nettoyer la clé normalizedId
+    const finalMatches = matches.map(m => {
+      const copy = { ...m };
+      delete copy.normalizedId;
+      return copy;
+    });
+
+    fs.writeFileSync(MATCHES_FILE, JSON.stringify(finalMatches, null, 2));
+
     const metaFile = path.join(__dirname, '../assets/matches_meta.json');
     if (fs.existsSync(metaFile)) {
       const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
       meta.lastUpdated = new Date().toISOString();
-      meta.finishedMatches = updatedMatches.filter(m => m.status === 'FINISHED').length;
+      meta.finishedMatches = finalMatches.filter(m => m.status === 'FINISHED').length;
+      meta.source = 'worldcup26.ir';
       fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2));
-      console.log('✅ assets/matches_meta.json mis à jour.');
     }
 
-    console.log(`✅ Analyse API terminée : ${matchFoundCount}/${localData.length} matchs identifiés, ${updatedCount} nouveaux changements.`);
-
-    if (matchFoundCount === 0) {
-      console.warn('⚠️ Aucun match trouvé dans la réponse API. Bascule en mode simulation...');
-      runSimulationFallback();
-    }
+    console.log(`✅ Synchronisation réelle réussie. ${updatedCount} matchs mis à jour.`);
 
   } catch (error) {
-    console.error('❌ Erreur critique :', error.message);
+    console.error('❌ Erreur lors de la synchronisation réelle, bascule en simulation fallback...', error.message);
     runSimulationFallback();
   }
 }
