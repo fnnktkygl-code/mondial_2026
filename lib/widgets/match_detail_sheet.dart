@@ -647,6 +647,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       );
     }
 
+    final errorMsg = _validatePredictionLogic();
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -712,14 +714,37 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             const SizedBox(height: 20),
             _buildKnockoutPredictionControls(),
           ],
+          if (errorMsg != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.danger.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: AppColors.danger, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      errorMsg,
+                      style: const TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _saveLocalPrediction,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.black,
+                backgroundColor: errorMsg == null ? AppColors.accent : AppColors.card,
+                foregroundColor: errorMsg == null ? Colors.black : AppColors.textDim,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
@@ -732,6 +757,52 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         ],
       ),
     );
+  }
+
+  String? _validatePredictionLogic() {
+    final t1En = AppTranslations.getTeam('en', widget.match.t1);
+    final t2En = AppTranslations.getTeam('en', widget.match.t2);
+    
+    int t1ScorerGoals = 0;
+    int t2ScorerGoals = 0;
+    
+    for (final entry in _localPredictedScorers.entries) {
+      final player = entry.key;
+      final goals = entry.value;
+      final team = PlayerDatabaseService.getTeamForPlayer(player);
+      if (team == t1En) {
+        t1ScorerGoals += goals;
+      } else if (team == t2En) {
+        t2ScorerGoals += goals;
+      }
+    }
+    
+    final expectedT1 = _localT1Score ?? 0;
+    final expectedT2 = _localT2Score ?? 0;
+    
+    if (t1ScorerGoals != expectedT1) {
+      final teamName = AppTranslations.getTeam(widget.lang, widget.match.t1);
+      if (widget.lang == 'fr') {
+        return "Le total de buts des buteurs de $teamName ($t1ScorerGoals) doit être égal au score pronostiqué ($expectedT1).";
+      } else if (widget.lang == 'es') {
+        return "El total de goles de los goleadores de $teamName ($t1ScorerGoals) debe ser igual al marcador pronosticado ($expectedT1).";
+      } else {
+        return "Total goals for $teamName scorers ($t1ScorerGoals) must equal the predicted score ($expectedT1).";
+      }
+    }
+    
+    if (t2ScorerGoals != expectedT2) {
+      final teamName = AppTranslations.getTeam(widget.lang, widget.match.t2);
+      if (widget.lang == 'fr') {
+        return "Le total de buts des buteurs de $teamName ($t2ScorerGoals) doit être égal au score pronostiqué ($expectedT2).";
+      } else if (widget.lang == 'es') {
+        return "El total de goles de los goleadores de $teamName ($t2ScorerGoals) debe ser igual al marcador pronosticado ($expectedT2).";
+      } else {
+        return "Total goals for $teamName scorers ($t2ScorerGoals) must equal the predicted score ($expectedT2).";
+      }
+    }
+    
+    return null;
   }
 
   void _onPredictionChanged() {
@@ -751,6 +822,23 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   void _saveLocalPrediction() async {
+    final error = _validatePredictionLogic();
+    if (error != null) {
+      HapticFeedback.vibrate();
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.danger,
+          content: Text(
+            error,
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ),
+      );
+      return;
+    }
+
     HapticFeedback.mediumImpact();
     if (widget.onPredictionChanged != null) {
       widget.onPredictionChanged!(
@@ -761,7 +849,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         _localPredictedScorers,
       );
     }
-
     
     if (widget.canUseBooster && widget.onSetBooster != null) {
       final confirmed = await _showProactiveBoosterDialog();
@@ -772,6 +859,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
     if (mounted) {
       setState(() => _isEditing = false);
+      Navigator.pop(context);
     }
   }
 
