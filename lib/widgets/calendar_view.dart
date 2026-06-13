@@ -72,18 +72,35 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
       return;
     }
 
-    WorldCupMatch? nextMatch;
+    WorldCupMatch? targetMatch;
+    
+    // 1. Look for a live match (currently playing)
     try {
-      nextMatch = widget.matches.firstWhere(
-            (m) => !m.isPlayed && m.date.isAfter(now),
-      );
+      targetMatch = widget.matches.firstWhere((m) {
+        final localDate = m.date.toLocal();
+        final duration = m.isKnockout 
+            ? const Duration(minutes: 180) 
+            : const Duration(minutes: 120);
+        return !m.isPlayed && 
+            m.status != 'FINISHED' && 
+            now.isAfter(localDate) && 
+            now.isBefore(localDate.add(duration));
+      });
     } catch (_) {
-      if (widget.matches.isNotEmpty) {
-        nextMatch = widget.matches.last;
+      // 2. If no live match, look for the next upcoming match
+      try {
+        targetMatch = widget.matches.firstWhere(
+          (m) => !m.isPlayed && m.status != 'FINISHED' && m.date.isAfter(now),
+        );
+      } catch (_) {
+        // 3. Fallback to the last match if all are played
+        if (widget.matches.isNotEmpty) {
+          targetMatch = widget.matches.last;
+        }
       }
     }
 
-    final targetDate = nextMatch != null ? nextMatch.date : _tournamentStart;
+    final targetDate = targetMatch != null ? targetMatch.date : _tournamentStart;
     _targetMatchDate = targetDate;
 
     final daysSinceMonday = targetDate.weekday - DateTime.monday;
@@ -115,7 +132,10 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     try {
       final relevantMatch = targetDayMatches.firstWhere((m) {
-        final matchEndThreshold = m.date.add(const Duration(minutes: 105));
+        final duration = m.isKnockout 
+            ? const Duration(minutes: 180) 
+            : const Duration(minutes: 120);
+        final matchEndThreshold = m.date.add(duration);
         return !m.isPlayed && now.isBefore(matchEndThreshold);
       });
       targetHour = relevantMatch.date.hour;
@@ -190,7 +210,7 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     const double rowHeight = 110.0;
     const double colWidth = 175.0;
-    const double matchDuration = 2.0;
+
 
     final dayFormat = DateFormat('yyyy-MM-dd');
     final localizedDayFormat = DateFormat('E d MMM', widget.lang);
@@ -465,13 +485,14 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
                                           );
                                         }),
 
-                                        ...dayMatches.map((m) {
+                        ...dayMatches.map((m) {
                                           final topOffset =
                                               ((m.date.hour - minHour) +
                                                   (m.date.minute / 60)) *
                                                   rowHeight;
+                                          final double dynamicDuration = (m.wentToET == true || m.wentToPK == true) ? 3.0 : 2.0;
                                           final blockHeight =
-                                              matchDuration * rowHeight;
+                                              dynamicDuration * rowHeight;
                                           final simultaneous = dayMatches
                                               .where(
                                                 (x) =>
