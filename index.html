@@ -1252,8 +1252,14 @@
     if (event) event.preventDefault();
     if (!currentPayload) return;
     
-    const scheme = "mondial2026://group?group=" + currentPayload;
-    window.location.href = scheme;
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      const intentUrl = "intent://group?group=" + currentPayload + "#Intent;scheme=mondial2026;package=com.mondial2026.mondial_2026;end";
+      window.location.href = intentUrl;
+    } else {
+      const scheme = "mondial2026://group?group=" + currentPayload;
+      window.location.href = scheme;
+    }
     
     const statusText = document.getElementById("invite-status-text");
     if (statusText) {
