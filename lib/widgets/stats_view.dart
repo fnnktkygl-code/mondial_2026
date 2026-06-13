@@ -933,14 +933,14 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                       Text(teamEmblemName,
                           style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 2),
                       if (teamRealGroup.isNotEmpty)
                         Text(
                           '${AppTranslations.get(widget.lang, 'group')} $teamRealGroup',
                           style: const TextStyle(
-                              color: AppColors.textDim, fontSize: 12),
+                              color: AppColors.textDim, fontSize: 13),
                         ),
                     ],
                   ),
@@ -976,7 +976,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                         AppTranslations.get(widget.lang, 'recentForm'),
                         style: const TextStyle(
                             color: AppColors.textDim,
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 6),
@@ -986,7 +986,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                             widget.lang, 'noMatchesPlayed'),
                         style: const TextStyle(
                             color: AppColors.textDim,
-                            fontSize: 11,
+                            fontSize: 13,
                             fontStyle: FontStyle.italic),
                       )
                           : Row(
@@ -1026,7 +1026,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
             style: const TextStyle(
                 color: AppColors.accent,
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontSize: 15,
                 letterSpacing: 0.5),
           ),
           const SizedBox(height: 12),
@@ -1070,7 +1070,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                     label,
                     style: const TextStyle(
                         color: AppColors.textDim,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1079,7 +1079,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   Text(value,
                       style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 15,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -1119,7 +1119,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                       Expanded(
                         child: Text(t1Name,
                             style: const TextStyle(
-                                color: Colors.white, fontSize: 11),
+                                color: Colors.white, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                       ),
@@ -1128,7 +1128,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                             style: const TextStyle(
                                 color: AppColors.accent,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12)),
+                                fontSize: 14)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -1138,7 +1138,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                       Expanded(
                         child: Text(t2Name,
                             style: const TextStyle(
-                                color: Colors.white, fontSize: 11),
+                                color: Colors.white, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                       ),
@@ -1147,7 +1147,7 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                             style: const TextStyle(
                                 color: AppColors.accent,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12)),
+                                fontSize: 14)),
                     ],
                   ),
                 ],
@@ -1164,13 +1164,13 @@ class _TeamStatsWidgetState extends State<TeamStatsWidget> {
                   style: TextStyle(
                       color: AppColors.textDim,
                       fontWeight: FontWeight.bold,
-                      fontSize: 10))
+                      fontSize: 11))
             else
               Text(m.getFormattedTime(),
                   style: const TextStyle(
                       color: AppColors.accent,
                       fontWeight: FontWeight.bold,
-                      fontSize: 10)),
+                      fontSize: 11)),
           ],
         ),
       ),
