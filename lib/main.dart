@@ -323,9 +323,45 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // 2. Deep Links
-    if (_pendingGroupPayload != null) {
-      final payload = _pendingGroupPayload!;
+    String? startupPayload = _pendingGroupPayload;
+    if (startupPayload == null) {
+      try {
+        final queryParams = Uri.base.queryParameters;
+        if (queryParams.containsKey('group')) {
+          startupPayload = queryParams['group']!;
+        }
+      } catch (_) {}
+    }
+
+    if (startupPayload != null && startupPayload.isNotEmpty) {
+      final payload = startupPayload;
+      if (kIsWeb) {
+        bool skipPrompt = false;
+        try {
+          skipPrompt = Uri.base.queryParameters['skip_prompt'] == 'true';
+        } catch (_) {}
+        if (!skipPrompt) {
+          final confirm = await _showOpenInAppDialog(payload);
+          if (confirm) {
+            try {
+              final opened = await launchUrl(
+                Uri.parse("mondial2026://group?group=$payload"),
+                mode: LaunchMode.externalApplication,
+              );
+              if (opened) {
+                _pendingGroupPayload = null;
+                return; // Native app successfully opened, abort Web initialization
+              }
+            } catch (e) {
+              debugPrint("Could not launch custom scheme: $e");
+            }
+          }
+        }
+      }
+
+      // Normal joining/onboarding flow
       if (userPreds.username.isEmpty || userPreds.supportedTeam == null || userPreds.supportedTeam!.isEmpty) {
+        _pendingGroupPayload = payload;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             _showProfileModal();
@@ -342,35 +378,6 @@ class _MyHomePageState extends State<MyHomePage> {
           _challengeViewKey = UniqueKey();
         });
         _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
-      }
-    } else {
-      try {
-        final queryParams = Uri.base.queryParameters;
-        if (queryParams.containsKey('group')) {
-          final base64Payload = queryParams['group']!;
-          if (base64Payload.isNotEmpty) {
-            if (userPreds.username.isEmpty || userPreds.supportedTeam == null || userPreds.supportedTeam!.isEmpty) {
-              _pendingGroupPayload = base64Payload;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  _showProfileModal();
-                  _showBeautifulSnackBar(AppTranslations.get(_lang, 'pleaseCompleteProfileToJoin'));
-                }
-              });
-            } else {
-              await PredictionService.joinCustomGroup(base64Payload);
-              if (!mounted) return;
-              setState(() {
-                _activeTab = 'challenge';
-                _challengeInitialSubTab = 'groups';
-                _challengeViewKey = UniqueKey();
-              });
-              _showBeautifulSnackBar(AppTranslations.get(_lang, 'groupJoined'));
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint("Deep link error: $e");
       }
     }
 
@@ -459,6 +466,27 @@ class _MyHomePageState extends State<MyHomePage> {
       if (queryParams.containsKey('group')) {
         final base64Payload = queryParams['group']!;
         if (base64Payload.isNotEmpty) {
+          if (kIsWeb && !_isLoading && mounted) {
+            bool skipPrompt = false;
+            try {
+              skipPrompt = uri.queryParameters['skip_prompt'] == 'true';
+            } catch (_) {}
+            if (!skipPrompt) {
+              final confirm = await _showOpenInAppDialog(base64Payload);
+              if (confirm) {
+                try {
+                  final opened = await launchUrl(
+                    Uri.parse("mondial2026://group?group=$base64Payload"),
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (opened) return; // Native app successfully opened, stop Web flow
+                } catch (e) {
+                  debugPrint("Could not launch custom scheme: $e");
+                }
+              }
+            }
+          }
+
           final upreds = _userPreds;
           // If predictions/profile is not loaded yet or username is empty, store as pending
           if (upreds == null || upreds.username.isEmpty || upreds.supportedTeam == null || upreds.supportedTeam!.isEmpty) {
@@ -489,6 +517,42 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (e) {
       debugPrint("Error handling deep link: $e");
     }
+  }
+
+  Future<bool> _showOpenInAppDialog(String payload) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Text('🌍', style: TextStyle(fontSize: 20)),
+            SizedBox(width: 10),
+            Text('Ouvrir dans l\'application ?', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Voulez-vous ouvrir ce groupe d\'invitation dans l\'application Prono Challenge de votre appareil pour une meilleure expérience ?',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Rester sur le Web', style: TextStyle(color: AppColors.textDim)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Ouvrir l\'application', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 
   void _showAnthemsModal() {

@@ -885,6 +885,6 @@ class PredictionService {
 
   static String getShareLink(String groupId, String inviteToken) {
     final payload = base64Url.encode(utf8.encode('${groupId}_$inviteToken'));
-    return 'https://fnnktkygl-code.github.io/mondial_2026/app.html?group=$payload';
+    return 'https://fnnktkygl-code.github.io/mondial_2026/index.html?group=$payload';
   }
 }
