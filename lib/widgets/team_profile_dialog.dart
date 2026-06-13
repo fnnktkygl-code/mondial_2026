@@ -744,46 +744,123 @@ class _WCTeamProfileDialogState extends State<WCTeamProfileDialog> {
   Widget _buildTrophyBadge(String trophy) {
     final lower = trophy.toLowerCase();
     String? assetPath;
+    String? fallbackAssetPath;
     IconData fallbackIcon = Icons.emoji_events_rounded;
     Color fallbackColor = Colors.amber;
 
-    if (lower.contains('coupe du monde') || lower.contains('world cup') || lower.contains('copa mundial')) {
-      assetPath = 'assets/logos/fifa_logo_light.png';
+    if (lower.contains('coupe du monde') || lower.contains('world cup') || lower.contains('copa mondial')) {
+      if (lower.contains('u20') || lower.contains('u-20')) {
+        assetPath = 'assets/badges/world_cup_u20.png';
+      } else if (lower.contains('u17') || lower.contains('u-17')) {
+        assetPath = 'assets/badges/world_cup_u17.png';
+      } else {
+        assetPath = 'assets/badges/world_cup.png';
+      }
+      fallbackAssetPath = 'assets/logos/fifa_logo_light.png';
     } else if (lower.contains('copa américa') || lower.contains('copa america')) {
-      assetPath = 'assets/badges/conmebol.png';
-    } else if (lower.contains('europe') || lower.contains('euro') || lower.contains('nations league') ||
-        lower.contains('ligue des nations de l\'uefa') || lower.contains('liga de naciones de la uefa')) {
-      assetPath = lower.contains('concacaf') ? 'assets/badges/concacaf.png' : 'assets/badges/uefa.png';
-    } else if (lower.contains('afrique des nations') || lower.contains('africa cup') ||
-        lower.contains('copa africana') || lower.contains('chan')) {
-      assetPath = 'assets/badges/caf.png';
-    } else if (lower.contains('asie') || lower.contains('asian cup') || lower.contains('copa asiática')) {
-      assetPath = 'assets/badges/afc.png';
+      assetPath = 'assets/badges/copa_america.png';
+      fallbackAssetPath = 'assets/badges/conmebol.png';
+    } else if (lower.contains('euro espoirs') || lower.contains('under-21') || lower.contains('sub-21')) {
+      assetPath = 'assets/badges/euro_u21.png';
+      fallbackAssetPath = 'assets/badges/uefa.png';
+    } else if (lower.contains('euro u19') || lower.contains('under-19') || lower.contains('sub-19')) {
+      assetPath = 'assets/badges/euro_u19.png';
+      fallbackAssetPath = 'assets/badges/uefa.png';
+    } else if (lower.contains('euro u17') || lower.contains('under-17') || lower.contains('sub-17')) {
+      assetPath = 'assets/badges/euro_u17.png';
+      fallbackAssetPath = 'assets/badges/uefa.png';
+    } else if (lower.contains('euro') || lower.contains('europeo')) {
+      assetPath = 'assets/badges/euro.png';
+      fallbackAssetPath = 'assets/badges/uefa.png';
+    } else if (lower.contains('ligue des nations de l\'uefa') || lower.contains('liga de naciones de la uefa') || (lower.contains('nations league') && !lower.contains('concacaf'))) {
+      assetPath = 'assets/badges/uefa_nations_league.png';
+      fallbackAssetPath = 'assets/badges/uefa.png';
+    } else if (lower.contains('afrique des nations') || lower.contains('africa cup') || lower.contains('copa africana')) {
+      if (lower.contains('u20') || lower.contains('u-20')) {
+        assetPath = 'assets/badges/afcon_u20.png';
+      } else if (lower.contains('u17') || lower.contains('u-17')) {
+        assetPath = 'assets/badges/afcon_u17.png';
+      } else if (lower.contains('u23') || lower.contains('u-23')) {
+        assetPath = 'assets/badges/afcon_u23.png';
+      } else {
+        assetPath = 'assets/badges/afcon.png';
+      }
+      fallbackAssetPath = 'assets/badges/caf.png';
+    } else if (lower.contains('chan') || lower.contains('championnat d\'afrique des nations') || lower.contains('campeonato africano de naciones')) {
+      assetPath = 'assets/badges/chan.png';
+      fallbackAssetPath = 'assets/badges/caf.png';
+    } else if (lower.contains('asie') || lower.contains('asian cup') || lower.contains('copa asiática') || lower.contains('champ. d\'asie') || lower.contains('championnat d\'asie')) {
+      if (lower.contains('u20') || lower.contains('u-20') || lower.contains('u19') || lower.contains('u-19')) {
+        assetPath = 'assets/badges/asian_cup_u20.png';
+      } else if (lower.contains('u17') || lower.contains('u-17')) {
+        assetPath = 'assets/badges/asian_cup_u17.png';
+      } else if (lower.contains('u23') || lower.contains('u-23')) {
+        assetPath = 'assets/badges/asian_cup_u23.png';
+      } else {
+        assetPath = 'assets/badges/asian_cup.png';
+      }
+      fallbackAssetPath = 'assets/badges/afc.png';
     } else if (lower.contains('confédérations') || lower.contains('confederations')) {
-      assetPath = 'assets/badges/coupe_des_confederations.png';
-    } else if (lower.contains('or de la concacaf') || lower.contains('gold cup') ||
-        lower.contains('copa de oro') || lower.contains('nations league concacaf') ||
-        lower.contains('ligue des nations concacaf')) {
-      assetPath = 'assets/badges/concacaf.png';
+      assetPath = 'assets/badges/confederations.png';
+    } else if (lower.contains('or de la concacaf') || lower.contains('gold cup') || lower.contains('copa de oro')) {
+      assetPath = 'assets/badges/gold_cup.png';
+      fallbackAssetPath = 'assets/badges/concacaf.png';
+    } else if (lower.contains('nations league concacaf') || lower.contains('ligue des nations concacaf') || lower.contains('liga de naciones de la concacaf')) {
+      assetPath = 'assets/badges/concacaf_nations_league.png';
+      fallbackAssetPath = 'assets/badges/concacaf.png';
     } else if (lower.contains('ofc') || lower.contains('océanie') || lower.contains('oceania')) {
-      assetPath = 'assets/badges/ofc.png';
+      assetPath = 'assets/badges/ofc_nations_cup.png';
+      fallbackAssetPath = 'assets/badges/ofc.png';
     } else if (lower.contains('arabe') || lower.contains('arab cup') || lower.contains('árabe')) {
-      assetPath = 'assets/logos/fifa_logo_light.png';
+      assetPath = 'assets/badges/arab_cup.png';
+      fallbackAssetPath = 'assets/logos/fifa_logo_light.png';
     } else if (lower.contains('olympique') || lower.contains('olympic') || lower.contains('olímpica')) {
+      assetPath = 'assets/badges/olympics.png';
       fallbackIcon = Icons.stars_rounded;
       fallbackColor = Colors.blue;
     }
 
-    if (assetPath != null) {
-      return Image.asset(
-        assetPath,
-        width: 36,
-        height: 36,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Icon(fallbackIcon, color: fallbackColor, size: 32),
-      );
+    return _buildBadgeWithFallback(assetPath, fallbackAssetPath, fallbackIcon, fallbackColor);
+  }
+
+  Widget _buildBadgeWithFallback(
+    String? primaryPath,
+    String? secondaryPath,
+    IconData fallbackIcon,
+    Color fallbackColor,
+  ) {
+    if (primaryPath == null) {
+      return _buildSecondaryBadge(secondaryPath, fallbackIcon, fallbackColor);
     }
-    return Icon(fallbackIcon, color: fallbackColor, size: 32);
+
+    return Image.asset(
+      primaryPath,
+      width: 36,
+      height: 36,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return _buildSecondaryBadge(secondaryPath, fallbackIcon, fallbackColor);
+      },
+    );
+  }
+
+  Widget _buildSecondaryBadge(
+    String? path,
+    IconData fallbackIcon,
+    Color fallbackColor,
+  ) {
+    if (path == null) {
+      return Icon(fallbackIcon, color: fallbackColor, size: 32);
+    }
+    return Image.asset(
+      path,
+      width: 36,
+      height: 36,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(fallbackIcon, color: fallbackColor, size: 32);
+      },
+    );
   }
 
   Widget _buildAnthemPlayerSection(String code) {
