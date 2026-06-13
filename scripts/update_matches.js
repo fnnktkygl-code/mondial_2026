@@ -5,7 +5,8 @@ const path = require('path');
 /**
  * Script de synchronisation des matchs pour Mondial 2026.
  * Récupère les vraies données de match (scores et buteurs réels) depuis l'API gratuite et ouverte worldcup26.ir.
- * Si cette API est indisponible, il bascule sur le simulateur temporel automatique comme fallback.
+ * Si cette API est indisponible, le script s'arrête avec une erreur sans modifier le fichier de données,
+ * préservant ainsi le dernier état réel valide de l'application.
  */
 
 const MATCHES_FILE = path.join(__dirname, '../assets/initial_matches.json');
@@ -75,35 +76,6 @@ function normalizeName(name) {
   normalized = normalized.replace(/[^a-z0-9\s]/g, ' ');
   normalized = normalized.replace(/\s+/g, ' ').trim();
   return normalized;
-}
-
-// Parser des effectifs depuis le fichier Dart
-function parseSquads() {
-  try {
-    if (!fs.existsSync(DART_SQUAD_FILE)) {
-      console.warn('⚠️ Fichier des squads Dart introuvable.');
-      return {};
-    }
-    const content = fs.readFileSync(DART_SQUAD_FILE, 'utf8');
-    const squads = {};
-    const teamRegex = /'([^']+)':\s*\{([^}]+)\}/g;
-    let match;
-    while ((match = teamRegex.exec(content)) !== null) {
-      const teamName = match[1];
-      const teamBody = match[2];
-      squads[teamName] = [];
-      const playerArrayRegex = /'(Midfielders|Forwards)':\s*\[([^\]]+)\]/g;
-      let arrayMatch;
-      while ((arrayMatch = playerArrayRegex.exec(teamBody)) !== null) {
-        const players = arrayMatch[2].split(',').map(p => p.trim().replace(/'/g, '').replace(/\\/g, ''));
-        squads[teamName].push(...players);
-      }
-    }
-    return squads;
-  } catch (e) {
-    console.error('❌ Erreur lors du parsing des effectifs :', e.message);
-    return {};
-  }
 }
 
 function parseScorersString(str) {
@@ -186,66 +158,6 @@ function generateStatsForScore(score1, score2) {
   };
 }
 
-// SIMULATION DE MATCH (FALLBACK COMPLET)
-function simulateSingleMatch(match, squads) {
-  const score1 = Math.floor(Math.random() * 4);
-  const score2 = Math.floor(Math.random() * 4);
-  
-  let wentToET = false;
-  let wentToPK = false;
-  let etWinner = null;
-  let pkWinner = null;
-
-  let finalScore1 = score1;
-  let finalScore2 = score2;
-
-  if (match.isKnockout && score1 === score2) {
-    wentToET = true;
-    if (Math.random() > 0.5) {
-      if (Math.random() > 0.5) {
-        finalScore1++;
-        etWinner = match.t1;
-      } else {
-        finalScore2++;
-        etWinner = match.t2;
-      }
-    } else {
-      wentToPK = true;
-      pkWinner = Math.random() > 0.5 ? match.t1 : match.t2;
-    }
-  }
-
-  const goals = [];
-  const t1Name = teamCodeToName[match.t1.toLowerCase()] || match.t1;
-  const t2Name = teamCodeToName[match.t2.toLowerCase()] || match.t2;
-  const t1Pool = squads[t1Name] || [];
-  const t2Pool = squads[t2Name] || [];
-
-  for (let i = 0; i < finalScore1; i++) {
-    const scorer = t1Pool.length > 0 ? t1Pool[Math.floor(Math.random() * t1Pool.length)] : t1Name;
-    goals.push({ team: 't1', scorer, assistant: null, minute: Math.floor(Math.random() * 90) + 1 });
-  }
-  for (let i = 0; i < finalScore2; i++) {
-    const scorer = t2Pool.length > 0 ? t2Pool[Math.floor(Math.random() * t2Pool.length)] : t2Name;
-    goals.push({ team: 't2', scorer, assistant: null, minute: Math.floor(Math.random() * 90) + 1 });
-  }
-  goals.sort((a, b) => a.minute - b.minute);
-
-  return {
-    ...match,
-    t1Score: finalScore1,
-    t2Score: finalScore2,
-    goals,
-    stats: generateStatsForScore(finalScore1, finalScore2),
-    status: 'FINISHED',
-    wentToET,
-    wentToPK,
-    etWinner,
-    pkWinner,
-    lastUpdated: new Date().toISOString()
-  };
-}
-
 function calculateStandings(matches) {
   const standings = {};
   for (const group in groupsMap) {
@@ -310,185 +222,6 @@ function getMatchLoser(m) {
   return m.t1 === w ? m.t2 : m.t1;
 }
 
-// BASCULE DE SIMULATION TEMPORELLE (FALLBACK)
-function runSimulationFallback() {
-  console.log('🤖 MODE SIMULATION AUTOMATIQUE (FALLBACK...)');
-  const squads = parseSquads();
-  
-  if (!fs.existsSync(MATCHES_FILE)) {
-    console.error(`❌ Erreur : Le fichier ${MATCHES_FILE} n'existe pas.`);
-    process.exit(1);
-  }
-  
-  const localData = JSON.parse(fs.readFileSync(MATCHES_FILE, 'utf8'));
-  const matches = normalizeMatchIds(localData);
-  const now = new Date();
-
-  let simulatedCount = 0;
-
-  // 1. Group Stage
-  for (let i = 0; i < matches.length; i++) {
-    const m = matches[i];
-    if (!m.isKnockout) {
-      const matchDate = new Date(m.date);
-      if (matchDate <= now && m.status !== 'FINISHED') {
-        matches[i] = simulateSingleMatch(m, squads);
-        simulatedCount++;
-      }
-    }
-  }
-
-  const standings = calculateStandings(matches);
-  const thirdPlaces = [];
-  for (const group in standings) {
-    if (standings[group][2]) thirdPlaces.push(standings[group][2]);
-  }
-  thirdPlaces.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-    return b.goalsFor - a.goalsFor;
-  });
-
-  const winners = {};
-
-  // 2. Round of 32
-  for (const pair of r32Pairings) {
-    const idx = matches.findIndex(m => m.normalizedId === pair.id);
-    if (idx !== -1) {
-      const matchDate = new Date(matches[idx].date);
-      if (matchDate <= now) {
-        const t1 = resolvePlaceholder(pair.t1, standings, thirdPlaces);
-        const t2 = resolvePlaceholder(pair.t2, standings, thirdPlaces);
-        matches[idx].t1 = t1;
-        matches[idx].t2 = t2;
-        if (matches[idx].status !== 'FINISHED' && t1 !== 'TBD' && t2 !== 'TBD') {
-          matches[idx] = simulateSingleMatch(matches[idx], squads);
-          simulatedCount++;
-        }
-        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-      }
-    }
-  }
-
-  // 3. Round of 16
-  const r16Pairs = [
-    ['m49', 'm50'], ['m51', 'm52'], ['m53', 'm54'], ['m55', 'm56'],
-    ['m57', 'm58'], ['m59', 'm60'], ['m61', 'm62'], ['m63', 'm64']
-  ];
-  for (let i = 0; i < r16Pairs.length; i++) {
-    const id = `m${65 + i}`;
-    const idx = matches.findIndex(m => m.normalizedId === id);
-    if (idx !== -1) {
-      const matchDate = new Date(matches[idx].date);
-      if (matchDate <= now) {
-        const t1 = winners[r16Pairs[i][0]] || 'TBD';
-        const t2 = winners[r16Pairs[i][1]] || 'TBD';
-        matches[idx].t1 = t1;
-        matches[idx].t2 = t2;
-        if (matches[idx].status !== 'FINISHED' && t1 !== 'TBD' && t2 !== 'TBD') {
-          matches[idx] = simulateSingleMatch(matches[idx], squads);
-          simulatedCount++;
-        }
-        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-      }
-    }
-  }
-
-  // 4. Quarter-Finals
-  const qfPairs = [
-    ['m65', 'm66'], ['m67', 'm68'], ['m69', 'm70'], ['m71', 'm72']
-  ];
-  for (let i = 0; i < qfPairs.length; i++) {
-    const id = `m${73 + i}`;
-    const idx = matches.findIndex(m => m.normalizedId === id);
-    if (idx !== -1) {
-      const matchDate = new Date(matches[idx].date);
-      if (matchDate <= now) {
-        const t1 = winners[qfPairs[i][0]] || 'TBD';
-        const t2 = winners[qfPairs[i][1]] || 'TBD';
-        matches[idx].t1 = t1;
-        matches[idx].t2 = t2;
-        if (matches[idx].status !== 'FINISHED' && t1 !== 'TBD' && t2 !== 'TBD') {
-          matches[idx] = simulateSingleMatch(matches[idx], squads);
-          simulatedCount++;
-        }
-        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-      }
-    }
-  }
-
-  // 5. Semi-Finals
-  const sfPairs = [
-    ['m73', 'm74'], ['m75', 'm76']
-  ];
-  for (let i = 0; i < sfPairs.length; i++) {
-    const id = `m${77 + i}`;
-    const idx = matches.findIndex(m => m.normalizedId === id);
-    if (idx !== -1) {
-      const matchDate = new Date(matches[idx].date);
-      if (matchDate <= now) {
-        const t1 = winners[sfPairs[i][0]] || 'TBD';
-        const t2 = winners[sfPairs[i][1]] || 'TBD';
-        matches[idx].t1 = t1;
-        matches[idx].t2 = t2;
-        if (matches[idx].status !== 'FINISHED' && t1 !== 'TBD' && t2 !== 'TBD') {
-          matches[idx] = simulateSingleMatch(matches[idx], squads);
-          simulatedCount++;
-        }
-        winners[matches[idx].normalizedId] = getMatchWinner(matches[idx]);
-      }
-    }
-  }
-
-  // 6. Third Place & Final
-  const m79Idx = matches.findIndex(m => m.normalizedId === 'm79');
-  const m80Idx = matches.findIndex(m => m.normalizedId === 'm80');
-  
-  if (m79Idx !== -1 && m80Idx !== -1) {
-    const sf1 = matches.find(m => m.normalizedId === 'm77');
-    const sf2 = matches.find(m => m.normalizedId === 'm78');
-
-    if (sf1 && sf2 && sf1.status === 'FINISHED' && sf2.status === 'FINISHED') {
-      const w1 = winners['m77'];
-      const l1 = getMatchLoser(sf1);
-      const w2 = winners['m78'];
-      const l2 = getMatchLoser(sf2);
-
-      matches[m79Idx].t1 = l1; matches[m79Idx].t2 = l2;
-      matches[m80Idx].t1 = w1; matches[m80Idx].t2 = w2;
-
-      if (new Date(matches[m79Idx].date) <= now && matches[m79Idx].status !== 'FINISHED') {
-        matches[m79Idx] = simulateSingleMatch(matches[m79Idx], squads);
-        simulatedCount++;
-      }
-      if (new Date(matches[m80Idx].date) <= now && matches[m80Idx].status !== 'FINISHED') {
-        matches[m80Idx] = simulateSingleMatch(matches[m80Idx], squads);
-        simulatedCount++;
-      }
-    }
-  }
-
-  const finalMatches = matches.map(m => {
-    const copy = { ...m };
-    delete copy.normalizedId;
-    return copy;
-  });
-
-  fs.writeFileSync(MATCHES_FILE, JSON.stringify(finalMatches, null, 2));
-
-  const metaFile = path.join(__dirname, '../assets/matches_meta.json');
-  if (fs.existsSync(metaFile)) {
-    const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
-    meta.lastUpdated = new Date().toISOString();
-    meta.finishedMatches = finalMatches.filter(m => m.status === 'FINISHED').length;
-    meta.source = 'auto-simulation';
-    fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2));
-  }
-
-  console.log(`✅ Fallback simulation terminé : ${simulatedCount} matchs.`);
-  process.exit(0);
-}
-
 // SYNCHRONISATION VIA VRAIE API GRATUITE WORLDCUP26.IR
 async function updateMatches() {
   console.log('📡 RÉCUPÉRATION DES VRAIES DONNÉES DE MATCH DEPUIS WORLDCUP26.IR...');
@@ -499,7 +232,6 @@ async function updateMatches() {
       process.exit(1);
     }
     const localData = JSON.parse(fs.readFileSync(MATCHES_FILE, 'utf8'));
-    const squads = parseSquads();
 
     const response = await axios.get(WORLDCUP_IR_URL).catch(err => {
       console.error(`❌ Erreur Réseau sur worldcup26.ir :`, err.message);
@@ -508,16 +240,13 @@ async function updateMatches() {
 
     const remoteGames = response.data.games;
     if (!remoteGames || remoteGames.length === 0) {
-      console.warn('❌ Aucun match retourné par worldcup26.ir. Bascule en fallback...');
-      runSimulationFallback();
-      return;
+      throw new Error('Aucun match retourné par la source de données.');
     }
 
     console.log(`✅ ${remoteGames.length} vrais matchs récupérés.`);
 
-    // D'abord, on normalise les ID pour pouvoir reconstruire l'arbre de la phase finale si besoin
+    // Normaliser les ID
     const matches = normalizeMatchIds(localData);
-
     let updatedCount = 0;
 
     for (let i = 0; i < matches.length; i++) {
@@ -541,7 +270,6 @@ async function updateMatches() {
       }
 
       if (apiMatch) {
-        // Détecter si le match est inversé par rapport à notre sens local
         const isReversed = normalizeName(apiMatch.home_team_name_en) === t2NameNorm;
         
         const homeScore = apiMatch.home_score !== 'null' && apiMatch.home_score !== null ? parseInt(apiMatch.home_score) : null;
@@ -566,7 +294,7 @@ async function updateMatches() {
           goals.push({
             team: isReversed ? 't2' : 't1',
             scorer: g.name,
-            assistant: null, // Pas d'assistant fourni, géré en null
+            assistant: null,
             minute: g.minute
           });
         }
@@ -588,7 +316,6 @@ async function updateMatches() {
           updatedCount++;
           
           let stats = localMatch.stats;
-          // Si le match a été joué mais qu'on a pas de stats locales, on génère des stats de match réalistes
           if (scoreT1 !== null && scoreT2 !== null && (!stats || hasScoreChanged)) {
             stats = generateStatsForScore(scoreT1, scoreT2);
           }
@@ -620,13 +347,11 @@ async function updateMatches() {
 
     const winners = {};
 
-    // Mettre à jour la structure des qualifiés pour le Round of 32 et phases suivantes si les matchs sont résolus
     for (const pair of r32Pairings) {
       const idx = matches.findIndex(m => m.normalizedId === pair.id);
       if (idx !== -1) {
         const t1 = resolvePlaceholder(pair.t1, standings, thirdPlaces);
         const t2 = resolvePlaceholder(pair.t2, standings, thirdPlaces);
-        // Si les équipes ont changé / ont été résolues, on met à jour
         if (matches[idx].t1 !== t1 || matches[idx].t2 !== t2) {
           matches[idx].t1 = t1;
           matches[idx].t2 = t2;
@@ -744,8 +469,8 @@ async function updateMatches() {
     console.log(`✅ Synchronisation réelle réussie. ${updatedCount} matchs mis à jour.`);
 
   } catch (error) {
-    console.error('❌ Erreur lors de la synchronisation réelle, bascule en simulation fallback...', error.message);
-    runSimulationFallback();
+    console.error('❌ Erreur de synchronisation réelle. Aucun changement apporté aux données locales.', error.message);
+    process.exit(1); // Échoue avec code 1 pour alerter GitHub Actions du problème réseau/API
   }
 }
 
