@@ -23,6 +23,25 @@ class ApiService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
+    // Read bundled metadata to know minimum required lastUpdated timestamp
+    DateTime? assetLastUpdated;
+    try {
+      final metaStr = await rootBundle.loadString('assets/matches_meta.json');
+      final meta = jsonDecode(metaStr);
+      if (meta['lastUpdated'] != null) {
+        assetLastUpdated = DateTime.tryParse(meta['lastUpdated'] as String);
+      }
+    } catch (_) {}
+
+    final cacheTimeStr = prefs.getString(_lastUpdatedKey);
+    DateTime? cacheTime = cacheTimeStr != null ? DateTime.tryParse(cacheTimeStr) : null;
+
+    // Discard local cache if it is older than the bundled asset metadata
+    if (cacheTime != null && assetLastUpdated != null && cacheTime.isBefore(assetLastUpdated)) {
+      await prefs.remove(_cacheKey);
+      await prefs.remove(_lastUpdatedKey);
+    }
+
     // 1. Try local cache
     final cachedJson = prefs.getString(_cacheKey);
     List<WorldCupMatch>? matches;
@@ -44,7 +63,7 @@ class ApiService {
         await prefs.setString(_cacheKey, assetJson);
         await prefs.setString(
           _lastUpdatedKey,
-          DateTime.now().toIso8601String(),
+          assetLastUpdated?.toIso8601String() ?? DateTime.now().toIso8601String(),
         );
       } catch (e) {
         matches = [];

@@ -11,20 +11,6 @@ import '../services/player_database_service.dart';
 // Player pools for simulation
 // REMOVED: Now using PlayerDatabaseService
 
-const Map<String, List<String>> groupsMap = {
-  'A': ['mx', 'co', 'cm', 'kr'],
-  'B': ['us', 'en', 'ng', 'jp'],
-  'C': ['ca', 'fr', 'sn', 'de'],
-  'D': ['br', 'ar', 'ma', 'es'],
-  'E': ['it', 'pt', 'nl', 'be'],
-  'F': ['hr', 'uy', 'se', 'ch'],
-  'G': ['dk', 'pl', 'ua', 'dz'],
-  'H': ['eg', 'tn', 'gh', 'ci'],
-  'I': ['cl', 'pe', 'ec', 've'],
-  'J': ['au', 'nz', 'sa', 'ir'],
-  'K': ['tr', 'gr', 'cz', 'at'],
-  'L': ['ro', 'hu', 'bg', 'rs']
-};
 
 const List<Map<String, String>> r32Pairings = [
   {'id': 'm49', 't1': '1A', 't2': '3rd1'},
