@@ -279,97 +279,1008 @@ class WCTeamProfileService {
     return AppTranslations.get(lang, "groupStageFilter");
   }
 
-  static List<String> _getTrophies(String code, String lang) {
+static List<String> _getTrophies(String code, String lang) {
     final Map<String, Map<String, List<String>>> trophies = {
-      'br': {
-        'fr': ['5x Coupe du Monde de la FIFA', '9x Copa América', '4x Coupe des Confédérations'],
-        'en': ['5x FIFA World Cup', '9x Copa América', '4x FIFA Confederations Cup'],
-        'es': ['5x Copa Mundial de la FIFA', '9x Copa América', '4x Copa de las Confederaciones'],
-      },
       'de': {
-        'fr': ['4x Coupe du Monde de la FIFA', '3x Championnat d\'Europe (Euro)', '1x Coupe des Confédérations'],
-        'en': ['4x FIFA World Cup', '3x UEFA European Championship', '1x FIFA Confederations Cup'],
-        'es': ['4x Copa Mundial de la FIFA', '3x Eurocopa', '1x Copa de las Confederaciones'],
-      },
-      'it': {
-        'fr': ['4x Coupe du Monde de la FIFA', '2x Championnat d\'Europe (Euro)', '1x Médaille d\'Or Olympique'],
-        'en': ['4x FIFA World Cup', '2x UEFA European Championship', '1x Olympic Gold Medal'],
-        'es': ['4x Copa Mundial de la FIFA', '2x Eurocopa', '1x Medalla de Oro Olímpica'],
-      },
-      'ar': {
-        'fr': ['3x Coupe du Monde de la FIFA', '15x Copa América', '1x Coupe des Confédérations', '1x Coupe des Champions CONMEBOL-UEFA'],
-        'en': ['3x FIFA World Cup', '15x Copa América', '1x FIFA Confederations Cup', '1x CONMEBOL-UEFA Cup of Champions'],
-        'es': ['3x Copa Mundial de la FIFA', '15x Copa América', '1x Copa de las Confederaciones', '1x Copa de Campeones Conmebol-UEFA'],
-      },
-      'fr': {
-        'fr': ['2x Coupe du Monde de la FIFA', '2x Championnat d\'Europe (Euro)', '2x Coupe des Confédérations', '1x Ligue des Nations de l\'UEFA'],
-        'en': ['2x FIFA World Cup', '2x UEFA European Championship', '2x FIFA Confederations Cup', '1x UEFA Nations League'],
-        'es': ['2x Copa Mundial de la FIFA', '2x Eurocopa', '2x Copa de las Confederaciones', '1x Liga de Naciones de la UEFA'],
-      },
-      'es': {
-        'fr': ['1x Coupe du Monde de la FIFA', '3x Championnat d\'Europe (Euro)', '1x Ligue des Nations de l\'UEFA'],
-        'en': ['1x FIFA World Cup', '3x UEFA European Championship', '1x UEFA Nations League'],
-        'es': ['1x Copa Mundial de la FIFA', '3x Eurocopa', '1x Liga de Naciones de la UEFA'],
+        'fr': [
+          'Coupe du Monde (1954, 1974, 1990, 2014)',
+          'Euro (1972, 1980, 1996)',
+          'Coupe des Confédérations (2017)',
+          'Euro Espoirs U21 (2009, 2017, 2021)',
+          'Euro U19 (1981, 2008, 2014)',
+          'Euro U17 (1984, 1992, 2009, 2023)',
+          'Coupe du Monde U20 (1981)',
+          'Coupe du Monde U17 (2023)',
+        ],
+        'en': [
+          'FIFA World Cup (1954, 1974, 1990, 2014)',
+          'UEFA European Championship (1972, 1980, 1996)',
+          'FIFA Confederations Cup (2017)',
+          'UEFA Under-21 Championship (2009, 2017, 2021)',
+          'UEFA Under-19 Championship (1981, 2008, 2014)',
+          'UEFA Under-17 Championship (1984, 1992, 2009, 2023)',
+          'FIFA U-20 World Cup (1981)',
+          'FIFA U-17 World Cup (2023)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (1954, 1974, 1990, 2014)',
+          'Eurocopa (1972, 1980, 1996)',
+          'Copa de las Confederaciones (2017)',
+          'Eurocopa Sub-21 (2009, 2017, 2021)',
+          'Eurocopa Sub-19 (1981, 2008, 2014)',
+          'Eurocopa Sub-17 (1984, 1992, 2009, 2023)',
+          'Copa Mundial Sub-20 (1981)',
+          'Copa Mundial Sub-17 (2023)',
+        ],
       },
       'en': {
-        'fr': ['1x Coupe du Monde de la FIFA'],
-        'en': ['1x FIFA World Cup'],
-        'es': ['1x Copa Mundial de la FIFA'],
+        'fr': [
+          'Coupe du Monde (1966)',
+          'Euro Espoirs U21 (1982, 1984, 2023)',
+          'Euro U19 (11 titres)',
+          'Euro U17 (2010, 2014)',
+          'Coupe du Monde U20 (2017)',
+          'Coupe du Monde U17 (2017)',
+        ],
+        'en': [
+          'FIFA World Cup (1966)',
+          'UEFA Under-21 Championship (1982, 1984, 2023)',
+          'UEFA Under-19 Championship (11 titles)',
+          'UEFA Under-17 Championship (2010, 2014)',
+          'FIFA U-20 World Cup (2017)',
+          'FIFA U-17 World Cup (2017)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (1966)',
+          'Eurocopa Sub-21 (1982, 1984, 2023)',
+          'Eurocopa Sub-19 (11 títulos)',
+          'Eurocopa Sub-17 (2010, 2014)',
+          'Copa Mundial Sub-20 (2017)',
+          'Copa Mundial Sub-17 (2017)',
+        ],
       },
-      'uy': {
-        'fr': ['2x Coupe du Monde de la FIFA', '15x Copa América', '2x Médaille d\'Or Olympique'],
-        'en': ['2x FIFA World Cup', '15x Copa América', '2x Olympic Gold Medals'],
-        'es': ['2x Copa Mundial de la FIFA', '15x Copa América', '2x Medallas de Oro Olímpicas'],
-      },
-      'mx': {
-        'fr': ['12x Coupe d\'Or de la CONCACAF', '1x Coupe des Confédérations'],
-        'en': ['12x CONCACAF Gold Cup', '1x FIFA Confederations Cup'],
-        'es': ['12x Copa de Oro de la Concacaf', '1x Copa de las Confederaciones'],
-      },
-      'us': {
-        'fr': ['7x Coupe d\'Or de la CONCACAF', '2x Ligue des Nations CONCACAF'],
-        'en': ['7x CONCACAF Gold Cup', '2x CONCACAF Nations League'],
-        'es': ['7x Copa de Oro de la Concacaf', '2x Liga de Naciones de la Concacaf'],
-      },
-      'jp': {
-        'fr': ['4x Coupe d\'Asie des Nations'],
-        'en': ['4x AFC Asian Cup'],
-        'es': ['4x Copa Asiática de la AFC'],
-      },
-      'kr': {
-        'fr': ['2x Coupe d\'Asie des Nations'],
-        'en': ['2x AFC Asian Cup'],
-        'es': ['2x Copa Asiática de la AFC'],
-      },
-      'ma': {
-        'fr': ['1x Coupe d\'Afrique des Nations (1976)', '2x Championnat d\'Afrique des Nations (CHAN)'],
-        'en': ['1x Africa Cup of Nations (1976)', '2x African Nations Championship (CHAN)'],
-        'es': ['1x Copa Africana de Naciones (1976)', '2x Campeonato Africano de Naciones'],
-      },
-      'sn': {
-        'fr': ['2x Coupe d\'Afrique des Nations (2021, 2025)', '2x Championnat d\'Afrique des Nations (CHAN 2022)'],
-        'en': ['1x Africa Cup of Nations (2021)', '1x African Nations Championship (CHAN 2022)'],
-        'es': ['1x Copa Africana de Naciones (2021)', '1x Campeonato Africano de Naciones'],
-      },
-      'cm': {
-        'fr': ['5x Coupe d\'Afrique des Nations', '1x Médaille d\'Or Olympique (2000)'],
-        'en': ['5x Africa Cup of Nations', '1x Olympic Gold Medal (2000)'],
-        'es': ['5x Copa Africana de Naciones', '1x Medalla de Oro Olímpica (2000)'],
-      },
-      'ng': {
-        'fr': ['3x Coupe d\'Afrique des Nations', '1x Médaille d\'Or Olympique (1996)'],
-        'en': ['3x Africa Cup of Nations', '1x Olympic Gold Medal (1996)'],
-        'es': ['3x Copa Africana de Naciones', '1x Medalla de Oro Olímpica (1996)'],
+      'ar': {
+        'fr': [
+          'Coupe du Monde (1978, 1986, 2022)',
+          'Copa América (16 titres)',
+          'Coupe des Confédérations (1992)',
+          'Finalissima (1993, 2022)',
+          'Championnat Panaméricain (1960)',
+          'Jeux Olympiques U23 (2004, 2008)',
+          'Coupe du Monde U20 (6 titres)',
+          'Sudaméricain U20 (5 titres)',
+          'Sudaméricain U17 (4 titres)',
+        ],
+        'en': [
+          'FIFA World Cup (1978, 1986, 2022)',
+          'Copa América (16 titles)',
+          'FIFA Confederations Cup (1992)',
+          'Finalissima (1993, 2022)',
+          'Panamerican Championship (1960)',
+          'Olympic Games U23 (2004, 2008)',
+          'FIFA U-20 World Cup (6 titles)',
+          'South American Under-20 Championship (5 titles)',
+          'South American Under-17 Championship (4 titles)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (1978, 1986, 2022)',
+          'Copa América (16 títulos)',
+          'Copa de las Confederaciones (1992)',
+          'Finalissima (1993, 2022)',
+          'Campeonato Panamericano (1960)',
+          'Juegos Olímpicos U23 (2004, 2008)',
+          'Copa Mundial Sub-20 (6 títulos)',
+          'Campeonato Sudamericano Sub-20 (5 títulos)',
+          'Campeonato Sudamericano Sub-17 (4 títulos)',
+        ],
       },
       'dz': {
-        'fr': ['2x Coupe d\'Afrique des Nations (1990, 2019)', '1x Coupe Arabe de la FIFA (2021)'],
-        'en': ['2x Africa Cup of Nations (1990, 2019)', '1x FIFA Arab Cup (2021)'],
-        'es': ['2x Copa Africana de Naciones (1990, 2019)', '1x Copa Árabe de la FIFA (2021)'],
+        'fr': [
+          'Coupe d\'Afrique des Nations (1990, 2019)',
+          'Coupe Arabe de la FIFA (2021)',
+          'Championnat d\'Afrique U20 (1979)',
+          'Coupe Arabe U17 (2022)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1990, 2019)',
+          'FIFA Arab Cup (2021)',
+          'CAF Under-20 Championship (1979)',
+          'Arab Under-17 Cup (2022)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1990, 2019)',
+          'Copa Árabe de la FIFA (2021)',
+          'Campeonato Africano Sub-20 (1979)',
+          'Copa Árabe Sub-17 (2022)',
+        ],
+      },
+      'au': {
+        'fr': [
+          'Coupe d\'Asie (2015)',
+          'Coupe d\'Océanie OFC (1980, 1996, 2000, 2004)',
+          'Championnat d\'Asie U19 (2019, 2023)',
+          'Championnat d\'Océanie U20 (12 titres)',
+          'Championnat d\'Océanie U17 (10 titres)',
+        ],
+        'en': [
+          'AFC Asian Cup (2015)',
+          'OFC Nations Cup (1980, 1996, 2000, 2004)',
+          'AFC Under-19 Championship (2019, 2023)',
+          'OFC Under-20 Championship (12 titles)',
+          'OFC Under-17 Championship (10 titles)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (2015)',
+          'Copa de las Naciones de la OFC (1980, 1996, 2000, 2004)',
+          'Campeonato Asiático Sub-19 (2019, 2023)',
+          'Campeonato Sub-20 de la OFC (12 títulos)',
+          'Campeonato Sub-17 de la OFC (10 títulos)',
+        ],
+      },
+      'at': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Coupe de l\'UEFA Amateur (1931)',
+        ],
+        'en': [
+          'No major senior titles',
+          'UEFA Amateur Cup (1931)',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Copa de la UEFA Amateur (1931)',
+        ],
+      },
+      'be': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Jeux Olympiques (1920)',
+          'Euro U19 (1977)',
+        ],
+        'en': [
+          'No major senior titles',
+          'Olympic Games (1920)',
+          'UEFA Under-19 Championship (1977)',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Juegos Olímpicos (1920)',
+          'Eurocopa Sub-19 (1977)',
+        ],
+      },
+      'ba': {
+        'fr': [
+          'Aucun titre international',
+          'Aucun titre international',
+        ],
+        'en': [
+          'No international titles',
+          'No international titles',
+        ],
+        'es': [
+          'Sin títulos internacionales',
+          'Sin títulos internacionales',
+        ],
+      },
+      'br': {
+        'fr': [
+          'Coupe du Monde (1958, 1962, 1970, 1994, 2002)',
+          'Copa América (9 titres)',
+          'Coupe des Confédérations (1997, 2005, 2009, 2013)',
+          'Jeux Olympiques U23 (2016, 2020)',
+          'Coupe du Monde U20 (5 titres)',
+          'Coupe du Monde U17 (4 titres)',
+          'Sudaméricain U20 (12 titres)',
+          'Sudaméricain U17 (13 titres)',
+        ],
+        'en': [
+          'FIFA World Cup (1958, 1962, 1970, 1994, 2002)',
+          'Copa América (9 titles)',
+          'FIFA Confederations Cup (1997, 2005, 2009, 2013)',
+          'Olympic Games U23 (2016, 2020)',
+          'FIFA U-20 World Cup (5 titles)',
+          'FIFA U-17 World Cup (4 titles)',
+          'South American Under-20 Championship (12 titles)',
+          'South American Under-17 Championship (13 titles)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (1958, 1962, 1970, 1994, 2002)',
+          'Copa América (9 títulos)',
+          'Copa de las Confederaciones (1997, 2005, 2009, 2013)',
+          'Juegos Olímpicos U23 (2016, 2020)',
+          'Copa Mundial Sub-20 (5 títulos)',
+          'Copa Mundial Sub-17 (4 títulos)',
+          'Campeonato Sudamericano Sub-20 (12 títulos)',
+          'Campeonato Sudamericano Sub-17 (13 títulos)',
+        ],
+      },
+      'cm': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (1984, 1988, 2000, 2002, 2017)',
+          'Jeux Olympiques (2000)',
+          'Jeux Africains (4 titres)',
+          'CAN U20 (1995, 2019)',
+          'CAN U17 (2003, 2019)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1984, 1988, 2000, 2002, 2017)',
+          'Olympic Games (2000)',
+          'African Games (4 titles)',
+          'CAF Under-20 Championship (1995, 2019)',
+          'CAF Under-17 Championship (2003, 2019)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1984, 1988, 2000, 2002, 2017)',
+          'Juegos Olímpicos (2000)',
+          'Juegos Africanos (4 títulos)',
+          'Campeonato Africano Sub-20 (1995, 2019)',
+          'Campeonato Africano Sub-17 (2003, 2019)',
+        ],
+      },
+      'ca': {
+        'fr': [
+          'Gold Cup / Champ. CONCACAF (1985, 2000)',
+          'Championnat CONCACAF U20 (1986, 1996)',
+        ],
+        'en': [
+          'CONCACAF Gold Cup / Champ. CONCACAF (1985, 2000)',
+          'CONCACAF Under-20 Championship (1986, 1996)',
+        ],
+        'es': [
+          'Copa de Oro de la CONCACAF / Champ. CONCACAF (1985, 2000)',
+          'Campeonato Sub-20 de la CONCACAF (1986, 1996)',
+        ],
+      },
+      'cv': {
+        'fr': [
+          'Coupe Amílcar Cabral (2007)',
+          'Jeux de la Lusophonie (2006)',
+        ],
+        'en': [
+          'Amílcar Cabral Cup (2007)',
+          'Lusophony Games (2006)',
+        ],
+        'es': [
+          'Copa Amílcar Cabral (2007)',
+          'Juegos de la Lusofonía (2006)',
+        ],
+      },
+      'co': {
+        'fr': [
+          'Copa América (2001)',
+          'Championnat Sudaméricain U20 (1987, 2005, 2013)',
+          'Sudaméricain U17 (1993)',
+        ],
+        'en': [
+          'Copa América (2001)',
+          'South American Under-20 Championship (1987, 2005, 2013)',
+          'South American Under-17 Championship (1993)',
+        ],
+        'es': [
+          'Copa América (2001)',
+          'Campeonato Sudamericano Sub-20 (1987, 2005, 2013)',
+          'Campeonato Sudamericano Sub-17 (1993)',
+        ],
+      },
+      'kr': {
+        'fr': [
+          'Coupe d\'Asie (1956, 1960)',
+          'Coupe d\'Asie de l\'Est (6 titres)',
+          'Jeux Asiatiques (5 titres)',
+          'Champ. d\'Asie U20 (12 titres)',
+          'Champ. d\'Asie U17 (1986, 2002)',
+        ],
+        'en': [
+          'AFC Asian Cup (1956, 1960)',
+          'EAFF East Asian Cup (6 titles)',
+          'Asian Games (5 titles)',
+          'AFC U-20 Asian Cup (12 titles)',
+          'AFC Under-17 Championship (1986, 2002)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (1956, 1960)',
+          'Copa de Asia Oriental de la EAFF (6 títulos)',
+          'Juegos Asiáticos (5 títulos)',
+          'Copa Asiática Sub-20 de la AFC (12 títulos)',
+          'Campeonato Asiático Sub-17 (1986, 2002)',
+        ],
       },
       'ci': {
-        'fr': ['3x Coupe d\'Afrique des Nations (1992, 2015, 2023)'],
-        'en': ['3x Africa Cup of Nations (1992, 2015, 2023)'],
-        'es': ['3x Copa Africana de Naciones (1992, 2015, 2023)'],
+        'fr': [
+          'Coupe d\'Afrique des Nations (1992, 2015, 2024)',
+          'Tournoi de Toulon (2010)',
+          'CAN U17 (2013)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1992, 2015, 2024)',
+          'Toulon Tournament (2010)',
+          'CAF Under-17 Championship (2013)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1992, 2015, 2024)',
+          'Torneo de Toulon (2010)',
+          'Campeonato Africano Sub-17 (2013)',
+        ],
+      },
+      'hr': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Aucun titre en catégories jeunes',
+        ],
+        'en': [
+          'No major senior titles',
+          'No youth titles',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Sin títulos en categorías juveniles',
+        ],
+      },
+      'cw': {
+        'fr': [
+          'Coupe de la Solidarité des Caraïbes (2017)',
+          'Aucun titre en catégories jeunes',
+        ],
+        'en': [
+          'Caribbean Solidarity Cup (2017)',
+          'No youth titles',
+        ],
+        'es': [
+          'Copa de la Solidaridad del Caribe (2017)',
+          'Sin títulos en categorías juveniles',
+        ],
+      },
+      'sco': {
+        'fr': [
+          'British Home Championship (24 titres)',
+          'Aucun titre en catégories jeunes',
+        ],
+        'en': [
+          'British Home Championship (24 titles)',
+          'No youth titles',
+        ],
+        'es': [
+          'British Home Championship (24 títulos)',
+          'Sin títulos en categorías juveniles',
+        ],
+      },
+      'eg': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (1957, 1959, 1986, 1998, 2006, 2008, 2010)',
+          'Coupe Arabe des Nations (1992)',
+          'CAN U20 (1981, 1991, 2003, 2013)',
+          'CAN U23 (2019)',
+          'CAN U17 (1997)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1957, 1959, 1986, 1998, 2006, 2008, 2010)',
+          'FIFA Arab Cup (1992)',
+          'CAF Under-20 Championship (1981, 1991, 2003, 2013)',
+          'CAF Under-23 Championship (2019)',
+          'CAF Under-17 Championship (1997)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1957, 1959, 1986, 1998, 2006, 2008, 2010)',
+          'Copa Árabe de la FIFA (1992)',
+          'Campeonato Africano Sub-20 (1981, 1991, 2003, 2013)',
+          'Campeonato Africano Sub-23 (2019)',
+          'Campeonato Africano Sub-17 (1997)',
+        ],
+      },
+      'ec': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Championnat Sudaméricain U20 (2019)',
+        ],
+        'en': [
+          'No major senior titles',
+          'South American Under-20 Championship (2019)',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Campeonato Sudamericano Sub-20 (2019)',
+        ],
+      },
+      'es': {
+        'fr': [
+          'Coupe du Monde (2010)',
+          'Euro (1964, 2008, 2012, 2024)',
+          'Ligue des Nations (2023)',
+          'Jeux Olympiques (1992)',
+          'Euro Espoirs U21 (5 titres)',
+          'Euro U19 (11 titres)',
+          'Euro U17 (9 titres)',
+        ],
+        'en': [
+          'FIFA World Cup (2010)',
+          'UEFA European Championship (1964, 2008, 2012, 2024)',
+          'UEFA Nations League (2023)',
+          'Olympic Games (1992)',
+          'UEFA Under-21 Championship (5 titles)',
+          'UEFA Under-19 Championship (11 titles)',
+          'UEFA Under-17 Championship (9 titles)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (2010)',
+          'Eurocopa (1964, 2008, 2012, 2024)',
+          'Liga de Naciones de la UEFA (2023)',
+          'Juegos Olímpicos (1992)',
+          'Eurocopa Sub-21 (5 títulos)',
+          'Eurocopa Sub-19 (11 títulos)',
+          'Eurocopa Sub-17 (9 títulos)',
+        ],
+      },
+      'us': {
+        'fr': [
+          'Gold Cup (7 titres)',
+          'Ligue des Nations CONCACAF (2020, 2023, 2024)',
+          'Championnat CONCACAF U20 (3 titres)',
+          'Championnat CONCACAF U17 (3 titres)',
+        ],
+        'en': [
+          'CONCACAF Gold Cup (7 titles)',
+          'CONCACAF Nations League (2020, 2023, 2024)',
+          'CONCACAF Under-20 Championship (3 titles)',
+          'CONCACAF Under-17 Championship (3 titles)',
+        ],
+        'es': [
+          'Copa de Oro de la CONCACAF (7 títulos)',
+          'Liga de Naciones de la CONCACAF (2020, 2023, 2024)',
+          'Campeonato Sub-20 de la CONCACAF (3 títulos)',
+          'Campeonato Sub-17 de la CONCACAF (3 títulos)',
+        ],
+      },
+      'fr': {
+        'fr': [
+          'Coupe du Monde (1998, 2018)',
+          'Euro (1984, 2000)',
+          'Ligue des Nations (2021)',
+          'Coupe des Confédérations (2001, 2003)',
+          'Coupe Artemio-Franchi (1985)',
+          'Jeux Olympiques (1984)',
+          'Euro Espoirs U21 (1988)',
+          'Euro U19 (8 titres)',
+          'Euro U17 (2004, 2015, 2022)',
+          'Coupe du Monde U20 (2013)',
+          'Coupe du Monde U17 (2001)',
+        ],
+        'en': [
+          'FIFA World Cup (1998, 2018)',
+          'UEFA European Championship (1984, 2000)',
+          'UEFA Nations League (2021)',
+          'FIFA Confederations Cup (2001, 2003)',
+          'Artemio Franchi Cup (1985)',
+          'Olympic Games (1984)',
+          'UEFA Under-21 Championship (1988)',
+          'UEFA Under-19 Championship (8 titles)',
+          'UEFA Under-17 Championship (2004, 2015, 2022)',
+          'FIFA U-20 World Cup (2013)',
+          'FIFA U-17 World Cup (2001)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (1998, 2018)',
+          'Eurocopa (1984, 2000)',
+          'Liga de Naciones de la UEFA (2021)',
+          'Copa de las Confederaciones (2001, 2003)',
+          'Copa Artemio Franchi (1985)',
+          'Juegos Olímpicos (1984)',
+          'Eurocopa Sub-21 (1988)',
+          'Eurocopa Sub-19 (8 títulos)',
+          'Eurocopa Sub-17 (2004, 2015, 2022)',
+          'Copa Mundial Sub-20 (2013)',
+          'Copa Mundial Sub-17 (2001)',
+        ],
+      },
+      'gh': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (1963, 1965, 1978, 1982)',
+          'Coupe d\'Afrique de l\'Ouest (5 titres)',
+          'Coupe du Monde U20 (2009)',
+          'Coupe du Monde U17 (1991, 1995)',
+          'CAN U20 (4 titres)',
+          'CAN U17 (1995, 1999)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1963, 1965, 1978, 1982)',
+          'West African Nations Cup (5 titles)',
+          'FIFA U-20 World Cup (2009)',
+          'FIFA U-17 World Cup (1991, 1995)',
+          'CAF Under-20 Championship (4 titles)',
+          'CAF Under-17 Championship (1995, 1999)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1963, 1965, 1978, 1982)',
+          'Copa de África Occidental (5 títulos)',
+          'Copa Mundial Sub-20 (2009)',
+          'Copa Mundial Sub-17 (1991, 1995)',
+          'Campeonato Africano Sub-20 (4 títulos)',
+          'Campeonato Africano Sub-17 (1995, 1999)',
+        ],
+      },
+      'ht': {
+        'fr': [
+          'Championnat de la CONCACAF (1973)',
+          'Coupe de la Caraïbe (2007)',
+          'Aucun titre en catégories jeunes',
+        ],
+        'en': [
+          'CONCACAF Championship (1973)',
+          'Caribbean Cup (2007)',
+          'No youth titles',
+        ],
+        'es': [
+          'Campeonato de la CONCACAF (1973)',
+          'Copa del Caribe (2007)',
+          'Sin títulos en categorías juveniles',
+        ],
+      },
+      'ir': {
+        'fr': [
+          'Coupe d\'Asie (1968, 1972, 1976)',
+          'Jeux Asiatiques (4 titres)',
+          'Championnat d\'Asie de l\'Ouest (4 titres)',
+          'Champ. d\'Asie U19 (4 titres)',
+          'Champ. d\'Asie U17 (2008)',
+        ],
+        'en': [
+          'AFC Asian Cup (1968, 1972, 1976)',
+          'Asian Games (4 titles)',
+          'WAFF Championship (4 titles)',
+          'AFC Under-19 Championship (4 titles)',
+          'AFC Under-17 Championship (2008)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (1968, 1972, 1976)',
+          'Juegos Asiáticos (4 títulos)',
+          'Campeonato de Asia Occidental (4 títulos)',
+          'Campeonato Asiático Sub-19 (4 títulos)',
+          'Campeonato Asiático Sub-17 (2008)',
+        ],
+      },
+      'iq': {
+        'fr': [
+          'Coupe d\'Asie (2007)',
+          'Coupe Arabe des Nations (4 titres)',
+          'Coupe du Golfe des Nations (4 titres)',
+          'Champ. d\'Asie U19 (5 titres)',
+          'Champ. d\'Asie U17 (2016)',
+          'Champ. d\'Asie U23 (2014)',
+        ],
+        'en': [
+          'AFC Asian Cup (2007)',
+          'FIFA Arab Cup (4 titles)',
+          'Gulf Cup of Nations (4 titles)',
+          'AFC Under-19 Championship (5 titles)',
+          'AFC Under-17 Championship (2016)',
+          'AFC Under-23 Championship (2014)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (2007)',
+          'Copa Árabe de la FIFA (4 títulos)',
+          'Copa del Golfo (4 títulos)',
+          'Campeonato Asiático Sub-19 (5 títulos)',
+          'Campeonato Asiático Sub-17 (2016)',
+          'Campeonato Asiático Sub-23 (2014)',
+        ],
+      },
+      'jp': {
+        'fr': [
+          'Coupe d\'Asie (1992, 2000, 2004, 2011)',
+          'Coupe d\'Asie de l\'Est (2013, 2022)',
+          'Jeux Asiatiques U23 (2010)',
+          'Champ. d\'Asie U19 (2016)',
+          'Champ. d\'Asie U17 (4 titres)',
+        ],
+        'en': [
+          'AFC Asian Cup (1992, 2000, 2004, 2011)',
+          'EAFF East Asian Cup (2013, 2022)',
+          'Asian Games U23 (2010)',
+          'AFC Under-19 Championship (2016)',
+          'AFC Under-17 Championship (4 titles)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (1992, 2000, 2004, 2011)',
+          'Copa de Asia Oriental de la EAFF (2013, 2022)',
+          'Juegos Asiáticos U23 (2010)',
+          'Campeonato Asiático Sub-19 (2016)',
+          'Campeonato Asiático Sub-17 (4 títulos)',
+        ],
+      },
+      'jo': {
+        'fr': [
+          'Jeux Panarabes (1997, 1999)',
+          'Championnat d\'Asie de l\'Ouest U16 (2022)',
+        ],
+        'en': [
+          'Pan Arab Games (1997, 1999)',
+          'WAFF Under-16 Championship (2022)',
+        ],
+        'es': [
+          'Juegos Panarábicos (1997, 1999)',
+          'Campeonato WAFF Sub-16 (2022)',
+        ],
+      },
+      'ma': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (1976)',
+          'CHAN (2018, 2020)',
+          'Coupe Arabe des Nations (2012)',
+          'CAN U23 (2023)',
+          'CAN U20 (1997)',
+          'Jeux de la Francophonie (3 titres)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1976)',
+          'African Nations Championship (CHAN) (2018, 2020)',
+          'FIFA Arab Cup (2012)',
+          'CAF Under-23 Championship (2023)',
+          'CAF Under-20 Championship (1997)',
+          'Francophonie Games (3 titles)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1976)',
+          'Campeonato Africano de Naciones (CHAN) (2018, 2020)',
+          'Copa Árabe de la FIFA (2012)',
+          'Campeonato Africano Sub-23 (2023)',
+          'Campeonato Africano Sub-20 (1997)',
+          'Juegos de la Francofonía (3 títulos)',
+        ],
+      },
+      'mx': {
+        'fr': [
+          'Gold Cup / Champ. CONCACAF (12 titres)',
+          'Coupe des Confédérations (1999)',
+          'Coupe CONCACAF (2015)',
+          'Jeux Olympiques U23 (2012)',
+          'Coupe du Monde U17 (2005, 2011)',
+          'Champ. CONCACAF U20 (13 titres)',
+          'Champ. CONCACAF U17 (9 titres)',
+        ],
+        'en': [
+          'CONCACAF Gold Cup / Champ. CONCACAF (12 titles)',
+          'FIFA Confederations Cup (1999)',
+          'Coupe CONCACAF (2015)',
+          'Olympic Games U23 (2012)',
+          'FIFA U-17 World Cup (2005, 2011)',
+          'CONCACAF Under-20 Championship (13 titles)',
+          'CONCACAF Under-17 Championship (9 titles)',
+        ],
+        'es': [
+          'Copa de Oro de la CONCACAF / Champ. CONCACAF (12 títulos)',
+          'Copa de las Confederaciones (1999)',
+          'Coupe CONCACAF (2015)',
+          'Juegos Olímpicos U23 (2012)',
+          'Copa Mundial Sub-17 (2005, 2011)',
+          'Campeonato Sub-20 de la CONCACAF (13 títulos)',
+          'Campeonato Sub-17 de la CONCACAF (9 títulos)',
+        ],
+      },
+      'no': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Aucun titre en catégories jeunes',
+        ],
+        'en': [
+          'No major senior titles',
+          'No youth titles',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Sin títulos en categorías juveniles',
+        ],
+      },
+      'nz': {
+        'fr': [
+          'Coupe d\'Océanie OFC (6 titres)',
+          'Champ. Océanie U20 (7 titres)',
+          'Champ. Océanie U17 (9 titres)',
+        ],
+        'en': [
+          'OFC Nations Cup (6 titles)',
+          'OFC Under-20 Championship (7 titles)',
+          'OFC Under-17 Championship (9 titles)',
+        ],
+        'es': [
+          'Copa de las Naciones de la OFC (6 títulos)',
+          'Campeonato Sub-20 de la OFC (7 títulos)',
+          'Campeonato Sub-17 de la OFC (9 títulos)',
+        ],
+      },
+      'nl': {
+        'fr': [
+          'Euro (1988)',
+          'Euro Espoirs U21 (2006, 2007)',
+          'Euro U17 (2011, 2012, 2018, 2019)',
+        ],
+        'en': [
+          'UEFA European Championship (1988)',
+          'UEFA Under-21 Championship (2006, 2007)',
+          'UEFA Under-17 Championship (2011, 2012, 2018, 2019)',
+        ],
+        'es': [
+          'Eurocopa (1988)',
+          'Eurocopa Sub-21 (2006, 2007)',
+          'Eurocopa Sub-17 (2011, 2012, 2018, 2019)',
+        ],
+      },
+      'pa': {
+        'fr': [
+          'Coupe d\'Amérique Centrale (2009)',
+          'Championnat de la CONCACAF U17 (2024)',
+        ],
+        'en': [
+          'Coupe d\'Amérique Centrale (2009)',
+          'CONCACAF Under-17 Championship (2024)',
+        ],
+        'es': [
+          'Coupe d\'Amérique Centrale (2009)',
+          'Campeonato Sub-17 de la CONCACAF (2024)',
+        ],
+      },
+      'py': {
+        'fr': [
+          'Copa América (1953, 1979)',
+          'Championnat Sudaméricain U20 (1971)',
+        ],
+        'en': [
+          'Copa América (1953, 1979)',
+          'South American Under-20 Championship (1971)',
+        ],
+        'es': [
+          'Copa América (1953, 1979)',
+          'Campeonato Sudamericano Sub-20 (1971)',
+        ],
+      },
+      'pt': {
+        'fr': [
+          'Euro (2016)',
+          'Ligue des Nations (2019)',
+          'Coupe du Monde U20 (1989, 1991)',
+          'Euro U19 (4 titres)',
+          'Euro U17 (6 titres)',
+        ],
+        'en': [
+          'UEFA European Championship (2016)',
+          'UEFA Nations League (2019)',
+          'FIFA U-20 World Cup (1989, 1991)',
+          'UEFA Under-19 Championship (4 titles)',
+          'UEFA Under-17 Championship (6 titles)',
+        ],
+        'es': [
+          'Eurocopa (2016)',
+          'Liga de Naciones de la UEFA (2019)',
+          'Copa Mundial Sub-20 (1989, 1991)',
+          'Eurocopa Sub-19 (4 títulos)',
+          'Eurocopa Sub-17 (6 títulos)',
+        ],
+      },
+      'qa': {
+        'fr': [
+          'Coupe d\'Asie (2019, 2023)',
+          'Coupe du Golfe des Nations (1992, 2004, 2014)',
+          'Championnat d\'Asie U19 (2014)',
+        ],
+        'en': [
+          'AFC Asian Cup (2019, 2023)',
+          'Gulf Cup of Nations (1992, 2004, 2014)',
+          'AFC Under-19 Championship (2014)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (2019, 2023)',
+          'Copa del Golfo (1992, 2004, 2014)',
+          'Campeonato Asiático Sub-19 (2014)',
+        ],
+      },
+      'cz': {
+        'fr': [
+          'Euro (1976 - sous la Tchécoslovaquie)',
+          'Euro Espoirs U21 (2002)',
+          'Euro U19 (1968, 1990)',
+        ],
+        'en': [
+          'UEFA European Championship (1976 - as Czechoslovakia)',
+          'UEFA Under-21 Championship (2002)',
+          'UEFA Under-19 Championship (1968, 1990)',
+        ],
+        'es': [
+          'Eurocopa (1976 - como Checoslovaquia)',
+          'Eurocopa Sub-21 (2002)',
+          'Eurocopa Sub-19 (1968, 1990)',
+        ],
+      },
+      'sa': {
+        'fr': [
+          'Coupe d\'Asie (1984, 1988, 1996)',
+          'Coupe du Golfe (3 titres)',
+          'Coupe Arabe des Nations (1998, 2002)',
+          'Coupe du Monde U17 (1989)',
+          'Champ. d\'Asie U19 (3 titres)',
+          'Champ. d\'Asie U17 (1985, 1988)',
+          'Champ. d\'Asie U23 (2022)',
+        ],
+        'en': [
+          'AFC Asian Cup (1984, 1988, 1996)',
+          'Gulf Cup of Nations (3 titles)',
+          'FIFA Arab Cup (1998, 2002)',
+          'FIFA U-17 World Cup (1989)',
+          'AFC Under-19 Championship (3 titles)',
+          'AFC Under-17 Championship (1985, 1988)',
+          'AFC Under-23 Championship (2022)',
+        ],
+        'es': [
+          'Copa Asiática de la AFC (1984, 1988, 1996)',
+          'Copa del Golfo (3 títulos)',
+          'Copa Árabe de la FIFA (1998, 2002)',
+          'Copa Mundial Sub-17 (1989)',
+          'Campeonato Asiático Sub-19 (3 títulos)',
+          'Campeonato Asiático Sub-17 (1985, 1988)',
+          'Campeonato Asiático Sub-23 (2022)',
+        ],
+      },
+      'sn': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (2021, 2025)',
+          'CHAN (2022)',
+          'Coupe Amílcar Cabral (8 titres)',
+          'Coupe de l\'UEMOA (3 titres)',
+          'CAN U20 (2023)',
+          'CAN U17 (2023)',
+          'Jeux Africains U23 (2015)',
+        ],
+        'en': [
+          'Africa Cup of Nations (2021, 2025)',
+          'African Nations Championship (CHAN) (2022)',
+          'Amílcar Cabral Cup (8 titles)',
+          'UEMOA Tournament (3 titles)',
+          'CAF Under-20 Championship (2023)',
+          'CAF Under-17 Championship (2023)',
+          'African Games U23 (2015)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (2021, 2025)',
+          'Campeonato Africano de Naciones (CHAN) (2022)',
+          'Copa Amílcar Cabral (8 títulos)',
+          'Torneo de la UEMOA (3 títulos)',
+          'Campeonato Africano Sub-20 (2023)',
+          'Campeonato Africano Sub-17 (2023)',
+          'Juegos Africanos U23 (2015)',
+        ],
+      },
+      'za': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (1996)',
+          'Coupe COSAFA (5 titres)',
+          'Championnat COSAFA U20 (8 titres)',
+        ],
+        'en': [
+          'Africa Cup of Nations (1996)',
+          'COSAFA Cup (5 titles)',
+          'COSAFA Under-20 Championship (8 titles)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (1996)',
+          'Copa COSAFA (5 títulos)',
+          'Campeonato COSAFA Sub-20 (8 títulos)',
+        ],
+      },
+      'se': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Jeux Olympiques (1948)',
+          'Euro Espoirs U21 (2015)',
+        ],
+        'en': [
+          'No major senior titles',
+          'Olympic Games (1948)',
+          'UEFA Under-21 Championship (2015)',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Juegos Olímpicos (1948)',
+          'Eurocopa Sub-21 (2015)',
+        ],
+      },
+      'ch': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Coupe du Monde U17 (2009)',
+          'Euro U17 (2002)',
+        ],
+        'en': [
+          'No major senior titles',
+          'FIFA U-17 World Cup (2009)',
+          'UEFA Under-17 Championship (2002)',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Copa Mundial Sub-17 (2009)',
+          'Eurocopa Sub-17 (2002)',
+        ],
+      },
+      'tn': {
+        'fr': [
+          'Coupe d\'Afrique des Nations (2004)',
+          'CHAN (2011)',
+          'Coupe Arabe des Nations (1963)',
+          'Championnat arabe des moins de 20 ans (2020, 2021)',
+        ],
+        'en': [
+          'Africa Cup of Nations (2004)',
+          'African Nations Championship (CHAN) (2011)',
+          'FIFA Arab Cup (1963)',
+          'Arab Under-20 Championship (2020, 2021)',
+        ],
+        'es': [
+          'Copa Africana de Naciones (2004)',
+          'Campeonato Africano de Naciones (CHAN) (2011)',
+          'Copa Árabe de la FIFA (1963)',
+          'Campeonato Árabe Sub-20 (2020, 2021)',
+        ],
+      },
+      'tr': {
+        'fr': [
+          'Aucun titre majeur en A',
+          'Euro U19 (1992)',
+        ],
+        'en': [
+          'No major senior titles',
+          'UEFA Under-19 Championship (1992)',
+        ],
+        'es': [
+          'Sin títulos mayores en absoluta',
+          'Eurocopa Sub-19 (1992)',
+        ],
+      },
+      'uy': {
+        'fr': [
+          'Coupe du Monde (1930, 1950)',
+          'Copa América (15 titres)',
+          'Coupe du Monde U20 (2023)',
+          'Championnat Sudaméricain U20 (8 titres)',
+        ],
+        'en': [
+          'FIFA World Cup (1930, 1950)',
+          'Copa América (15 titles)',
+          'FIFA U-20 World Cup (2023)',
+          'South American Under-20 Championship (8 titles)',
+        ],
+        'es': [
+          'Copa Mundial de la FIFA (1930, 1950)',
+          'Copa América (15 títulos)',
+          'Copa Mundial Sub-20 (2023)',
+          'Campeonato Sudamericano Sub-20 (8 títulos)',
+        ],
+      },
+      'uz': {
+        'fr': [
+          'Jeux Asiatiques (1994)',
+          'Championnat d\'Asie U20 (2023)',
+          'Championnat d\'Asie U17 (2012)',
+        ],
+        'en': [
+          'Asian Games (1994)',
+          'AFC U-20 Asian Cup (2023)',
+          'AFC Under-17 Championship (2012)',
+        ],
+        'es': [
+          'Juegos Asiáticos (1994)',
+          'Copa Asiática Sub-20 de la AFC (2023)',
+          'Campeonato Asiático Sub-17 (2012)',
+        ],
+      },
+      'cd': {
+        'fr': [
+          '2x Coupe d\'Afrique des Nations (1968, 1974)',
+          '2x Championnat d\'Afrique des Nations (CHAN 2009, 2016)',
+        ],
+        'en': [
+          '2x Africa Cup of Nations (1968, 1974)',
+          '2x African Nations Championship (CHAN 2009, 2016)',
+        ],
+        'es': [
+          '2x Copa Africana de Naciones (1968, 1974)',
+          '2x Campeonato Africano de Naciones (CHAN 2009, 2016)',
+        ],
       },
     };
 
@@ -377,7 +1288,6 @@ class WCTeamProfileService {
     if (entry != null) {
       return entry[lang] ?? entry['en'] ?? [];
     }
-
     return [];
   }
 
