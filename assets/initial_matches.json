@@ -4,64 +4,192 @@
     "date": "2026-06-11T19:00:00Z",
     "t1": "mx",
     "t2": "za",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 0,
+    "t2Score": 2,
     "venue": null,
     "group": "A",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-13T09:36:57.373Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Thalente Mbatha",
+        "assistant": null,
+        "minute": 12
+      },
+      {
+        "team": "t2",
+        "scorer": "Oswin Appollis",
+        "assistant": "Iqraam Rayners",
+        "minute": 53
+      }
+    ],
+    "stats": {
+      "possessionT1": 37,
+      "shotsT1": 6,
+      "shotsT2": 12,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 17,
+      "foulsT2": 15,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "g_537328",
     "date": "2026-06-12T02:00:00Z",
     "t1": "kr",
     "t2": "cz",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 2,
+    "t2Score": 0,
     "venue": null,
     "group": "A",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-13T09:36:57.373Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Inbeom Hwang",
+        "assistant": "Kangin Lee",
+        "minute": 23
+      },
+      {
+        "team": "t1",
+        "scorer": "Jingyu Kim",
+        "assistant": "Heechan Hwang",
+        "minute": 72
+      }
+    ],
+    "stats": {
+      "possessionT1": 48,
+      "shotsT1": 4,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 11,
+      "foulsT2": 16,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "g_537333",
     "date": "2026-06-12T19:00:00Z",
     "t1": "ca",
     "t2": "ba",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 3,
+    "t2Score": 2,
     "venue": null,
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-13T09:36:57.373Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Samed Bazdar",
+        "assistant": "Ermin Mahmić",
+        "minute": 2
+      },
+      {
+        "team": "t1",
+        "scorer": "Jonathan Osorio",
+        "assistant": null,
+        "minute": 20
+      },
+      {
+        "team": "t1",
+        "scorer": "Tani Oluwaseyi",
+        "assistant": null,
+        "minute": 27
+      },
+      {
+        "team": "t2",
+        "scorer": "Ermin Mahmić",
+        "assistant": null,
+        "minute": 69
+      },
+      {
+        "team": "t1",
+        "scorer": "Tajon Buchanan",
+        "assistant": null,
+        "minute": 86
+      }
+    ],
+    "stats": {
+      "possessionT1": 49,
+      "shotsT1": 10,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 10,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 19,
+      "foulsT2": 18,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "g_537345",
     "date": "2026-06-13T01:00:00Z",
     "t1": "us",
     "t2": "py",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 0,
+    "t2Score": 1,
     "venue": null,
     "group": "D",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-13T09:36:57.373Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Isidro Pitta",
+        "assistant": "Álex Arce",
+        "minute": 41
+      }
+    ],
+    "stats": {
+      "possessionT1": 49,
+      "shotsT1": 1,
+      "shotsT2": 14,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 18,
+      "foulsT2": 19,
+      "yellowCardsT1": 4,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "g_537334",
