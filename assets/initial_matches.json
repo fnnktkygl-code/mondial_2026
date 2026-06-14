@@ -465,10 +465,22 @@
     "group": "E",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-14T23:43:51.627Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 47,
+      "shotsT1": 4,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 6,
+      "foulsT2": 2,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537358",
