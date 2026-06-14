@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../app_colors.dart';
+import '../services/update_service.dart';
 
 class UpdateRequiredScreen extends StatelessWidget {
-  // Remplacez par le lien de téléchargement de votre APK ou de votre page GitHub
-  final String updateUrl = "https://github.com/fnnktkygl-code/mondial_2026/releases";
-
   const UpdateRequiredScreen({super.key});
 
   Future<void> _launchUpdateUrl() async {
+    final String updateUrl = WCUpdateService.getUpdateUrl();
     final Uri url = Uri.parse(updateUrl);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       debugPrint('Impossible d\'ouvrir $url');

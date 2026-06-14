@@ -244,6 +244,18 @@ class WCNotificationService {
         if (change.type == DocumentChangeType.added) {
           final data = change.doc.data();
           if (data != null) {
+            // Check if the notification is old to prevent showing stale alerts on startup
+            final Timestamp? createdAt = data['createdAt'] as Timestamp? ?? data['timestamp'] as Timestamp?;
+            if (createdAt != null) {
+              final createdTime = createdAt.toDate();
+              final now = DateTime.now();
+              if (now.difference(createdTime).inMinutes.abs() > 3) {
+                // Too old, mark as read and skip local alert
+                change.doc.reference.update({'read': true});
+                continue;
+              }
+            }
+
             final title = data['title'] as String? ?? 'Notification';
             final body = data['body'] as String? ?? '';
             final payload = data['payload'] as String? ?? data['action'] as String? ?? '';
@@ -841,7 +853,7 @@ class WCNotificationService {
           '😮‍💨 $wScore-$lScore — $winner $wFlag souffre mais gagne. $loser $lFlag méritait mieux.',
           '🔒 $winner $wFlag tient bon jusqu\'au bout — $wScore-$lScore contre $loser $lFlag.',
           '🎭 Thriller jusqu\'au bout ! $winner $wFlag $wScore-$lScore $loser $lFlag. Court mais suffisant.',
-          '💪 Un but d\'écart, mais 3 points entiers pour $winner $wFlag — $wScore-$lScore.',
+          '💪 Un but d\'écart, mais 3 points entiers pour $winner $wFlag face à $loser $lFlag — $wScore-$lScore.',
           '⚽ $winner $wFlag ne lâche rien — $wScore-$lScore face à $loser $lFlag. Bataille gagnée.',
         ][seed];
       }

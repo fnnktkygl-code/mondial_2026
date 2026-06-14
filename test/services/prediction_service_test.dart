@@ -34,7 +34,7 @@ void main() {
 
       test('Exact scoreline (4-1) returns outcome + GD bonus + exact bonus (scaled by betting odds & risk)', () {
         final pred = MatchPrediction(matchId: '1', t1Score: 4, t2Score: 1);
-        expect(PredictionService.evaluatePoints(match, pred), 642);
+        expect(PredictionService.evaluatePoints(match, pred), 1344);
       });
 
       test('Correct outcome (win) but wrong scoreline (2-0) returns outcome points (scaled by betting odds)', () {
@@ -47,7 +47,7 @@ void main() {
       test('Correct outcome (win) and matching GD (3-0) returns outcome + GD points (scaled by betting odds)', () {
         final pred = MatchPrediction(matchId: '1', t1Score: 3, t2Score: 0);
         // Actual GD = 3. Pred GD = 3. 
-        expect(PredictionService.evaluatePoints(match, pred), 257);
+        expect(PredictionService.evaluatePoints(match, pred), 378);
       });
       
       test('Incorrect outcome returns 0 points', () {

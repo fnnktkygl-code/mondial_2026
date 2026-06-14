@@ -46,6 +46,18 @@ class WCUpdateService {
     }
   }
 
+  /// Récupérer le lien de téléchargement direct de l'APK (depuis Firebase Remote Config ou fallback)
+  static String getUpdateUrl() {
+    try {
+      final remoteConfig = FirebaseRemoteConfig.instance;
+      final url = remoteConfig.getString('update_url');
+      if (url.isNotEmpty) return url;
+    } catch (e) {
+      debugPrint("Erreur lors de la récupération de update_url (Firebase): $e");
+    }
+    return "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk";
+  }
+
   /// Ancienne méthode non-bloquante (facultative) conservée si vous l'utilisez ailleurs
   static Future<void> checkUpdate(BuildContext context, String lang) async {
     try {

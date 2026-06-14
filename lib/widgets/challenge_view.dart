@@ -469,7 +469,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               lang: widget.lang
           ),
         ),
-        _buildPointsInfoPanel(),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
           child: Row(
@@ -708,10 +707,15 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         TeamFlagWidget(code: teamCode, width: 32, height: 22, borderRadius: 6),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(AppTranslations.getTeam(widget.lang, teamCode),
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
+          child: Text(
+            AppTranslations.getTeam(widget.lang, teamCode),
+            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            maxLines: 2, 
+            softWrap: true, 
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
+        const SizedBox(width: 8),
         Text(hasPred ? '$score' : '-',
             style: TextStyle(
               color: hasPred ? Colors.white : AppColors.textDim,
@@ -884,7 +888,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 Expanded(
                   child: Text(AppTranslations.getTeam(widget.lang, m.t1),
                       style: const TextStyle(color: AppColors.textBody, fontSize: 14, fontWeight: FontWeight.bold),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                      maxLines: 2, softWrap: true, overflow: TextOverflow.ellipsis),
                 ),
               ]),
             ),
@@ -910,7 +914,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   child: Text(AppTranslations.getTeam(widget.lang, m.t2),
                       textAlign: TextAlign.right,
                       style: const TextStyle(color: AppColors.textBody, fontSize: 14, fontWeight: FontWeight.bold),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                      maxLines: 2, softWrap: true, overflow: TextOverflow.ellipsis),
                 ),
                 const SizedBox(width: 10),
                 TeamFlagWidget(code: m.t2, width: 32, height: 22, borderRadius: 6),
@@ -1680,81 +1684,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           },
         );
       },
-    );
-  }
-
-  Widget _buildPointsInfoPanel() {
-    final lang = widget.lang;
-    final rows = [
-      ('🎯', AppTranslations.get(lang, 'exactGroupPts')),
-      ('✅', AppTranslations.get(lang, 'outcomeGroupPts')),
-      ('⚽', AppTranslations.get(lang, 'exactKnockoutPts')),
-      ('✅', AppTranslations.get(lang, 'outcomeKnockoutPts')),
-      ('⚡', AppTranslations.get(lang, 'etBonusPts')),
-      ('🥅', AppTranslations.get(lang, 'pkBonusPts')),
-      ('🏆', AppTranslations.get(lang, 'championBonusLabel')),
-      ('👟', AppTranslations.get(lang, 'goldenBootBonusLabel')),
-      ('🚀', AppTranslations.get(lang, 'jokerBonusLabel')),
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(kCardRadius),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            dividerColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-          ),
-          child: ExpansionTile(
-            leading: const Icon(Icons.info_outline, color: AppColors.accent, size: 18),
-            title: Text(
-              AppTranslations.get(lang, 'pointsInfoTitle'),
-              style: const TextStyle(
-                color: AppColors.accent,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.2,
-              ),
-            ),
-            iconColor: AppColors.accent,
-            collapsedIconColor: AppColors.textDim,
-            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            children: [
-              const Divider(color: AppColors.border, height: 1, thickness: 1),
-              const SizedBox(height: 12),
-              ...rows.map((row) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      row.$1,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        row.$2,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                          height: 1.3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

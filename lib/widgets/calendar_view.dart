@@ -164,7 +164,15 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
         : 10;
     final int minHourClamped = currentMinHour.clamp(0, 23);
 
-    double scrollOffset = (targetHour - minHourClamped) * rowHeight;
+    double viewportHeight = 400.0;
+    if (_verticalScrollController.hasClients) {
+      viewportHeight = _verticalScrollController.position.viewportDimension;
+      if (viewportHeight < 100.0) {
+        viewportHeight = 400.0; // fallback if layout not fully complete
+      }
+    }
+
+    double scrollOffset = (targetHour - minHourClamped) * rowHeight - (viewportHeight / 2) + (rowHeight / 2);
     final maxScroll = _verticalScrollController.position.maxScrollExtent;
     scrollOffset = scrollOffset.clamp(0.0, maxScroll);
 
@@ -185,12 +193,16 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
     
     if (dayIndex >= 0 && dayIndex < 7) {
       const double colWidth = 175.0;
-      // Centrer le jour cible si possible
-      double scrollOffset = (dayIndex * colWidth);
       
-      // Ajustement pour essayer de centrer le jour dans la vue
-      // La largeur totale du widget est inconnue ici, mais on peut faire une estimation
-      // ou simplement s'assurer que le jour est visible.
+      double viewportWidth = 320.0;
+      if (_horizontalScrollController.hasClients) {
+        viewportWidth = _horizontalScrollController.position.viewportDimension;
+        if (viewportWidth < 100.0) {
+          viewportWidth = 320.0; // fallback
+        }
+      }
+
+      double scrollOffset = (dayIndex * colWidth) - (viewportWidth / 2) + (colWidth / 2);
       
       final maxScroll = _horizontalScrollController.position.maxScrollExtent;
       scrollOffset = scrollOffset.clamp(0.0, maxScroll);

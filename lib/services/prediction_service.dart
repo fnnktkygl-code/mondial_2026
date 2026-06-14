@@ -376,7 +376,8 @@ class PredictionService {
         if (actualGD == 0) { gdPoints = kGdDiff0Points.toDouble(); }
         else if (actualGD == 1) { gdPoints = kGdDiff1Points.toDouble(); }
         else if (actualGD == 2) { gdPoints = kGdDiff2Points.toDouble(); }
-        else if (actualGD >= 3) { gdPoints = kGdDiff3Points.toDouble(); }
+        else if (actualGD == 3) { gdPoints = kGdDiff3Points.toDouble(); }
+        else if (actualGD >= 4) { gdPoints = kGdDiff4Points.toDouble(); }
         
         totalMatchPoints += gdPoints * oddsMultiplier;
       }
@@ -384,7 +385,7 @@ class PredictionService {
       // 3. Exact Score "Summum" Bonus (Multiplied by odds and score risk/rarity factor)
       if (isScoreExact) {
         // High goals and high difference increase correct score rarity/risk
-        final double scoreRiskFactor = 1.0 + ((pred1 - pred2).abs() * 0.15) + ((pred1 + pred2) * 0.05);
+        final double scoreRiskFactor = 1.0 + ((pred1 - pred2).abs() * 0.40) + ((pred1 + pred2) * 0.20);
         totalMatchPoints += kExactScoreBonus * oddsMultiplier * scoreRiskFactor;
       }
       

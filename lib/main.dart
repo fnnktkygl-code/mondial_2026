@@ -278,6 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // 2. Immediate ESPN sync
       await _pollLiveMatches();
+      await _recalculateAndSyncPoints();
       
       _showBeautifulSnackBar(AppTranslations.get(_lang, 'dataUpdated'));
     } catch (e) {
@@ -348,9 +349,30 @@ class _MyHomePageState extends State<MyHomePage> {
           _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
         });
         debugPrint("LIVE: Matches updated from ESPN");
+        _recalculateAndSyncPoints();
       }
     } catch (e) {
       debugPrint("LIVE POLL ERROR: $e");
+    }
+  }
+
+  Future<void> _recalculateAndSyncPoints() async {
+    if (_userPreds == null) return;
+    try {
+      final totalPoints = PredictionService.calculateTotalPoints(_userPreds!, _resolvedMatches);
+      final streak = PredictionService.calculateActiveStreak(_userPreds!, _resolvedMatches);
+      final guruCount = PredictionService.calculateExactGuessesCount(_userPreds!, _resolvedMatches);
+      await WCFirebaseService.syncUserProfile(
+        username: _userPreds!.username,
+        supportedTeam: _userPreds!.supportedTeam,
+        points: totalPoints,
+        streak: streak,
+        guruCount: guruCount,
+        avatar: _userPreds!.avatar,
+      );
+      debugPrint("POINTS: Recalculated and synced: $totalPoints pts");
+    } catch (e) {
+      debugPrint("Error syncing points: $e");
     }
   }
 
@@ -361,6 +383,12 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       _userTimezone = DateTime.now().timeZoneName;
       if (_userTimezone.isEmpty) _userTimezone = 'UTC';
+
+      debugPrint("INIT: Restoring from device ID if needed");
+      await WCFirebaseService.restoreProfileFromDeviceId().catchError((e) {
+        debugPrint("Error restoring profile from device ID: $e");
+        return false;
+      });
 
       debugPrint("INIT: Loading core data (Alerts, Matches, Preds)");
       // Parallelize core data loading to minimize wait time
@@ -688,6 +716,56 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _showMascotsModal() {
     WCMascotsDialog.show(context, _lang);
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          _lang == 'fr' ? 'Choisir la langue' : (_lang == 'es' ? 'Seleccionar idioma' : 'Select Language'),
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildLanguageOption('fr', '🇫🇷  Français'),
+            const SizedBox(height: 8),
+            _buildLanguageOption('en', '🇬🇧  English'),
+            const SizedBox(height: 8),
+            _buildLanguageOption('es', '🇪🇸  Español'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String code, String name) {
+    final isSelected = _lang == code;
+    return InkWell(
+      onTap: () {
+        setState(() => _lang = code);
+        Navigator.pop(context);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent.withValues(alpha: 0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? AppColors.accent : AppColors.border, width: 1.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(name, style: TextStyle(color: Colors.white, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+            if (isSelected) const Icon(Icons.check_circle, color: AppColors.accent, size: 20),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showProfileModal() {
@@ -1190,7 +1268,7 @@ class _MyHomePageState extends State<MyHomePage> {
             avatar: _userPreds!.avatar,
           );
         },
-        onMatchUpdated: (WorldCupMatch updatedMatch) {
+        onMatchUpdated: (WorldCupMatch updatedMatch) async {
           if (mounted) {
             setState(() {
               for (int i = 0; i < _rawMatches.length; i++) {
@@ -1211,6 +1289,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
               _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
             });
+            await _recalculateAndSyncPoints();
           }
         },
         onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers) =>
@@ -1585,100 +1664,8 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           // 0. Manual Refresh / Live Indicator
           _buildLiveRefreshButton(),
-          // 0.5 Rules & Feedback
-          WCTooltip(
-            message: AppTranslations.get(_lang, 'rules'),
-            child: IconButton(
-              icon: const Icon(Icons.help_outline_rounded, color: AppColors.textDim),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RulesFeedbackPage(lang: _lang)),
-              ),
-            ),
-          ),
-          if (kIsStaging)
-            WCTooltip(
-              message: 'Staging Debug',
-              child: IconButton(
-                icon: const Icon(Icons.bug_report, color: Colors.amber),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: AppColors.background,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    builder: (ctx) => const StagingPanelWidget(),
-                  ).then((_) {
-                    // Rafraîchir les données pour que l'UI affiche les simulations !
-                    _loadInitialData();
-                  });
-                },
-              ),
-            ),
-          // 1. Bouton sélecteur de langue dynamique
-          PopupMenuButton<String>(
-            padding: EdgeInsets.zero,
-            offset: const Offset(0, 45),
-            color: AppColors.card,
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            onSelected: (String value) {
-              setState(() => _lang = value);
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'fr',
-                child: Text(
-                  '🇫🇷  Français',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'en',
-                child: Text(
-                  '🇬🇧  English',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'es',
-                child: Text(
-                  '🇪🇸  Español',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border, width: 1),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _getLanguageFlag(_lang),
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 16,
-                    color: AppColors.textDim,
-                  ),
-                ],
-              ),
-            ),
-          ),
 
-          // 2. Bouton options contextuel
+          // 1. Bouton options contextuel (Rules, Language, Anthems, Mascots, Staging Debug, Privacy)
           PopupMenuButton<String>(
             padding: EdgeInsets.zero,
             offset: const Offset(0, 45),
@@ -1688,13 +1675,86 @@ class _MyHomePageState extends State<MyHomePage> {
               borderRadius: BorderRadius.circular(16),
             ),
             onSelected: (String value) {
-              if (value == 'anthems') _showAnthemsModal();
-              if (value == 'mascots') _showMascotsModal();
-              if (value == 'privacy') {
+              if (value == 'rules') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RulesFeedbackPage(lang: _lang)),
+                );
+              } else if (value == 'language') {
+                _showLanguageDialog();
+              } else if (value == 'anthems') {
+                _showAnthemsModal();
+              } else if (value == 'mascots') {
+                _showMascotsModal();
+              } else if (value == 'staging') {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: AppColors.background,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (ctx) => const StagingPanelWidget(),
+                ).then((_) {
+                  // Rafraîchir les données pour que l'UI affiche les simulations !
+                  _loadInitialData();
+                });
+              } else if (value == 'privacy') {
                 launchUrl(Uri.parse('https://fnnktkygl-code.github.io/mondial_2026/privacy.html'));
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              // Rules & Feedback
+              PopupMenuItem<String>(
+                value: 'rules',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.help_outline_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      AppTranslations.get(_lang, 'rules'),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+              // Language Selector
+              PopupMenuItem<String>(
+                value: 'language',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.translate_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      _lang == 'fr' ? 'Langue / Language' : (_lang == 'es' ? 'Idioma / Langue' : 'Language / Langue'),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+              // Anthems
               PopupMenuItem<String>(
                 value: 'anthems',
                 child: Row(
@@ -1719,6 +1779,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
+              // Mascots
               PopupMenuItem<String>(
                 value: 'mascots',
                 child: Row(
@@ -1740,13 +1801,40 @@ class _MyHomePageState extends State<MyHomePage> {
                       AppTranslations.get(_lang, 'mascotsTitle'),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    ],
-                    ),
-                    ),
-                    PopupMenuItem<String>(
-                    value: 'privacy',
-                    child: Row(
+                  ],
+                ),
+              ),
+              // Staging Debug (if staging enabled)
+              if (kIsStaging)
+                PopupMenuItem<String>(
+                  value: 'staging',
+                  child: Row(
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: AppColors.surface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.bug_report,
+                          size: 16,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Staging Debug',
+                        style: TextStyle(fontWeight: FontWeight.w500, color: Colors.amber),
+                      ),
+                    ],
+                  ),
+                ),
+              // Privacy Policy
+              PopupMenuItem<String>(
+                value: 'privacy',
+                child: Row(
+                  children: [
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
@@ -1764,10 +1852,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       AppTranslations.get(_lang, 'privacyPolicy'),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    ],
-                    ),
-                    ),
-                    ],
+                  ],
+                ),
+              ),
+            ],
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.all(8),
