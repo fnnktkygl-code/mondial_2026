@@ -23,74 +23,34 @@ class ApiService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Read bundled metadata to know minimum required lastUpdated timestamp
-    DateTime? assetLastUpdated;
+    // 1. Try local cache if not forcing refresh
+    if (!forceRefresh) {
+      final cachedJson = prefs.getString(_cacheKey);
+      if (cachedJson != null) {
+        try {
+          return _parseMatchesJson(cachedJson);
+        } catch (_) {}
+      }
+    }
+
+    // 2. If force, or no cache, try fetching remote first
     try {
-      final metaStr = await rootBundle.loadString('assets/matches_meta.json');
-      final meta = jsonDecode(metaStr);
-      if (meta['lastUpdated'] != null) {
-        assetLastUpdated = DateTime.tryParse(meta['lastUpdated'] as String);
+      final remoteMatches = await fetchRemoteMatches();
+      if (remoteMatches.isNotEmpty) {
+        return remoteMatches;
       }
     } catch (_) {}
 
-    final cacheTimeStr = prefs.getString(_lastUpdatedKey);
-    DateTime? cacheTime = cacheTimeStr != null ? DateTime.tryParse(cacheTimeStr) : null;
-
-    // Discard local cache if it is older than the bundled asset metadata
-    if (cacheTime != null && assetLastUpdated != null && cacheTime.isBefore(assetLastUpdated)) {
-      await prefs.remove(_cacheKey);
-      await prefs.remove(_lastUpdatedKey);
+    // 3. Fall back to bundled asset if fetch fails or cache was empty
+    try {
+      final assetJson = await rootBundle.loadString('assets/initial_matches.json');
+      final matches = _parseMatchesJson(assetJson);
+      await prefs.setString(_cacheKey, assetJson);
+      await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
+      return matches;
+    } catch (e) {
+      return [];
     }
-
-    // 1. Try local cache
-    final cachedJson = prefs.getString(_cacheKey);
-    List<WorldCupMatch>? matches;
-    if (cachedJson != null && !forceRefresh) {
-      try {
-        matches = _parseMatchesJson(cachedJson);
-      } catch (_) {
-        // Cache corrupted – fall through
-      }
-    }
-
-    // 2. Fall back to bundled asset if cache is empty
-    if (matches == null || matches.isEmpty) {
-      try {
-        final assetJson = await rootBundle.loadString(
-          'assets/initial_matches.json',
-        );
-        matches = _parseMatchesJson(assetJson);
-        await prefs.setString(_cacheKey, assetJson);
-        await prefs.setString(
-          _lastUpdatedKey,
-          assetLastUpdated?.toIso8601String() ?? DateTime.now().toIso8601String(),
-        );
-      } catch (e) {
-        matches = [];
-      }
-    }
-
-    // 3. Fetch remote update (always try, skip if cached < 5 min old and not forced)
-    final lastFetch = prefs.getString(_lastUpdatedKey);
-    final bool shouldFetch =
-        forceRefresh ||
-            cachedJson == null ||
-            (lastFetch != null &&
-                DateTime.now().difference(DateTime.parse(lastFetch)) >
-                    kCacheRefreshInterval);
-
-    if (shouldFetch) {
-      try {
-        final remoteMatches = await fetchRemoteMatches();
-        if (remoteMatches.isNotEmpty) {
-          matches = remoteMatches;
-        }
-      } catch (_) {
-        // Keep using cached / asset matches if network is offline
-      }
-    }
-
-    return matches ?? [];
   }
 
   /// Fetch schedule updates from the remote GitHub JSON.

@@ -22,6 +22,7 @@ class ChallengeViewWidget extends StatefulWidget {
   final Function(String? teamCode) onSupportedTeamChanged;
   final VoidCallback? onProfileTap;
   final String initialSubTab;
+  final Future<void> Function()? onRefreshRequested; // Ajouté
 
   const ChallengeViewWidget({
     super.key,
@@ -33,6 +34,7 @@ class ChallengeViewWidget extends StatefulWidget {
     required this.onSupportedTeamChanged,
     this.onProfileTap,
     this.initialSubTab = 'preds',
+    this.onRefreshRequested, // Ajouté
   });
 
   @override
@@ -63,7 +65,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   @override
   void didUpdateWidget(ChallengeViewWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If matches change (e.g. after simulation), reload everything
     if (oldWidget.matches != widget.matches) {
       _loadData();
     }
@@ -78,7 +79,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
   // ── Données ───────────────────────────────────────────────────────────────
   Future<void> _loadData() async {
-    // Only show full loading indicator if we don't have data yet
     final showFullLoading = _groups.isEmpty && _userPreds.username == kDefaultUsername;
     if (showFullLoading) setState(() => _isLoading = true);
 
@@ -212,7 +212,13 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
-        onRefresh: _loadData,
+        // APPEL API ICI
+        onRefresh: () async {
+          if (widget.onRefreshRequested != null) {
+            await widget.onRefreshRequested!();
+          }
+          await _loadData();
+        },
         color: AppColors.accent,
         backgroundColor: AppColors.card,
         child: Column(
@@ -352,7 +358,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Mini-chips de badges gagnés dans la ligne de rang ─────────────────────
   Widget _buildInlineBadgeChips() {
     final earnedBadges = computeEarnedBadges(
       userPreds: _userPreds,
@@ -400,7 +405,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Navigation par onglets ────────────────────────────────────────────────
   Widget _buildTabNav() {
     final l = widget.lang;
     final tabs = [
@@ -446,7 +450,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Routeur de contenu d'onglet ───────────────────────────────────────────
   Widget _buildTabContent() {
     switch (_subTab) {
       case 'preds':       return _buildPredictionsTab();
@@ -454,10 +457,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       default:            return _buildLeaderboardTab();
     }
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ONGLET PRONOSTICS
-  // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildPredictionsTab() {
     final groupStageMatches = widget.matches.where((m) => !m.isKnockout).toList()
@@ -470,18 +469,14 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       padding: EdgeInsets.zero,
       children: [
         _buildBoosterPanel(),
-        
-        // --- AJOUT STATISTIQUES PERFORMANCE ---
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: WCUserStatisticsWidget(
-            userPreds: _userPreds, 
-            matches: widget.matches, 
-            lang: widget.lang
+              userPreds: _userPreds,
+              matches: widget.matches,
+              lang: widget.lang
           ),
         ),
-        // --------------------------------------
-
         _buildPointsInfoPanel(),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
@@ -508,7 +503,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Panneau de Booster ────────────────────────────────────────────────────
   Widget _buildBoosterPanel() {
     WorldCupMatch? boostedMatch;
     if (_userPreds.boosterMatchId != null) {
@@ -736,7 +730,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Carte de pronostic ────────────────────────────────────────────────────
   Widget _buildPredictionCard(WorldCupMatch m) {
     final pred = _userPreds.matchPredictions[m.id];
     final hasPred = pred != null;
@@ -756,7 +749,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         ? AppTranslations.get(widget.lang, m.stage ?? '').toUpperCase()
         : '${AppTranslations.get(widget.lang, 'group').toUpperCase()} ${m.group}';
 
-    // Border colour: booster > filled pred > default
     final Color borderColor = isBooster
         ? AppColors.warning.withValues(alpha: 0.55)
         : (hasPred && !m.isPlayed
@@ -772,7 +764,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // ── En-tête séparé avec fond légèrement différent ─────────────
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             color: Colors.black.withValues(alpha: 0.15),
@@ -799,8 +790,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               ],
             ),
           ),
-
-          // ── Zone de score ─────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Column(
@@ -812,10 +801,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
                   ),
                   _buildTeamDisplayRow(m.t2, hasPred ? p2Val : null, hasPred),
-                  
-                  // Summary of prediction details if it exists
                   if (hasPred) ...[
-                    // If knockout and predicted a tie, show predicted winner/qualifier
                     if (m.isKnockout && p1Val == p2Val && (pred.extraTimeWinner != null || pred.penaltyWinner != null)) ...[
                       const SizedBox(height: 6),
                       Row(
@@ -832,7 +818,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                         ],
                       ),
                     ],
-                    // Show scorers summary if any
                     if (pred.predictedScorers.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
@@ -844,7 +829,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                       ),
                     ],
                   ] else ...[
-                    // Call to action: predict
                     const SizedBox(height: 8),
                     Container(
                       width: double.infinity,
@@ -869,7 +853,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 ] else ...[
                   _buildPlayedResultRows(m, pred, hasPred),
                 ],
-
                 if (m.isKnockout && m.isPlayed && (m.wentToET ?? false))
                   _buildETPKResultRow(m, pred),
               ],
@@ -965,10 +948,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       ),
     );
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ONGLET GROUPES
-  // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildGroupsTab() {
     FriendGroup? globalGroup;
@@ -1067,7 +1046,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               ),
               const SizedBox(width: 12),
               Text(
-                AppTranslations.get(widget.lang, 'globalRank'), // 'Votre rang mondial'
+                AppTranslations.get(widget.lang, 'globalRank'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -1117,7 +1096,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Carte de groupe privé ─────────────────────────────────────────────────
   Widget _buildPrivateGroupCard(FriendGroup grp) {
     final uid = _myUserId;
     final isCreator = uid != null && uid.isNotEmpty && grp.creatorId == uid;
@@ -1136,7 +1114,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ───────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
             child: Row(
@@ -1205,11 +1182,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
           const Divider(color: AppColors.border, height: 1),
 
-          // ── Podium top 3 ─────────────────────────────────────────────────
           if (topThree.isNotEmpty)
             _buildPodium(topThree, maxPts),
 
-          // ── Reste du classement ──────────────────────────────────────────
           if (rest.isNotEmpty) ...[
             const Divider(color: AppColors.border, height: 1),
             ...rest.asMap().entries.map((e) =>
@@ -1220,15 +1195,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Podium (top 3) ────────────────────────────────────────────────────────
   Widget _buildPodium(List<FriendScore> top, int maxPts) {
-    // Order: 2nd | 1st | 3rd
     final slots = <({FriendScore member, int rank})>[];
     if (top.length >= 2) slots.add((member: top[1], rank: 2));
     if (top.isNotEmpty) slots.insert(top.length >= 2 ? 1 : 0, (member: top[0], rank: 1));
     if (top.length >= 3) slots.add((member: top[2], rank: 3));
 
-    // Bar heights for each rank position
     const double barHeight1 = 44.0;
     const double barHeight2 = 30.0;
     const double barHeight3 = 18.0;
@@ -1257,14 +1229,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Crown for #1
                 if (rank == 1)
                   const Text('👑', style: TextStyle(fontSize: 16))
                 else
                   const SizedBox(height: 22),
                 const SizedBox(height: 4),
 
-                // Avatar
                 Container(
                   width: avatarSize, height: avatarSize,
                   decoration: BoxDecoration(
@@ -1293,7 +1263,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 ),
                 const SizedBox(height: 6),
 
-                // Name
                 Text(
                   isUser
                       ? '${m.name}${AppTranslations.get(widget.lang, 'meSuffix')}'
@@ -1309,7 +1278,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 ),
                 const SizedBox(height: 2),
 
-                // Points
                 Text(
                   '${m.points} ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
                   style: TextStyle(
@@ -1320,7 +1288,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 ),
                 const SizedBox(height: 6),
 
-                // Podium bar
                 Container(
                   height: barH,
                   decoration: BoxDecoration(
@@ -1368,7 +1335,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Ligne rang 4+ ─────────────────────────────────────────────────────────
   Widget _buildRestRow(FriendScore member, int rank, int maxPts) {
     final isUser = member.isUser;
     final pct = maxPts > 0 ? (member.points / maxPts).clamp(0.0, 1.0) : 0.0;
@@ -1383,7 +1349,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       ),
       child: Row(
         children: [
-          // Rank number
           SizedBox(
             width: 22,
             child: Text(
@@ -1398,7 +1363,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           ),
           const SizedBox(width: 10),
 
-          // Avatar
           Container(
             width: 26, height: 26,
             decoration: BoxDecoration(
@@ -1427,7 +1391,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           ),
           const SizedBox(width: 10),
 
-          // Name
           Expanded(
             child: Text(
               isUser
@@ -1443,7 +1406,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             ),
           ),
 
-          // Points + mini progress bar
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -1540,11 +1502,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ONGLET CLASSEMENT GENERAL
-  // ═══════════════════════════════════════════════════════════════════════════
-
   Widget _buildLeaderboardTab() {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: WCFirebaseService.getLeaderboardStream(),
@@ -1563,7 +1520,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           final isHidden = data['isHidden'] as bool? ?? false;
           final points = data['points'] as int? ?? 0;
           final username = (data['username'] as String? ?? '').trim();
-          // Always show the current user; hide ghost accounts (0 pts + no username) and hidden users
           if (doc.id == _myUserId) return true;
           if (isHidden) return false;
           if (points == 0 && username.isEmpty) return false;
@@ -1579,7 +1535,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         final myRank = myIdx >= 0 ? myIdx + 1 : null;
         final myData = myIdx >= 0 ? docs[myIdx].data() : null;
 
-        // Max points from #1 for progress bars
         final maxPts = docs.isNotEmpty
             ? ((docs.first.data()['points'] as int? ?? 0) > 0
             ? (docs.first.data()['points'] as int)
@@ -1717,10 +1672,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ASSISTANTS / HELPERS
-  // ═══════════════════════════════════════════════════════════════════════════
-
   Widget _buildPointsInfoPanel() {
     final lang = widget.lang;
     final rows = [
@@ -1820,7 +1771,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       );
     }
 
-    // Check if tournament is finished
     final finalMatch = widget.matches.firstWhere((m) => m.id == kFinalMatchId, orElse: () => widget.matches.last);
     final bool tournamentFinished = finalMatch.isPlayed;
 
@@ -1842,9 +1792,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ]),
-          if (champion != null) 
+          if (champion != null)
             _buildBonusItem(
-              icon: '🏆', 
+              icon: '🏆',
               label: AppTranslations.getTeam(lang, champion),
               potential: kChampionBonusPoints,
               isChampion: true,
@@ -1885,8 +1835,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       }
     }
 
-    final Color statusColor = isCorrect == null 
-        ? AppColors.accent 
+    final Color statusColor = isCorrect == null
+        ? AppColors.accent
         : (isCorrect ? AppColors.accent : AppColors.danger);
 
     return Padding(
@@ -1907,8 +1857,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            isCorrect == null 
-                ? '+$potential pts' 
+            isCorrect == null
+                ? '+$potential pts'
                 : (isCorrect ? '+$potential pts' : '0 pts'),
             style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
           ),
@@ -1920,8 +1870,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       ]),
     );
   }
-
-
 
   Widget _buildETPKResultRow(WorldCupMatch m, MatchPrediction? pred) {
     final etWinner = m.etWinner;
@@ -1977,10 +1925,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       ],
     ]);
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DIALOGUES / MODALES
-  // ═══════════════════════════════════════════════════════════════════════════
 
   void _showEditGroupDialog(FriendGroup grp) {
     final editController = TextEditingController(text: grp.name);
@@ -2180,7 +2124,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  // ── Assistant d'emblème ───────────────────────────────────────────────────
   Widget _buildEmblemWidget(String emblem, {double size = 24}) {
     if (emblem.startsWith('assets/avatars/') || emblem.contains('.png')) {
       return Container(

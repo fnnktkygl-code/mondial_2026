@@ -259,15 +259,49 @@ class PredictionService {
     final pred1 = pred.t1Score;
     final pred2 = pred.t2Score;
 
-    if (!match.isKnockout) {
-      if (actual1 == pred1 && actual2 == pred2) return kExactScorePoints;
-      final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-      final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
-      if (actualOutcome == predOutcome) return kCorrectOutcomePoints;
-      return 0;
+    // ── Scorer bonus (applies to ALL matches: group + knockout) ──
+    int scorerBonus = 0;
+    if (pred.predictedScorers.isNotEmpty) {
+      // Build a goal-count map for actual scorers (case-insensitive)
+      final actualGoalCounts = <String, int>{};
+      for (final goal in match.goals) {
+        final key = goal.scorer.trim().toLowerCase();
+        actualGoalCounts[key] = (actualGoalCounts[key] ?? 0) + 1;
+      }
+
+      // For each predicted scorer, award kScorerMatchBonusPoints × min(predictedGoals, actualGoals)
+      // • 1 scorer predicting 1 goal, scores 1  → +kScorerMatchBonusPoints
+      // • 1 scorer predicting 1 goal, scores 2  → +kScorerMatchBonusPoints  (capped at predicted count)
+      // • 1 scorer predicting 2 goals, scores 2 → +2 × kScorerMatchBonusPoints
+      // • 2 different scorers each scoring 1     → +2 × kScorerMatchBonusPoints
+      pred.predictedScorers.forEach((predictedName, predictedCount) {
+        int actualCount = 0;
+        for (final entry in actualGoalCounts.entries) {
+          if (isSamePlayer(entry.key, predictedName)) {
+            actualCount = entry.value;
+            break;
+          }
+        }
+        if (actualCount > 0) {
+          scorerBonus += min(predictedCount, actualCount) * kScorerMatchBonusPoints;
+        }
+      });
     }
 
-    // KNOCKOUT LOGIC
+    if (!match.isKnockout) {
+      int base = 0;
+      if (actual1 == pred1 && actual2 == pred2) {
+        base = kExactScorePoints;
+      } else {
+        final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+        final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
+        if (actualOutcome == predOutcome) base = kCorrectOutcomePoints;
+      }
+      // Scorer bonus is awarded even when the score prediction was wrong
+      return base + scorerBonus;
+    }
+
+    // ── KNOCKOUT LOGIC ──
     int score = 0;
 
     // 1. Base score at 90m
@@ -284,7 +318,10 @@ class PredictionService {
       }
     }
 
-    if (!is90mOutcomeCorrect) return 0;
+    // Scorer bonus in knockout: awarded even if 90m outcome was wrong
+    score += scorerBonus;
+
+    if (!is90mOutcomeCorrect) return score;
 
     // 2. Extra Time bonus
     if (match.wentToET == true && pred.extraTimeWinner != null) {
@@ -297,40 +334,9 @@ class PredictionService {
     if (match.wentToPK == true && match.pkWinner != null) {
       final bool predT1WinsPK = pred.penaltyWinner == true;
       final bool actualT1WinsPK = match.pkWinner!.toLowerCase() == match.t1.toLowerCase();
-
       if (pred.penaltyWinner != null && predT1WinsPK == actualT1WinsPK) {
         score += kPenaltyShootoutBonusPoints;
       }
-    }
-
-    // 4. Multi-Scorer Match Bonus
-    if (pred.predictedScorers.isNotEmpty) {
-      // Create a map of actual goals per player
-      final actualGoalCounts = <String, int>{};
-      for (final goal in match.goals) {
-        // Just rely on exact strings for now, or use our fuzzy match if needed, but goals usually have consistent names per match
-        // A simple case-insensitive comparison works for counting within a single match
-        final key = goal.scorer.trim().toLowerCase();
-        actualGoalCounts[key] = (actualGoalCounts[key] ?? 0) + 1;
-      }
-
-      // Evaluate each predicted scorer
-      pred.predictedScorers.forEach((predictedName, predictedCount) {
-        // Find how many goals this predicted player actually scored
-        int actualCount = 0;
-        for (final entry in actualGoalCounts.entries) {
-          if (isSamePlayer(entry.key, predictedName)) {
-            actualCount = entry.value;
-            break;
-          }
-        }
-        
-        if (actualCount > 0) {
-          // Cap the rewarded goals to the predicted count (don't reward 3 goals if they only predicted 1)
-          final rewardedGoals = min(predictedCount, actualCount);
-          score += (rewardedGoals * kScorerMatchBonusPoints);
-        }
-      });
     }
 
     return score;

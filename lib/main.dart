@@ -221,6 +221,7 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<Uri>? _linkSubscription;
 
   late ConfettiController _confettiController;
+  late ScrollController _listScrollController;
 
   @override
   void initState() {
@@ -229,6 +230,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
+    _listScrollController = ScrollController();
     _initDeepLinks();
     _loadInitialData();
   }
@@ -237,6 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _linkSubscription?.cancel();
     _confettiController.dispose();
+    _listScrollController.dispose();
     WCAudioService.instance.dispose();
     super.dispose();
   }
@@ -284,6 +287,9 @@ class _MyHomePageState extends State<MyHomePage> {
           _isLoading = false;
         });
         debugPrint("INIT: Core UI state updated, spinner stopped");
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToCurrentMatch();
+        });
       }
 
       // Continue with non-blocking tasks
@@ -991,6 +997,13 @@ class _MyHomePageState extends State<MyHomePage> {
         scheduledDate: scheduledTime,
       );
 
+      if (match.t1Score != null && match.t2Score != null) {
+        await WCNotificationService.showImmediateScoreNotification(
+          match: match,
+          lang: _lang,
+        );
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1025,6 +1038,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showMatchDetails(WorldCupMatch match) {
+    debugPrint("DEBUG: Opening match details for ${match.id}");
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1716,8 +1730,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                           ),
                                         ),
                                       ),
-                                      onPressed: () =>
-                                          setState(() => _viewMode = 'list'),
+                                      onPressed: () {
+                                        setState(() => _viewMode = 'list');
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          _scrollToCurrentMatch();
+                                        });
+                                      },
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -1805,6 +1823,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   _activeTab = tabsList[index];
                 });
+                if (tabsList[index] == 'matches') {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToCurrentMatch();
+                  });
+                }
               },
               items: [
                 BottomNavigationBarItem(
@@ -1921,6 +1944,86 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _refreshMatches() async {
+    final matches = await ApiService.loadMatches(forceRefresh: true);
+    if (mounted) {
+      setState(() {
+        _rawMatches = matches;
+        _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+      });
+    }
+  }
+
+  void _scrollToCurrentMatch() {
+    if (_resolvedMatches.isEmpty || !_listScrollController.hasClients || _viewMode != 'list') return;
+
+    final Map<String, List<WorldCupMatch>> matchesByDate = {};
+    for (var m in _resolvedMatches) {
+      final dateLabel = DateFormat.yMd(_lang).format(m.date);
+      matchesByDate.putIfAbsent(dateLabel, () => []).add(m);
+    }
+
+    final sortedDates = matchesByDate.keys.toList()
+      ..sort((a, b) {
+        final d1 = DateFormat.yMd(_lang).parse(a);
+        final d2 = DateFormat.yMd(_lang).parse(b);
+        return d1.compareTo(d2);
+      });
+
+    final now = DateTime.now();
+    WorldCupMatch? targetMatch;
+
+    // Look for live match
+    try {
+      targetMatch = _resolvedMatches.firstWhere((m) {
+        final localDate = m.date.toLocal();
+        final duration = m.isKnockout 
+            ? const Duration(minutes: 180) 
+            : const Duration(minutes: 120);
+        return !m.isPlayed && 
+            m.status != 'FINISHED' && 
+            now.isAfter(localDate) && 
+            now.isBefore(localDate.add(duration));
+      });
+    } catch (_) {
+      // Look for next upcoming match
+      try {
+        targetMatch = _resolvedMatches.firstWhere(
+          (m) => !m.isPlayed && m.status != 'FINISHED' && m.date.isAfter(now),
+        );
+      } catch (_) {
+        // Fallback to the last match
+        if (_resolvedMatches.isNotEmpty) {
+          targetMatch = _resolvedMatches.last;
+        }
+      }
+    }
+
+    if (targetMatch == null) return;
+
+    final targetDateStr = DateFormat.yMd(_lang).format(targetMatch.date);
+    final targetIndex = sortedDates.indexOf(targetDateStr);
+
+    if (targetIndex >= 0) {
+      double scrollOffset = 0.0;
+      for (int i = 0; i < targetIndex; i++) {
+        final dateLabel = sortedDates[i];
+        final numMatches = matchesByDate[dateLabel]?.length ?? 0;
+        // Daily header (~46.0 px) + match cards (~155.0 px each)
+        scrollOffset += 46.0 + (numMatches * 155.0);
+      }
+
+      final maxScroll = _listScrollController.position.maxScrollExtent;
+      scrollOffset = scrollOffset.clamp(0.0, maxScroll);
+
+      _listScrollController.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+  }
+
   Widget _buildActiveView(
     List<WorldCupMatch> filteredMatches,
     Map<String, List<WorldCupMatch>> matchesByDate,
@@ -2005,58 +2108,62 @@ class _MyHomePageState extends State<MyHomePage> {
         return d1.compareTo(d2);
       });
 
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      itemCount: sortedDates.length,
-      itemBuilder: (context, dateIdx) {
-        final dateLabel = sortedDates[dateIdx];
-        final dayMatches = matchesByDate[dateLabel]!;
-        final firstMatchDate = dayMatches.first.date;
-        final weekdayStr = DateFormat(
-          'EEEE d MMMM',
-          _lang,
-        ).format(firstMatchDate);
+    return RefreshIndicator(
+      onRefresh: _refreshMatches,
+      child: ListView.builder(
+        controller: _listScrollController,
+        physics: const BouncingScrollPhysics(),
+        itemCount: sortedDates.length,
+        itemBuilder: (context, dateIdx) {
+          final dateLabel = sortedDates[dateIdx];
+          final dayMatches = matchesByDate[dateLabel]!;
+          final firstMatchDate = dayMatches.first.date;
+          final weekdayStr = DateFormat(
+            'EEEE d MMMM',
+            _lang,
+          ).format(firstMatchDate);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 12, left: 4),
-              child: Text(
-                weekdayStr.toUpperCase(),
-                style: const TextStyle(
-                  color: AppColors.textDim,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  letterSpacing: 1.5,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 16, bottom: 12, left: 4),
+                child: Text(
+                  weekdayStr.toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    letterSpacing: 1.5,
+                  ),
                 ),
               ),
-            ),
-            ...dayMatches.map((m) {
-              return MatchCard(
-                match: m,
-                matches: _resolvedMatches,
-                lang: _lang,
-                hasAlert: _hasAlert(m),
-                userPrediction: _userPreds?.matchPredictions[m.id],
-                alertType: (WorldCupMatch match) =>
-                    PredictionService.getPredictionResult(match, _userPreds),
-                predictionResult:
-                    PredictionService.getPredictionResult(m, _userPreds),
-                supportedTeamCode: _supportedTeam,
-                onAlertToggle: () {
-                  if (_hasAlert(m)) {
-                    _saveAlert(m.id, 'none');
-                  } else {
-                    _saveAlert(m.id, '1h');
-                  }
-                },
-                onTap: () => _showMatchDetails(m),
-              );
-            }),
-          ],
-        );
-      },
+              ...dayMatches.map((m) {
+                return MatchCard(
+                  match: m,
+                  matches: _resolvedMatches,
+                  lang: _lang,
+                  hasAlert: _hasAlert(m),
+                  userPrediction: _userPreds?.matchPredictions[m.id],
+                  alertType: (WorldCupMatch match) =>
+                      PredictionService.getPredictionResult(match, _userPreds),
+                  predictionResult:
+                      PredictionService.getPredictionResult(m, _userPreds),
+                  supportedTeamCode: _supportedTeam,
+                  onAlertToggle: () {
+                    if (_hasAlert(m)) {
+                      _saveAlert(m.id, 'none');
+                    } else {
+                      _saveAlert(m.id, '1h');
+                    }
+                  },
+                  onTap: () => _showMatchDetails(m),
+                );
+              }),
+            ],
+          );
+        },
+      ),
     );
   }
 }

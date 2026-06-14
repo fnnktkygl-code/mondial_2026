@@ -10,6 +10,7 @@ import '../models/match.dart';
 import '../services/team_profile_service.dart';
 import '../services/prediction_service.dart';
 import '../services/firebase_service.dart';
+import '../services/api_service.dart';
 import '../l10n/translations.dart';
 import '../../firebase_options.dart';
 
@@ -198,11 +199,12 @@ class WCNotificationService {
           payload = message.data['action'];
         }
 
-        showInstantNotification(
+        _handleIncomingNotification(
           id: message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString(),
           title: message.notification!.title ?? 'Prono Challenge',
           body: message.notification!.body ?? '',
           payload: payload,
+          data: message.data,
         );
       }
     });
@@ -243,10 +245,14 @@ class WCNotificationService {
           if (data != null) {
             final title = data['title'] as String? ?? 'Notification';
             final body = data['body'] as String? ?? '';
-            showInstantNotification(
+            final payload = data['payload'] as String? ?? data['action'] as String? ?? '';
+
+            _handleIncomingNotification(
               id: change.doc.id,
               title: title,
               body: body,
+              payload: payload,
+              data: data,
             );
 
             change.doc.reference.update({'read': true});
@@ -254,6 +260,163 @@ class WCNotificationService {
         }
       }
     });
+  }
+
+  static Future<void> _handleIncomingNotification({
+    required String id,
+    required String title,
+    required String body,
+    required String payload,
+    required Map<String, dynamic> data,
+  }) async {
+    String? matchId;
+    if (payload.startsWith('match_')) {
+      matchId = payload.substring(6);
+    } else if (data['matchId'] != null) {
+      matchId = data['matchId'].toString();
+    } else if (data['match_id'] != null) {
+      matchId = data['match_id'].toString();
+    } else {
+      final regExp = RegExp(r'\b(g_)?m\d+\b');
+      final match = regExp.firstMatch('$title $body');
+      if (match != null) {
+        matchId = match.group(0);
+      }
+    }
+
+    if (matchId != null) {
+      try {
+        final matches = await ApiService.loadMatches(forceRefresh: true);
+        final matchObj = matches.firstWhere((m) => m.id == matchId);
+
+        final lowerTitle = title.toLowerCase();
+        final lowerBody = body.toLowerCase();
+        final isHt = lowerTitle.contains('mi-temps') ||
+            lowerTitle.contains('half-time') ||
+            lowerTitle.contains('entretiempo') ||
+            lowerBody.contains('mi-temps') ||
+            lowerBody.contains('half-time') ||
+            lowerBody.contains('entretiempo') ||
+            data['type'] == 'half_time' ||
+            data['type'] == 'ht';
+
+        final isFt = lowerTitle.contains('fin du match') ||
+            lowerTitle.contains('full-time') ||
+            lowerTitle.contains('fin del partido') ||
+            lowerTitle.contains('terminé') ||
+            lowerTitle.contains('terminado') ||
+            lowerBody.contains('fin du match') ||
+            lowerBody.contains('full-time') ||
+            lowerBody.contains('fin del partido') ||
+            lowerBody.contains('terminé') ||
+            lowerBody.contains('terminado') ||
+            data['type'] == 'full_time' ||
+            data['type'] == 'ft';
+
+        if ((isHt || isFt) && matchObj.t1Score != null && matchObj.t2Score != null) {
+          final cleanT1 = matchObj.t1.toLowerCase().replaceAll('g_', '');
+          final cleanT2 = matchObj.t2.toLowerCase().replaceAll('g_', '');
+          final f1 = _getFlagEmoji(cleanT1);
+          final f2 = _getFlagEmoji(cleanT2);
+
+          String lang = 'en';
+          if (lowerTitle.contains('mi-temps') || lowerTitle.contains('fin') || lowerBody.contains('mi-temps') || lowerBody.contains('fin')) {
+            lang = 'fr';
+          } else if (lowerTitle.contains('entretiempo') || lowerTitle.contains('partido') || lowerBody.contains('entretiempo') || lowerBody.contains('partido')) {
+            lang = 'es';
+          }
+
+          final n1Local = getTeamNickname(cleanT1, lang);
+          final n2Local = getTeamNickname(cleanT2, lang);
+
+          String newTitle = '';
+          if (lang == 'fr') {
+            newTitle = isHt
+                ? '⚽ Mi-temps : $f1 $n1Local ${matchObj.t1Score}-${matchObj.t2Score} $n2Local $f2'
+                : '🏆 Fin du match : $f1 $n1Local ${matchObj.t1Score}-${matchObj.t2Score} $n2Local $f2';
+          } else if (lang == 'es') {
+            newTitle = isHt
+                ? '⚽ ¡Entretiempo: $f1 $n1Local ${matchObj.t1Score}-${matchObj.t2Score} $n2Local $f2!'
+                : '🏆 ¡Fin del partido: $f1 $n1Local ${matchObj.t1Score}-${matchObj.t2Score} $n2Local $f2!';
+          } else {
+            newTitle = isHt
+                ? '⚽ Half-time: $f1 $n1Local ${matchObj.t1Score}-${matchObj.t2Score} $n2Local $f2'
+                : '🏆 Full-time: $f1 $n1Local ${matchObj.t1Score}-${matchObj.t2Score} $n2Local $f2';
+          }
+
+          final newBody = formatScoreNotificationBody(
+            lang: lang,
+            t1Code: matchObj.t1,
+            t2Code: matchObj.t2,
+            t1Score: matchObj.t1Score!,
+            t2Score: matchObj.t2Score!,
+            isFinished: isFt,
+          );
+
+          await showInstantNotification(
+            id: id,
+            title: newTitle,
+            body: newBody,
+            payload: payload,
+          );
+          return;
+        }
+      } catch (e) {
+        debugPrint('Error updating push notification with score: $e');
+      }
+    }
+
+    await showInstantNotification(
+      id: id,
+      title: title,
+      body: body,
+      payload: payload,
+    );
+  }
+
+  static Future<void> showImmediateScoreNotification({
+    required WorldCupMatch match,
+    required String lang,
+  }) async {
+    final cleanT1 = match.t1.toLowerCase().replaceAll('g_', '');
+    final cleanT2 = match.t2.toLowerCase().replaceAll('g_', '');
+    final f1 = _getFlagEmoji(cleanT1);
+    final f2 = _getFlagEmoji(cleanT2);
+    final n1 = getTeamNickname(cleanT1, lang);
+    final n2 = getTeamNickname(cleanT2, lang);
+
+    final bool isFinished = match.status == 'FINISHED';
+
+    String title = '';
+    if (lang == 'fr') {
+      title = isFinished
+          ? '🏆 Fin du match : $f1 $n1 ${match.t1Score}-${match.t2Score} $n2 $f2'
+          : '⚽ Score en direct : $f1 $n1 ${match.t1Score}-${match.t2Score} $n2 $f2';
+    } else if (lang == 'es') {
+      title = isFinished
+          ? '🏆 ¡Fin del partido: $f1 $n1 ${match.t1Score}-${match.t2Score} $n2 $f2!'
+          : '⚽ Marcador en vivo: $f1 $n1 ${match.t1Score}-${match.t2Score} $n2 $f2';
+    } else {
+      title = isFinished
+          ? '🏆 Full-time: $f1 $n1 ${match.t1Score}-${match.t2Score} $n2 $f2'
+          : '⚽ Live Score: $f1 $n1 ${match.t1Score}-${match.t2Score} $n2 $f2';
+    }
+
+    final body = formatScoreNotificationBody(
+      lang: lang,
+      t1Code: match.t1,
+      t2Code: match.t2,
+      t1Score: match.t1Score ?? 0,
+      t2Score: match.t2Score ?? 0,
+      isFinished: isFinished,
+    );
+
+    await showInstantNotification(
+      id: 'score_${match.id}',
+      title: title,
+      body: body,
+      payload: 'match_${match.id}',
+    );
   }
 
   static Future<bool> requestPermissions() async {
