@@ -39,6 +39,7 @@ import 'widgets/mascots_dialog.dart';
 import 'widgets/landing_page.dart';
 import 'widgets/staging_panel.dart';
 import 'widgets/wc_tooltip.dart';
+import 'screens/update_required_screen.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
 import 'package:app_links/app_links.dart';
@@ -85,11 +86,20 @@ void main() async {
   await initializeDateFormatting('es', null);
   await WCTeamProfileService.loadMediaMap();
   await PlayerDatabaseService.loadPlayers();
-  runApp(const MyApp());
+  
+  bool requireUpdate = false;
+  try {
+    requireUpdate = await WCUpdateService.isUpdateRequired();
+  } catch (e) {
+    debugPrint("Update check failed: $e");
+  }
+
+  runApp(MyApp(requireUpdate: requireUpdate));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool requireUpdate;
+  const MyApp({super.key, this.requireUpdate = false});
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +169,7 @@ class MyApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
-      home: const LandingPageWrapper(),
+      home: requireUpdate ? const UpdateRequiredScreen() : const LandingPageWrapper(),
       ),
     );
   }
@@ -1050,11 +1060,17 @@ class _MyHomePageState extends State<MyHomePage> {
         activeAlert: _alerts[match.id],
         onSaveAlert: (alertType) => _saveAlert(match.id, alertType),
         prediction: _userPreds?.matchPredictions[match.id],
-        canUseBooster: _userPreds != null && _userPreds!.boosterMatchId == null && !match.isPlayed,
-        onSetBooster: () async {
+        boosterMatchIds: _userPreds?.boosterMatchIds ?? [],
+        onBoosterChanged: (bool isActive) async {
           if (_userPreds == null) return;
           setState(() {
-            _userPreds!.boosterMatchId = match.id;
+            if (isActive) {
+              if (!_userPreds!.boosterMatchIds.contains(match.id)) {
+                _userPreds!.boosterMatchIds.add(match.id);
+              }
+            } else {
+              _userPreds!.boosterMatchIds.remove(match.id);
+            }
           });
           await PredictionService.savePredictionData(_userPreds!);
           final totalPoints = PredictionService.calculateTotalPoints(_userPreds!, _resolvedMatches);

@@ -125,10 +125,16 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         activeAlert: null,
         onSaveAlert: (_) {},
         prediction: _userPreds.matchPredictions[match.id],
-        canUseBooster: _userPreds.boosterMatchId == null && !match.isPlayed,
-        onSetBooster: () async {
+        boosterMatchIds: _userPreds.boosterMatchIds,
+        onBoosterChanged: (bool isActive) async {
           setState(() {
-            _userPreds.boosterMatchId = match.id;
+            if (isActive) {
+              if (!_userPreds.boosterMatchIds.contains(match.id)) {
+                _userPreds.boosterMatchIds.add(match.id);
+              }
+            } else {
+              _userPreds.boosterMatchIds.remove(match.id);
+            }
           });
           await PredictionService.savePredictionData(_userPreds);
           _loadData();
@@ -468,7 +474,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        _buildBoosterPanel(),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: WCUserStatisticsWidget(
@@ -737,12 +742,23 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     final p2Val = pred?.t2Score ?? 0;
     final isMatchStarted = m.date.isBefore(DateTime.now());
     final bool isLocked = widget.isLiveMode && (m.isPlayed || isMatchStarted);
-    final isBooster = _userPreds.boosterMatchId == m.id;
+    final isBooster = _userPreds.boosterMatchIds.contains(m.id);
 
     int pointsEarned = 0;
     if (m.isPlayed && hasPred) {
       pointsEarned = PredictionService.evaluatePoints(m, pred);
-      if (isBooster) pointsEarned *= 2;
+      if (isBooster) {
+        final actualOutcome = (m.t1Score90 ?? m.t1Score!) > (m.t2Score90 ?? m.t2Score!) ? 1 : ((m.t1Score90 ?? m.t1Score!) < (m.t2Score90 ?? m.t2Score!) ? -1 : 0);
+        final predOutcome = p1Val > p2Val ? 1 : (p1Val < p2Val ? -1 : 0);
+        final isScoreExact = (m.t1Score90 ?? m.t1Score!) == p1Val && (m.t2Score90 ?? m.t2Score!) == p2Val;
+        final isOutcomeCorrect = actualOutcome == predOutcome;
+        
+        if (isScoreExact) {
+          pointsEarned = (pointsEarned * 2.0).round();
+        } else if (isOutcomeCorrect) {
+          pointsEarned = (pointsEarned * 1.5).round();
+        }
+      }
     }
 
     final stageLabel = m.isKnockout
@@ -1197,9 +1213,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
   Widget _buildPodium(List<FriendScore> top, int maxPts) {
     final slots = <({FriendScore member, int rank})>[];
-    if (top.length >= 2) slots.add((member: top[1], rank: 2));
-    if (top.isNotEmpty) slots.insert(top.length >= 2 ? 1 : 0, (member: top[0], rank: 1));
-    if (top.length >= 3) slots.add((member: top[2], rank: 3));
+    if (top.length >= 2) slots.add((member: top[1], rank: top[1].rank > 0 ? top[1].rank : 2));
+    if (top.isNotEmpty) slots.insert(top.length >= 2 ? 1 : 0, (member: top[0], rank: top[0].rank > 0 ? top[0].rank : 1));
+    if (top.length >= 3) slots.add((member: top[2], rank: top[2].rank > 0 ? top[2].rank : 3));
 
     const double barHeight1 = 44.0;
     const double barHeight2 = 30.0;
@@ -1220,9 +1236,14 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         children: slots.map((slot) {
           final m = slot.member;
           final rank = slot.rank;
-          final avatarSize = avatarSizes[rank]!;
-          final barH = barHeights[rank]!;
-          final borderColor = avatarBorderColors[rank]!;
+          
+          // use visual rank (1,2,3) to determine size/color, even if actual rank is tied (e.g. both are rank 1)
+          // Find index in top to determine visual placement
+          int visualRank = top.indexOf(m) + 1;
+          
+          final avatarSize = avatarSizes[visualRank] ?? 36.0;
+          final barH = barHeights[visualRank] ?? 18.0;
+          final borderColor = avatarBorderColors[visualRank] ?? AppColors.warning;
           final isUser = m.isUser;
 
           return Expanded(
@@ -1291,7 +1312,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 Container(
                   height: barH,
                   decoration: BoxDecoration(
-                    color: rank == 1
+                    color: visualRank == 1
                         ? AppColors.rankGold.withValues(alpha: 0.12)
                         : AppColors.surface,
                     borderRadius: const BorderRadius.only(
@@ -1300,17 +1321,17 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     ),
                     border: Border(
                       top: BorderSide(
-                        color: rank == 1
+                        color: visualRank == 1
                             ? AppColors.rankGold.withValues(alpha: 0.35)
                             : AppColors.border,
                       ),
                       left: BorderSide(
-                        color: rank == 1
+                        color: visualRank == 1
                             ? AppColors.rankGold.withValues(alpha: 0.35)
                             : AppColors.border,
                       ),
                       right: BorderSide(
-                        color: rank == 1
+                        color: visualRank == 1
                             ? AppColors.rankGold.withValues(alpha: 0.35)
                             : AppColors.border,
                       ),
@@ -1338,6 +1359,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   Widget _buildRestRow(FriendScore member, int rank, int maxPts) {
     final isUser = member.isUser;
     final pct = maxPts > 0 ? (member.points / maxPts).clamp(0.0, 1.0) : 0.0;
+    
+    // Fallback rank calculation if member rank isn't populated
+    final displayRank = member.rank > 0 ? member.rank : rank;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
@@ -1352,7 +1376,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           SizedBox(
             width: 22,
             child: Text(
-              '$rank',
+              '$displayRank',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isUser ? AppColors.accent : AppColors.textDim,

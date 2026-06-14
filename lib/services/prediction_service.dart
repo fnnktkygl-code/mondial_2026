@@ -8,6 +8,8 @@ import '../models/match.dart';
 import '../app_constants.dart';
 import '../l10n/translations.dart';
 import 'firebase_service.dart';
+import 'odds_service.dart';
+import 'player_database_service.dart';
 
 class MatchPrediction {
   final String matchId;
@@ -69,7 +71,8 @@ class PredictionData {
   String? goldenBootPlayer;
   String? goldenBootWinner;
   String? supportedTeam;
-  String? boosterMatchId;
+  String? boosterMatchId; // Legacy
+  List<String> boosterMatchIds;
   DateTime? championPredictedAt;
   DateTime? goldenBootPredictedAt;
   Map<String, MatchPrediction> matchPredictions;
@@ -82,10 +85,12 @@ class PredictionData {
     this.goldenBootWinner,
     this.supportedTeam,
     this.boosterMatchId,
+    List<String>? boosterMatchIds,
     this.championPredictedAt,
     this.goldenBootPredictedAt,
     Map<String, MatchPrediction>? preds,
-  }) : matchPredictions = preds ?? {};
+  })  : matchPredictions = preds ?? {},
+        boosterMatchIds = boosterMatchIds ?? [];
 
   factory PredictionData.fromJson(Map<String, dynamic> json) {
     final Map<String, MatchPrediction> preds = {};
@@ -97,6 +102,15 @@ class PredictionData {
       });
     }
 
+    final List<String> parsedBoosters = [];
+    if (json['boosterMatchIds'] != null) {
+      final list = json['boosterMatchIds'] as List<dynamic>;
+      parsedBoosters.addAll(list.map((e) => e.toString()));
+    } else if (json['boosterMatchId'] != null) {
+      // Migrate legacy booster
+      parsedBoosters.add(json['boosterMatchId'].toString());
+    }
+
     return PredictionData(
       username: json['username'] as String? ?? kDefaultUsername,
       avatar: json['avatar'] as String? ?? '',
@@ -105,6 +119,7 @@ class PredictionData {
       goldenBootWinner: json['goldenBootWinner'] as String?,
       supportedTeam: json['supportedTeam'] as String?,
       boosterMatchId: json['boosterMatchId'] as String?,
+      boosterMatchIds: parsedBoosters,
       championPredictedAt: json['championPredictedAt'] != null
           ? DateTime.tryParse(json['championPredictedAt'] as String)
           : null,
@@ -129,6 +144,7 @@ class PredictionData {
       'goldenBootWinner': goldenBootWinner,
       'supportedTeam': supportedTeam,
       'boosterMatchId': boosterMatchId,
+      'boosterMatchIds': boosterMatchIds,
       if (championPredictedAt != null)
         'championPredictedAt': championPredictedAt!.toIso8601String(),
       if (goldenBootPredictedAt != null)
@@ -144,6 +160,7 @@ class FriendScore {
   final String emblem;
   final bool isUser;
   final String? userId;
+  final int rank;
 
   FriendScore({
     required this.name,
@@ -151,6 +168,7 @@ class FriendScore {
     required this.emblem,
     this.isUser = false,
     this.userId,
+    this.rank = 0,
   });
 }
 
@@ -187,6 +205,15 @@ class PredictionService {
       return true;
     }
     return false;
+  }
+
+  static bool isTournamentPredictionLocked(List<WorldCupMatch> matches) {
+    try {
+      final firstKnockoutMatch = matches.firstWhere((m) => m.isKnockout);
+      return isPredictionLocked(firstKnockoutMatch);
+    } catch (e) {
+      return true; // Fallback sécurisé
+    }
   }
 
   static Future<bool> saveMatchPrediction(WorldCupMatch match, PredictionData currentData, MatchPrediction newPrediction) async {
@@ -251,6 +278,24 @@ class PredictionService {
 
   // ─── Scoring ─────────────────────────────────────────────────────────────────
 
+  static String getMatchPhase(WorldCupMatch match) {
+    if (!match.isKnockout) {
+      return 'group'; // Un seul pool de Jokers pour toute la phase de poules
+    }
+    // Knockout phases
+    final mNum = int.tryParse(match.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    if (mNum >= 73 && mNum <= 88) return 'round_32';
+    if (mNum >= 89 && mNum <= 96) return 'round_16';
+    if (mNum >= 97 && mNum <= 100) return 'quarter';
+    if (mNum >= 101 && mNum <= 102) return 'semi';
+    return 'final'; // 103, 104
+  }
+
+  static int getAvailableBoostersForPhase(String phase) {
+    if (phase == 'group') return 3; // 3 jokers pour la phase de groupes
+    return 1; // 1 joker pour chaque phase éliminatoire
+  }
+
   static int evaluatePoints(WorldCupMatch match, MatchPrediction pred) {
     if (!match.isPlayed || match.t1Score == null || match.t2Score == null) return 0;
 
@@ -259,69 +304,91 @@ class PredictionService {
     final pred1 = pred.t1Score;
     final pred2 = pred.t2Score;
 
+    final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+    final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
+    final bool isScoreExact = (actual1 == pred1 && actual2 == pred2);
+    final bool isOutcomeCorrect = (actualOutcome == predOutcome);
+
     // ── Scorer bonus (applies to ALL matches: group + knockout) ──
     int scorerBonus = 0;
     if (pred.predictedScorers.isNotEmpty) {
-      // Build a goal-count map for actual scorers (case-insensitive)
       final actualGoalCounts = <String, int>{};
       for (final goal in match.goals) {
         final key = goal.scorer.trim().toLowerCase();
         actualGoalCounts[key] = (actualGoalCounts[key] ?? 0) + 1;
       }
 
-      // For each predicted scorer, award kScorerMatchBonusPoints × min(predictedGoals, actualGoals)
-      // • 1 scorer predicting 1 goal, scores 1  → +kScorerMatchBonusPoints
-      // • 1 scorer predicting 1 goal, scores 2  → +kScorerMatchBonusPoints  (capped at predicted count)
-      // • 1 scorer predicting 2 goals, scores 2 → +2 × kScorerMatchBonusPoints
-      // • 2 different scorers each scoring 1     → +2 × kScorerMatchBonusPoints
       pred.predictedScorers.forEach((predictedName, predictedCount) {
         int actualCount = 0;
+        String? actualScorerName;
         for (final entry in actualGoalCounts.entries) {
           if (isSamePlayer(entry.key, predictedName)) {
             actualCount = entry.value;
+            actualScorerName = entry.key;
             break;
           }
         }
-        if (actualCount > 0) {
-          scorerBonus += min(predictedCount, actualCount) * kScorerMatchBonusPoints;
+        if (actualCount > 0 && actualScorerName != null) {
+          // Dynamic points based on position
+          String? position;
+          final goalEvent = match.goals.firstWhere((g) => g.scorer.trim().toLowerCase() == actualScorerName?.toLowerCase(), orElse: () => GoalEvent(team: 't1', scorer: '', minute: 0));
+          final teamStr = goalEvent.team == 't1' ? match.t1 : match.t2;
+          position = PlayerDatabaseService.getPlayerPosition(AppTranslations.getTeam('en', teamStr), actualScorerName);
+          
+          int ptsPerGoal = kScorerBonusMidfielder; // default
+          if (position == 'Forwards') {
+            ptsPerGoal = kScorerBonusForward;
+          } else if (position == 'Defenders' || position == 'Goalkeepers') {
+            ptsPerGoal = kScorerBonusDefenderOrGK;
+          }
+          
+          scorerBonus += min(predictedCount, actualCount) * ptsPerGoal;
         }
       });
     }
 
+    // ── Outsider bonus ──
+    int outsiderBonus = 0;
+    if (isOutcomeCorrect) {
+      final odds = WCOddsService.calculateMatchOdds(match.t1, match.t2);
+      double prob = 1.0;
+      if (actualOutcome == 1) {
+        prob = 1.0 / (odds['1'] ?? 1.0);
+      } else if (actualOutcome == -1) {
+        prob = 1.0 / (odds['2'] ?? 1.0);
+      } else {
+        prob = 1.0 / (odds['X'] ?? 1.0);
+      }
+
+      if (prob < kOutsiderProbabilityThreshold) {
+        outsiderBonus = kOutsiderBonusPoints;
+      }
+    }
+
     if (!match.isKnockout) {
       int base = 0;
-      if (actual1 == pred1 && actual2 == pred2) {
+      if (isScoreExact) {
         base = kExactScorePoints;
-      } else {
-        final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-        final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
-        if (actualOutcome == predOutcome) base = kCorrectOutcomePoints;
+      } else if (isOutcomeCorrect) {
+        base = kCorrectOutcomePoints;
       }
-      // Scorer bonus is awarded even when the score prediction was wrong
-      return base + scorerBonus;
+      return base + scorerBonus + outsiderBonus;
     }
 
     // ── KNOCKOUT LOGIC ──
     int score = 0;
 
     // 1. Base score at 90m
-    bool is90mOutcomeCorrect = false;
-    if (actual1 == pred1 && actual2 == pred2) {
+    if (isScoreExact) {
       score += kExactScoreKnockoutPoints;
-      is90mOutcomeCorrect = true;
-    } else {
-      final actual90Outcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
-      final pred90Outcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
-      if (actual90Outcome == pred90Outcome) {
-        score += kCorrectOutcomeKnockoutPts;
-        is90mOutcomeCorrect = true;
-      }
+    } else if (isOutcomeCorrect) {
+      score += kCorrectOutcomeKnockoutPts;
     }
 
-    // Scorer bonus in knockout: awarded even if 90m outcome was wrong
-    score += scorerBonus;
+    // Scorer and Outsider bonus in knockout: awarded even if 90m outcome was wrong
+    score += scorerBonus + outsiderBonus;
 
-    if (!is90mOutcomeCorrect) return score;
+    if (!isOutcomeCorrect) return score;
 
     // 2. Extra Time bonus
     if (match.wentToET == true && pred.extraTimeWinner != null) {
@@ -514,12 +581,24 @@ class PredictionService {
           int matchPoints = evaluatePoints(match, pred);
           
           // Apply Booster Logic (Joker)
-          if (userPreds.boosterMatchId == match.id) {
-            if (matchPoints > 0) {
-              matchPoints *= 2; // Double points for a correct or partially correct prediction
-            } else {
-              matchPoints = kBoosterPenaltyPoints; // Double-edged sword: penalty for completely wrong prediction
+          bool isBoosterActive = userPreds.boosterMatchId == match.id || userPreds.boosterMatchIds.contains(match.id);
+          if (isBoosterActive) {
+            final actual1 = match.t1Score90 ?? match.t1Score!;
+            final actual2 = match.t2Score90 ?? match.t2Score!;
+            final pred1 = pred.t1Score;
+            final pred2 = pred.t2Score;
+
+            final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+            final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
+            final bool isScoreExact = (actual1 == pred1 && actual2 == pred2);
+            final bool isOutcomeCorrect = (actualOutcome == predOutcome);
+
+            if (isScoreExact) {
+              matchPoints = (matchPoints * 2.0).round();
+            } else if (isOutcomeCorrect) {
+              matchPoints = (matchPoints * 1.5).round();
             }
+            // No penalty for a wrong prediction
           }
           
           score += matchPoints;
@@ -638,6 +717,7 @@ class PredictionService {
     // 1. Setup Global Group with REAL data
     int globalRank = 1;
     final List<FriendScore> globalMembers = [];
+    final List<FriendScore> tempGlobalMembers = [];
     
     if (uid != 'anonymous_timeout') {
       try {
@@ -660,7 +740,7 @@ class PredictionService {
 
         for (final d in topSnap.docs) {
           final data = d.data();
-          globalMembers.add(FriendScore(
+          tempGlobalMembers.add(FriendScore(
             name: data['username'] ?? 'Unknown',
             points: data['points'] ?? 0,
             emblem: data['avatar'] ?? '👤',
@@ -670,35 +750,68 @@ class PredictionService {
         }
 
         // Add user if not in top 3
-        if (!globalMembers.any((m) => m.userId == uid)) {
-          globalMembers.add(FriendScore(
+        if (!tempGlobalMembers.any((m) => m.userId == uid)) {
+          tempGlobalMembers.add(FriendScore(
             name: userData.username,
             points: userPoints,
             emblem: userEmblem,
             isUser: true,
             userId: uid,
-            // We can store the rank in a field if we extend FriendScore, 
-            // but for now we'll handle it in the UI logic or by index.
+            rank: globalRank,
           ));
         }
       } catch (e) {
         debugPrint('Error loading global rank: $e');
         // Fallback to just the user
-        globalMembers.add(FriendScore(
+        tempGlobalMembers.add(FriendScore(
           name: userData.username,
           points: userPoints,
           emblem: userEmblem,
           isUser: true,
           userId: uid,
+          rank: 1,
         ));
       }
     } else {
-      globalMembers.add(FriendScore(
+      tempGlobalMembers.add(FriendScore(
         name: userData.username,
         points: userPoints,
         emblem: userEmblem,
         isUser: true,
         userId: uid,
+        rank: 1,
+      ));
+    }
+    
+    tempGlobalMembers.sort((a, b) => b.points.compareTo(a.points));
+    
+    int currentGlobalRank = 1;
+    for (int i = 0; i < tempGlobalMembers.length; i++) {
+      int r = currentGlobalRank;
+      if (tempGlobalMembers[i].isUser && tempGlobalMembers[i].points == userPoints) {
+        // preserve the true global rank for the user if they were appended at the end
+         if (tempGlobalMembers[i].rank > 0 && tempGlobalMembers[i].rank > i + 1) {
+            r = tempGlobalMembers[i].rank;
+         } else {
+            if (i > 0 && tempGlobalMembers[i].points < tempGlobalMembers[i - 1].points) {
+               currentGlobalRank = i + 1;
+            }
+            r = currentGlobalRank;
+         }
+      } else {
+         if (i > 0 && tempGlobalMembers[i].points < tempGlobalMembers[i - 1].points) {
+            currentGlobalRank = i + 1;
+         }
+         r = currentGlobalRank;
+      }
+      
+      globalMembers.add(FriendScore(
+        name: tempGlobalMembers[i].name,
+        points: tempGlobalMembers[i].points,
+        emblem: tempGlobalMembers[i].emblem,
+        isUser: tempGlobalMembers[i].isUser,
+        userId: tempGlobalMembers[i].userId,
+        rank: r,
       ));
     }
 
@@ -707,7 +820,7 @@ class PredictionService {
         name: kGlobalGroupName,
         code: kGlobalGroupCode,
         members: globalMembers,
-        globalRank: globalRank, // Need to add this field to FriendGroup
+        globalRank: globalRank,
       ),
     );
 
@@ -766,8 +879,23 @@ class PredictionService {
         });
 
         final resolvedMembers = await Future.wait(memberDocsFutures);
-        members.addAll(resolvedMembers);
-        members.sort((a, b) => b.points.compareTo(a.points));
+        resolvedMembers.sort((a, b) => b.points.compareTo(a.points));
+        
+        // Calculate ranks handling ties
+        int currentRank = 1;
+        for (int i = 0; i < resolvedMembers.length; i++) {
+          if (i > 0 && resolvedMembers[i].points < resolvedMembers[i - 1].points) {
+            currentRank = i + 1;
+          }
+          members.add(FriendScore(
+            name: resolvedMembers[i].name,
+            points: resolvedMembers[i].points,
+            emblem: resolvedMembers[i].emblem,
+            isUser: resolvedMembers[i].isUser,
+            userId: resolvedMembers[i].userId,
+            rank: currentRank,
+          ));
+        }
 
         groups.add(
           FriendGroup(
