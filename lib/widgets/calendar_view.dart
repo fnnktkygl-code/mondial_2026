@@ -78,28 +78,39 @@ class _CalendarViewWidgetState extends State<CalendarViewWidget> {
 
     WorldCupMatch? targetMatch;
     
-    // 1. Look for a live match (currently playing)
+    // 1. Look for matches today (same calendar day in local timezone)
     try {
       targetMatch = widget.matches.firstWhere((m) {
-        final localDate = m.date.toLocal();
-        final duration = m.isKnockout 
-            ? const Duration(minutes: 180) 
-            : const Duration(minutes: 120);
-        return !m.isPlayed && 
-            m.status != 'FINISHED' && 
-            now.isAfter(localDate) && 
-            now.isBefore(localDate.add(duration));
+        final mLocal = m.date.toLocal();
+        final nowLocal = now.toLocal();
+        return mLocal.year == nowLocal.year &&
+            mLocal.month == nowLocal.month &&
+            mLocal.day == nowLocal.day;
       });
     } catch (_) {
-      // 2. If no live match, look for the next upcoming match
+      // 2. Look for a live match (currently playing)
       try {
-        targetMatch = widget.matches.firstWhere(
-          (m) => !m.isPlayed && m.status != 'FINISHED' && m.date.isAfter(now),
-        );
+        targetMatch = widget.matches.firstWhere((m) {
+          final localDate = m.date.toLocal();
+          final duration = m.isKnockout 
+              ? const Duration(minutes: 180) 
+              : const Duration(minutes: 120);
+          return !m.isPlayed && 
+              m.status != 'FINISHED' && 
+              now.isAfter(localDate) && 
+              now.isBefore(localDate.add(duration));
+        });
       } catch (_) {
-        // 3. Fallback to the last match if all are played
-        if (widget.matches.isNotEmpty) {
-          targetMatch = widget.matches.last;
+        // 3. If no live match, look for the next upcoming match
+        try {
+          targetMatch = widget.matches.firstWhere(
+            (m) => !m.isPlayed && m.status != 'FINISHED' && m.date.isAfter(now),
+          );
+        } catch (_) {
+          // 4. Fallback to the last match if all are played
+          if (widget.matches.isNotEmpty) {
+            targetMatch = widget.matches.last;
+          }
         }
       }
     }

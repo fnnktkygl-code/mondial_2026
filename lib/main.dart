@@ -2281,28 +2281,39 @@ class _MyHomePageState extends State<MyHomePage> {
     final now = DateTime.now();
     WorldCupMatch? targetMatch;
 
-    // Look for live match
+    // 1. Look for matches today (same calendar day in local timezone)
     try {
       targetMatch = _resolvedMatches.firstWhere((m) {
-        final localDate = m.date.toLocal();
-        final duration = m.isKnockout 
-            ? const Duration(minutes: 180) 
-            : const Duration(minutes: 120);
-        return !m.isPlayed && 
-            m.status != 'FINISHED' && 
-            now.isAfter(localDate) && 
-            now.isBefore(localDate.add(duration));
+        final mLocal = m.date.toLocal();
+        final nowLocal = now.toLocal();
+        return mLocal.year == nowLocal.year &&
+            mLocal.month == nowLocal.month &&
+            mLocal.day == nowLocal.day;
       });
     } catch (_) {
-      // Look for next upcoming match
+      // 2. Look for live match
       try {
-        targetMatch = _resolvedMatches.firstWhere(
-          (m) => !m.isPlayed && m.status != 'FINISHED' && m.date.isAfter(now),
-        );
+        targetMatch = _resolvedMatches.firstWhere((m) {
+          final localDate = m.date.toLocal();
+          final duration = m.isKnockout 
+              ? const Duration(minutes: 180) 
+              : const Duration(minutes: 120);
+          return !m.isPlayed && 
+              m.status != 'FINISHED' && 
+              now.isAfter(localDate) && 
+              now.isBefore(localDate.add(duration));
+        });
       } catch (_) {
-        // Fallback to the last match
-        if (_resolvedMatches.isNotEmpty) {
-          targetMatch = _resolvedMatches.last;
+        // 3. Look for next upcoming match
+        try {
+          targetMatch = _resolvedMatches.firstWhere(
+            (m) => !m.isPlayed && m.status != 'FINISHED' && m.date.isAfter(now),
+          );
+        } catch (_) {
+          // 4. Fallback to the last match
+          if (_resolvedMatches.isNotEmpty) {
+            targetMatch = _resolvedMatches.last;
+          }
         }
       }
     }

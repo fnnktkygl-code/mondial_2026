@@ -365,13 +365,10 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     }
 
     if (groups.isEmpty) {
-      return Center(
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Text(
-            AppTranslations.get(widget.lang, 'noAlerts'),
-            style: const TextStyle(color: AppColors.textDim),
-          ),
+          padding: EdgeInsets.symmetric(vertical: 60),
+          child: CircularProgressIndicator(color: AppColors.accent),
         ),
       );
     }
