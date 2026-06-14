@@ -255,8 +255,8 @@
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-13T22:46:40.050Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-14T05:04:47.975Z",
     "goals": [
       {
         "team": "t2",
@@ -290,32 +290,63 @@
     "date": "2026-06-14T01:00:00Z",
     "t1": "ht",
     "t2": "sco",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 0,
+    "t2Score": 1,
     "venue": null,
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-14T05:04:47.976Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "J. McGinn",
+        "assistant": null,
+        "minute": 28
+      }
+    ],
+    "stats": {
+      "possessionT1": 37,
+      "shotsT1": 0,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 13,
+      "foulsT2": 10,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537346",
     "date": "2026-06-14T04:00:00Z",
     "t1": "au",
     "t2": "tr",
-    "t1Score": null,
-    "t2Score": null,
+    "t1Score": 1,
+    "t2Score": 0,
     "venue": null,
     "group": "D",
     "stage": null,
     "isKnockout": false,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-08T00:20:19Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-14T05:04:47.976Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 57,
+      "shotsT1": 12,
+      "shotsT2": 0,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 5,
+      "foulsT2": 16,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 4,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537351",
