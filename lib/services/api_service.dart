@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/match.dart';
 import '../app_constants.dart';
+import 'espn_api_service.dart';
 
 class ApiService {
   static const String _cacheKey = kMatchesCacheKey;
@@ -14,46 +14,95 @@ class ApiService {
   // Toggle this from your Staging Panel to intercept live calls
   static bool isStagingMode = false;
 
+  /// Fetch live matches from ESPN to update scores/stats in real-time.
+  static Future<List<WorldCupMatch>> fetchEspnLive() async {
+    return EspnApiService.fetchLiveMatches();
+  }
+
   /// Load tournament matches. Priority:
   /// 1. Local SharedPreferences cache (if fresh enough)
-  /// 2. Remote GitHub raw JSON (committed by GitHub Actions)
+  /// 2. Remote ESPN sync merged into schedule
   /// 3. Bundled asset initial_matches.json
   static Future<List<WorldCupMatch>> loadMatches({
     bool forceRefresh = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    List<WorldCupMatch> baseMatches = [];
 
-    // 1. Try local cache if not forcing refresh
+    // 1. Load Base Schedule from Assets
+    try {
+      final jsonStr = await rootBundle.loadString('assets/initial_matches.json');
+      baseMatches = _parseMatchesJson(jsonStr);
+    } catch (e) {
+      debugPrint("API: Asset load error: $e");
+    }
+
+    // 2. Try Cache (if not forcing refresh)
     if (!forceRefresh) {
       final cachedJson = prefs.getString(_cacheKey);
       if (cachedJson != null) {
         try {
-          return _parseMatchesJson(cachedJson);
+          final cachedMatches = _parseMatchesJson(cachedJson);
+          // We merge the cache into the base schedule to ensure we have all matches
+          baseMatches = _patchMatches(baseMatches, cachedMatches);
         } catch (_) {}
       }
     }
 
-    // 2. If force, or no cache, try fetching remote first
+    // 3. Fetch Remote Updates from ESPN and PATCH
     try {
-      final remoteMatches = await fetchRemoteMatches();
-      if (remoteMatches.isNotEmpty) {
-        return remoteMatches;
+      final remoteUpdates = await fetchRemoteMatches();
+      if (remoteUpdates.isNotEmpty) {
+        final patched = _patchMatches(baseMatches, remoteUpdates);
+        
+        // Save patched results to cache
+        final jsonToCache = jsonEncode(patched.map((m) => m.toJson()).toList());
+        await prefs.setString(_cacheKey, jsonToCache);
+        await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
+        
+        return patched;
       }
-    } catch (_) {}
-
-    // 3. Fall back to bundled asset if fetch fails or cache was empty
-    try {
-      final assetJson = await rootBundle.loadString('assets/initial_matches.json');
-      final matches = _parseMatchesJson(assetJson);
-      await prefs.setString(_cacheKey, assetJson);
-      await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
-      return matches;
     } catch (e) {
-      return [];
+      debugPrint("API: Remote sync error: $e");
     }
+
+    return baseMatches;
   }
 
-  /// Fetch schedule updates from the remote GitHub JSON.
+  /// Merges remote results into the base schedule using team matching and date logic.
+  static List<WorldCupMatch> _patchMatches(List<WorldCupMatch> base, List<WorldCupMatch> updates) {
+    final List<WorldCupMatch> patched = List.from(base);
+    
+    for (final update in updates) {
+      for (int i = 0; i < patched.length; i++) {
+        final local = patched[i];
+        
+        // Match by teams and approximate date (within 24h)
+        final sameTeams = (local.t1 == update.t1 && local.t2 == update.t2) ||
+                         (local.t1 == update.t2 && local.t2 == update.t1);
+        
+        if (sameTeams) {
+          final dateDiff = local.date.difference(update.date).abs();
+          if (dateDiff.inHours < 24) {
+            patched[i] = local.copyWith(
+              espnId: update.id.replaceFirst('espn_', ''),
+              t1Score: update.t1Score,
+              t2Score: update.t2Score,
+              status: update.status,
+              venue: update.venue ?? local.venue,
+              goals: update.goals,
+              stats: update.stats,
+              lastUpdated: DateTime.now(),
+            );
+            break;
+          }
+        }
+      }
+    }
+    return patched;
+  }
+
+  /// Fetch tournament updates from ESPN.
   /// Includes Exponential Backoff and Staging Interceptor.
   static Future<List<WorldCupMatch>> fetchRemoteMatches() async {
     if (isStagingMode) {
@@ -65,28 +114,23 @@ class ApiService {
 
     while (retryCount < maxRetries) {
       try {
-        final response = await http.get(Uri.parse(kApiUrl)).timeout(kApiTimeout);
-        if (response.statusCode == 200) {
-          final jsonStr = response.body;
-          final matches = _parseMatchesJson(jsonStr);
-          if (matches.isNotEmpty) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(_cacheKey, jsonStr);
-            await prefs.setString(
-              _lastUpdatedKey,
-              DateTime.now().toIso8601String(),
-            );
-            return matches;
-          }
-        } else {
-          throw Exception('Non-200 status code: ${response.statusCode}');
+        // We fetch the entire tournament scoreboard range to get all results
+        // 2026 dates: June 11 to July 19
+        final espnMatches = await EspnApiService.fetchLiveMatches();
+        
+        if (espnMatches.isNotEmpty) {
+          // We don't save to _cacheKey here because the ESPN structure 
+          // is converted to WorldCupMatch models already.
+          // The local cache expects the original JSON format for _parseMatchesJson.
+          // Instead, we return them and main.dart will handle the merging/patching.
+          return espnMatches;
         }
+        break;
       } catch (e) {
         retryCount++;
         if (retryCount >= maxRetries) {
           break;
         }
-        // Exponential backoff: 1s, 2s, 4s
         await Future.delayed(Duration(seconds: math.pow(2, retryCount - 1).toInt()));
       }
     }

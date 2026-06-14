@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -229,26 +228,41 @@ class PredictionService {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(data.toJson());
     await prefs.setString(_prefsKey, jsonStr);
+
+    // Sync to Firestore for persistence
+    try {
+      final uid = await WCFirebaseService.getOrCreateUserId();
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'predictions': data.matchPredictions.map((key, value) => MapEntry(key, value.toJson())),
+        'championCode': data.championCode,
+        'goldenBootPlayer': data.goldenBootPlayer,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint("Error syncing predictions to Firestore: $e");
+    }
   }
 
   static Future<PredictionData> loadPredictionData() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = prefs.getString(_prefsKey);
+    PredictionData? localData;
+
     if (jsonStr != null) {
       try {
-        final data = PredictionData.fromJson(
+        localData = PredictionData.fromJson(
           jsonDecode(jsonStr) as Map<String, dynamic>,
         );
+        
         bool migrated = false;
-        final keys = List<String>.from(data.matchPredictions.keys);
+        final keys = List<String>.from(localData.matchPredictions.keys);
         for (final key in keys) {
           if (key.startsWith('m')) {
             final idNum = int.tryParse(key.substring(1));
             if (idNum != null && idNum <= kGroupMatchMaxIndex) {
-              final pred = data.matchPredictions.remove(key);
+              final pred = localData.matchPredictions.remove(key);
               if (pred != null) {
                 final newKey = '$kGroupMatchIdPrefix$key';
-                data.matchPredictions[newKey] = MatchPrediction(
+                localData.matchPredictions[newKey] = MatchPrediction(
                   matchId: newKey,
                   t1Score: pred.t1Score,
                   t2Score: pred.t2Score,
@@ -260,14 +274,42 @@ class PredictionService {
           }
         }
         if (migrated) {
-          await savePredictionData(data);
+          await savePredictionData(localData);
         }
-        return data;
-      } catch (_) {
-        return PredictionData();
-      }
+      } catch (_) {}
     }
-    return PredictionData();
+
+    // Attempt to merge with Firestore
+    try {
+      final uid = await WCFirebaseService.getOrCreateUserId();
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        final remoteJson = doc.data()!;
+        final remotePreds = remoteJson['predictions'] as Map<String, dynamic>? ?? {};
+        
+        final finalData = localData ?? PredictionData(
+          username: remoteJson['username'] ?? 'User',
+          avatar: remoteJson['avatar'] ?? 'assets/avatars/1.png',
+          supportedTeam: remoteJson['supportedTeam'],
+        );
+
+        // Merge logic: prefer local but fill missing from remote
+        remotePreds.forEach((key, value) {
+          if (!finalData.matchPredictions.containsKey(key)) {
+            finalData.matchPredictions[key] = MatchPrediction.fromJson(Map<String, dynamic>.from(value));
+          }
+        });
+
+        finalData.championCode ??= remoteJson['championCode'];
+        finalData.goldenBootPlayer ??= remoteJson['goldenBootPlayer'];
+        
+        localData = finalData;
+      }
+    } catch (e) {
+      debugPrint("Error loading predictions from Firestore: $e");
+    }
+
+    return localData ?? PredictionData();
   }
 
   static Future<PredictionData> resetPredictions() async {
@@ -306,14 +348,58 @@ class PredictionService {
 
     final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
     final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
-    final bool isScoreExact = (actual1 == pred1 && actual2 == pred2);
     final bool isOutcomeCorrect = (actualOutcome == predOutcome);
+    final bool isScoreExact = (actual1 == pred1 && actual2 == pred2);
+    
+    // Retrieve decimal odds from odds service (1X2)
+    final odds = WCOddsService.calculateMatchOdds(match.t1, match.t2);
+    double oddsMultiplier = 1.0;
+    if (predOutcome == 1) {
+      oddsMultiplier = odds['1'] ?? 1.0;
+    } else if (predOutcome == -1) {
+      oddsMultiplier = odds['2'] ?? 1.0;
+    } else {
+      oddsMultiplier = odds['X'] ?? 1.0;
+    }
 
-    // ── Scorer bonus (applies to ALL matches: group + knockout) ──
-    int scorerBonus = 0;
+    double totalMatchPoints = 0.0;
+
+    if (isOutcomeCorrect) {
+      // 1. Base Outcome (Multiplied by outcome odds to reward risk)
+      totalMatchPoints += kCorrectOutcomePoints * oddsMultiplier;
+
+      // 2. Goal Difference (GD) Bonus (Multiplied by outcome odds)
+      final actualGD = (actual1 - actual2).abs();
+      final predGD = (pred1 - pred2).abs();
+      if (actualGD == predGD) {
+        double gdPoints = 0;
+        if (actualGD == 0) { gdPoints = kGdDiff0Points.toDouble(); }
+        else if (actualGD == 1) { gdPoints = kGdDiff1Points.toDouble(); }
+        else if (actualGD == 2) { gdPoints = kGdDiff2Points.toDouble(); }
+        else if (actualGD >= 3) { gdPoints = kGdDiff3Points.toDouble(); }
+        
+        totalMatchPoints += gdPoints * oddsMultiplier;
+      }
+
+      // 3. Exact Score "Summum" Bonus (Multiplied by odds and score risk/rarity factor)
+      if (isScoreExact) {
+        // High goals and high difference increase correct score rarity/risk
+        final double scoreRiskFactor = 1.0 + ((pred1 - pred2).abs() * 0.15) + ((pred1 + pred2) * 0.05);
+        totalMatchPoints += kExactScoreBonus * oddsMultiplier * scoreRiskFactor;
+      }
+      
+      // 4. Total Goals Bonus (if not exact score but same total; scaled by odds)
+      if (!isScoreExact && (actual1 + actual2 == pred1 + pred2)) {
+        totalMatchPoints += kTotalGoalsBonus * oddsMultiplier;
+      }
+    }
+
+    // ── Scorer bonus (Exponential & scaled by team odds) ──
+    double scorerBonus = 0.0;
     if (pred.predictedScorers.isNotEmpty) {
       final actualGoalCounts = <String, int>{};
       for (final goal in match.goals) {
+        if (goal.isOwnGoal) continue;
         final key = goal.scorer.trim().toLowerCase();
         actualGoalCounts[key] = (actualGoalCounts[key] ?? 0) + 1;
       }
@@ -328,85 +414,62 @@ class PredictionService {
             break;
           }
         }
+        
         if (actualCount > 0 && actualScorerName != null) {
-          // Dynamic points based on position
-          String? position;
-          final goalEvent = match.goals.firstWhere((g) => g.scorer.trim().toLowerCase() == actualScorerName?.toLowerCase(), orElse: () => GoalEvent(team: 't1', scorer: '', minute: 0));
+          final goalEvent = match.goals.firstWhere(
+            (g) => isSamePlayer(g.scorer, actualScorerName), 
+            orElse: () => GoalEvent(team: 't1', scorer: '', minute: 0)
+          );
           final teamStr = goalEvent.team == 't1' ? match.t1 : match.t2;
-          position = PlayerDatabaseService.getPlayerPosition(AppTranslations.getTeam('en', teamStr), actualScorerName);
+          final position = PlayerDatabaseService.getPlayerPosition(AppTranslations.getTeam('en', teamStr), actualScorerName);
           
-          int ptsPerGoal = kScorerBonusMidfielder; // default
-          if (position == 'Forwards') {
-            ptsPerGoal = kScorerBonusForward;
-          } else if (position == 'Defenders' || position == 'Goalkeepers') {
-            ptsPerGoal = kScorerBonusDefenderOrGK;
+          double ptsPerGoal = kScorerBonusMidfielder.toDouble();
+          if (position == 'Forwards') { ptsPerGoal = kScorerBonusForward.toDouble(); }
+          else if (position == 'Defenders' || position == 'Goalkeepers') { ptsPerGoal = kScorerBonusDefenderOrGK.toDouble(); }
+          
+          // Get the decimal odds of the team scoring (home team -> '1', away team -> '2')
+          final double teamOdds = goalEvent.team == 't1' ? (odds['1'] ?? 1.0) : (odds['2'] ?? 1.0);
+          double currentScorerPoints = ptsPerGoal * teamOdds;
+          
+          // Exponential: Exact goal count bonus (scaled by team odds)
+          if (actualCount == predictedCount) {
+            currentScorerPoints += kScorerExactCountBonus * teamOdds;
           }
           
-          scorerBonus += min(predictedCount, actualCount) * ptsPerGoal;
+          scorerBonus += currentScorerPoints;
         }
       });
     }
 
-    // ── Outsider bonus ──
-    int outsiderBonus = 0;
+    // ── Outsider bonus (scaled by odds) ──
+    double outsiderBonus = 0.0;
     if (isOutcomeCorrect) {
-      final odds = WCOddsService.calculateMatchOdds(match.t1, match.t2);
-      double prob = 1.0;
-      if (actualOutcome == 1) {
-        prob = 1.0 / (odds['1'] ?? 1.0);
-      } else if (actualOutcome == -1) {
-        prob = 1.0 / (odds['2'] ?? 1.0);
-      } else {
-        prob = 1.0 / (odds['X'] ?? 1.0);
-      }
-
+      double prob = 1.0 / oddsMultiplier;
       if (prob < kOutsiderProbabilityThreshold) {
-        outsiderBonus = kOutsiderBonusPoints;
+        outsiderBonus = kOutsiderBonusPoints * oddsMultiplier;
       }
     }
 
-    if (!match.isKnockout) {
-      int base = 0;
-      if (isScoreExact) {
-        base = kExactScorePoints;
-      } else if (isOutcomeCorrect) {
-        base = kCorrectOutcomePoints;
+    double finalScore = totalMatchPoints + scorerBonus + outsiderBonus;
+
+    // Knockout Stage Multiplier
+    if (match.isKnockout) {
+      finalScore *= kKnockoutMultiplier;
+      
+      // Extra Time / Penalties Bonuses (scaled by outcome odds)
+      if (match.wentToET == true && pred.extraTimeWinner != null && match.etWinner == pred.extraTimeWinner) {
+        finalScore += kExtraTimeBonusPoints * oddsMultiplier;
       }
-      return base + scorerBonus + outsiderBonus;
-    }
-
-    // ── KNOCKOUT LOGIC ──
-    int score = 0;
-
-    // 1. Base score at 90m
-    if (isScoreExact) {
-      score += kExactScoreKnockoutPoints;
-    } else if (isOutcomeCorrect) {
-      score += kCorrectOutcomeKnockoutPts;
-    }
-
-    // Scorer and Outsider bonus in knockout: awarded even if 90m outcome was wrong
-    score += scorerBonus + outsiderBonus;
-
-    if (!isOutcomeCorrect) return score;
-
-    // 2. Extra Time bonus
-    if (match.wentToET == true && pred.extraTimeWinner != null) {
-      if (match.etWinner == pred.extraTimeWinner) {
-        score += kExtraTimeBonusPoints;
+      if (match.wentToPK == true && match.pkWinner != null) {
+        final bool predT1WinsPK = pred.penaltyWinner == true;
+        final bool actualT1WinsPK = match.pkWinner!.toLowerCase() == match.t1.toLowerCase();
+        if (pred.penaltyWinner != null && predT1WinsPK == actualT1WinsPK) {
+          finalScore += kPenaltyShootoutBonusPoints * oddsMultiplier;
+        }
       }
     }
 
-    // 3. Penalty Shootout bonus
-    if (match.wentToPK == true && match.pkWinner != null) {
-      final bool predT1WinsPK = pred.penaltyWinner == true;
-      final bool actualT1WinsPK = match.pkWinner!.toLowerCase() == match.t1.toLowerCase();
-      if (pred.penaltyWinner != null && predT1WinsPK == actualT1WinsPK) {
-        score += kPenaltyShootoutBonusPoints;
-      }
-    }
-
-    return score;
+    return finalScore.round();
   }
 
   // ─── Résultat du pronostic ───

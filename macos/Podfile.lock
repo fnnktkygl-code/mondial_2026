@@ -23,6 +23,9 @@ PODS:
   - Firebase/Messaging (12.14.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 12.14.0)
+  - Firebase/RemoteConfig (12.14.0):
+    - Firebase/CoreOnly
+    - FirebaseRemoteConfig (~> 12.14.0)
   - firebase_analytics (12.4.2):
     - firebase_core
     - FirebaseAnalytics (= 12.14.0)
@@ -45,6 +48,13 @@ PODS:
     - Firebase/Messaging (~> 12.14.0)
     - firebase_core
     - FlutterMacOS
+  - firebase_remote_config (6.5.2):
+    - Firebase/CoreOnly (~> 12.14.0)
+    - Firebase/RemoteConfig (~> 12.14.0)
+    - firebase_core
+    - FlutterMacOS
+  - FirebaseABTesting (12.14.0):
+    - FirebaseCore (~> 12.14.0)
   - FirebaseAnalytics (12.14.0):
     - FirebaseAnalytics/Default (= 12.14.0)
     - FirebaseCore (~> 12.14.0)
@@ -126,6 +136,14 @@ PODS:
     - GoogleUtilities/Reachability (~> 8.1)
     - GoogleUtilities/UserDefaults (~> 8.1)
     - nanopb (~> 3.30910.0)
+  - FirebaseRemoteConfig (12.14.0):
+    - FirebaseABTesting (~> 12.14.0)
+    - FirebaseCore (~> 12.14.0)
+    - FirebaseInstallations (~> 12.14.0)
+    - FirebaseRemoteConfigInterop (~> 12.14.0)
+    - FirebaseSharedSwift (~> 12.14.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
   - FirebaseRemoteConfigInterop (12.14.0)
   - FirebaseSessions (12.14.0):
     - FirebaseCore (~> 12.14.0)
@@ -225,6 +243,7 @@ DEPENDENCIES:
   - firebase_core (from `Flutter/ephemeral/.symlinks/plugins/firebase_core/macos`)
   - firebase_crashlytics (from `Flutter/ephemeral/.symlinks/plugins/firebase_crashlytics/macos`)
   - firebase_messaging (from `Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos`)
+  - firebase_remote_config (from `Flutter/ephemeral/.symlinks/plugins/firebase_remote_config/macos`)
   - FirebaseFirestore (from `https://github.com/invertase/firestore-ios-sdk-frameworks.git`, tag `12.14.0`)
   - FirebaseFirestoreAbseilBinary
   - flutter_inappwebview_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos`)
@@ -238,6 +257,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Firebase
+    - FirebaseABTesting
     - FirebaseAnalytics
     - FirebaseAppCheckInterop
     - FirebaseAuth
@@ -254,6 +274,7 @@ SPEC REPOS:
     - FirebaseFirestoreInternalBinary
     - FirebaseInstallations
     - FirebaseMessaging
+    - FirebaseRemoteConfig
     - FirebaseRemoteConfigInterop
     - FirebaseSessions
     - FirebaseSharedSwift
@@ -284,6 +305,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/firebase_crashlytics/macos
   firebase_messaging:
     :path: Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos
+  firebase_remote_config:
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_remote_config/macos
   FirebaseFirestore:
     :git: https://github.com/invertase/firestore-ios-sdk-frameworks.git
     :tag: 12.14.0
@@ -317,6 +340,8 @@ SPEC CHECKSUMS:
   firebase_core: 6c25555337efe4f9288389c14373ddd107790d90
   firebase_crashlytics: 4a4184b2a2a077be636a3e97b970f942b69ff387
   firebase_messaging: 42a62d26647e5068cb1fbb083a01e59c702b983f
+  firebase_remote_config: 0395e82154fb319012660c1f4c572867dfd5e88d
+  FirebaseABTesting: 1645e4c026dc11b2c82e717fd02d187535e65944
   FirebaseAnalytics: 99364329a3ea4d1ab4a3744b5464371b7351c481
   FirebaseAppCheckInterop: f123c0261a7b46f060e98fc2961651f1ac68f384
   FirebaseAuth: 01a77d472aec77ec008141e7d859d1b9cb8dc2cf
@@ -334,6 +359,7 @@ SPEC CHECKSUMS:
   FirebaseFirestoreInternalBinary: 56285b527f95bbfeff0fc79e10c17f10e6742d99
   FirebaseInstallations: 7cdc919e29dc54306edeffdbdc1eed1a40d7d1e7
   FirebaseMessaging: 4803888ce3002188f24e19faa8d2326261538426
+  FirebaseRemoteConfig: 9b6476d8426c30db511733621b3e969461a99094
   FirebaseRemoteConfigInterop: 40ecdce5a4feee7643b81342f32f1cded905bb07
   FirebaseSessions: c9e7b7829265454f08cb68f7f8a6650c9b221bd4
   FirebaseSharedSwift: 7c659ebf23afdc1e60a05df72a07ad7349f5758f

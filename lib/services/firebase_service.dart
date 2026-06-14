@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WCFirebaseService {
@@ -7,37 +8,37 @@ class WCFirebaseService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static const String _uidKey = 'wc2026_firebase_uid';
 
-  /// Get the current cached user ID or create one if it doesn't exist.
+  /// Get the current persistent user ID or create one if it doesn't exist.
+  /// Uses Firebase Anonymous Auth which persists across reinstalls on the same device.
   static Future<String> getOrCreateUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString(_uidKey);
+    
+    // 1. If we are already signed in to Firebase, return that UID
+    if (_auth.currentUser != null) {
+      final uid = _auth.currentUser!.uid;
+      await prefs.setString(_uidKey, uid);
+      return uid;
+    }
 
-    if (_auth.currentUser == null) {
-      try {
-        final credential = await _auth
-            .signInAnonymously()
-            .timeout(const Duration(seconds: 10));
-        if (credential.user != null) {
-          uid = credential.user!.uid;
-          await prefs.setString(_uidKey, uid);
-        }
-      } catch (_) {
-        if (uid == null) {
-          uid = _firestore.collection('users').doc().id;
-          await prefs.setString(_uidKey, uid);
-        }
+    // 2. Try to sign in anonymously (Firebase restores the same ID on the same device)
+    try {
+      final credential = await _auth.signInAnonymously().timeout(const Duration(seconds: 10));
+      if (credential.user != null) {
+        final uid = credential.user!.uid;
+        await prefs.setString(_uidKey, uid);
+        return uid;
       }
-    } else {
-      uid = _auth.currentUser!.uid;
-      await prefs.setString(_uidKey, uid);
+    } catch (e) {
+      debugPrint("Auth Error: $e");
     }
 
-    if (uid == null) {
-      uid = _firestore.collection('users').doc().id;
-      await prefs.setString(_uidKey, uid);
+    // 3. Fallback to SharedPreferences only if Auth fails
+    String? localUid = prefs.getString(_uidKey);
+    if (localUid == null) {
+      localUid = _firestore.collection('users').doc().id;
+      await prefs.setString(_uidKey, localUid);
     }
-
-    return uid;
+    return localUid;
   }
 
   /// Sync the user profile to Firestore.

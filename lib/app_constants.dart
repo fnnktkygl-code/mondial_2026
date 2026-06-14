@@ -21,11 +21,7 @@
 library;
 
 // ─── Live Data API ─────────────────────────────────────────────────────────────
-// Source: worldcup26.ir
-// Synced via GitHub raw JSON for high availability and free tier management.
-const String kApiUrl =
-    'https://raw.githubusercontent.com/fnnktkygl-code/mondial_2026/main/assets/initial_matches.json';
-
+// Source: ESPN (Scoreboard & Summary APIs)
 // ─── Hive box names ──────────────────────────────────────────────────────────
 const String kHiveBoxFixtures = 'mondial_fixtures';
 const String kHiveBoxStandings = 'mondial_standings';
@@ -44,26 +40,41 @@ const Duration kLivePollInterval = Duration(
 const Duration kStandingsCacheTtl = Duration(hours: 1);
 const Duration kTopStatsCacheTtl = Duration(hours: 24);
 
-// ─── Scoring ─────────────────────────────────────────────────────────────────
-// Phase de groupes
-const int kExactScorePoints = 30;
-const int kCorrectOutcomePoints = 10;
+// ─── Scoring 2.0 (High-Stakes Exponential) ───────────────────────────────────
+// Base Outcome
+const int kCorrectOutcomePoints = 50; // Found 1, N or 2 (Increased from 10)
 
-// Phase à élimination — 90 minutes
-const int kExactScoreKnockoutPoints = 40;
-const int kCorrectOutcomeKnockoutPts = 15;
+// Goal Difference (GD) Bonuses (if outcome is correct)
+const int kGdDiff0Points = 20;  // Draw
+const int kGdDiff1Points = 20;  // Predicted 1-0, actual 2-1
+const int kGdDiff2Points = 50;  // Predicted 2-0, actual 3-1
+const int kGdDiff3Points = 120; // Predicted 3-0, actual 4-1 (Major reward for risk!)
 
-// Phase à élimination — au-delà des 90 min (cumulatif)
-const int kExtraTimeBonusPoints = 20;
-const int kPenaltyShootoutBonusPoints = 25;
+// Precision Master
+const int kExactScoreBonus = 150; // SUMMUM: Added on top of Outcome + GD
+// Example: 3-0 predicted & actual = 50 (Outcome) + 120 (GD) + 150 (Exact) = 320 pts!
 
-// Bonus tournoi entier
+// Total Goals Bonus (if not exact score but same total)
+const int kTotalGoalsBonus = 30;
+
+// Scorers (Massive rewards for defenders/GKs)
+const int kScorerBonusForward = 30;
+const int kScorerBonusMidfielder = 60;
+const int kScorerBonusDefenderOrGK = 120; // High risk = High reward
+const int kScorerExactCountBonus = 50; // Predicted 2 goals, got 2.
+
+// Stage Multipliers
+const double kKnockoutMultiplier = 1.5; // x1.5 for KO stage
+const int kExtraTimeBonusPoints = 100;
+const int kPenaltyShootoutBonusPoints = 150;
+
+// Tournament Wide
+const int kChampionBonusPoints = 1000;
+const int kGoldenBootBonusPoints = 500;
+
+// Legacy / Compatibility (Mapped to new system or kept for UI labels)
+const int kExactScorePoints = 70; // (10 base + 20 GD + 40 Exact)
 const int kScorerMatchBonusPoints = 15;
-const int kScorerBonusForward = 10;
-const int kScorerBonusMidfielder = 15;
-const int kScorerBonusDefenderOrGK = 25;
-const int kChampionBonusPoints = 100;
-const int kGoldenBootBonusPoints = 50;
 
 // Prise de risque
 const int kOutsiderBonusPoints = 15;

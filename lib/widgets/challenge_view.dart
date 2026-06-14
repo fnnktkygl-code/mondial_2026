@@ -22,7 +22,6 @@ class ChallengeViewWidget extends StatefulWidget {
   final Function(String? teamCode) onSupportedTeamChanged;
   final VoidCallback? onProfileTap;
   final String initialSubTab;
-  final Future<void> Function()? onRefreshRequested; // Ajouté
 
   const ChallengeViewWidget({
     super.key,
@@ -34,7 +33,6 @@ class ChallengeViewWidget extends StatefulWidget {
     required this.onSupportedTeamChanged,
     this.onProfileTap,
     this.initialSubTab = 'preds',
-    this.onRefreshRequested, // Ajouté
   });
 
   @override
@@ -217,23 +215,12 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: RefreshIndicator(
-        // APPEL API ICI
-        onRefresh: () async {
-          if (widget.onRefreshRequested != null) {
-            await widget.onRefreshRequested!();
-          }
-          await _loadData();
-        },
-        color: AppColors.accent,
-        backgroundColor: AppColors.card,
-        child: Column(
-          children: [
-            _buildProfileStrip(totalPoints, xpInfo),
-            _buildTabNav(),
-            Expanded(child: _buildTabContent()),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildProfileStrip(totalPoints, xpInfo),
+          _buildTabNav(),
+          Expanded(child: _buildTabContent()),
+        ],
       ),
     );
   }

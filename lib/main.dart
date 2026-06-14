@@ -22,6 +22,7 @@ import 'widgets/match_card.dart';
 import 'widgets/match_detail_sheet.dart';
 import 'widgets/group_table.dart';
 import 'widgets/calendar_view.dart';
+import 'screens/rules_feedback_screen.dart';
 import 'widgets/bracket_view.dart';
 import 'widgets/stats_view.dart';
 import 'widgets/challenge_view.dart';
@@ -34,6 +35,7 @@ import 'services/audio_service.dart';
 import 'services/odds_service.dart';
 import 'services/team_profile_service.dart';
 import 'services/update_service.dart';
+import 'services/espn_api_service.dart';
 import 'utils/fifa_rules.dart';
 import 'widgets/mascots_dialog.dart';
 import 'widgets/landing_page.dart';
@@ -221,6 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<String, String> _alerts = {};
   String? _supportedTeam;
   bool _isLoading = true;
+  bool _isManualRefreshing = false;
   String _userTimezone = '';
   PredictionData? _userPreds;
   String? _pendingGroupPayload;
@@ -232,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late ConfettiController _confettiController;
   late ScrollController _listScrollController;
+  Timer? _livePollingTimer;
 
   @override
   void initState() {
@@ -243,15 +247,111 @@ class _MyHomePageState extends State<MyHomePage> {
     _listScrollController = ScrollController();
     _initDeepLinks();
     _loadInitialData();
+    _startLivePolling();
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _livePollingTimer?.cancel();
     _confettiController.dispose();
     _listScrollController.dispose();
     WCAudioService.instance.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleManualRefresh() async {
+    if (_isManualRefreshing) return;
+    setState(() => _isManualRefreshing = true);
+    
+    debugPrint("MANUAL REFRESH: Starting");
+    try {
+      // 1. Force reload matches from main source
+      final freshMatches = await ApiService.loadMatches(forceRefresh: true);
+      
+      if (mounted) {
+        setState(() {
+          _rawMatches = freshMatches;
+          _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+        });
+      }
+
+      // 2. Immediate ESPN sync
+      await _pollLiveMatches();
+      
+      _showBeautifulSnackBar(AppTranslations.get(_lang, 'dataUpdated'));
+    } catch (e) {
+      debugPrint("MANUAL REFRESH ERROR: $e");
+    } finally {
+      if (mounted) {
+        setState(() => _isManualRefreshing = false);
+      }
+    }
+  }
+
+  void _startLivePolling() {
+    _livePollingTimer?.cancel();
+    _livePollingTimer = Timer.periodic(kLivePollInterval, (_) {
+      _pollLiveMatches();
+    });
+  }
+
+  Future<void> _pollLiveMatches() async {
+    if (!kIsLiveMode || kIsStaging) return;
+
+    try {
+      final espnMatches = await ApiService.fetchEspnLive();
+      if (espnMatches.isEmpty) return;
+
+      bool modified = false;
+      final newMatches = List<WorldCupMatch>.from(_rawMatches);
+
+      for (var espnMatch in espnMatches) {
+        // Try to find a matching match in our local list
+        for (int i = 0; i < newMatches.length; i++) {
+          final local = newMatches[i];
+          
+          // Match by teams and date (approximate)
+          final sameTeams = (local.t1 == espnMatch.t1 && local.t2 == espnMatch.t2) ||
+                           (local.t1 == espnMatch.t2 && local.t2 == espnMatch.t1);
+          
+          if (sameTeams) {
+            final dateDiff = local.date.difference(espnMatch.date).abs();
+            if (dateDiff.inHours < 24) {
+              // Found a match! Update it if data changed
+              if (local.t1Score != espnMatch.t1Score || 
+                  local.t2Score != espnMatch.t2Score ||
+                  local.status != espnMatch.status ||
+                  local.espnId != espnMatch.id.replaceFirst('espn_', '')) {
+                
+                newMatches[i] = local.copyWith(
+                  espnId: espnMatch.id.replaceFirst('espn_', ''),
+                  t1Score: espnMatch.t1Score,
+                  t2Score: espnMatch.t2Score,
+                  status: espnMatch.status,
+                  venue: espnMatch.venue ?? local.venue,
+                  goals: espnMatch.goals,
+                  stats: espnMatch.stats,
+                  lastUpdated: DateTime.now(),
+                );
+                modified = true;
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      if (modified && mounted) {
+        setState(() {
+          _rawMatches = newMatches;
+          _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+        });
+        debugPrint("LIVE: Matches updated from ESPN");
+      }
+    } catch (e) {
+      debugPrint("LIVE POLL ERROR: $e");
+    }
   }
 
   Future<void> _loadInitialData() async {
@@ -297,6 +397,10 @@ class _MyHomePageState extends State<MyHomePage> {
           _isLoading = false;
         });
         debugPrint("INIT: Core UI state updated, spinner stopped");
+        
+        // IMMEDIATE SYNC after load to get live scores right away
+        _pollLiveMatches();
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToCurrentMatch();
         });
@@ -1086,9 +1190,68 @@ class _MyHomePageState extends State<MyHomePage> {
             avatar: _userPreds!.avatar,
           );
         },
+        onMatchUpdated: (WorldCupMatch updatedMatch) {
+          if (mounted) {
+            setState(() {
+              for (int i = 0; i < _rawMatches.length; i++) {
+                final local = _rawMatches[i];
+                final sameTeams = (local.t1 == updatedMatch.t1 && local.t2 == updatedMatch.t2) ||
+                                 (local.t1 == updatedMatch.t2 && local.t2 == updatedMatch.t1);
+                if (sameTeams) {
+                  _rawMatches[i] = local.copyWith(
+                    t1Score: updatedMatch.t1Score,
+                    t2Score: updatedMatch.t2Score,
+                    status: updatedMatch.status,
+                    goals: updatedMatch.goals,
+                    stats: updatedMatch.stats,
+                    lastUpdated: updatedMatch.lastUpdated,
+                  );
+                  break;
+                }
+              }
+              _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+            });
+          }
+        },
         onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers) =>
             _saveDirectPrediction(match.id, t1Score, t2Score, etWinner, pkWinner, predictedScorers),
 
+      ),
+    );
+  }
+
+  Widget _buildLiveRefreshButton() {
+    final bool hasLive = _rawMatches.any((m) => m.isLive);
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasLive)
+            _LivePulseBadge(),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  color: _isManualRefreshing ? AppColors.accent : AppColors.textPrimary,
+                ),
+                onPressed: _handleManualRefresh,
+              ),
+              if (_isManualRefreshing)
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1183,16 +1346,49 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   // ... existing code ...
 
-  void _onNotificationTap(String payload) {
+  Future<void> _onNotificationTap(String payload) async {
     if (payload == 'calendar') {
       setState(() => _activeTab = 'matches');
     } else if (payload.startsWith('match_')) {
       final matchId = payload.replaceFirst('match_', '');
       try {
-        final match = _resolvedMatches.firstWhere((m) => m.id == matchId);
-        _showMatchDetails(match);
+        WorldCupMatch? match;
+        // 1. Try local exact ID match
+        try {
+          match = _resolvedMatches.firstWhere((m) => m.id == matchId);
+        } catch (_) {}
+
+        // 2. Try espnId match (if stored)
+        if (match == null) {
+          final cleanId = matchId.replaceFirst('espn_', '');
+          try {
+            match = _resolvedMatches.firstWhere((m) => m.espnId == cleanId);
+          } catch (_) {}
+        }
+
+        // 3. Fallback: if still null and it looks like a numeric ESPN ID, fetch summary and match by teams
+        if (match == null) {
+          final cleanId = matchId.replaceFirst('espn_', '');
+          if (RegExp(r'^\d+$').hasMatch(cleanId)) {
+            final summary = await EspnApiService.fetchMatchSummary(cleanId);
+            if (summary != null) {
+              try {
+                match = _resolvedMatches.firstWhere((m) =>
+                  (m.t1 == summary.t1 && m.t2 == summary.t2) ||
+                  (m.t1 == summary.t2 && m.t2 == summary.t1)
+                );
+              } catch (_) {}
+            }
+          }
+        }
+
+        if (match != null) {
+          _showMatchDetails(match);
+        } else {
+          debugPrint("Match not found for notification: $matchId");
+        }
       } catch (e) {
-        debugPrint("Match not found for notification: $matchId");
+        debugPrint("Match lookup error for notification: $matchId -> $e");
       }
     } else if (payload == 'leaderboard') {
       setState(() {
@@ -1387,6 +1583,19 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         actions: [
+          // 0. Manual Refresh / Live Indicator
+          _buildLiveRefreshButton(),
+          // 0.5 Rules & Feedback
+          WCTooltip(
+            message: AppTranslations.get(_lang, 'rules'),
+            child: IconButton(
+              icon: const Icon(Icons.help_outline_rounded, color: AppColors.textDim),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RulesFeedbackPage(lang: _lang)),
+              ),
+            ),
+          ),
           if (kIsStaging)
             WCTooltip(
               message: 'Staging Debug',
@@ -1961,18 +2170,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _refreshMatches() async {
-    final matches = await ApiService.loadMatches(forceRefresh: true);
-    if (mounted) {
-      setState(() {
-        _rawMatches = matches;
-        _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
-      });
-    }
-  }
-
   void _scrollToCurrentMatch() {
-    if (_resolvedMatches.isEmpty || !_listScrollController.hasClients || _viewMode != 'list') return;
+
+      if (_resolvedMatches.isEmpty || !_listScrollController.hasClients || _viewMode != 'list') return;
+
+
+
 
     final Map<String, List<WorldCupMatch>> matchesByDate = {};
     for (var m in _resolvedMatches) {
@@ -2125,12 +2328,10 @@ class _MyHomePageState extends State<MyHomePage> {
         return d1.compareTo(d2);
       });
 
-    return RefreshIndicator(
-      onRefresh: _refreshMatches,
-      child: ListView.builder(
-        controller: _listScrollController,
-        physics: const BouncingScrollPhysics(),
-        itemCount: sortedDates.length,
+    return ListView.builder(
+      controller: _listScrollController,
+      physics: const BouncingScrollPhysics(),
+      itemCount: sortedDates.length,
         itemBuilder: (context, dateIdx) {
           final dateLabel = sortedDates[dateIdx];
           final dayMatches = matchesByDate[dateLabel]!;
@@ -2180,6 +2381,56 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           );
         },
+      );
+  }
+}
+
+class _LivePulseBadge extends StatefulWidget {
+  const _LivePulseBadge();
+
+  @override
+  State<_LivePulseBadge> createState() => _LivePulseBadgeState();
+}
+
+class _LivePulseBadgeState extends State<_LivePulseBadge> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        margin: const EdgeInsets.only(right: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Text(
+          'LIVE',
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../services/team_profile_service.dart';
 import '../services/prediction_service.dart';
 import '../services/firebase_service.dart';
 import '../services/api_service.dart';
+import 'espn_api_service.dart';
 import '../l10n/translations.dart';
 import '../../firebase_options.dart';
 
@@ -285,9 +286,28 @@ class WCNotificationService {
     }
 
     if (matchId != null) {
+      final String nonNullMatchId = matchId;
       try {
         final matches = await ApiService.loadMatches(forceRefresh: true);
-        final matchObj = matches.firstWhere((m) => m.id == matchId);
+        WorldCupMatch matchObj;
+        try {
+          matchObj = matches.firstWhere((m) => m.id == nonNullMatchId || (m.espnId != null && m.espnId == nonNullMatchId.replaceFirst('espn_', '')));
+        } catch (_) {
+          final cleanId = nonNullMatchId.replaceFirst('espn_', '');
+          if (RegExp(r'^\d+$').hasMatch(cleanId)) {
+            final summary = await EspnApiService.fetchMatchSummary(cleanId);
+            if (summary != null) {
+              matchObj = matches.firstWhere((m) =>
+                (m.t1 == summary.t1 && m.t2 == summary.t2) ||
+                (m.t1 == summary.t2 && m.t2 == summary.t1)
+              );
+            } else {
+              rethrow;
+            }
+          } else {
+            rethrow;
+          }
+        }
 
         final lowerTitle = title.toLowerCase();
         final lowerBody = body.toLowerCase();
@@ -531,7 +551,25 @@ class WCNotificationService {
       if (payload != null && payload.startsWith('match_')) {
         final mId = payload.substring(6);
         final matches = await ApiService.loadMatches();
-        final match = matches.firstWhere((m) => m.id == mId);
+        WorldCupMatch match;
+        try {
+          match = matches.firstWhere((m) => m.id == mId || (m.espnId != null && m.espnId == mId.replaceFirst('espn_', '')));
+        } catch (_) {
+          final cleanId = mId.replaceFirst('espn_', '');
+          if (RegExp(r'^\d+$').hasMatch(cleanId)) {
+            final summary = await EspnApiService.fetchMatchSummary(cleanId);
+            if (summary != null) {
+              match = matches.firstWhere((m) =>
+                (m.t1 == summary.t1 && m.t2 == summary.t2) ||
+                (m.t1 == summary.t2 && m.t2 == summary.t1)
+              );
+            } else {
+              rethrow;
+            }
+          } else {
+            rethrow;
+          }
+        }
         final f1 = _getFlagEmoji(match.t1.toLowerCase().replaceAll('g_', ''));
         final f2 = _getFlagEmoji(match.t2.toLowerCase().replaceAll('g_', ''));
         

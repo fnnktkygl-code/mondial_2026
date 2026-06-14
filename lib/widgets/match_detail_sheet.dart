@@ -15,6 +15,7 @@ import 'team_flag.dart';
 import 'team_profile_dialog.dart';
 import '../services/insights_service.dart';
 import '../services/player_database_service.dart';
+import '../services/espn_api_service.dart';
 
 class MatchDetailSheet extends StatefulWidget {
   final WorldCupMatch match;
@@ -25,6 +26,7 @@ class MatchDetailSheet extends StatefulWidget {
   final MatchPrediction? prediction;
   final List<String> boosterMatchIds;
   final Function(bool isBoosterActive)? onBoosterChanged;
+  final Function(WorldCupMatch updatedMatch)? onMatchUpdated;
   final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner, Map<String, int>? predictedScorers)? onPredictionChanged;
 
   const MatchDetailSheet({
@@ -37,6 +39,7 @@ class MatchDetailSheet extends StatefulWidget {
     this.prediction,
     this.boosterMatchIds = const [],
     this.onBoosterChanged,
+    this.onMatchUpdated,
     this.onPredictionChanged,
   });
 
@@ -45,6 +48,8 @@ class MatchDetailSheet extends StatefulWidget {
 }
 
 class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProviderStateMixin {
+  late WorldCupMatch _matchState;
+  bool _isRefreshing = false;
   int? _localT1Score;
   int? _localT2Score;
   String? _localEtWinner;
@@ -64,12 +69,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   @override
   void initState() {
     super.initState();
+    _matchState = widget.match;
     _initLocalScores();
     // Gère l'état initial d'édition
     _isEditing = widget.prediction == null;
     _localPredictedScorers = Map.from(widget.prediction?.predictedScorers ?? {});
-    _localBoosterActive = widget.boosterMatchIds.contains(widget.match.id);
+    _localBoosterActive = widget.boosterMatchIds.contains(_matchState.id);
     _startCountdown();
+    _refreshMatchData(); // Immediate fetch for the latest details
 
     _pulseController = AnimationController(
       vsync: this,
@@ -118,6 +125,51 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     }
   }
 
+  Future<void> _refreshMatchData() async {
+    if (_isRefreshing) return;
+    
+    // Determine the ESPN ID. If our internal ID is 'espn_123', use '123'.
+    // If it's a regular ID, we might not have a direct mapping unless we search.
+    String? espnId;
+    if (_matchState.id.startsWith('espn_')) {
+      espnId = _matchState.id.replaceFirst('espn_', '');
+    } else {
+      // Fallback: try to find it in the global scoreboard first
+      final liveMatches = await EspnApiService.fetchLiveMatches();
+      try {
+        final found = liveMatches.firstWhere((m) => 
+          (m.t1 == _matchState.t1 && m.t2 == _matchState.t2) ||
+          (m.t1 == _matchState.t2 && m.t2 == _matchState.t1)
+        );
+        espnId = found.id.replaceFirst('espn_', '');
+      } catch (_) {}
+    }
+
+    if (espnId == null) {
+      debugPrint("Could not find ESPN ID for match ${_matchState.id}");
+      return;
+    }
+
+    setState(() => _isRefreshing = true);
+    try {
+      final summary = await EspnApiService.fetchMatchSummary(espnId);
+      if (summary != null && mounted) {
+        setState(() {
+          _matchState = summary;
+          _isRefreshing = false;
+        });
+        if (widget.onMatchUpdated != null) {
+          widget.onMatchUpdated!(summary);
+        }
+        HapticFeedback.lightImpact();
+      }
+    } catch (e) {
+      debugPrint("Error refreshing match: $e");
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
+  }
+
   bool _isPlaceholder(String code) {
     final c = code.toLowerCase().replaceAll('g_', '');
     return (c.length > 2 && c != 'sco' && c != 'gb-sct') || c == 'tbd' || c.contains(RegExp(r'\d'));
@@ -134,16 +186,16 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   Widget _buildFunFactChip() {
-    final teamCode = _activeFactTeam == 0 ? widget.match.t1 : widget.match.t2;
-    final otherCode = _activeFactTeam == 0 ? widget.match.t2 : widget.match.t1;
+    final teamCode = _activeFactTeam == 0 ? _matchState.t1 : _matchState.t2;
+    final otherCode = _activeFactTeam == 0 ? _matchState.t2 : _matchState.t1;
 
     if (_isPlaceholder(teamCode) && _isPlaceholder(otherCode)) {
       return const SizedBox.shrink();
     }
 
     final matchupFact = WCInsightsService.getMatchupFact(
-      widget.match.t1,
-      widget.match.t2,
+      _matchState.t1,
+      _matchState.t2,
     );
     final isMatchupMode = matchupFact != null;
 
@@ -204,7 +256,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     Row(
                       children: [
                         if (isMatchupMode) ...[
-                          _buildTeamCodeBadge(widget.match.t1),
+                          _buildTeamCodeBadge(_matchState.t1),
                           const SizedBox(width: 4),
                           const Text(
                             'vs',
@@ -215,7 +267,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                             ),
                           ),
                           const SizedBox(width: 4),
-                          _buildTeamCodeBadge(widget.match.t2),
+                          _buildTeamCodeBadge(_matchState.t2),
                         ] else
                           _buildTeamCodeBadge(teamCode),
                         const SizedBox(width: 8),
@@ -271,7 +323,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   Widget _dot(int index) {
     final isActive = _activeFactTeam == index;
-    final code = index == 0 ? widget.match.t1 : widget.match.t2;
+    final code = index == 0 ? _matchState.t1 : _matchState.t2;
     if (_isPlaceholder(code)) return const SizedBox.shrink();
 
     return GestureDetector(
@@ -353,7 +405,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   void _startCountdown() {
     final now = DateTime.now();
-    final difference = widget.match.date.difference(now);
+    final difference = _matchState.date.difference(now);
     if (!difference.isNegative && difference.inHours < 24) {
       _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (mounted) setState(() {});
@@ -400,7 +452,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   Widget _buildCountdownWidget() {
     final now = DateTime.now();
-    final difference = widget.match.date.difference(now);
+    final difference = _matchState.date.difference(now);
     if (difference.isNegative) {
       return const SizedBox.shrink();
     }
@@ -469,10 +521,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   Widget _buildProbabilityBar(BuildContext context) {
-    final cleanT1 = _isPlaceholder(widget.match.t1) ? 'TBD' : widget.match.t1.replaceFirst('g_', '').toUpperCase();
-    final cleanT2 = _isPlaceholder(widget.match.t2) ? 'TBD' : widget.match.t2.replaceFirst('g_', '').toUpperCase();
+    final cleanT1 = _isPlaceholder(_matchState.t1) ? 'TBD' : _matchState.t1.replaceFirst('g_', '').toUpperCase();
+    final cleanT2 = _isPlaceholder(_matchState.t2) ? 'TBD' : _matchState.t2.replaceFirst('g_', '').toUpperCase();
 
-    final matchOdds = WCOddsService.calculateMatchOdds(widget.match.t1, widget.match.t2, widget.allMatches);
+    final matchOdds = WCOddsService.calculateMatchOdds(_matchState.t1, _matchState.t2, widget.allMatches);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -711,7 +763,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           ),
           const SizedBox(height: 20),
           _buildScorerPredictionSection(),
-          if (widget.match.isKnockout && _localT1Score == _localT2Score) ...[
+          if (_matchState.isKnockout && _localT1Score == _localT2Score) ...[
             const SizedBox(height: 20),
             _buildKnockoutPredictionControls(),
           ],
@@ -764,8 +816,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   String? _scorerWarning() {
     if (_localPredictedScorers.isEmpty) return null;
-    final t1En = AppTranslations.getTeam('en', widget.match.t1);
-    final t2En = AppTranslations.getTeam('en', widget.match.t2);
+    final t1En = AppTranslations.getTeam('en', _matchState.t1);
+    final t2En = AppTranslations.getTeam('en', _matchState.t2);
 
     int t1ScorerGoals = 0;
     int t2ScorerGoals = 0;
@@ -783,13 +835,13 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     final expectedT2 = _localT2Score ?? 0;
 
     if (t1ScorerGoals > expectedT1) {
-      final teamName = AppTranslations.getTeam(widget.lang, widget.match.t1);
+      final teamName = AppTranslations.getTeam(widget.lang, _matchState.t1);
       if (widget.lang == 'fr') return '⚠️ Buteurs $teamName : $t1ScorerGoals buts saisis > $expectedT1 prédit';
       if (widget.lang == 'es') return '⚠️ Goleadores $teamName : $t1ScorerGoals > $expectedT1 previsto';
       return '⚠️ $teamName scorers: $t1ScorerGoals goals entered > $expectedT1 predicted';
     }
     if (t2ScorerGoals > expectedT2) {
-      final teamName = AppTranslations.getTeam(widget.lang, widget.match.t2);
+      final teamName = AppTranslations.getTeam(widget.lang, _matchState.t2);
       if (widget.lang == 'fr') return '⚠️ Buteurs $teamName : $t2ScorerGoals buts saisis > $expectedT2 prédit';
       if (widget.lang == 'es') return '⚠️ Goleadores $teamName : $t2ScorerGoals > $expectedT2 previsto';
       return '⚠️ $teamName scorers: $t2ScorerGoals goals entered > $expectedT2 predicted';
@@ -952,8 +1004,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   Widget _buildScorerPredictionSection() {
     final bool isLocked = PredictionService.isPredictionLocked(widget.match);
-    final t1En = AppTranslations.getTeam('en', widget.match.t1);
-    final t2En = AppTranslations.getTeam('en', widget.match.t2);
+    final t1En = AppTranslations.getTeam('en', _matchState.t1);
+    final t2En = AppTranslations.getTeam('en', _matchState.t2);
     final squad = [
       ...PlayerDatabaseService.getPlayersForTeam(t1En),
       ...PlayerDatabaseService.getPlayersForTeam(t2En)
@@ -995,10 +1047,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         const SizedBox(height: 4),
         Text(
           widget.lang == 'fr'
-              ? 'Optionnel – chaque bon buteur rapporte +${kScorerMatchBonusPoints} pts (×goals)'
+              ? 'Bonus Buteur : Att: 30, Mil: 60, Def: 120 pts'
               : (widget.lang == 'es'
-              ? 'Opcional – cada goleador correcto suma +${kScorerMatchBonusPoints} pts (×goles)'
-              : 'Optional – each correct scorer earns +${kScorerMatchBonusPoints} pts (×goals)'),
+              ? 'Bono Goleador: Del: 30, Med: 60, Def: 120 pts'
+              : 'Scorer Bonus: Fwd: 30, Mid: 60, Def: 120 pts'),
           style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontStyle: FontStyle.italic),
         ),
         const SizedBox(height: 12),
@@ -1065,12 +1117,26 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   Widget _buildScorerResultBadge(String playerName, int predictedCount) {
-    final actualCount = widget.match.goals.where((g) => PredictionService.isSamePlayer(g.scorer, playerName)).length;
-
+    final actualCount = _matchState.goals.where((g) => PredictionService.isSamePlayer(g.scorer, playerName)).length;
     final bool hasScored = actualCount > 0;
+    
+    int points = 0;
+    if (hasScored) {
+       final goalEvent = _matchState.goals.firstWhere((g) => PredictionService.isSamePlayer(g.scorer, playerName));
+       final teamStr = goalEvent.team == 't1' ? _matchState.t1 : _matchState.t2;
+       final position = PlayerDatabaseService.getPlayerPosition(AppTranslations.getTeam('en', teamStr), playerName);
+       
+       int ptsPerGoal = kScorerBonusMidfielder;
+       if (position == 'Forwards') { ptsPerGoal = kScorerBonusForward; }
+       else if (position == 'Defenders' || position == 'Goalkeepers') { ptsPerGoal = kScorerBonusDefenderOrGK; }
+       
+       points = ptsPerGoal;
+       if (actualCount == predictedCount) { points += kScorerExactCountBonus; }
+    }
+
     final color = hasScored ? AppColors.accent : AppColors.danger;
     final icon = hasScored ? Icons.check_circle_rounded : Icons.cancel_rounded;
-    final text = hasScored ? '$actualCount goals (+ ${min(predictedCount, actualCount) * kScorerMatchBonusPoints} pts)' : AppTranslations.get(widget.lang, 'wrongScorer');
+    final text = hasScored ? '$actualCount goals (+ $points pts)' : AppTranslations.get(widget.lang, 'wrongScorer');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1094,8 +1160,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   void _showScorerPicker(List<String> squad) {
-    final t1En = AppTranslations.getTeam('en', widget.match.t1);
-    final t2En = AppTranslations.getTeam('en', widget.match.t2);
+    final t1En = AppTranslations.getTeam('en', _matchState.t1);
+    final t2En = AppTranslations.getTeam('en', _matchState.t2);
     final s1 = PlayerDatabaseService.getPlayersForTeam(t1En)..sort();
     final s2 = PlayerDatabaseService.getPlayersForTeam(t2En)..sort();
 
@@ -1142,9 +1208,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              TeamFlagWidget.flag(widget.match.t1, width: 20, height: 14),
+                              TeamFlagWidget.flag(_matchState.t1, width: 20, height: 14),
                               const SizedBox(width: 8),
-                              Flexible(child: Text(AppTranslations.getTeam(widget.lang, widget.match.t1), overflow: TextOverflow.ellipsis)),
+                              Flexible(child: Text(AppTranslations.getTeam(widget.lang, _matchState.t1), overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ),
@@ -1152,9 +1218,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              TeamFlagWidget.flag(widget.match.t2, width: 20, height: 14),
+                              TeamFlagWidget.flag(_matchState.t2, width: 20, height: 14),
                               const SizedBox(width: 8),
-                              Flexible(child: Text(AppTranslations.getTeam(widget.lang, widget.match.t2), overflow: TextOverflow.ellipsis)),
+                              Flexible(child: Text(AppTranslations.getTeam(widget.lang, _matchState.t2), overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ),
@@ -1163,8 +1229,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     Expanded(
                       child: TabBarView(
                         children: [
-                          _buildScorerList(f1, widget.match.t1, setPickerState),
-                          _buildScorerList(f2, widget.match.t2, setPickerState),
+                          _buildScorerList(f1, _matchState.t1, setPickerState),
+                          _buildScorerList(f2, _matchState.t2, setPickerState),
                         ],
                       ),
                     ),
@@ -1316,9 +1382,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         const SizedBox(height: 12),
         Row(
           children: [
-            _buildWinnerChip(widget.match.t1, AppTranslations.getTeam(widget.lang, widget.match.t1)),
+            _buildWinnerChip(_matchState.t1, AppTranslations.getTeam(widget.lang, _matchState.t1)),
             const SizedBox(width: 12),
-            _buildWinnerChip(widget.match.t2, AppTranslations.getTeam(widget.lang, widget.match.t2)),
+            _buildWinnerChip(_matchState.t2, AppTranslations.getTeam(widget.lang, _matchState.t2)),
           ],
         ),
         if (_localEtWinner != null) ...[
@@ -1336,7 +1402,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                 activeThumbColor: AppColors.accent,
                 onChanged: (val) {
                   setState(() {
-                    _localPkWinner = val ? (_localEtWinner == widget.match.t1) : null;
+                    _localPkWinner = val ? (_localEtWinner == _matchState.t1) : null;
                   });
                 },
               ),
@@ -1384,9 +1450,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   Widget _buildSmartAlerts(BuildContext context) {
     final now = DateTime.now();
 
-    final oneDayAlertDate = widget.match.date.subtract(const Duration(days: 1));
-    final oneHourAlertDate = widget.match.date.subtract(const Duration(hours: 1));
-    final thirtyMinAlertDate = widget.match.date.subtract(const Duration(minutes: 30));
+    final oneDayAlertDate = _matchState.date.subtract(const Duration(days: 1));
+    final oneHourAlertDate = _matchState.date.subtract(const Duration(hours: 1));
+    final thirtyMinAlertDate = _matchState.date.subtract(const Duration(minutes: 30));
 
     final bool showOneDay = now.isBefore(oneDayAlertDate);
     final bool showOneHour = now.isBefore(oneHourAlertDate);
@@ -1593,8 +1659,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   Widget _buildScoreBreakdown() {
-    final has90 = widget.match.t1Score90 != null;
-    final hasPK = widget.match.t1ScorePK != null;
+    final has90 = _matchState.t1Score90 != null;
+    final hasPK = _matchState.t1ScorePK != null;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1617,18 +1683,18 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           ),
           const SizedBox(height: 12),
           if (has90) ...[
-            _buildBreakdownRow('90 min', widget.match.t1Score90, widget.match.t2Score90),
+            _buildBreakdownRow('90 min', _matchState.t1Score90, _matchState.t2Score90),
           ],
-          if (widget.match.wentToET == true) ...[
+          if (_matchState.wentToET == true) ...[
             if (has90) const Divider(color: AppColors.border, height: 16),
-            _buildBreakdownRow(AppTranslations.get(widget.lang, 'extraTimeLabel'), widget.match.t1ScoreET ?? widget.match.t1Score, widget.match.t2ScoreET ?? widget.match.t2Score),
+            _buildBreakdownRow(AppTranslations.get(widget.lang, 'extraTimeLabel'), _matchState.t1ScoreET ?? _matchState.t1Score, _matchState.t2ScoreET ?? _matchState.t2Score),
           ],
-          if (widget.match.wentToPK == true) ...[
+          if (_matchState.wentToPK == true) ...[
             const Divider(color: AppColors.border, height: 16),
             if (hasPK)
-              _buildBreakdownRow(AppTranslations.get(widget.lang, 'penaltiesLabel'), widget.match.t1ScorePK, widget.match.t2ScorePK, isAccent: true)
-            else if (widget.match.pkWinner != null)
-              _buildWinnerRow(AppTranslations.get(widget.lang, 'penaltiesLabel'), widget.match.pkWinner!, isAccent: true),
+              _buildBreakdownRow(AppTranslations.get(widget.lang, 'penaltiesLabel'), _matchState.t1ScorePK, _matchState.t2ScorePK, isAccent: true)
+            else if (_matchState.pkWinner != null)
+              _buildWinnerRow(AppTranslations.get(widget.lang, 'penaltiesLabel'), _matchState.pkWinner!, isAccent: true),
           ],
         ],
       ),
@@ -1650,7 +1716,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           ),
         ),
         const Spacer(),
-        _buildMiniFlag(widget.match.t1),
+        _buildMiniFlag(_matchState.t1),
         const SizedBox(width: 8),
         Text(
           s1 != null && s2 != null ? '$s1 - $s2' : '-',
@@ -1661,7 +1727,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           ),
         ),
         const SizedBox(width: 8),
-        _buildMiniFlag(widget.match.t2),
+        _buildMiniFlag(_matchState.t2),
       ],
     );
   }
@@ -1706,9 +1772,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final t1EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, widget.match.t1);
-    final t2EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, widget.match.t2);
-    final localizedDateTimeStr = DateFormat.yMMMMEEEEd(widget.lang).add_Hm().format(widget.match.date);
+    final t1EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, _matchState.t1);
+    final t2EmblemName = AppTranslations.getTeamWithEmblem(widget.lang, _matchState.t2);
+    final localizedDateTimeStr = DateFormat.yMMMMEEEEd(widget.lang).add_Hm().format(_matchState.date);
 
     return Container(
       decoration: const BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
@@ -1716,36 +1782,65 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 5, margin: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: AppColors.borderMid, borderRadius: BorderRadius.circular(2.5))),
+          Stack(
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.borderMid,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 48,
+                top: 12,
+                child: _matchState.isLive ? const _LivePulseBadge() : const SizedBox.shrink(),
+              ),
+              Positioned(
+                right: 8,
+                top: 0,
+                child: IconButton(
+                  icon: _isRefreshing 
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(AppColors.accent)))
+                    : const Icon(Icons.refresh_rounded, color: AppColors.textDim, size: 20),
+                  onPressed: _refreshMatchData,
+                ),
+              ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                Expanded(child: _buildTeamDetailSection(widget.match.t1, t1EmblemName)),
+                Expanded(child: _buildTeamDetailSection(_matchState.t1, t1EmblemName)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: widget.match.isPlayed
+                  child: _matchState.isPlayed
                       ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${widget.match.t1Score ?? '-'} - ${widget.match.t2Score ?? '-'}',
+                        '${_matchState.t1Score ?? '-'} - ${_matchState.t2Score ?? '-'}',
                         style: const TextStyle(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w900,
                           fontSize: 28,
                         ),
                       ),
-                      if (widget.match.wentToPK == true && widget.match.t1ScorePK != null)
+                      if (_matchState.wentToPK == true && _matchState.t1ScorePK != null)
                         Text(
-                          '(${widget.match.t1ScorePK} - ${widget.match.t2ScorePK} ${AppTranslations.get(widget.lang, 'penaltiesLabel')})',
+                          '(${_matchState.t1ScorePK} - ${_matchState.t2ScorePK} ${AppTranslations.get(widget.lang, 'penaltiesLabel')})',
                           style: TextStyle(
                             color: AppColors.accent.withValues(alpha: 0.7),
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
                         )
-                      else if (widget.match.wentToET == true)
+                      else if (_matchState.wentToET == true)
                         Text(
                           '(${AppTranslations.get(widget.lang, 'extraTimeLabel')})',
                           style: const TextStyle(
@@ -1766,7 +1861,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     ),
                   ),
                 ),
-                Expanded(child: _buildTeamDetailSection(widget.match.t2, t2EmblemName)),
+                Expanded(child: _buildTeamDetailSection(_matchState.t2, t2EmblemName)),
               ],
             ),
           ),
@@ -1811,13 +1906,13 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                   const SizedBox(height: 4),
                   _buildPredictionControlCard(),
                   const SizedBox(height: 20),
-                  if (widget.match.isPlayed && widget.match.isKnockout && (widget.match.wentToET == true || widget.match.wentToPK == true)) ...[
+                  if (_matchState.isPlayed && _matchState.isKnockout && (_matchState.wentToET == true || _matchState.wentToPK == true)) ...[
                     _buildScoreBreakdown(),
                     const SizedBox(height: 20),
                   ],
                   _buildProbabilityBar(context),
                   const SizedBox(height: 20),
-                  if (widget.match.isPlayed && widget.match.goals.isNotEmpty) ...[
+                  if (_matchState.isPlayed && _matchState.goals.isNotEmpty) ...[
                     Text(
                       AppTranslations.get(widget.lang, 'scorers').toUpperCase(),
                       style: const TextStyle(
@@ -1844,9 +1939,11 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                             ),
                           ),
                           Column(
-                            children: widget.match.goals.map((g) {
+                            children: _matchState.goals.map((g) {
                               final isT1Goal = g.team == 't1';
                               final assistText = g.assistant != null ? '\n(ass: ${g.assistant})' : '';
+                              final ogText = g.isOwnGoal ? ' (${AppTranslations.get(widget.lang, 'ownGoal')})' : '';
+                              
                               return Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 child: Row(
@@ -1858,10 +1955,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              g.scorer + assistText,
+                                              g.scorer + ogText + assistText,
                                               textAlign: TextAlign.right,
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
+                                              style: TextStyle(
+                                                color: g.isOwnGoal ? AppColors.danger : AppColors.textPrimary,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 13,
                                               ),
@@ -1911,10 +2008,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              g.scorer + assistText,
+                                              g.scorer + ogText + assistText,
                                               textAlign: TextAlign.left,
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
+                                              style: TextStyle(
+                                                color: g.isOwnGoal ? AppColors.danger : AppColors.textPrimary,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 13,
                                               ),
@@ -1934,7 +2031,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     ),
                     const SizedBox(height: 20),
                   ],
-                  if (widget.match.isPlayed && widget.match.stats != null) ...[
+                  if (_matchState.isPlayed && _matchState.stats != null) ...[
                     Text(
                       AppTranslations.get(widget.lang, 'stats').toUpperCase(),
                       style: const TextStyle(
@@ -1956,36 +2053,36 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                         children: [
                           _buildStatBar(
                             label: AppTranslations.get(widget.lang, 'possession'),
-                            val1: widget.match.stats!.possessionT1,
-                            val2: widget.match.stats!.possessionT2,
+                            val1: _matchState.stats!.possessionT1,
+                            val2: _matchState.stats!.possessionT2,
                             suffix: '%',
                           ),
                           _buildStatBar(
                             label: AppTranslations.get(widget.lang, 'shots'),
-                            val1: widget.match.stats!.shotsT1,
-                            val2: widget.match.stats!.shotsT2,
+                            val1: _matchState.stats!.shotsT1,
+                            val2: _matchState.stats!.shotsT2,
                           ),
                           _buildStatBar(
                             label: AppTranslations.get(widget.lang, 'shotsOnTarget'),
-                            val1: widget.match.stats!.shotsOnTargetT1,
-                            val2: widget.match.stats!.shotsOnTargetT2,
+                            val1: _matchState.stats!.shotsOnTargetT1,
+                            val2: _matchState.stats!.shotsOnTargetT2,
                           ),
                           _buildStatBar(
                             label: AppTranslations.get(widget.lang, 'fouls'),
-                            val1: widget.match.stats!.foulsT1,
-                            val2: widget.match.stats!.foulsT2,
+                            val1: _matchState.stats!.foulsT1,
+                            val2: _matchState.stats!.foulsT2,
                           ),
                           _buildStatBar(
                             label: AppTranslations.get(widget.lang, 'yellowCards'),
-                            val1: widget.match.stats!.yellowCardsT1,
-                            val2: widget.match.stats!.yellowCardsT2,
+                            val1: _matchState.stats!.yellowCardsT1,
+                            val2: _matchState.stats!.yellowCardsT2,
                             colorT1: AppColors.warningYellow,
                             colorT2: AppColors.warningYellow,
                           ),
                           _buildStatBar(
                             label: AppTranslations.get(widget.lang, 'redCards'),
-                            val1: widget.match.stats!.redCardsT1,
-                            val2: widget.match.stats!.redCardsT2,
+                            val1: _matchState.stats!.redCardsT1,
+                            val2: _matchState.stats!.redCardsT2,
                             colorT1: AppColors.danger,
                             colorT2: AppColors.danger,
                           ),
@@ -2033,12 +2130,62 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     ),
                   ],
                   const SizedBox(height: 48),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+                  ],
+                  ),
+                  ),
+                  ),
+                  ],
+                  ),
+                  );
+                  }
+                  }
+
+                  class _LivePulseBadge extends StatefulWidget {
+                  const _LivePulseBadge();
+
+                  @override
+                  State<_LivePulseBadge> createState() => _LivePulseBadgeState();
+                  }
+
+                  class _LivePulseBadgeState extends State<_LivePulseBadge> with SingleTickerProviderStateMixin {
+                  late AnimationController _controller;
+                  late Animation<double> _animation;
+
+                  @override
+                  void initState() {
+                  super.initState();
+                  _controller = AnimationController(
+                  duration: const Duration(milliseconds: 1000),
+                  vsync: this,
+                  )..repeat(reverse: true);
+                  _animation = Tween<double>(begin: 0.4, end: 1.0).animate(_controller);
+                  }
+
+                  @override
+                  void dispose() {
+                  _controller.dispose();
+                  super.dispose();
+                  }
+
+                  @override
+                  Widget build(BuildContext context) {
+                  return FadeTransition(
+                  opacity: _animation,
+                  child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                  'LIVE',
+                  style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  ),
+                  ),
+                  ),
+                  );
+                  }
+                  }

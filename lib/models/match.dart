@@ -7,12 +7,14 @@ class GoalEvent {
   final String scorer;
   final String? assistant;
   final int minute;
+  final bool isOwnGoal;
 
   GoalEvent({
     required this.team,
     required this.scorer,
     this.assistant,
     required this.minute,
+    this.isOwnGoal = false,
   });
 
   factory GoalEvent.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,7 @@ class GoalEvent {
       scorer: json['scorer'] as String,
       assistant: json['assistant'] as String?,
       minute: json['minute'] as int,
+      isOwnGoal: json['isOwnGoal'] as bool? ?? false,
     );
   }
 
@@ -28,11 +31,13 @@ class GoalEvent {
     return {
       'team': team,
       'scorer': scorer,
-      if (assistant != null) 'assistant': assistant,
+      'assistant': assistant,
       'minute': minute,
+      'isOwnGoal': isOwnGoal,
     };
   }
 }
+
 
 class MatchStats {
   final int possessionT1;
@@ -114,6 +119,7 @@ class MatchStats {
 
 class WorldCupMatch {
   final String id;
+  final String? espnId; // mapped ESPN event/match ID
   final DateTime date;
   final String t1;
   final String t2;
@@ -151,6 +157,7 @@ class WorldCupMatch {
 
   WorldCupMatch({
     required this.id,
+    this.espnId,
     required this.date,
     required this.t1,
     required this.t2,
@@ -194,6 +201,7 @@ class WorldCupMatch {
 
     return WorldCupMatch(
       id: json['id'] as String,
+      espnId: json['espnId'] as String?,
       date: DateTime.parse(json['date'] as String).toLocal(),
       t1: json['t1'] as String? ?? 'xx',
       t2: json['t2'] as String? ?? 'xx',
@@ -241,6 +249,7 @@ class WorldCupMatch {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'espnId': espnId,
       'date': date.toUtc().toIso8601String(),
       't1': t1,
       't2': t2,
@@ -321,6 +330,7 @@ class WorldCupMatch {
 
   WorldCupMatch copyWith({
     String? id,
+    String? espnId,
     DateTime? date,
     String? t1,
     String? t2,
@@ -347,6 +357,7 @@ class WorldCupMatch {
   }) {
     return WorldCupMatch(
       id: id ?? this.id,
+      espnId: espnId ?? this.espnId,
       date: date ?? this.date,
       t1: t1 ?? this.t1,
       t2: t2 ?? this.t2,
@@ -394,6 +405,8 @@ class TournamentStats {
     for (final match in matches) {
       if (match.isPlayed) {
         for (final goal in match.goals) {
+          if (goal.isOwnGoal) continue; // Skip Own Goals in top scorers leaderboard
+          
           final teamCode = (goal.team == 't1' ? match.t1 : match.t2).toLowerCase();
           final teamNameEn = AppTranslations.getTeam('en', teamCode);
           
