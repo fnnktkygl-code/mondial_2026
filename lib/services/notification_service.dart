@@ -525,11 +525,28 @@ class WCNotificationService {
     // Ensure we do not attempt to schedule a notification in the past
     if (tzDate.isBefore(tz.TZDateTime.now(tz.local))) return;
 
+    // Enhancement: Try to extract team codes from payload/matchId to add flags to title
+    String enhancedTitle = title;
+    try {
+      if (payload != null && payload.startsWith('match_')) {
+        final mId = payload.substring(6);
+        final matches = await ApiService.loadMatches();
+        final match = matches.firstWhere((m) => m.id == mId);
+        final f1 = _getFlagEmoji(match.t1.toLowerCase().replaceAll('g_', ''));
+        final f2 = _getFlagEmoji(match.t2.toLowerCase().replaceAll('g_', ''));
+        
+        // Only inject if not already there
+        if (!enhancedTitle.contains(f1) && !enhancedTitle.contains(f2)) {
+          enhancedTitle = '$f1 $enhancedTitle $f2';
+        }
+      }
+    } catch (_) {}
+
     try {
       final int stableId = generateStableId(matchId);
       await _plugin.zonedSchedule(
         id: stableId,
-        title: title,
+        title: enhancedTitle,
         body: body,
         scheduledDate: tzDate,
         notificationDetails: _details,

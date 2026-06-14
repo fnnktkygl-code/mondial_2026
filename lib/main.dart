@@ -1005,6 +1005,7 @@ class _MyHomePageState extends State<MyHomePage> {
           "matchStartingSoonBody",
         ).replaceAll("{t1}", t1Name).replaceAll('{t2}', t2Name),
         scheduledDate: scheduledTime,
+        payload: 'match_$matchId',
       );
 
       if (match.t1Score != null && match.t2Score != null) {
