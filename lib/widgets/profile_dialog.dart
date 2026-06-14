@@ -365,20 +365,15 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
     final scorerInput = _scorerController.text.trim();
     final canonicalScorer = PlayerDatabaseService.findCanonicalName(scorerInput);
-    final bool isNewScorer = widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty;
+    
+    final isTournamentLocked = PredictionService.isTournamentPredictionLocked(widget.matches);
+
+    // Only allow setting a new scorer if the tournament isn't locked, or if they somehow bypass UI
+    final bool isNewScorer = !isTournamentLocked && scorerInput.isNotEmpty && widget.userPreds.goldenBootPlayer != canonicalScorer;
 
     if (isNewScorer && canonicalScorer == null) {
       setState(() => _validationError = AppTranslations.get(widget.lang, 'scorerNotFound'));
       return;
-    }
-
-    if (isNewScorer) {
-      final confirmed = await _showConfirmDialog(
-        title: AppTranslations.get(widget.lang, 'confirmPredictions'),
-        message: AppTranslations.get(widget.lang, 'confirmPredictionsWarning'),
-        confirmLabel: AppTranslations.get(widget.lang, 'confirm'),
-      );
-      if (!confirmed) return;
     }
 
     setState(() => _isSaving = true);
@@ -388,14 +383,15 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       widget.userPreds.avatar = _avatar;
       widget.userPreds.supportedTeam = _supportedTeam;
 
-      if (widget.userPreds.championCode == null && _championCode != null) {
-        widget.userPreds.championCode = _championCode;
-        widget.userPreds.championPredictedAt = DateTime.now();
-      }
-
-      if (widget.userPreds.goldenBootPlayer == null && scorerInput.isNotEmpty) {
-        widget.userPreds.goldenBootPlayer = canonicalScorer;
-        widget.userPreds.goldenBootPredictedAt = DateTime.now();
+      if (!isTournamentLocked) {
+        if (_championCode != null) {
+          widget.userPreds.championCode = _championCode;
+          widget.userPreds.championPredictedAt = DateTime.now();
+        }
+        if (canonicalScorer != null) {
+          widget.userPreds.goldenBootPlayer = canonicalScorer;
+          widget.userPreds.goldenBootPredictedAt = DateTime.now();
+        }
       }
 
       await PredictionService.savePredictionData(widget.userPreds);
@@ -1033,11 +1029,11 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   }
 
   Widget _buildWinnerPred(int potC, int? lockC) {
-    final isLocked = widget.userPreds.championCode != null;
+    final isLocked = PredictionService.isTournamentPredictionLocked(widget.matches);
     final finalMatch = widget.matches.where((m) => m.id == kFinalMatchId).firstOrNull;
     bool? isCorrect;
 
-    if (finalMatch != null && finalMatch.isPlayed && isLocked) {
+    if (finalMatch != null && finalMatch.isPlayed && widget.userPreds.championCode != null) {
       final actualChamp = (finalMatch.t1Score ?? 0) > (finalMatch.t2Score ?? 0) ? finalMatch.t1 : finalMatch.t2;
       isCorrect = widget.userPreds.championCode!.toLowerCase() == actualChamp.toLowerCase();
     }
@@ -1048,7 +1044,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         _buildLabel(AppTranslations.get(widget.lang, 'winnerPredLabel')),
         const SizedBox(height: 8),
         isLocked
-            ? _buildLockedPredRow(widget.userPreds.championCode!, lockC!, isCorrect)
+            ? (widget.userPreds.championCode != null 
+                ? _buildLockedPredRow(widget.userPreds.championCode!, lockC ?? 0, isCorrect)
+                : _buildMissedDeadlineRow())
             : _buildTeamPickerButton(
           selectedCode: _championCode,
           placeholder: AppTranslations.get(widget.lang, 'selectWinner'),
@@ -1067,10 +1065,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   }
 
   Widget _buildScorerPred(int potS, int? lockS) {
-    final isLocked = widget.userPreds.goldenBootPlayer != null;
+    final isLocked = PredictionService.isTournamentPredictionLocked(widget.matches);
     bool? isCorrect;
 
-    if (isLocked) {
+    if (isLocked && widget.userPreds.goldenBootPlayer != null) {
       isCorrect = PredictionService.isScorerPredictionCorrect(widget.userPreds.goldenBootPlayer, widget.matches);
     }
 
@@ -1080,9 +1078,38 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         _buildLabel(AppTranslations.get(widget.lang, 'goldenBootScorer')),
         const SizedBox(height: 8),
         isLocked
-            ? _buildLockedPlayerRow(widget.userPreds.goldenBootPlayer!, lockS!, isCorrect)
+            ? (widget.userPreds.goldenBootPlayer != null 
+                ? _buildLockedPlayerRow(widget.userPreds.goldenBootPlayer!, lockS ?? 0, isCorrect)
+                : _buildMissedDeadlineRow())
             : _buildPlayerAutocomplete(_scorerController, _scorerFocusNode, AppTranslations.get(widget.lang, 'searchScorer')),
       ],
+    );
+  }
+
+  Widget _buildMissedDeadlineRow() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(kButtonRadius),
+          border: Border.all(color: AppColors.border, width: 1.5)
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_clock, color: AppColors.textDim, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              widget.lang == 'fr' ? 'Trop tard pour pronostiquer' : (widget.lang == 'es' ? 'Demasiado tarde para pronosticar' : 'Too late to predict'),
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -3,13 +3,50 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:pub_semver/pub_semver.dart';
 import '../app_colors.dart';
 import '../l10n/translations.dart';
 
 class WCUpdateService {
-  // Replace this with your actual GitHub Pages URL
+  // Optionnel: On peut garder l'ancien système pour des infos ou le supprimer
   static const String _updateUrl = 'https://raw.githubusercontent.com/fnnktkygl-code/mondial_2026/main/web/version.json';
 
+  /// Nouvelle méthode bloquante basée sur Firebase Remote Config
+  static Future<bool> isUpdateRequired() async {
+    try {
+      final remoteConfig = FirebaseRemoteConfig.instance;
+      
+      // Configuration pour forcer la mise à jour rapide des données Firebase pour nos tests
+      await remoteConfig.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(minutes: 1),
+        minimumFetchInterval: const Duration(seconds: 0), // 0 pour le dev/test. À remettre à 1h en prod !
+      ));
+
+      await remoteConfig.fetchAndActivate();
+
+      // 1. Récupérer la version requise depuis Firebase
+      String minVersionString = remoteConfig.getString('min_app_version');
+      if (minVersionString.isEmpty) return false;
+
+      // 2. Récupérer la version actuelle de l'appareil
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      String currentVersionString = packageInfo.version;
+
+      // 3. Comparaison sécurisée avec pub_semver
+      Version minVersion = Version.parse(minVersionString);
+      Version currentVersion = Version.parse(currentVersionString);
+
+      // Si la version actuelle est strictement inférieure à la version requise
+      return currentVersion < minVersion;
+    } catch (e) {
+      debugPrint("Erreur lors de la vérification de mise à jour (Firebase): $e");
+      // En cas d'erreur (pas de réseau, etc.), on ne bloque pas l'utilisateur
+      return false;
+    }
+  }
+
+  /// Ancienne méthode non-bloquante (facultative) conservée si vous l'utilisez ailleurs
   static Future<void> checkUpdate(BuildContext context, String lang) async {
     try {
       final response = await http.get(Uri.parse(_updateUrl));
@@ -38,7 +75,6 @@ class WCUpdateService {
   }
 
   static bool _isNewer(String latestVersion, int latestBuild, String currentVersion, int currentBuild) {
-    // Basic version comparison: simple string check or split by dot
     final latestParts = latestVersion.split('.').map(int.parse).toList();
     final currentParts = currentVersion.split('.').map(int.parse).toList();
 
@@ -49,7 +85,6 @@ class WCUpdateService {
 
     if (latestParts.length > currentParts.length) return true;
     
-    // If versions are same, check build number
     return latestBuild > currentBuild;
   }
 

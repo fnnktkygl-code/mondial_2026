@@ -59,11 +59,15 @@ const int kPenaltyShootoutBonusPoints = 25;
 
 // Bonus tournoi entier
 const int kScorerMatchBonusPoints = 15;
+const int kScorerBonusForward = 10;
+const int kScorerBonusMidfielder = 15;
+const int kScorerBonusDefenderOrGK = 25;
 const int kChampionBonusPoints = 100;
 const int kGoldenBootBonusPoints = 50;
 
-// Malus
-const int kBoosterPenaltyPoints = -10;
+// Prise de risque
+const int kOutsiderBonusPoints = 15;
+const double kOutsiderProbabilityThreshold = 0.30;
 
 // ─── XP / Niveaux ────────────────────────────────────────────────────────────
 const List<Map<String, dynamic>> kXpLevels = [

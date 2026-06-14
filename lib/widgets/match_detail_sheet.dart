@@ -23,8 +23,8 @@ class MatchDetailSheet extends StatefulWidget {
   final String? activeAlert;
   final Function(String alertType) onSaveAlert;
   final MatchPrediction? prediction;
-  final bool canUseBooster;
-  final VoidCallback? onSetBooster;
+  final List<String> boosterMatchIds;
+  final Function(bool isBoosterActive)? onBoosterChanged;
   final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner, Map<String, int>? predictedScorers)? onPredictionChanged;
 
   const MatchDetailSheet({
@@ -35,8 +35,8 @@ class MatchDetailSheet extends StatefulWidget {
     required this.activeAlert,
     required this.onSaveAlert,
     this.prediction,
-    this.canUseBooster = false,
-    this.onSetBooster,
+    this.boosterMatchIds = const [],
+    this.onBoosterChanged,
     this.onPredictionChanged,
   });
 
@@ -59,6 +59,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   int _activeFactTeam = 0;
   Map<String, int> _localPredictedScorers = {};
+  bool _localBoosterActive = false;
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     // Gère l'état initial d'édition
     _isEditing = widget.prediction == null;
     _localPredictedScorers = Map.from(widget.prediction?.predictedScorers ?? {});
+    _localBoosterActive = widget.boosterMatchIds.contains(widget.match.id);
     _startCountdown();
 
     _pulseController = AnimationController(
@@ -614,6 +616,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                   ),
                 ),
               ),
+              _buildBoosterSection(),
             ],
           ),
         ),
@@ -712,6 +715,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             const SizedBox(height: 20),
             _buildKnockoutPredictionControls(),
           ],
+          const SizedBox(height: 20),
+          _buildBoosterSection(),
           if (_scorerWarning() != null) ...[
             const SizedBox(height: 10),
             Container(
@@ -839,11 +844,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       );
     }
 
-    if (widget.canUseBooster && widget.onSetBooster != null) {
-      final confirmed = await _showProactiveBoosterDialog();
-      if (confirmed) {
-        widget.onSetBooster!();
-      }
+    if (widget.onBoosterChanged != null) {
+      widget.onBoosterChanged!(_localBoosterActive);
     }
 
     if (mounted) {
@@ -852,51 +854,100 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     }
   }
 
-  Future<bool> _showProactiveBoosterDialog() async {
-    bool result = false;
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kDialogRadius)),
-        title: Row(
+  Widget _buildBoosterSection() {
+    final bool isLocked = PredictionService.isPredictionLocked(widget.match);
+    if (isLocked) {
+      if (!_localBoosterActive) return const SizedBox.shrink();
+      return Container(
+        margin: const EdgeInsets.only(top: 20),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.warning.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.warning),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.rocket_launch, color: AppColors.warning),
+            const Icon(Icons.rocket_launch, color: AppColors.warning, size: 20),
             const SizedBox(width: 8),
-            Text(AppTranslations.get(widget.lang, 'boosterLabel'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              AppTranslations.get(widget.lang, 'boosterLabel').toUpperCase(),
+              style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1.0),
+            ),
           ],
         ),
-        content: Text(
-          widget.lang == 'fr'
-              ? "Vous n'avez pas encore utilisé votre Joker. Voulez-vous l'activer pour ce match ?\n\n⚠️ C'est à double tranchant : les points sont doublés en cas de réussite, mais vous perdez 10 points si le pronostic est faux !"
-              : (widget.lang == 'es'
-              ? "Aún no has usado tu comodín. ¿Quieres activarlo para este partido?\n\n⚠️ Es un arma de doble filo: ¡duplica tus puntos si aciertas, pero pierdes 10 puntos si fallas!"
-              : "You haven't used your Booster yet. Do you want to activate it for this match?\n\n⚠️ It's a double-edged sword: points are doubled if correct, but you lose 10 points if the prediction is completely wrong!"),
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              result = false;
-              Navigator.pop(ctx);
-            },
-            child: Text(AppTranslations.get(widget.lang, 'cancel').toUpperCase(), style: const TextStyle(color: AppColors.textDim)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              result = true;
-              Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
-            child: Text(
-                widget.lang == 'fr' ? "Activer le Joker" : (widget.lang == 'es' ? "Activar Comodín" : "Activate Booster"),
-                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+      );
+    }
+
+    final String phase = PredictionService.getMatchPhase(widget.match);
+    final int limit = PredictionService.getAvailableBoostersForPhase(phase);
+    
+    // Count how many boosters are used in this phase by looking up the matches
+    int boostersUsedInPhase = 0;
+    for (String id in widget.boosterMatchIds) {
+      final m = widget.allMatches.firstWhere((element) => element.id == id, orElse: () => widget.allMatches.first);
+      if (PredictionService.getMatchPhase(m) == phase) {
+        boostersUsedInPhase++;
+      }
+    }
+    
+    final bool canAddBooster = _localBoosterActive || boostersUsedInPhase < limit;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(color: AppColors.border, height: 32),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.rocket_launch, color: AppColors.warning, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  AppTranslations.get(widget.lang, 'boosterLabel').toUpperCase(),
+                  style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.0),
+                ),
+              ],
             ),
+            Switch(
+              value: _localBoosterActive,
+              activeColor: AppColors.warning,
+              onChanged: (val) {
+                if (val && !canAddBooster) {
+                  _showInfoDialog(
+                    AppTranslations.get(widget.lang, 'boosterLabel'),
+                    widget.lang == 'fr' 
+                      ? "Vous avez atteint la limite de Jokers ($limit) pour cette phase ! Désactivez-en un d'abord." 
+                      : (widget.lang == 'es' ? "¡Has alcanzado el límite de comodines ($limit) para esta fase! Desactiva uno primero." : "You have reached the booster limit ($limit) for this phase! Disable one first."),
+                  );
+                  return;
+                }
+                HapticFeedback.selectionClick();
+                setState(() {
+                  _localBoosterActive = val;
+                });
+              },
+            ),
+          ],
+        ),
+        if (canAddBooster)
+          Text(
+            widget.lang == 'fr' 
+                ? "Joker (x2 sur Score Exact, x1.5 sur Bon Résultat). Sans malus en cas d'erreur ! Limite : $limit par phase."
+                : (widget.lang == 'es' ? "Comodín (x2 en Resultado Exacto, x1.5 en Resultado Correcto). ¡Sin penalización! Límite: $limit." : "Booster (x2 on Exact Score, x1.5 on Correct Outcome). No penalty! Limit: $limit."),
+            style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
+          )
+        else
+          Text(
+            widget.lang == 'fr' 
+                ? "Limite de Jokers atteinte pour cette phase ($limit)."
+                : (widget.lang == 'es' ? "Límite de comodines alcanzado para esta fase ($limit)." : "Booster limit reached for this phase ($limit)."),
+            style: const TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.bold, height: 1.4),
           ),
-        ],
-      ),
+      ],
     );
-    return result;
   }
 
   Widget _buildScorerPredictionSection() {
