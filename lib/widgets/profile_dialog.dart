@@ -11,6 +11,7 @@ import '../app_constants.dart';
 import 'team_flag.dart';
 import 'team_selector.dart';
 import 'wc_tooltip.dart';
+import 'player_history_dialog.dart';
 import '../services/player_database_service.dart';
 
 // ─── Avatar options ──────────────────────────────────────────────────────────
@@ -154,6 +155,9 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   bool _isHidden = false;
   bool _trophiesExpanded = false;
   String? _validationError;
+  String? _selectedPronounOption;
+  late TextEditingController _customPronounsController;
+  bool _showCustomPronounsInput = false;
 
   final FocusNode _scorerFocusNode = FocusNode();
 
@@ -180,6 +184,23 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
     _supportedTeam = widget.userPreds.supportedTeam;
     _championCode = widget.userPreds.championCode;
     _avatar = widget.userPreds.avatar;
+
+    final currentPronouns = widget.userPreds.pronouns;
+    final standardOptions = ['He/Him', 'She/Her', 'They/Them', 'Prefer not to say'];
+    if (currentPronouns == null || currentPronouns.isEmpty) {
+      _selectedPronounOption = 'Prefer not to say';
+      _customPronounsController = TextEditingController();
+      _showCustomPronounsInput = false;
+    } else if (standardOptions.contains(currentPronouns)) {
+      _selectedPronounOption = currentPronouns;
+      _customPronounsController = TextEditingController();
+      _showCustomPronounsInput = false;
+    } else {
+      _selectedPronounOption = 'Custom';
+      _customPronounsController = TextEditingController(text: currentPronouns);
+      _showCustomPronounsInput = true;
+    }
+
     _loadVisibility();
   }
 
@@ -187,6 +208,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   void dispose() {
     _nameController.dispose();
     _scorerController.dispose();
+    _customPronounsController.dispose();
     _scorerFocusNode.dispose();
     super.dispose();
   }
@@ -394,6 +416,24 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         }
       }
 
+      String finalPronouns = '';
+      if (_selectedPronounOption == 'Custom') {
+        finalPronouns = _customPronounsController.text.trim();
+      } else if (_selectedPronounOption != 'Prefer not to say') {
+        finalPronouns = _selectedPronounOption ?? '';
+      }
+
+      final previousPronouns = widget.userPreds.pronouns ?? '';
+      if (finalPronouns != previousPronouns) {
+        widget.userPreds.pronouns = finalPronouns;
+        widget.userPreds.pronounsHistory.add(
+          PronounsHistoryItem(
+            pronouns: finalPronouns.isNotEmpty ? finalPronouns : AppTranslations.get(widget.lang, 'pronounsPreferNotToSay'),
+            updatedAt: DateTime.now(),
+          ),
+        );
+      }
+
       await PredictionService.savePredictionData(widget.userPreds);
 
       final totalPoints = PredictionService.calculateTotalPoints(widget.userPreds, widget.matches);
@@ -408,6 +448,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         guruCount: guruCount,
         avatar: _avatar,
         isHidden: _isHidden,
+        pronouns: widget.userPreds.pronouns,
+        pronounsHistory: widget.userPreds.pronounsHistory.map((e) => e.toJson()).toList(),
       );
 
       if (!mounted) return;
@@ -587,6 +629,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
         _buildWarningBanner(),
         _buildNameInput(),
         const SizedBox(height: 20),
+        _buildPronounsInput(),
+        const SizedBox(height: 20),
         _buildFavoriteTeam(),
         const SizedBox(height: 20),
         _buildWinnerPred(potC, lockC),
@@ -627,6 +671,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 children: [
                   _buildWarningBanner(),
                   _buildNameInput(),
+                  const SizedBox(height: 20),
+                  _buildPronounsInput(),
                   const SizedBox(height: 20),
                   _buildFavoriteTeam(),
                 ],
@@ -700,6 +746,26 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             Text('$xp / $nextXp XP', style: const TextStyle(color: AppColors.textDim, fontSize: 10)),
             Text('Niv $level → ${level + 1}', style: const TextStyle(color: AppColors.textDim, fontSize: 10)),
           ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => PlayerHistoryDialog.show(
+              context: context,
+              predictionData: widget.userPreds,
+              allMatches: widget.matches,
+              lang: widget.lang,
+              viewingOwnHistory: true,
+            ),
+            icon: const Icon(Icons.history_rounded, size: 18),
+            label: Text(widget.lang == 'fr' ? 'Historique des Pronos' : 'Prediction History'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.accent,
+              side: const BorderSide(color: AppColors.accent),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kButtonRadius)),
+            ),
+          ),
         ),
       ],
     );
@@ -910,6 +976,78 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildPronounsInput() {
+    final Map<String, String> optionLabels = {
+      'He/Him': AppTranslations.get(widget.lang, 'pronounsHeHim'),
+      'She/Her': AppTranslations.get(widget.lang, 'pronounsSheHer'),
+      'They/Them': AppTranslations.get(widget.lang, 'pronounsTheyThem'),
+      'Prefer not to say': AppTranslations.get(widget.lang, 'pronounsPreferNotToSay'),
+      'Custom': AppTranslations.get(widget.lang, 'pronounsCustom'),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(AppTranslations.get(widget.lang, 'pronounsLabel')),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: _selectedPronounOption,
+          dropdownColor: AppColors.cardDark,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          decoration: InputDecoration(
+            fillColor: AppColors.surface,
+            filled: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+            ),
+          ),
+          items: optionLabels.entries.map((e) {
+            return DropdownMenuItem<String>(
+              value: e.key,
+              child: Text(e.value),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() {
+                _selectedPronounOption = val;
+                _showCustomPronounsInput = (val == 'Custom');
+              });
+            }
+          },
+        ),
+        if (_showCustomPronounsInput) ...[
+          const SizedBox(height: 12),
+          TextField(
+            controller: _customPronounsController,
+            style: const TextStyle(color: Colors.white, fontSize: 15),
+            decoration: InputDecoration(
+              fillColor: AppColors.surface,
+              filled: true,
+              hintText: AppTranslations.get(widget.lang, 'pronounsCustomPlaceholder'),
+              hintStyle: const TextStyle(color: AppColors.textDim),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(kButtonRadius),
+                borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(kButtonRadius),
+                borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

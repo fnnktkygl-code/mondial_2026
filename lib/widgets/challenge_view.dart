@@ -10,6 +10,7 @@ import '../app_colors.dart';
 import '../app_constants.dart';
 import 'team_flag.dart';
 import 'profile_dialog.dart';
+import 'player_history_dialog.dart';
 import 'user_statistics.dart';
 import 'wc_tooltip.dart';
 
@@ -108,7 +109,41 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       streak: streak,
       guruCount: guruCount,
       avatar: _userPreds.avatar,
+      pronouns: _userPreds.pronouns,
+      pronounsHistory: _userPreds.pronounsHistory.map((e) => e.toJson()).toList(),
     );
+  }
+
+  void _showUserHistory(String? uid, String name) async {
+    if (uid == null) return;
+    
+    final isMe = uid == _myUserId;
+    if (isMe) {
+      PlayerHistoryDialog.show(
+        context: context,
+        predictionData: _userPreds,
+        allMatches: widget.matches,
+        lang: widget.lang,
+        viewingOwnHistory: true,
+      );
+      return;
+    }
+
+    try {
+      final remoteProfile = await WCFirebaseService.getUserProfile(uid);
+      if (remoteProfile != null && mounted) {
+        final remoteData = PredictionData.fromFirestore(remoteProfile);
+        PlayerHistoryDialog.show(
+          context: context,
+          predictionData: remoteData,
+          allMatches: widget.matches,
+          lang: widget.lang,
+          viewingOwnHistory: false,
+        );
+      }
+    } catch (e) {
+      widget.showSnackBar("Error loading history");
+    }
   }
 
   void _openPredictionDialog(WorldCupMatch match) {
@@ -287,6 +322,10 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                           Flexible(
                             child: Text(username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ),
+                          if (_userPreds.pronouns != null && _userPreds.pronouns!.isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            _buildBadge(_userPreds.pronouns!, AppColors.accent),
+                          ],
                           const SizedBox(width: 8),
                           if (streak >= 3) _buildBadge('🔥 $streak', AppColors.danger),
                           if (guruCount >= 1) ...[const SizedBox(width: 6), _buildBadge('🎯', AppColors.accent)],
@@ -1238,14 +1277,17 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           final isUser = m.isUser;
 
           return Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (rank == 1)
-                  const Text('👑', style: TextStyle(fontSize: 16))
-                else
-                  const SizedBox(height: 22),
-                const SizedBox(height: 4),
+            child: GestureDetector(
+              onTap: () => _showUserHistory(m.userId, m.name),
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (rank == 1)
+                    const Text('👑', style: TextStyle(fontSize: 16))
+                  else
+                    const SizedBox(height: 22),
+                  const SizedBox(height: 4),
 
                 Container(
                   width: avatarSize, height: avatarSize,
@@ -1341,118 +1383,84 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                 ),
               ],
             ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+          ),
+        );
+      }).toList(),
+    ),
+  );
+}
 
   Widget _buildRestRow(FriendScore member, int rank, int maxPts) {
     final isUser = member.isUser;
     final pct = maxPts > 0 ? (member.points / maxPts).clamp(0.0, 1.0) : 0.0;
-    
-    // Fallback rank calculation if member rank isn't populated
     final displayRank = member.rank > 0 ? member.rank : rank;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: isUser ? AppColors.accent.withValues(alpha: 0.05) : Colors.transparent,
-        border: Border(
-          bottom: BorderSide(color: AppColors.border, width: 0.5),
+    return InkWell(
+      onTap: () => _showUserHistory(member.userId, member.name),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: isUser ? AppColors.accent.withValues(alpha: 0.05) : Colors.transparent,
+          border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
         ),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 22,
-            child: Text(
-              '$displayRank',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isUser ? AppColors.accent : AppColors.textDim,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          Container(
-            width: 26, height: 26,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isUser
-                  ? AppColors.accent.withValues(alpha: 0.10)
-                  : AppColors.surface,
-              border: Border.all(
-                color: isUser ? AppColors.accent : AppColors.border,
-                width: 1,
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: member.emblem.isNotEmpty
-                ? _buildEmblemWidget(member.emblem, size: 26)
-                : Center(
+        child: Row(
+          children: [
+            SizedBox(
+              width: 22,
               child: Text(
-                member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                '$displayRank',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isUser ? AppColors.accent : AppColors.textDim,
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-
-          Expanded(
-            child: Text(
-              isUser
-                  ? '${member.name}${AppTranslations.get(widget.lang, 'meSuffix')}'
-                  : member.name,
-              style: TextStyle(
-                color: isUser ? AppColors.accent : AppColors.textSecondary,
-                fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
+            const SizedBox(width: 10),
+            Container(
+              width: 26, height: 26,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isUser ? AppColors.accent.withValues(alpha: 0.10) : AppColors.surface,
+                border: Border.all(color: isUser ? AppColors.accent : AppColors.border, width: 1),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              clipBehavior: Clip.antiAlias,
+              child: member.emblem.isNotEmpty
+                  ? _buildEmblemWidget(member.emblem, size: 26)
+                  : Center(child: Text(member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                      style: TextStyle(color: isUser ? AppColors.accent : AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold))),
             ),
-          ),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${member.points} ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
-                style: TextStyle(
-                  color: isUser ? AppColors.accent : AppColors.textMuted,
-                  fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 12,
-                ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                isUser ? '${member.name}${AppTranslations.get(widget.lang, 'meSuffix')}' : member.name,
+                style: TextStyle(color: isUser ? AppColors.accent : AppColors.textSecondary, fontWeight: isUser ? FontWeight.bold : FontWeight.normal, fontSize: 13),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 3),
-              Container(
-                width: 52, height: 3,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${member.points} ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
+                  style: TextStyle(color: isUser ? AppColors.accent : AppColors.textMuted, fontWeight: isUser ? FontWeight.bold : FontWeight.normal, fontSize: 12),
                 ),
-                child: FractionallySizedBox(
-                  widthFactor: pct,
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isUser ? AppColors.accent : AppColors.borderStrong,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                const SizedBox(height: 3),
+                Container(
+                  width: 52, height: 3,
+                  decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
+                  child: FractionallySizedBox(
+                    widthFactor: pct,
+                    alignment: Alignment.centerLeft,
+                    child: Container(decoration: BoxDecoration(color: isUser ? AppColors.accent : AppColors.borderStrong, borderRadius: BorderRadius.circular(2))),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

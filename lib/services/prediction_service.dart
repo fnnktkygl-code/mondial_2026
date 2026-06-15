@@ -63,6 +63,23 @@ class MatchPrediction {
   }
 }
 
+class PronounsHistoryItem {
+  final String pronouns;
+  final DateTime updatedAt;
+
+  PronounsHistoryItem({required this.pronouns, required this.updatedAt});
+
+  Map<String, dynamic> toJson() => {
+    'pronouns': pronouns,
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory PronounsHistoryItem.fromJson(Map<String, dynamic> json) => PronounsHistoryItem(
+    pronouns: json['pronouns'] as String,
+    updatedAt: DateTime.parse(json['updatedAt'] as String),
+  );
+}
+
 class PredictionData {
   String username;
   String avatar;
@@ -75,6 +92,8 @@ class PredictionData {
   DateTime? championPredictedAt;
   DateTime? goldenBootPredictedAt;
   Map<String, MatchPrediction> matchPredictions;
+  String? pronouns;
+  List<PronounsHistoryItem> pronounsHistory;
 
   PredictionData({
     this.username = kDefaultUsername,
@@ -88,8 +107,11 @@ class PredictionData {
     this.championPredictedAt,
     this.goldenBootPredictedAt,
     Map<String, MatchPrediction>? preds,
+    this.pronouns,
+    List<PronounsHistoryItem>? pronounsHistory,
   })  : matchPredictions = preds ?? {},
-        boosterMatchIds = boosterMatchIds ?? [];
+        boosterMatchIds = boosterMatchIds ?? [],
+        pronounsHistory = pronounsHistory ?? [];
 
   factory PredictionData.fromJson(Map<String, dynamic> json) {
     final Map<String, MatchPrediction> preds = {};
@@ -126,6 +148,44 @@ class PredictionData {
           ? DateTime.tryParse(json['goldenBootPredictedAt'] as String)
           : null,
       preds: preds,
+      pronouns: json['pronouns'] as String?,
+      pronounsHistory: json['pronounsHistory'] != null
+          ? (json['pronounsHistory'] as List<dynamic>)
+              .map((e) => PronounsHistoryItem.fromJson(Map<String, dynamic>.from(e as Map)))
+              .toList()
+          : [],
+    );
+  }
+
+  factory PredictionData.fromFirestore(Map<String, dynamic> json) {
+    final Map<String, MatchPrediction> preds = {};
+    // Firestore uses 'predictions' key
+    final Map<String, dynamic> rawPreds = json['predictions'] as Map<String, dynamic>? ?? {};
+    rawPreds.forEach((key, val) {
+      preds[key] = MatchPrediction.fromJson(Map<String, dynamic>.from(val));
+    });
+
+    final List<String> parsedBoosters = [];
+    if (json['boosterMatchIds'] != null) {
+      final list = json['boosterMatchIds'] as List<dynamic>;
+      parsedBoosters.addAll(list.map((e) => e.toString()));
+    }
+
+    return PredictionData(
+      username: json['username'] as String? ?? 'User',
+      avatar: json['avatar'] as String? ?? '',
+      championCode: json['championCode'] as String?,
+      goldenBootPlayer: json['goldenBootPlayer'] as String?,
+      goldenBootWinner: json['goldenBootWinner'] as String?,
+      supportedTeam: json['supportedTeam'] as String?,
+      boosterMatchIds: parsedBoosters,
+      preds: preds,
+      pronouns: json['pronouns'] as String?,
+      pronounsHistory: json['pronounsHistory'] != null
+          ? (json['pronounsHistory'] as List<dynamic>)
+              .map((e) => PronounsHistoryItem.fromJson(Map<String, dynamic>.from(e as Map)))
+              .toList()
+          : [],
     );
   }
 
@@ -149,6 +209,8 @@ class PredictionData {
       if (goldenBootPredictedAt != null)
         'goldenBootPredictedAt': goldenBootPredictedAt!.toIso8601String(),
       'preds': predsJson,
+      'pronouns': pronouns,
+      'pronounsHistory': pronounsHistory.map((e) => e.toJson()).toList(),
     };
   }
 }
@@ -472,6 +534,29 @@ class PredictionService {
 
     return finalScore.round();
   }
+
+  static int evaluatePointsWithBooster(WorldCupMatch match, MatchPrediction pred, bool isBoosterActive) {
+    int pointsEarned = evaluatePoints(match, pred);
+    if (isBoosterActive && match.isPlayed && match.t1Score != null && match.t2Score != null) {
+      final actual1 = match.t1Score90 ?? match.t1Score!;
+      final actual2 = match.t2Score90 ?? match.t2Score!;
+      final pred1 = pred.t1Score;
+      final pred2 = pred.t2Score;
+
+      final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+      final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
+      final bool isScoreExact = (actual1 == pred1 && actual2 == pred2);
+      final bool isOutcomeCorrect = (actualOutcome == predOutcome);
+
+      if (isScoreExact) {
+        pointsEarned = (pointsEarned * 2.0).round();
+      } else if (isOutcomeCorrect) {
+        pointsEarned = (pointsEarned * 1.5).round();
+      }
+    }
+    return pointsEarned;
+  }
+
 
   // ─── Résultat du pronostic ───
 

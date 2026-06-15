@@ -17,10 +17,10 @@ class WCUpdateService {
     try {
       final remoteConfig = FirebaseRemoteConfig.instance;
       
-      // Configuration pour forcer la mise à jour rapide des données Firebase pour nos tests
+      // Configuration pour la prod : intervalle min d'1 heure pour les vérifications
       await remoteConfig.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: const Duration(seconds: 0), // 0 pour le dev/test. À remettre à 1h en prod !
+        minimumFetchInterval: const Duration(hours: 1),
       ));
 
       await remoteConfig.fetchAndActivate();
@@ -46,8 +46,12 @@ class WCUpdateService {
     }
   }
 
-  /// Récupérer le lien de téléchargement direct de l'APK (depuis Firebase Remote Config ou fallback)
-  static String getUpdateUrl() {
+  /// Récupérer le lien de téléchargement direct de l'APK.
+  /// Priorité : Firebase Remote Config → API GitHub (URL directe CDN) → fallback.
+  /// L'URL directe CDN évite la chaîne de redirections GitHub qui ouvrirait
+  /// la page HTML de la release au lieu de déclencher le téléchargement APK.
+  static Future<String> getUpdateUrl() async {
+    // 1. Firebase Remote Config (prioritaire)
     try {
       final remoteConfig = FirebaseRemoteConfig.instance;
       final url = remoteConfig.getString('update_url');
@@ -55,7 +59,34 @@ class WCUpdateService {
     } catch (e) {
       debugPrint("Erreur lors de la récupération de update_url (Firebase): $e");
     }
-    return "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk";
+
+    // 2. API GitHub → URL directe CDN de l'asset APK
+    try {
+      const apiUrl = 'https://api.github.com/repos/fnnktkygl-code/mondial_2026/releases/latest';
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {'Accept': 'application/vnd.github+json'},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final assets = data['assets'] as List<dynamic>? ?? [];
+        for (final asset in assets) {
+          final name = asset['name'] as String? ?? '';
+          if (name.endsWith('.apk')) {
+            final downloadUrl = asset['browser_download_url'] as String? ?? '';
+            if (downloadUrl.isNotEmpty) {
+              debugPrint('URL directe APK depuis GitHub API: $downloadUrl');
+              return downloadUrl;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération de l\'URL APK via GitHub API: $e');
+    }
+
+    // 3. Fallback : URL de redirection (peut ouvrir le navigateur)
+    return 'https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk';
   }
 
   /// Ancienne méthode non-bloquante (facultative) conservée si vous l'utilisez ailleurs

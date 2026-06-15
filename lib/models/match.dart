@@ -280,7 +280,13 @@ class WorldCupMatch {
   // null assertion crash (`t1Score!`) in your standings loops.
   bool get isPlayed => t1Score != null && t2Score != null;
 
+  bool get isFinished => status == 'FINISHED' || status == 'FINAL';
+
   bool get isLive => status == 'IN_PLAY' || status == 'PAUSED';
+
+  bool get isFuture => !isLive && !isFinished && (t1Score == null);
+
+  bool get isGroupStage => stage == null || stage!.isEmpty;
 
   bool get isKnockout {
     if (_isKnockoutOverride != null) return _isKnockoutOverride;

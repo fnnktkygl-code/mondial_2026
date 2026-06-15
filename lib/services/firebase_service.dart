@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'prediction_service.dart';
-import '../models/match.dart';
 import '../app_constants.dart';
 
 class WCFirebaseService {
@@ -55,6 +54,8 @@ class WCFirebaseService {
     int guruCount = 0,
     String avatar = '',
     bool isHidden = false,
+    String? pronouns,
+    List<Map<String, dynamic>>? pronounsHistory,
   }) async {
     final uid = await getOrCreateUserId();
     final deviceId = await _getStableDeviceId();
@@ -74,6 +75,8 @@ class WCFirebaseService {
     if (username != null) data['username'] = username;
     if (supportedTeam != null) data['supportedTeam'] = supportedTeam;
     if (points != null) data['points'] = points;
+    if (pronouns != null) data['pronouns'] = pronouns;
+    if (pronounsHistory != null) data['pronounsHistory'] = pronounsHistory;
 
     await docRef.set(data, SetOptions(merge: true));
   }
@@ -133,6 +136,19 @@ class WCFirebaseService {
         .orderBy('points', descending: true)
         .limit(100) // Increase limit since we filter client side
         .snapshots();
+  }
+
+  /// Fetches a user's full profile and predictions by UID.
+  static Future<Map<String, dynamic>?> getUserProfile(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+    } catch (e) {
+      debugPrint("Error fetching user profile: $e");
+    }
+    return null;
   }
 
   static Future<String> _getStableDeviceId() async {
@@ -203,6 +219,18 @@ class WCFirebaseService {
         final streak = data['streak'] as int? ?? 0;
         final guruCount = data['guruCount'] as int? ?? 0;
         final isHidden = data['isHidden'] as bool? ?? false;
+        final pronouns = data['pronouns'] as String?;
+        final rawPronounsHistory = data['pronounsHistory'] as List<dynamic>?;
+        final List<PronounsHistoryItem> pronounsHistory = [];
+        if (rawPronounsHistory != null) {
+          for (final item in rawPronounsHistory) {
+            try {
+              pronounsHistory.add(PronounsHistoryItem.fromJson(Map<String, dynamic>.from(item as Map)));
+            } catch (e) {
+              debugPrint("RECOVERY: Error parsing pronouns history item: $e");
+            }
+          }
+        }
 
         // 2. Restore Predictions
         final remotePreds = data['predictions'] as Map<String, dynamic>? ?? {};
@@ -226,6 +254,8 @@ class WCFirebaseService {
           championCode: championCode,
           goldenBootPlayer: goldenBootPlayer,
           preds: predsMap,
+          pronouns: pronouns,
+          pronounsHistory: pronounsHistory,
         );
 
         // Save local predictions
@@ -241,6 +271,10 @@ class WCFirebaseService {
           guruCount: guruCount,
           avatar: avatar,
           isHidden: isHidden,
+          pronouns: pronouns,
+          pronounsHistory: rawPronounsHistory != null
+              ? List<Map<String, dynamic>>.from(rawPronounsHistory.map((e) => Map<String, dynamic>.from(e as Map)))
+              : null,
         );
 
         // Write the predictions sub-object to Firestore users/{new_uid} too
