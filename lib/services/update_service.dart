@@ -98,7 +98,6 @@ class WCUpdateService {
         final data = json.decode(response.body);
         final String latestVersion = data['version'] ?? '1.0.0';
         final int latestBuild = int.tryParse(data['buildNumber']?.toString() ?? '0') ?? 0;
-        final String downloadUrl = data['url'] ?? '';
         final String releaseNotes = data['releaseNotes']?[lang] ?? data['releaseNotes']?['en'] ?? '';
 
         final packageInfo = await PackageInfo.fromPlatform();
@@ -107,8 +106,10 @@ class WCUpdateService {
         final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
 
         if (_isNewer(latestVersion, latestBuild, currentVersion, currentBuild)) {
+          // Resolve direct URL dynamically via getUpdateUrl (resolves assets from GitHub API)
+          final String resolvedUrl = await getUpdateUrl();
           if (context.mounted) {
-            _showUpdateDialog(context, lang, latestVersion, releaseNotes, downloadUrl);
+            _showUpdateDialog(context, lang, latestVersion, releaseNotes, resolvedUrl);
           }
         }
       }

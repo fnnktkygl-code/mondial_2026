@@ -1481,7 +1481,6 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                       _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieRankings'), analysis.rankingAnalysis, Icons.trending_up),
                       _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieOdds'), analysis.oddsAnalysis, Icons.analytics_outlined),
                       _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieHistory'), analysis.historyAnalysis, Icons.history),
-                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieSentiment'), analysis.sentimentAnalysis, Icons.insert_emoticon),
                       _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieForm'), analysis.formAnalysis, Icons.bolt),
                       _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieScorers'), analysis.scorerReasoning, Icons.sports_soccer),
                       _buildSourcesSection(analysis.sources),

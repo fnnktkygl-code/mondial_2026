@@ -47,7 +47,18 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   final _groupsController = TextEditingController(text: '10');
   final _levelController = TextEditingController(text: '3');
   final _geminiApiKeyController = TextEditingController();
-  final _geminiModelController = TextEditingController();
+  final _geminiModelController = TextEditingController(); // kept for the test connection call
+  String _selectedModel = 'gemini-2.5-flash';
+  static const List<String> _validModels = [
+    'gemini-3.1-flash-lite',
+    'gemini-3.1-flash-image-preview',
+    'gemini-3.1-pro-preview',
+    'gemini-3.5-flash',
+    'gemini-2.5-flash',
+    'gemini-2.5-pro',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
+  ];
   bool _isLoading = false;
 
   @override
@@ -72,11 +83,15 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     final model = await GenieGeminiService.getModel();
     _geminiApiKeyController.text = key;
     _geminiModelController.text = model;
+    setState(() {
+      _selectedModel = _validModels.contains(model) ? model : 'gemini-2.5-flash';
+    });
   }
 
   Future<void> _saveGeminiSettings() async {
     await GenieGeminiService.saveApiKey(_geminiApiKeyController.text);
-    await GenieGeminiService.saveModel(_geminiModelController.text);
+    await GenieGeminiService.saveModel(_selectedModel);
+    _geminiModelController.text = _selectedModel;
     _showSnackBar('Paramètres Gemini sauvegardés !');
   }
 
@@ -124,13 +139,15 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('genie_gemini_predictions');
+      await prefs.remove('_genie_last_run_day');   // Reset once-per-day guard
+      await prefs.remove('_genie_last_429_at');    // Reset 2h cooldown guard
       final keys = prefs.getKeys();
       for (final k in keys) {
         if (k.startsWith('genie_gemini_analysis_')) {
           await prefs.remove(k);
         }
       }
-      _showSnackBar('Cache Genie Gemini réinitialisé. Régénération...');
+      _showSnackBar('Cache Genie Gemini réinitialisé. Régénération des matchs du jour...');
       
       final matches = await ApiService.loadMatches(forceRefresh: true);
       await GenieGeminiService.loadBotData(matches);
@@ -889,13 +906,18 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
               obscureText: true,
             ),
             const SizedBox(height: 10),
-            TextField(
-              controller: _geminiModelController,
+            DropdownButtonFormField<String>(
+              value: _selectedModel,
               decoration: const InputDecoration(
                 labelText: 'Modèle Gemini',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.android),
               ),
+              items: _validModels.map((m) => DropdownMenuItem(
+                value: m,
+                child: Text(m, style: const TextStyle(fontSize: 13)),
+              )).toList(),
+              onChanged: (v) => setState(() => _selectedModel = v ?? _selectedModel),
             ),
             const SizedBox(height: 12),
             Row(

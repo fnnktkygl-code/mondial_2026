@@ -139,12 +139,19 @@ class EspnApiService {
     }
   }
 
+  static final Map<String, Map<String, dynamic>> _summaryCache = {};
+
+  static Map<String, dynamic>? getCachedSummary(String espnEventId) {
+    return _summaryCache[espnEventId];
+  }
+
   static Future<WorldCupMatch?> fetchMatchSummary(String espnEventId) async {
     try {
       final url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=$espnEventId';
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        _summaryCache[espnEventId] = data;
         if (data['header'] == null) { return null; }
         
         final competition = data['header']['competitions'][0];

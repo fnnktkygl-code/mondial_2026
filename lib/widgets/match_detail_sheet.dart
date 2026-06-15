@@ -70,6 +70,39 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   bool _localBoosterActive = false;
   int _lineupSelectedTeamIndex = 0;
 
+  PredictionData? _botData;
+  bool _isLoadingBotData = false;
+
+  Future<void> _loadBotData() async {
+    if (_isLoadingBotData) return;
+    setState(() => _isLoadingBotData = true);
+    try {
+      final data = await GenieGeminiService.loadBotData(widget.allMatches, lang: widget.lang);
+      if (mounted) {
+        setState(() {
+          _botData = data;
+          _isLoadingBotData = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingBotData = false);
+      }
+    }
+  }
+
+  void _applyGeniePrediction(MatchPrediction botPred) {
+    setState(() {
+      _outcomeOnly = botPred.outcomeOnly;
+      _localT1Score = botPred.t1Score;
+      _localT2Score = botPred.t2Score;
+      _localEtWinner = botPred.extraTimeWinner;
+      _localPkWinner = botPred.penaltyWinner;
+      _localPredictedScorers = Map.from(botPred.predictedScorers);
+    });
+    HapticFeedback.mediumImpact();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +114,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     _localBoosterActive = widget.boosterMatchIds.contains(_matchState.id);
     _startCountdown();
     _refreshMatchData(); // Immediate fetch for the latest details
+    _loadBotData();
 
     _pulseController = AnimationController(
       vsync: this,
@@ -604,6 +638,231 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     );
   }
 
+  Widget _buildPredictionHelperRow() {
+    final botPred = _botData?.matchPredictions[_matchState.id];
+    
+    // Parse ESPN odds to get favorite
+    String? espnId;
+    if (_matchState.id.startsWith('espn_')) {
+      espnId = _matchState.id.replaceFirst('espn_', '');
+    } else if (_matchState.espnId != null && _matchState.espnId!.isNotEmpty) {
+      espnId = _matchState.espnId;
+    }
+    
+    Map<String, dynamic>? rawSummary;
+    if (espnId != null) {
+      rawSummary = EspnApiService.getCachedSummary(espnId);
+    }
+    
+    // Calculate market favorite
+    String? favText;
+    int? favT1Score;
+    int? favT2Score;
+    
+    if (rawSummary != null) {
+      final oddsList = rawSummary['odds'] as List<dynamic>?;
+      Map<String, dynamic>? dkOdds;
+      if (oddsList != null && oddsList.isNotEmpty) {
+        try {
+          dkOdds = oddsList.firstWhere(
+            (o) => o['provider']?['name']?.toString().toLowerCase() == 'draftkings',
+            orElse: () => oddsList[0],
+          ) as Map<String, dynamic>?;
+        } catch (_) {}
+      }
+      
+      if (dkOdds != null) {
+        final homeMl = dkOdds['homeTeamOdds']?['moneyLine'] != null ? (dkOdds['homeTeamOdds']!['moneyLine'] as num).toInt() : null;
+        final awayMl = dkOdds['awayTeamOdds']?['moneyLine'] != null ? (dkOdds['awayTeamOdds']!['moneyLine'] as num).toInt() : null;
+        final drawMl = dkOdds['drawOdds']?['moneyLine'] != null ? (dkOdds['drawOdds']!['moneyLine'] as num).toInt() : null;
+        
+        if (homeMl != null && awayMl != null) {
+          final homeDec = _moneylineToDecimal(homeMl);
+          final awayDec = _moneylineToDecimal(awayMl);
+          final drawDec = drawMl != null ? _moneylineToDecimal(drawMl) : 2.5;
+          
+          final homeImp = 1 / homeDec;
+          final awayImp = 1 / awayDec;
+          final drawImp = 1 / drawDec;
+          final totalImp = homeImp + awayImp + drawImp;
+          
+          final homePct = (homeImp / totalImp) * 100;
+          final awayPct = (awayImp / totalImp) * 100;
+          
+          final t1Name = AppTranslations.getTeam(widget.lang, _matchState.t1);
+          final t2Name = AppTranslations.getTeam(widget.lang, _matchState.t2);
+          
+          if (homePct > awayPct + 5) {
+            favText = '$t1Name (${homePct.round()}%)';
+            favT1Score = 2;
+            favT2Score = 1;
+          } else if (awayPct > homePct + 5) {
+            favText = '$t2Name (${awayPct.round()}%)';
+            favT1Score = 1;
+            favT2Score = 2;
+          } else {
+            favText = widget.lang == 'fr' ? 'Serré' : (widget.lang == 'es' ? 'Empate/Serré' : 'Tight');
+            favT1Score = 1;
+            favT2Score = 1;
+          }
+        }
+      }
+    }
+    final botPredCopy = botPred;
+    final favTextCopy = favText;
+    final f1 = favT1Score;
+    final f2 = favT2Score;
+    
+    if (botPredCopy == null && favTextCopy == null) return const SizedBox.shrink();
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.lightbulb_outline, color: AppColors.accent, size: 13),
+              const SizedBox(width: 6),
+              Text(
+                (widget.lang == 'fr' 
+                    ? 'Aide au pronostic (tap pour appliquer)' 
+                    : (widget.lang == 'es' ? 'Ayuda de pronóstico (toca para aplicar)' : 'Prediction Helper (toca para aplicar)')).toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.textDim,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (favTextCopy != null && f1 != null && f2 != null)
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (_outcomeOnly) {
+                            if (f1 > f2) {
+                              _localT1Score = 1;
+                              _localT2Score = 0;
+                            } else if (f1 < f2) {
+                              _localT1Score = 0;
+                              _localT2Score = 1;
+                            } else {
+                              _localT1Score = 0;
+                              _localT2Score = 0;
+                            }
+                          } else {
+                            _localT1Score = f1;
+                            _localT2Score = f2;
+                            if (_localT1Score != _localT2Score) {
+                              _localEtWinner = null;
+                              _localPkWinner = null;
+                            }
+                          }
+                        });
+                        HapticFeedback.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: AppColors.card,
+                            content: Text(
+                              widget.lang == 'fr'
+                                  ? 'Tendance du marché appliquée !'
+                                  : 'Market trend applied!',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardDark,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.borderMid),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.analytics_outlined, color: AppColors.accent, size: 14),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '${widget.lang == 'fr' ? 'Cotes' : 'Odds'} : $favTextCopy',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (favTextCopy != null && botPredCopy != null) const SizedBox(width: 8),
+              if (botPredCopy != null)
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        _applyGeniePrediction(botPredCopy);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: AppColors.card,
+                            content: Text(
+                              widget.lang == 'fr'
+                                  ? 'Pronostic de Genie appliqué !'
+                                  : 'Genie prediction applied!',
+                              style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
+                            ),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardDark,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.cyan.withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.psychology, color: Colors.cyanAccent, size: 14),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                botPredCopy.outcomeOnly
+                                    ? 'Genie : ${botPredCopy.t1Score > botPredCopy.t2Score ? AppTranslations.getTeam(widget.lang, _matchState.t1) : (botPredCopy.t1Score < botPredCopy.t2Score ? AppTranslations.getTeam(widget.lang, _matchState.t2) : AppTranslations.get(widget.lang, 'drawLabel'))}'
+                                    : 'Genie : ${botPredCopy.t1Score}-${botPredCopy.t2Score}',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPredictionControlCard() {
     final bool isLocked = PredictionService.isPredictionLocked(widget.match);
 
@@ -761,6 +1020,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               _buildModeToggle(false, AppTranslations.get(widget.lang, 'predictionModeExactScore'), Icons.track_changes_outlined),
             ],
           ),
+          _buildPredictionHelperRow(),
           const SizedBox(height: 24),
           if (_outcomeOnly) ...[
             Row(
@@ -2594,6 +2854,8 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                   Center(child: _buildCountdownWidget()),
                   const SizedBox(height: 4),
                   _buildPredictionControlCard(),
+                  const SizedBox(height: 16),
+                  _buildEspnInsightsSection(),
                   const SizedBox(height: 20),
                   if (_matchState.isPlayed && _matchState.isKnockout && (_matchState.wentToET == true || _matchState.wentToPK == true)) ...[
                     _buildScoreBreakdown(),
@@ -2831,6 +3093,370 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     );
   }
 
+  String _espnText(String key) {
+    const texts = {
+      'fr': {
+        'insightsTitle': '📊 ANALYSES & COTES (ESPN)',
+        'oddsProvider': 'Cotes DraftKings',
+        'recentForm': 'Forme Récente (5 derniers matchs)',
+        'latestNews': 'Dernières Actualités',
+        'win': 'Victoire',
+        'draw': 'Nul',
+        'loss': 'Défaite',
+      },
+      'en': {
+        'insightsTitle': '📊 INSIGHTS & ODDS (ESPN)',
+        'oddsProvider': 'DraftKings Market Odds',
+        'recentForm': 'Recent Form (Last 5 matches)',
+        'latestNews': 'Latest News',
+        'win': 'Win',
+        'draw': 'Draw',
+        'loss': 'Loss',
+      },
+      'es': {
+        'insightsTitle': '📊 ANÁLISIS Y CUOTAS (ESPN)',
+        'oddsProvider': 'Cuotas de DraftKings',
+        'recentForm': 'Forma Reciente (Últimos 5 partidos)',
+        'latestNews': 'Últimas Noticias',
+        'win': 'Victoria',
+        'draw': 'Empate',
+        'loss': 'Derrota',
+      }
+    };
+    final lang = widget.lang;
+    return texts[lang]?[key] ?? texts['en']![key]!;
+  }
+
+  Widget _buildEspnInsightsSection() {
+    String? espnId;
+    if (_matchState.id.startsWith('espn_')) {
+      espnId = _matchState.id.replaceFirst('espn_', '');
+    } else if (_matchState.espnId != null && _matchState.espnId!.isNotEmpty) {
+      espnId = _matchState.espnId;
+    }
+    if (espnId == null) return const SizedBox.shrink();
+    final rawSummary = EspnApiService.getCachedSummary(espnId);
+    if (rawSummary == null) return const SizedBox.shrink();
+
+    // 1. Parse Odds
+    final oddsList = rawSummary['odds'] as List<dynamic>?;
+    Map<String, dynamic>? dkOdds;
+    if (oddsList != null && oddsList.isNotEmpty) {
+      try {
+        dkOdds = oddsList.firstWhere(
+          (o) => o['provider']?['name']?.toString().toLowerCase() == 'draftkings',
+          orElse: () => oddsList[0],
+        ) as Map<String, dynamic>?;
+      } catch (_) {}
+    }
+
+    // 2. Parse Form / lastFiveGames
+    final lastFive = rawSummary['lastFiveGames'] as List<dynamic>?;
+    
+    // 3. Parse News
+    final news = rawSummary['news'] as Map<String, dynamic>?;
+    final articles = news != null ? news['articles'] as List<dynamic>? : null;
+
+    // Check if we have anything to show
+    final hasOdds = dkOdds != null && dkOdds['details'] != null;
+    final hasForm = lastFive != null && lastFive.isNotEmpty;
+    final hasNews = articles != null && articles.isNotEmpty;
+
+    if (!hasOdds && !hasForm && !hasNews) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            title: Row(
+              children: [
+                const Icon(Icons.analytics_outlined, color: AppColors.accent, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  _espnText('insightsTitle'),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              if (hasOdds) ...[
+                _buildOddsInsight(dkOdds),
+                const SizedBox(height: 16),
+              ],
+              if (hasForm) ...[
+                _buildFormInsight(lastFive),
+                const SizedBox(height: 16),
+              ],
+              if (hasNews) ...[
+                _buildNewsInsight(articles),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOddsInsight(Map<String, dynamic> dkOdds) {
+    final t1Code = _matchState.t1;
+    final t2Code = _matchState.t2;
+    final t1Name = AppTranslations.getTeam(widget.lang, t1Code);
+    final t2Name = AppTranslations.getTeam(widget.lang, t2Code);
+
+    final homeOddsMap = dkOdds['homeTeamOdds'] as Map<String, dynamic>?;
+    final awayOddsMap = dkOdds['awayTeamOdds'] as Map<String, dynamic>?;
+    final drawOddsMap = dkOdds['drawOdds'] as Map<String, dynamic>?;
+
+    final homeMl = homeOddsMap?['moneyLine'] != null ? (homeOddsMap!['moneyLine'] as num).toInt() : null;
+    final awayMl = awayOddsMap?['moneyLine'] != null ? (awayOddsMap!['moneyLine'] as num).toInt() : null;
+    final drawMl = drawOddsMap?['moneyLine'] != null ? (drawOddsMap!['moneyLine'] as num).toInt() : null;
+
+    double? homeDec = homeMl != null ? _moneylineToDecimal(homeMl) : null;
+    double? awayDec = awayMl != null ? _moneylineToDecimal(awayMl) : null;
+    double? drawDec = drawMl != null ? _moneylineToDecimal(drawMl) : null;
+
+    final overUnder = dkOdds['overUnder'] as num?;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _espnText('oddsProvider'),
+              style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+            if (overUnder != null)
+              Text(
+                'Over/Under : $overUnder',
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(child: _buildOddsValueCard(t1Name, homeDec, homeMl)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildOddsValueCard(_espnText('draw'), drawDec, drawMl)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildOddsValueCard(t2Name, awayDec, awayMl)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  double _moneylineToDecimal(int ml) {
+    if (ml > 0) {
+      return 1 + (ml / 100);
+    } else if (ml < 0) {
+      return 1 + (100 / ml.abs());
+    }
+    return 1.0;
+  }
+
+  Widget _buildOddsValueCard(String label, double? dec, int? ml) {
+    final decStr = dec != null ? dec.toStringAsFixed(2) : '-';
+    final mlStr = ml != null ? (ml > 0 ? '+$ml' : '$ml') : '';
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderMid),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            decStr,
+            style: const TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w900),
+          ),
+          if (mlStr.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              mlStr,
+              style: const TextStyle(color: AppColors.textDim, fontSize: 9, fontFamily: 'monospace'),
+            ),
+          ]
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormInsight(List<dynamic> lastFive) {
+    if (lastFive.length < 2) return const SizedBox.shrink();
+    
+    final t1Container = lastFive[0];
+    final t2Container = lastFive[1];
+    
+    final t1Events = t1Container['events'] as List<dynamic>? ?? [];
+    final t2Events = t2Container['events'] as List<dynamic>? ?? [];
+
+    final t1Code = _matchState.t1;
+    final t2Code = _matchState.t2;
+    final t1Name = AppTranslations.getTeam(widget.lang, t1Code);
+    final t2Name = AppTranslations.getTeam(widget.lang, t2Code);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _espnText('recentForm'),
+          style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        _buildTeamFormRow(t1Name, t1Code, t1Events),
+        const SizedBox(height: 12),
+        _buildTeamFormRow(t2Name, t2Code, t2Events),
+      ],
+    );
+  }
+
+  Widget _buildTeamFormRow(String teamName, String teamCode, List<dynamic> events) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Text(
+              teamName,
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: events.map((e) {
+            final result = e['gameResult']?.toString() ?? 'D';
+            final score = e['score']?.toString() ?? '';
+            final opponent = e['opponent']?['displayName']?.toString() ?? '';
+            
+            Color color;
+            String text;
+            if (result == 'W') {
+              color = const Color(0xFF2E7D32);
+              text = widget.lang == 'fr' ? 'V' : 'W';
+            } else if (result == 'L') {
+              color = const Color(0xFFC62828);
+              text = widget.lang == 'fr' ? 'D' : 'L';
+            } else {
+              color = const Color(0xFF757575);
+              text = widget.lang == 'fr' ? 'N' : (widget.lang == 'es' ? 'E' : 'D');
+            }
+
+            final tooltipMessage = '$score vs $opponent';
+
+            return Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: Tooltip(
+                message: tooltipMessage,
+                preferBelow: false,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    text,
+                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewsInsight(List<dynamic> articles) {
+    final displayArticles = articles.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _espnText('latestNews'),
+          style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Column(
+          children: displayArticles.map((art) {
+            final headline = art['headline']?.toString() ?? '';
+            final description = art['description']?.toString() ?? '';
+            
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.cardDark,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderMid),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      headline,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        height: 1.3,
+                      ),
+                    ),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildGenieOpinion() {
     if (!kIsStaging) return const SizedBox.shrink();
     return FutureBuilder<List<dynamic>>(
@@ -3013,7 +3639,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieRankings'), analysis.rankingAnalysis, Icons.trending_up),
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieOdds'), analysis.oddsAnalysis, Icons.analytics_outlined),
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieHistory'), analysis.historyAnalysis, Icons.history),
-                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieSentiment'), analysis.sentimentAnalysis, Icons.insert_emoticon),
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieForm'), analysis.formAnalysis, Icons.bolt),
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieScorers'), analysis.scorerReasoning, Icons.sports_soccer),
                               _buildOpinionSourcesSection(analysis.sources),

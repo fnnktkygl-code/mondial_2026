@@ -18,7 +18,6 @@ class GenieAnalysis {
   final String rankingAnalysis;
   final String oddsAnalysis;
   final String historyAnalysis;
-  final String sentimentAnalysis;
   final String formAnalysis;
   final String scorerReasoning;
   final double confidenceScore;
@@ -29,7 +28,6 @@ class GenieAnalysis {
     required this.rankingAnalysis,
     required this.oddsAnalysis,
     required this.historyAnalysis,
-    required this.sentimentAnalysis,
     required this.formAnalysis,
     required this.scorerReasoning,
     required this.confidenceScore,
@@ -41,7 +39,6 @@ class GenieAnalysis {
         'rankingAnalysis': rankingAnalysis,
         'oddsAnalysis': oddsAnalysis,
         'historyAnalysis': historyAnalysis,
-        'sentimentAnalysis': sentimentAnalysis,
         'formAnalysis': formAnalysis,
         'scorerReasoning': scorerReasoning,
         'confidenceScore': confidenceScore,
@@ -66,7 +63,6 @@ class GenieAnalysis {
       rankingAnalysis: json['rankingAnalysis'] as String? ?? '',
       oddsAnalysis: json['oddsAnalysis'] as String? ?? '',
       historyAnalysis: json['historyAnalysis'] as String? ?? '',
-      sentimentAnalysis: json['sentimentAnalysis'] as String? ?? '',
       formAnalysis: json['formAnalysis'] as String? ?? '',
       scorerReasoning: json['scorerReasoning'] as String? ?? '',
       confidenceScore: (json['confidenceScore'] as num?)?.toDouble() ?? 0.5,
@@ -101,7 +97,20 @@ class GenieGeminiService {
 
   static Future<String> getModel() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_modelPrefsKey) ?? _defaultModel;
+    final stored = prefs.getString(_modelPrefsKey) ?? _defaultModel;
+    // Sanitize: strip any accidental 'models/' prefix (the REST URL adds it already)
+    final cleaned = stored.trim().replaceFirst(RegExp(r'^models/'), '');
+    // Normalize common user-visible display names to valid API identifiers
+    const nameMap = <String, String>{
+      'gemini 3.1 flash lite': 'gemini-3.1-flash-lite',
+      'gemini 3.5 flash': 'gemini-3.5-flash',
+      'gemini 3.1 pro preview': 'gemini-3.1-pro-preview',
+      'gemini 2.5 flash': 'gemini-2.5-flash',
+      'gemini 2.5 pro': 'gemini-2.5-pro',
+      'gemini 2.5 flash lite': 'gemini-2.5-flash-lite',
+      'gemini 2.0 flash': 'gemini-2.0-flash',
+    };
+    return nameMap[cleaned.toLowerCase()] ?? cleaned;
   }
 
   static Future<void> saveModel(String model) async {
@@ -225,7 +234,6 @@ class GenieGeminiService {
     PredictionData? botData;
     Map<String, GenieAnalysis> analyses = {};
     Map<String, String> lastRefreshedMatches = {};
-    DateTime? docLastRefreshed;
     
     final botDoc = await _fetchBotDocFromFirestore();
     if (botDoc != null && botDoc.exists) {
@@ -243,8 +251,6 @@ class GenieGeminiService {
       rawRefMap.forEach((key, val) {
         lastRefreshedMatches[key] = val.toString();
       });
-      
-      docLastRefreshed = DateTime.tryParse(data['lastRefreshedAt'] ?? '');
     } else {
       // Offline or doc doesn't exist, read from SharedPreferences
       final cachedJsonStr = prefs.getString(_botPredictionsPrefsKey);
@@ -288,63 +294,118 @@ class GenieGeminiService {
       if (!isTourneyLocked || botData.championCode == null || botData.goldenBootPlayer == null) {
         final needsRefresh = botData.championCode == null || botData.goldenBootPlayer == null;
         if (needsRefresh) {
+          debugPrint('GenieGeminiService: Generating tournament predictions...');
           await _fetchOrGenerateTournamentPredictions(botData, allMatches, lang);
           hasChanges = true;
         }
       }
 
-      // 2. Ensure every match has a prediction & respect dynamic TTL cache refinement
-      for (final match in allMatches) {
-        final String mId = match.id;
-        final existingPred = botData.matchPredictions[mId];
-        final bool isLocked = PredictionService.isPredictionLocked(match);
+      // 2. Match predictions
+      final bool isFallbackMode = apiKey.isEmpty;
+      if (isFallbackMode) {
+        // In fallback mode, generate seeded predictions for any missing matches
+        for (final match in allMatches) {
+          final String mId = match.id;
+          final existingPred = botData.matchPredictions[mId];
+          if (existingPred == null) {
+            final result = _generateSeededFallbackPrediction(match, allMatches, lang);
+            botData.matchPredictions[mId] = result.prediction;
+            analyses[mId] = result.analysis;
+            hasChanges = true;
+          }
+        }
+      } else {
+        // Live API Mode: Today's match predictions only, with daily rate limit
+        final String todayStr = DateTime.now().toLocal().toString().substring(0, 10); // "YYYY-MM-DD"
+        final String lastRunDay = prefs.getString('_genie_last_run_day') ?? '';
+        final String? last429Str = prefs.getString('_genie_last_429_at');
+        final DateTime? last429At = last429Str != null ? DateTime.tryParse(last429Str) : null;
+        final bool in429Cooldown = last429At != null &&
+            DateTime.now().difference(last429At).inHours < 2;
 
-        bool needsPrediction = false;
-        if (existingPred == null) {
-          needsPrediction = true;
-        } else if (!isLocked) {
-          final analysisKey = '$_botAnalysisPrefix$mId';
-          final cachedAnalysis = analyses[mId];
-          if (cachedAnalysis == null) {
-            needsPrediction = true;
+        final List<WorldCupMatch> todayMatches = allMatches.where((m) {
+          final matchDay = m.date.toLocal().toString().substring(0, 10);
+          return matchDay == todayStr;
+        }).toList();
+
+        if (todayMatches.isNotEmpty) {
+          if (lastRunDay == todayStr) {
+            debugPrint('GenieGeminiService: Already ran today ($todayStr). Skipping today\'s matches.');
+          } else if (in429Cooldown) {
+            final remaining = 120 - DateTime.now().difference(last429At!).inMinutes;
+            debugPrint('GenieGeminiService: In 429 cooldown. Retry in ~$remaining min.');
           } else {
-            // Check dynamic cache TTL based on time-to-kickoff
-            final refTimeStr = lastRefreshedMatches[mId] ?? prefs.getString('${analysisKey}_time');
-            final refTime = refTimeStr != null ? DateTime.tryParse(refTimeStr) : docLastRefreshed;
-            
-            if (refTime != null) {
-              final timeToKickoff = match.date.difference(DateTime.now());
-              int cacheTtlHours = 24;
-              if (timeToKickoff.inHours <= 2) {
-                cacheTtlHours = 1; // Refine up to 1 hour before kickoff
-              } else if (timeToKickoff.inHours <= 12) {
-                cacheTtlHours = 3; // Refine every 3 hours as kickoff approaches
-              } else if (timeToKickoff.inHours <= 24) {
-                cacheTtlHours = 6; // Refine every 6 hours on the final day
+            try {
+              int apiCallsThisSession = 0;
+              const Duration interCallDelay = Duration(seconds: 4);
+
+              // Pick only the first unlocked upcoming match for testing
+              final nextMatch = todayMatches.firstWhere(
+                (m) => !PredictionService.isPredictionLocked(m),
+                orElse: () => todayMatches.first,
+              );
+              final matchesToProcess = [nextMatch];
+              debugPrint('GenieGeminiService: [TEST MODE] Processing 1 match: ${nextMatch.t1} vs ${nextMatch.t2}');
+
+              for (final match in matchesToProcess) {
+                final String mId = match.id;
+                final existingPred = botData.matchPredictions[mId];
+                final bool isLocked = PredictionService.isPredictionLocked(match);
+
+                bool needsPrediction = false;
+                if (existingPred == null) {
+                  needsPrediction = true;
+                } else if (!isLocked) {
+                  final analysisKey = '$_botAnalysisPrefix$mId';
+                  final cachedAnalysis = analyses[mId];
+                  if (cachedAnalysis == null) {
+                    needsPrediction = true;
+                  } else {
+                    // Refresh if not already refreshed today
+                    final refTimeStr = lastRefreshedMatches[mId] ?? prefs.getString('${analysisKey}_time');
+                    final refTime = refTimeStr != null ? DateTime.tryParse(refTimeStr) : null;
+                    if (refTime == null || refTime.toLocal().toString().substring(0, 10) != todayStr) {
+                      needsPrediction = true;
+                    }
+                  }
+                }
+
+                if (needsPrediction) {
+                  // Always wait between calls to respect RPM limits
+                  await Future.delayed(interCallDelay);
+                  debugPrint('GenieGeminiService: [${match.t1} vs ${match.t2}] Generating prediction (call ${apiCallsThisSession + 1})');
+                  final result = await _fetchOrGeneratePrediction(match, allMatches, lang);
+                  apiCallsThisSession++;
+                  botData.matchPredictions[mId] = result.prediction;
+                  analyses[mId] = result.analysis;
+                  lastRefreshedMatches[mId] = DateTime.now().toIso8601String();
+
+                  final analysisKey = '$_botAnalysisPrefix$mId';
+                  await prefs.setString(analysisKey, jsonEncode(result.analysis.toJson()));
+                  await prefs.setString('${analysisKey}_time', lastRefreshedMatches[mId]!);
+                  hasChanges = true;
+                }
               }
-              if (DateTime.now().difference(refTime).inHours >= cacheTtlHours) {
-                needsPrediction = true;
+
+              if (apiCallsThisSession > 0) {
+                await prefs.setString('_genie_last_run_day', todayStr);
+                debugPrint('GenieGeminiService: Done. $apiCallsThisSession API call(s) made for $todayStr.');
               }
-            } else {
-              needsPrediction = true;
+            } catch (e) {
+              final errStr = e.toString();
+              final is429 = errStr.contains('429') || errStr.contains('RESOURCE_EXHAUSTED');
+              if (is429) {
+                await prefs.setString('_genie_last_429_at', DateTime.now().toIso8601String());
+                debugPrint('GenieGeminiService: 429 received. 2-hour cooldown started. Will retry automatically after cooldown.');
+              } else {
+                debugPrint('GenieGeminiService: Unexpected error during generation: $e');
+                rethrow;
+              }
             }
           }
         }
-
-        if (needsPrediction) {
-          debugPrint("GenieGeminiService: Generating/refining prediction for match ${match.id} (${match.t1} vs ${match.t2})");
-          final result = await _fetchOrGeneratePrediction(match, allMatches, lang);
-          botData.matchPredictions[mId] = result.prediction;
-          analyses[mId] = result.analysis;
-          lastRefreshedMatches[mId] = DateTime.now().toIso8601String();
-          
-          // Save analysis to local SharedPreferences key
-          final analysisKey = '$_botAnalysisPrefix$mId';
-          await prefs.setString(analysisKey, jsonEncode(result.analysis.toJson()));
-          await prefs.setString('${analysisKey}_time', lastRefreshedMatches[mId]!);
-          hasChanges = true;
-        }
       }
+
 
       if (hasChanges) {
         // Save locally
@@ -552,6 +613,93 @@ class GenieGeminiService {
     return result.analysis;
   }
 
+  // ─── Tournament Context Builder ────────────────────────────────────────────
+
+  /// Builds a factual tournament context block for the Genie prompt, derived
+  /// entirely from already-loaded match data (zero extra API calls).
+  static String _buildTournamentContext(
+    String t1, String t2, String t1Name, String t2Name,
+    WorldCupMatch upcomingMatch, List<WorldCupMatch> allMatches,
+  ) {
+    final now = upcomingMatch.date;
+    final buf = StringBuffer();
+
+    for (final teamEntry in [(t1, t1Name), (t2, t2Name)]) {
+      final code = teamEntry.$1;
+      final name = teamEntry.$2;
+
+      // All completed matches for this team so far in the tournament
+      final played = allMatches.where((m) =>
+        m.isPlayed &&
+        m.id != upcomingMatch.id &&
+        (m.t1 == code || m.t2 == code) &&
+        m.t1Score != null && m.t2Score != null
+      ).toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+
+      if (played.isEmpty) {
+        buf.writeln('$name: No matches played yet in this tournament.');
+        continue;
+      }
+
+      // Tournament aggregate stats
+      int wins = 0, draws = 0, losses = 0;
+      int goalsFor = 0, goalsAgainst = 0, cleanSheets = 0;
+      final Map<String, int> scorers = {};
+
+      for (final m in played) {
+        final isHome = m.t1 == code;
+        final gf = isHome ? m.t1Score! : m.t2Score!;
+        final ga = isHome ? m.t2Score! : m.t1Score!;
+        goalsFor += gf;
+        goalsAgainst += ga;
+        if (ga == 0) cleanSheets++;
+        if (gf > ga) wins++;
+        else if (gf == ga) draws++;
+        else losses++;
+
+        // Aggregate goalscorers
+        for (final g in (m.goals ?? [])) {
+          if ((isHome && g.team == 't1') || (!isHome && g.team == 't2')) {
+            if (!g.isOwnGoal) {
+              scorers[g.scorer] = (scorers[g.scorer] ?? 0) + 1;
+            }
+          }
+        }
+      }
+
+      // Recent form (last 3 matches)
+      final recent = played.reversed.take(3).toList().reversed.toList();
+      final formStr = recent.map((m) {
+        final isHome = m.t1 == code;
+        final gf = isHome ? m.t1Score! : m.t2Score!;
+        final ga = isHome ? m.t2Score! : m.t1Score!;
+        final opp = isHome ? m.t2 : m.t1;
+        final result = gf > ga ? 'W' : (gf == ga ? 'D' : 'L');
+        return '$result $gf-$ga (vs $opp)';
+      }).join(' → ');
+
+      // Rest days since last match
+      final lastMatch = played.last;
+      final restDays = now.difference(lastMatch.date).inHours ~/ 24;
+
+      // Top scorers (max 3)
+      final topScorers = (scorers.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+        .take(3)
+        .map((e) => '${e.key} (${e.value}g)').join(', ');
+
+      buf.writeln('$name — Tournament stats (${played.length} matches):');
+      buf.writeln('  Record: ${wins}W/${draws}D/${losses}L | GF: $goalsFor | GA: $goalsAgainst | Clean sheets: $cleanSheets');
+      buf.writeln('  Recent form: ${formStr.isNotEmpty ? formStr : "N/A"}');
+      buf.writeln('  Rest since last match: $restDays day(s)');
+      if (topScorers.isNotEmpty) buf.writeln('  Top scorers this tournament: $topScorers');
+      buf.writeln();
+    }
+
+    return buf.toString().isEmpty ? '' : '─── LIVE TOURNAMENT STATS (World Cup 2026) ───\n${buf.toString()}';
+  }
+
   // ─── API Communication & Fallback logic ───────────────────────────────────
 
   static Future<({MatchPrediction prediction, GenieAnalysis analysis})> _fetchOrGeneratePrediction(
@@ -564,6 +712,7 @@ class GenieGeminiService {
     }
 
     final model = await getModel();
+    debugPrint('GenieGeminiService: Using model: "$model"');
     final url = Uri.parse("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey");
 
     // Gather context details for the prompt
@@ -579,25 +728,51 @@ class GenieGeminiService {
     final team1Players = PlayerDatabaseService.getPlayersForTeam(team1Name);
     final team2Players = PlayerDatabaseService.getPlayersForTeam(team2Name);
 
-    // Try to load rosters/lineups from ESPN if available
+    // Try to load rosters/lineups and raw summaries from ESPN if available
     MatchLineups? espnLineups = match.lineups;
-    if (espnLineups == null && match.espnId != null && match.espnId!.isNotEmpty) {
-      try {
-        final espnSummary = await EspnApiService.fetchMatchSummary(match.espnId!);
-        if (espnSummary != null && espnSummary.lineups != null) {
-          espnLineups = espnSummary.lineups;
+    String? espnId;
+    if (match.id.startsWith('espn_')) {
+      espnId = match.id.replaceFirst('espn_', '');
+    } else if (match.espnId != null && match.espnId!.isNotEmpty) {
+      espnId = match.espnId;
+    }
+
+    Map<String, dynamic>? rawSummary;
+    if (espnId != null) {
+      rawSummary = EspnApiService.getCachedSummary(espnId);
+      if (rawSummary == null) {
+        try {
+          final summaryMatch = await EspnApiService.fetchMatchSummary(espnId);
+          if (summaryMatch != null) {
+            rawSummary = EspnApiService.getCachedSummary(espnId);
+            if (espnLineups == null && summaryMatch.lineups != null) {
+              espnLineups = summaryMatch.lineups;
+            }
+          }
+        } catch (e) {
+          debugPrint("GenieGeminiService: Failed to fetch summary on-the-fly for match ${match.id}: $e");
         }
-      } catch (e) {
-        debugPrint("GenieGeminiService: Failed to fetch lineups from ESPN for match ${match.id}: $e");
+      } else if (espnLineups == null) {
+        try {
+          final summaryMatch = await EspnApiService.fetchMatchSummary(espnId);
+          if (summaryMatch != null && summaryMatch.lineups != null) {
+            espnLineups = summaryMatch.lineups;
+          }
+        } catch (_) {}
       }
     }
 
     String squadsContext = "";
+    String formationContext = "";
     if (espnLineups != null) {
       final t1Starters = espnLineups.t1Players.where((p) => p.starter).map((p) => "${p.name} (${p.position ?? ''})").toList();
       final t1Bench = espnLineups.t1Players.where((p) => !p.starter).map((p) => p.name).toList();
       final t2Starters = espnLineups.t2Players.where((p) => p.starter).map((p) => "${p.name} (${p.position ?? ''})").toList();
       final t2Bench = espnLineups.t2Players.where((p) => !p.starter).map((p) => p.name).toList();
+
+      if (espnLineups.t1Formation != null || espnLineups.t2Formation != null) {
+        formationContext = "Formations: $team1Name: ${espnLineups.t1Formation ?? 'unknown'} | $team2Name: ${espnLineups.t2Formation ?? 'unknown'}";
+      }
 
       squadsContext = """
 $team1Name OFFICIAL LINEUP (Starters): ${t1Starters.join(', ')}
@@ -615,21 +790,28 @@ Note: If you predict any goalscorers, you MUST select them EXACTLY from these li
 """;
     }
 
+    // Build live tournament context from already-loaded match data (zero extra API calls)
+    final tournamentContext = _buildTournamentContext(match.t1, match.t2, team1Name, team2Name, match, allMatches);
+    final espnPromptContext = _buildEspnPromptContext(rawSummary, lang);
+
     final promptText = """
-You are "Genie Gemini", an expert football analyst, AI sports oracle, and game theorist. Analyze the upcoming FIFA World Cup 2026 match:
+You are "Genie Gemini", an expert football analyst and AI sports oracle. Analyze the upcoming FIFA World Cup 2026 match using the factual data below — do not invent anything not provided here:
+
 Team 1: $team1Name (FIFA Rank: $rank1, Country Code: ${match.t1})
 Team 2: $team2Name (FIFA Rank: $rank2, Country Code: ${match.t2})
 Stage: $stageName
+${formationContext.isNotEmpty ? '$formationContext\n' : ''}
 Odds (implied probabilities):
 - $team1Name win (1): ${odds['1']} decimal odds
 - Draw (X): ${odds['X']} decimal odds
 - $team2Name win (2): ${odds['2']} decimal odds
 
-Match History Fact: $matchupFact
+Head-to-Head Historical Fact: $matchupFact
 
-Here is the squad/lineup context:
+$tournamentContext
+${espnPromptContext.isNotEmpty ? '$espnPromptContext\n' : ''}
+Squad / Lineup:
 $squadsContext
-
 Predict the final score after 90 minutes of play (t1Score and t2Score).
 If this is a knockout match (${match.isKnockout}) AND you predict a draw (t1Score == t2Score), you MUST specify:
 - extraTimeWinner (either 't1', 't2', or null if it goes to penalties)
@@ -643,191 +825,184 @@ Also predict the goalscorers (predictedScorers map with player name as key and n
 Your score predictions affect your leaderboard points. You must manage risk strategically:
 1. Base Outcome: Correctly predicting win/draw/loss awards 50 points * oddsMultiplier (odds clamped to max 5.0).
 2. If `outcomeOnly` is FALSE:
-   - GD Bonus: Correct goal difference awards 25-50 points * oddsMultiplier (GD=0: 25, GD=1: 30, GD=2: 35, GD=3: 40, GD=4: 45, GD>=5: 50). Off-by-one or double blowout (GD>=3) receives 35% near-miss points.
-   - Exact Score Summum Bonus: Correct score awards 100 points * oddsMultiplier * riskFactor. The riskFactor increases exponentially with high scores and high differences (Formula: 1.0 + (abs(t1-t2)*0.4) + (sum(t1+t2)*0.2)). High-scoring exact matches yield massive points but are high risk.
+   - GD Bonus: Correct goal difference awards 25-50 points * oddsMultiplier.
+   - Exact Score Summum Bonus: Correct score awards 100 points * oddsMultiplier * riskFactor.
    - Total Goals Bonus: Correct total goals (if score is wrong) awards 15 points * oddsMultiplier.
    - Scorer Bonus: Correctly predicting goalscorers adds additional points.
-3. If `outcomeOnly` is TRUE:
-   - You only get the Base Outcome points (50 * oddsMultiplier).
-   - No GD, exact score, total goals, or scorer points can be earned.
-   - Strategy: Set `outcomeOnly` to true if the match is highly volatile, unpredictable, has key squad injuries, or a tight tactical setup where predicting an exact scoreline has negative expected value. If you are highly confident, set `outcomeOnly` to false to maximize points.
+3. If `outcomeOnly` is TRUE: Only Base Outcome points. Set this to true if the match is highly volatile or unpredictable.
 
 ─── ADVANCED FOOTBALL ANALYTICS CRITERIA ───
-Do not limit your analysis to basic rankings. Evaluate the match using professional sports analytics:
-- Tactical Clash: How do their formations and tactical philosophies (e.g. low-block vs high-press possession) interact?
-- Quality of Chances (xG): Offensive and defensive expected goals.
-- Individual Matchups: Specific player battles, key injuries, and squad depth.
-- Fatigue & Environment: Rest days disparity, travel distance, and environmental conditions (altitude, heat).
-- Stake & Motivation: Pressure, tournament scenarios, and must-win dynamics.
+Evaluate the match using professional sports analytics:
+- Tactical Clash: formations, high-press vs low-block, possession style.
+- Quality of Chances (xG): offensive and defensive expected goals from tournament data above.
+- Individual Matchups: key player battles and squad depth from the lineups above.
+- Fatigue & Rest: use the rest days data above; consider travel and schedule congestion.
+- Tournament Momentum: use the form and stats from the World Cup above, not assumptions.
 - Set-Pieces & Goalkeeper Form.
 
-Write analysis paragraphs in the requested language: ${lang == 'fr' ? 'French' : lang == 'es' ? 'Spanish' : 'English'}.
-Provide reasoning paragraphs for the following fields:
-- rankingAnalysis: Analysis of FIFA ranks, squad values, tactical lineups, and relative strength.
-- oddsAnalysis: Analysis of betting odds, implied probabilities, and risk-benefit of scoreline vs outcome-only.
-- historyAnalysis: Analysis of head-to-head records and historical matchup facts.
-- sentimentAnalysis: Simulated public opinion, social media vibes, and tournament pressure.
-- formAnalysis: Analysis of recent form, xG trends, fatigue, rest days, and momentum.
-- scorerReasoning: Explanation of your selected goalscorers (if any) and set-piece threats.
-- summaryLine: A concise one-sentence prediction verdict.
+Write analysis paragraphs in: ${lang == 'fr' ? 'French' : lang == 'es' ? 'Spanish' : 'English'}.
+Provide reasoning based ONLY on the factual data provided above for:
+- rankingAnalysis: FIFA ranks, squad values, tactical lineups, relative strength.
+- oddsAnalysis: betting odds, implied probabilities, risk-benefit of scoreline vs outcome-only.
+- historyAnalysis: head-to-head records and historical matchup facts.
+- formAnalysis: recent form in this tournament, goals scored/conceded, rest days, momentum.
+- scorerReasoning: explanation of your selected goalscorers (if any) and set-piece threats.
+- summaryLine: a concise one-sentence prediction verdict.
 
 Also provide a confidenceScore between 0.0 and 1.0.
+
+IMPORTANT: Your entire response MUST be a single valid JSON object (no markdown, no ```json block, no extra text), with these exact keys:
+{"t1Score": int, "t2Score": int, "extraTimeWinner": string_or_null, "penaltyWinner": boolean_or_null, "predictedScorers": {"PlayerName": goals}, "outcomeOnly": bool, "confidenceScore": float, "summaryLine": string, "rankingAnalysis": string, "oddsAnalysis": string, "historyAnalysis": string, "formAnalysis": string, "scorerReasoning": string}
 """;
 
-    try {
-      final requestBody = {
-        "contents": [
-          {
-            "parts": [
-              {"text": promptText}
-            ]
-          }
-        ],
-        "tools": [
-          {
-            "googleSearch": {}
-          }
-        ],
-        "generationConfig": {
-          "responseMimeType": "application/json",
-          "responseSchema": {
-            "type": "OBJECT",
-            "properties": {
-              "t1Score": {"type": "INTEGER"},
-              "t2Score": {"type": "INTEGER"},
-              "extraTimeWinner": {"type": "STRING", "description": "t1, t2, or null"},
-              "penaltyWinner": {"type": "BOOLEAN", "description": "true if team 1 wins penalties, false if team 2"},
-              "predictedScorers": {
-                "type": "OBJECT",
-                "additionalProperties": {"type": "INTEGER"},
-                "description": "Map of player name to goal count, matching keys of team players exactly"
-              },
-              "outcomeOnly": {"type": "BOOLEAN", "description": "Set to true if you are not confident in predicting an exact scoreline and prefer to predict only the general outcome (victory of t1, victory of t2, or draw)"},
-              "confidenceScore": {"type": "NUMBER"},
-              "summaryLine": {"type": "STRING"},
-              "rankingAnalysis": {"type": "STRING"},
-              "oddsAnalysis": {"type": "STRING"},
-              "historyAnalysis": {"type": "STRING"},
-              "sentimentAnalysis": {"type": "STRING"},
-              "formAnalysis": {"type": "STRING"},
-              "scorerReasoning": {"type": "STRING"}
-            },
-            "required": [
-              "t1Score",
-              "t2Score",
-              "confidenceScore",
-              "summaryLine",
-              "rankingAnalysis",
-              "oddsAnalysis",
-              "historyAnalysis",
-              "sentimentAnalysis",
-              "formAnalysis",
-              "scorerReasoning"
-            ]
-          }
-        }
-      };
+    // Attempt 1: with google_search grounding (live data).
+    // Attempt 2: without grounding if 429 (grounding quota exhausted or unsupported on this plan).
+    for (int attempt = 1; attempt <= 2; attempt++) {
+      final bool useGrounding = attempt == 1;
+      if (attempt == 2) {
+        debugPrint('GenieGeminiService: Retrying [${match.t1} vs ${match.t2}] without grounding (grounding quota likely exhausted).');
+      }
 
-      final response = await http
-          .post(
-            url,
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode(requestBody),
-          )
-          .timeout(const Duration(seconds: 12));
+      try {
+        final requestBody = <String, dynamic>{
+          "contents": [
+            {
+              "parts": [
+                {"text": promptText}
+              ]
+            }
+          ],
+          if (useGrounding) "tools": [{"google_search": {}}],
+        };
 
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-        final candidates = decoded['candidates'] as List<dynamic>?;
-        if (candidates != null && candidates.isNotEmpty) {
-          final content = candidates[0]['content'] as Map<String, dynamic>?;
-          final parts = content?['parts'] as List<dynamic>?;
-          if (parts != null && parts.isNotEmpty) {
-            final jsonText = parts[0]['text'] as String?;
-            if (jsonText != null) {
-              final parsedResult = jsonDecode(jsonText.trim()) as Map<String, dynamic>;
-              
-              // Validate Scorers: strip out any that are not in the official squad to prevent crashes
-              final Map<String, int> validatedScorers = {};
-              final rawScorers = parsedResult['predictedScorers'] as Map<String, dynamic>? ?? {};
-              rawScorers.forEach((key, value) {
-                final canonical = PlayerDatabaseService.findCanonicalName(key);
-                if (canonical != null) {
-                  if (espnLineups != null) {
-                    final allRosterNames = espnLineups.t1Players.map((p) => p.name.toLowerCase()).toList()
-                      + espnLineups.t2Players.map((p) => p.name.toLowerCase()).toList();
-                    if (allRosterNames.contains(canonical.toLowerCase())) {
+        final response = await http
+            .post(
+              url,
+              headers: {"Content-Type": "application/json"},
+              body: jsonEncode(requestBody),
+            )
+            .timeout(const Duration(seconds: 45));
+
+        if (response.statusCode == 200) {
+          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          final candidates = decoded['candidates'] as List<dynamic>?;
+          if (candidates != null && candidates.isNotEmpty) {
+            final content = candidates[0]['content'] as Map<String, dynamic>?;
+            final parts = content?['parts'] as List<dynamic>?;
+            if (parts != null && parts.isNotEmpty) {
+              final rawText = parts
+                  .whereType<Map>()
+                  .map((p) => p['text'] as String? ?? '')
+                  .join('')
+                  .trim();
+
+              final jsonText = _extractJsonFromText(rawText);
+              debugPrint('GenieGeminiService: Raw model output for ${match.id}: $rawText');
+
+              if (jsonText != null) {
+                final parsedResult = jsonDecode(jsonText) as Map<String, dynamic>;
+
+                // Validate Scorers: strip out any that are not in the official squad to prevent crashes
+                final Map<String, int> validatedScorers = {};
+                final rawScorers = parsedResult['predictedScorers'] as Map<String, dynamic>? ?? {};
+                rawScorers.forEach((key, value) {
+                  final canonical = PlayerDatabaseService.findCanonicalName(key);
+                  if (canonical != null) {
+                    if (espnLineups != null) {
+                      final allRosterNames = espnLineups.t1Players.map((p) => p.name.toLowerCase()).toList()
+                        + espnLineups.t2Players.map((p) => p.name.toLowerCase()).toList();
+                      if (allRosterNames.contains(canonical.toLowerCase())) {
+                        validatedScorers[canonical] = (value as num).toInt();
+                      }
+                    } else if (team1Players.contains(canonical) || team2Players.contains(canonical)) {
                       validatedScorers[canonical] = (value as num).toInt();
                     }
-                  } else if (team1Players.contains(canonical) || team2Players.contains(canonical)) {
-                    validatedScorers[canonical] = (value as num).toInt();
                   }
-                }
-              });
+                });
 
-              final List<Map<String, String>> sources = [];
-              try {
-                final candidate = candidates[0] as Map<String, dynamic>;
-                final groundingMetadata = candidate['groundingMetadata'] as Map<String, dynamic>?;
-                if (groundingMetadata != null) {
-                  final chunks = groundingMetadata['groundingChunks'] as List<dynamic>?;
-                  if (chunks != null) {
-                    for (final chunk in chunks) {
-                      if (chunk is Map) {
-                        final web = chunk['web'] as Map<String, dynamic>?;
-                        if (web != null) {
-                          final uri = web['uri']?.toString() ?? '';
-                          final title = web['title']?.toString() ?? '';
-                          if (uri.isNotEmpty) {
-                            sources.add({
-                              'title': title.isNotEmpty ? title : uri,
-                              'url': uri,
-                            });
+                final List<Map<String, String>> sources = [];
+                if (useGrounding) {
+                  try {
+                    final candidate = candidates[0] as Map<String, dynamic>;
+                    final groundingMetadata = candidate['groundingMetadata'] as Map<String, dynamic>?;
+                    if (groundingMetadata != null) {
+                      final chunks = groundingMetadata['groundingChunks'] as List<dynamic>?;
+                      if (chunks != null) {
+                        for (final chunk in chunks) {
+                          if (chunk is Map) {
+                            final web = chunk['web'] as Map<String, dynamic>?;
+                            if (web != null) {
+                              final uri = web['uri']?.toString() ?? '';
+                              final title = web['title']?.toString() ?? '';
+                              if (uri.isNotEmpty) {
+                                sources.add({
+                                  'title': title.isNotEmpty ? title : uri,
+                                  'url': uri,
+                                });
+                              }
+                            }
                           }
                         }
                       }
                     }
+                  } catch (e) {
+                    debugPrint("GenieGeminiService: Error parsing grounding metadata: $e");
                   }
                 }
-              } catch (e) {
-                debugPrint("GenieGeminiService: Error parsing grounding metadata: $e");
+
+                final pred = MatchPrediction(
+                  matchId: match.id,
+                  t1Score: (parsedResult['t1Score'] as num).toInt(),
+                  t2Score: (parsedResult['t2Score'] as num).toInt(),
+                  extraTimeWinner: parsedResult['extraTimeWinner'] as String?,
+                  penaltyWinner: parsedResult['penaltyWinner'] as bool?,
+                  predictedScorers: validatedScorers,
+                  outcomeOnly: parsedResult['outcomeOnly'] as bool? ?? false,
+                );
+
+                final analysis = GenieAnalysis(
+                  summaryLine: parsedResult['summaryLine'] as String? ?? '',
+                  rankingAnalysis: parsedResult['rankingAnalysis'] as String? ?? '',
+                  oddsAnalysis: parsedResult['oddsAnalysis'] as String? ?? '',
+                  historyAnalysis: parsedResult['historyAnalysis'] as String? ?? '',
+                  formAnalysis: parsedResult['formAnalysis'] as String? ?? '',
+                  scorerReasoning: parsedResult['scorerReasoning'] as String? ?? '',
+                  confidenceScore: (parsedResult['confidenceScore'] as num?)?.toDouble() ?? 0.5,
+                  sources: sources,
+                );
+
+                return (prediction: pred, analysis: analysis);
               }
-
-              final pred = MatchPrediction(
-                matchId: match.id,
-                t1Score: (parsedResult['t1Score'] as num).toInt(),
-                t2Score: (parsedResult['t2Score'] as num).toInt(),
-                extraTimeWinner: parsedResult['extraTimeWinner'] as String?,
-                penaltyWinner: parsedResult['penaltyWinner'] as bool?,
-                predictedScorers: validatedScorers,
-                outcomeOnly: parsedResult['outcomeOnly'] as bool? ?? false,
-              );
-
-              final analysis = GenieAnalysis(
-                summaryLine: parsedResult['summaryLine'] as String? ?? '',
-                rankingAnalysis: parsedResult['rankingAnalysis'] as String? ?? '',
-                oddsAnalysis: parsedResult['oddsAnalysis'] as String? ?? '',
-                historyAnalysis: parsedResult['historyAnalysis'] as String? ?? '',
-                sentimentAnalysis: parsedResult['sentimentAnalysis'] as String? ?? '',
-                formAnalysis: parsedResult['formAnalysis'] as String? ?? '',
-                scorerReasoning: parsedResult['scorerReasoning'] as String? ?? '',
-                confidenceScore: (parsedResult['confidenceScore'] as num?)?.toDouble() ?? 0.5,
-                sources: sources,
-              );
-
-              return (prediction: pred, analysis: analysis);
             }
           }
         }
+
+        // Check if 429 and we can retry without grounding
+        if (response.statusCode == 429 && useGrounding) {
+          _logQuotaDetails(response.statusCode, response.body);
+          debugPrint('GenieGeminiService: Grounding returned 429. Will retry without grounding.');
+          continue; // go to attempt 2
+        }
+
+        // Non-retryable error
+        final errorBody = response.body;
+        _logQuotaDetails(response.statusCode, errorBody);
+        throw Exception('Gemini API error ${response.statusCode}: ${errorBody.length > 300 ? errorBody.substring(0, 300) : errorBody}');
+
+      } catch (e) {
+        // If this was attempt 1 with a 429 exception (thrown earlier), try attempt 2
+        final errStr = e.toString();
+        if (attempt == 1 && (errStr.contains('429') || errStr.contains('RESOURCE_EXHAUSTED'))) {
+          debugPrint('GenieGeminiService: Grounding 429 caught. Retrying without grounding.');
+          continue;
+        }
+        debugPrint('GenieGeminiService: API Call failed with exception: $e');
+        rethrow;
       }
-      
-      debugPrint("GenieGeminiService: API returned status ${response.statusCode}. Falling back.");
-    } catch (e) {
-      debugPrint("GenieGeminiService: API Call failed: $e. Falling back.");
     }
 
-    // Fallback if API fails
-    return _generateSeededFallbackPrediction(match, allMatches, lang);
+    // Should not reach here
+    throw Exception('GenieGeminiService: All attempts failed for match ${match.id}');
   }
 
   static Future<void> _fetchOrGenerateTournamentPredictions(
@@ -842,6 +1017,7 @@ Also provide a confidenceScore between 0.0 and 1.0.
     }
 
     final model = await getModel();
+    debugPrint('GenieGeminiService: Tournament using model: "$model"');
     final url = Uri.parse("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey");
 
     // Build context
@@ -874,9 +1050,14 @@ Provide:
 - goldenBootPlayer: full player name
 - championReasoning: reasoning why this team wins.
 - goldenBootReasoning: reasoning why this player wins the top scorer.
+
+IMPORTANT: Your entire response MUST be a single valid JSON object (no markdown, no ```json block, no extra text), with these exact keys:
+{"championCode": string, "goldenBootPlayer": string, "championReasoning": string, "goldenBootReasoning": string}
 """;
 
     try {
+      // Tournament prediction: structured reasoning from static context.
+      // No google_search grounding needed (and some models return 429 for unsupported grounding).
       final requestBody = {
         "contents": [
           {
@@ -885,24 +1066,6 @@ Provide:
             ]
           }
         ],
-        "tools": [
-          {
-            "googleSearch": {}
-          }
-        ],
-        "generationConfig": {
-          "responseMimeType": "application/json",
-          "responseSchema": {
-            "type": "OBJECT",
-            "properties": {
-              "championCode": {"type": "STRING"},
-              "goldenBootPlayer": {"type": "STRING"},
-              "championReasoning": {"type": "STRING"},
-              "goldenBootReasoning": {"type": "STRING"}
-            },
-            "required": ["championCode", "goldenBootPlayer", "championReasoning", "goldenBootReasoning"]
-          }
-        }
       };
 
       final response = await http
@@ -911,7 +1074,7 @@ Provide:
             headers: {"Content-Type": "application/json"},
             body: jsonEncode(requestBody),
           )
-          .timeout(const Duration(seconds: 12));
+          .timeout(const Duration(seconds: 45));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;
@@ -920,9 +1083,15 @@ Provide:
           final content = candidates[0]['content'] as Map<String, dynamic>?;
           final parts = content?['parts'] as List<dynamic>?;
           if (parts != null && parts.isNotEmpty) {
-            final jsonText = parts[0]['text'] as String?;
+            final rawText = parts
+                .whereType<Map>()
+                .map((p) => p['text'] as String? ?? '')
+                .join('')
+                .trim();
+            final jsonText = _extractJsonFromText(rawText);
+            debugPrint('GenieGeminiService: Tournament raw output: $rawText');
             if (jsonText != null) {
-              final parsedResult = jsonDecode(jsonText.trim()) as Map<String, dynamic>;
+              final parsedResult = jsonDecode(jsonText) as Map<String, dynamic>;
               
               final code = (parsedResult['championCode'] as String? ?? 'fr').toLowerCase();
               if (WCTeamProfileService.qualifiedTeams.contains(code)) {
@@ -945,11 +1114,100 @@ Provide:
           }
         }
       }
-    } catch (e) {
-      debugPrint("GenieGeminiService: Tournament API Call failed: $e. Falling back.");
-    }
 
-    _generateSeededFallbackTournament(botData, allMatches, lang);
+      final errorBody = response.body;
+      _logQuotaDetails(response.statusCode, errorBody);
+      throw Exception('Gemini Tournament API error ${response.statusCode}: ${errorBody.length > 300 ? errorBody.substring(0, 300) : errorBody}');
+    } catch (e) {
+      debugPrint('GenieGeminiService: Tournament API Call failed with exception: $e');
+      rethrow;
+    }
+  }
+
+  /// Parses the Gemini API error body and logs human-readable quota details.
+  static void _logQuotaDetails(int statusCode, String body) {
+    debugPrint('GenieGeminiService: API returned status $statusCode.');
+    if (statusCode != 429) {
+      debugPrint('GenieGeminiService: Error body: ${body.length > 400 ? body.substring(0, 400) : body}');
+      return;
+    }
+    try {
+      final decoded = jsonDecode(body) as Map<String, dynamic>;
+      final error = decoded['error'] as Map<String, dynamic>?;
+      final message = error?['message'] as String? ?? '';
+      final details = error?['details'] as List<dynamic>? ?? [];
+
+      debugPrint('═══════════════════════════════════════════════════');
+      debugPrint('⚠️  GEMINI 429 — QUOTA EXCEEDED');
+
+      // Infer quota type from message keywords
+      String quotaType = 'unknown quota';
+      if (message.toLowerCase().contains('per minute') || message.toLowerCase().contains('rpm')) {
+        quotaType = 'RPM (requests per minute)';
+      } else if (message.toLowerCase().contains('per day') || message.toLowerCase().contains('rpd')) {
+        quotaType = 'RPD (requests per day)';
+      } else if (message.toLowerCase().contains('token')) {
+        quotaType = 'TPM (tokens per minute)';
+      }
+      debugPrint('   Likely quota type: $quotaType');
+      debugPrint('   API message: $message');
+
+      bool foundViolation = false;
+      for (final detail in details) {
+        final type = (detail as Map<String, dynamic>)['@type'] as String? ?? '';
+        if (type.contains('QuotaFailure')) {
+          foundViolation = true;
+          final violations = detail['violations'] as List<dynamic>? ?? [];
+          for (final v in violations) {
+            final desc = (v as Map<String, dynamic>)['description'] as String? ?? '';
+            final subject = (v)['subject'] as String? ?? '';
+            debugPrint('   Violation: $desc');
+            if (subject.isNotEmpty) debugPrint('   Subject: $subject');
+          }
+        } else if (type.contains('Help')) {
+          final links = detail['links'] as List<dynamic>? ?? [];
+          for (final l in links) {
+            final lMap = l as Map<String, dynamic>;
+            debugPrint('   📎 ${lMap["description"]}: ${lMap["url"]}');
+          }
+        } else if (type.contains('RetryInfo')) {
+          final delay = detail['retryDelay'] as String? ?? '';
+          debugPrint('   ⏱  API-suggested retry after: $delay');
+        }
+      }
+      if (!foundViolation) {
+        debugPrint('   ℹ️  No QuotaFailure details in response (preview model may have unlisted limits).');
+        debugPrint('   👉 Check per-model usage at: https://ai.dev/rate-limit');
+        debugPrint('   👉 Check plan & billing at: https://aistudio.google.com/plan_information');
+      }
+      debugPrint('═══════════════════════════════════════════════════');
+    } catch (_) {
+      // Could not parse 429 body — log raw
+      debugPrint('GenieGeminiService: Raw 429 body: ${body.length > 500 ? body.substring(0, 500) : body}');
+    }
+  }
+
+  // ─── JSON Extraction Helper ──────────────────────────────────────────────
+
+  /// Extracts a JSON object from raw model text, stripping Markdown fences.
+  /// Returns the first valid JSON substring found, or null.
+  static String? _extractJsonFromText(String rawText) {
+    if (rawText.isEmpty) return null;
+    // 1) Try stripping ```json ... ``` or ``` ... ``` fences
+    final fenceRegex = RegExp(r'```(?:json)?\s*([\s\S]*?)```', multiLine: true);
+    final fenceMatch = fenceRegex.firstMatch(rawText);
+    if (fenceMatch != null) {
+      final inner = fenceMatch.group(1)?.trim();
+      if (inner != null && inner.isNotEmpty) return inner;
+    }
+    // 2) Find first { ... } block (greedy, handles nested objects)
+    final start = rawText.indexOf('{');
+    final end = rawText.lastIndexOf('}');
+    if (start != -1 && end != -1 && end > start) {
+      return rawText.substring(start, end + 1);
+    }
+    // 3) Return raw text as-is and let the caller deal with parse errors
+    return rawText;
   }
 
   // ─── Seeded Fallback Generators ──────────────────────────────────────────
@@ -1044,7 +1302,6 @@ Provide:
     String rankingAnalysis = "";
     String oddsAnalysis = "";
     String historyAnalysis = "";
-    String sentimentAnalysis = "";
     String formAnalysis = "";
     String scorerReasoning = "";
 
@@ -1068,8 +1325,7 @@ Provide:
 
       historyAnalysis = matchupFact ?? "Les confrontations historiques entre ces deux nations sont trop rares pour dégager une tendance nette, ce qui laisse place à toutes les spéculations.";
 
-      sentimentAnalysis = "Les réseaux sociaux et l'opinion générale montrent un engouement particulier pour ce choc. La ferveur populaire semble légèrement pencher pour " +
-          (rand.nextBool() ? team1Name : team2Name) + " qui bénéficie d'un fort soutien des supporters neutres.";
+
 
       formAnalysis = "L'état de forme des effectifs suggère un match physique. Les séances d'entraînement récentes révèlent une préparation solide et un moral au beau fixe pour les deux groupes.";
 
@@ -1098,8 +1354,7 @@ Provide:
 
       historyAnalysis = matchupFact ?? "No hay suficientes datos históricos de enfrentamientos entre ambos para prever un patrón claro de comportamiento táctico.";
 
-      sentimentAnalysis = "La afición se muestra dividida, pero la balanza de las redes sociales parece inclinarse levemente hacia " +
-          (rand.nextBool() ? team1Name : team2Name) + " debido al carisma de sus jugadores estrella.";
+
 
       formAnalysis = "El análisis físico indica que ambos combinados llegan con sus plantillas al 100%, enfocándose en la solidez defensiva.";
 
@@ -1129,8 +1384,7 @@ Provide:
 
       historyAnalysis = matchupFact ?? "Head-to-head records between these two sides are sparse, leaving the tactical outcome wide open.";
 
-      sentimentAnalysis = "Social media sentiment is buzzing. Fans are leaning slightly towards " +
-          (rand.nextBool() ? team1Name : team2Name) + " expecting a spectacular display.";
+
 
       formAnalysis = "Team training reports indicate high levels of fitness and intense preparation, suggesting a high-tempo physical matchup.";
 
@@ -1156,7 +1410,6 @@ Provide:
       rankingAnalysis: rankingAnalysis,
       oddsAnalysis: oddsAnalysis,
       historyAnalysis: historyAnalysis,
-      sentimentAnalysis: sentimentAnalysis,
       formAnalysis: formAnalysis,
       scorerReasoning: scorerReasoning,
       confidenceScore: confidence,
@@ -1227,5 +1480,92 @@ Provide:
         return "This player possesses all the traits of an elite goalscorer. Backed by a highly creative midfield, he is poised to receive ample opportunities to claim the top spot.";
       }
     }
+  }
+
+  static String _buildEspnPromptContext(Map<String, dynamic>? rawSummary, String lang) {
+    if (rawSummary == null) return '';
+    final buf = StringBuffer();
+    buf.writeln('─── ESPN REAL-TIME INSIGHTS & DATA ───');
+
+    // 1. Odds Details
+    final oddsList = rawSummary['odds'] as List<dynamic>?;
+    Map<String, dynamic>? dkOdds;
+    if (oddsList != null && oddsList.isNotEmpty) {
+      try {
+        dkOdds = oddsList.firstWhere(
+          (o) => o['provider']?['name']?.toString().toLowerCase() == 'draftkings',
+          orElse: () => oddsList[0],
+        ) as Map<String, dynamic>?;
+      } catch (_) {}
+    }
+
+    if (dkOdds != null) {
+      final details = dkOdds['details']?.toString();
+      final overUnder = dkOdds['overUnder']?.toString();
+      buf.writeln('Betting Market Data (DraftKings):');
+      if (details != null) buf.writeln('  Details/Spread: $details');
+      if (overUnder != null) buf.writeln('  Over/Under Goals: $overUnder');
+      
+      final homeOdds = dkOdds['homeTeamOdds']?['moneyLine'];
+      final awayOdds = dkOdds['awayTeamOdds']?['moneyLine'];
+      final drawOdds = dkOdds['drawOdds']?['moneyLine'];
+      
+      double? homeDec = homeOdds is int ? _moneylineToDecimal(homeOdds) : null;
+      double? awayDec = awayOdds is int ? _moneylineToDecimal(awayOdds) : null;
+      double? drawDec = drawOdds is int ? _moneylineToDecimal(drawOdds) : null;
+
+      if (homeOdds != null || awayOdds != null || drawOdds != null) {
+        buf.write('  Moneyline: Home: $homeOdds');
+        if (homeDec != null) buf.write(' (${homeDec.toStringAsFixed(2)} decimal)');
+        buf.write(' | Draw: $drawOdds');
+        if (drawDec != null) buf.write(' (${drawDec.toStringAsFixed(2)} decimal)');
+        buf.write(' | Away: $awayOdds');
+        if (awayDec != null) buf.write(' (${awayDec.toStringAsFixed(2)} decimal)');
+        buf.writeln();
+      }
+    }
+
+    // 2. Recent form
+    final lastFive = rawSummary['lastFiveGames'] as List<dynamic>?;
+    if (lastFive != null && lastFive.isNotEmpty) {
+      buf.writeln('Recent Form (Past games before this tournament):');
+      for (final container in lastFive) {
+        final teamName = container['team']?['displayName']?.toString() ?? 'Unknown';
+        final events = container['events'] as List<dynamic>? ?? [];
+        final formList = events.map((e) {
+          final result = e['gameResult']?.toString() ?? 'D';
+          final score = e['score']?.toString() ?? '';
+          final opp = e['opponent']?['displayName']?.toString() ?? '';
+          return '$result $score vs $opp';
+        }).toList();
+        buf.writeln('  $teamName: ${formList.isNotEmpty ? formList.join(', ') : "N/A"}');
+      }
+    }
+
+    // 3. News Articles
+    final news = rawSummary['news'] as Map<String, dynamic>?;
+    final articles = news != null ? news['articles'] as List<dynamic>? : null;
+    if (articles != null && articles.isNotEmpty) {
+      buf.writeln('Latest News Articles & Headlines:');
+      for (final art in articles.take(3)) {
+        final headline = art['headline']?.toString() ?? '';
+        final description = art['description']?.toString() ?? '';
+        buf.writeln('  - Headline: $headline');
+        if (description.isNotEmpty) {
+          buf.writeln('    Description: $description');
+        }
+      }
+    }
+
+    return buf.toString();
+  }
+
+  static double _moneylineToDecimal(int ml) {
+    if (ml > 0) {
+      return 1 + (ml / 100);
+    } else if (ml < 0) {
+      return 1 + (100 / ml.abs());
+    }
+    return 1.0;
   }
 }

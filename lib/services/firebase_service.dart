@@ -177,9 +177,33 @@ class WCFirebaseService {
   /// by querying Firestore for a document matching the device ID.
   static Future<bool> restoreProfileFromDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
-    // Only attempt recovery if we haven't done it for this installation
-    if (prefs.getBool('wc2026_device_restored') == true) {
-      return false;
+    
+    final bool alreadyRestored = prefs.getBool('wc2026_device_restored') == true;
+    
+    // We only skip if already restored AND the local profile is NOT empty.
+    // If the local profile IS empty (e.g. no predictions, no username, no team),
+    // we should still try to restore it to heal the empty profile state.
+    if (alreadyRestored) {
+      final localPredsJson = prefs.getString(kPredictionsKey);
+      bool isLocalEmpty = true;
+      if (localPredsJson != null) {
+        try {
+          final localData = PredictionData.fromJson(jsonDecode(localPredsJson));
+          final hasUsername = localData.username.isNotEmpty &&
+              localData.username != 'Tactitien' &&
+              localData.username != 'User';
+          final hasPreds = localData.matchPredictions.isNotEmpty;
+          final hasTeam = localData.supportedTeam != null && localData.supportedTeam!.isNotEmpty;
+          final hasChamp = localData.championCode != null && localData.championCode!.isNotEmpty;
+          if (hasUsername || hasPreds || hasTeam || hasChamp) {
+            isLocalEmpty = false;
+          }
+        } catch (_) {}
+      }
+      
+      if (!isLocalEmpty) {
+        return false;
+      }
     }
 
     final deviceId = await _getStableDeviceId();
@@ -190,26 +214,73 @@ class WCFirebaseService {
     }
 
     try {
+      // Fetch all documents matching this deviceId.
+      // We don't limit(1) or orderBy(updatedAt) because we want to perform client-side ranking.
       final query = await _firestore
           .collection('users')
           .where('deviceId', isEqualTo: deviceId)
-          .orderBy('updatedAt', descending: true)
-          .limit(1)
           .get()
           .timeout(const Duration(seconds: 8));
 
       if (query.docs.isNotEmpty) {
-        final doc = query.docs.first;
+        final docs = List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(query.docs);
+        
+        // Sort documents client-side to find the "best" profile.
+        docs.sort((a, b) {
+          final aData = a.data();
+          final bData = b.data();
+
+          // 1. Rank by predictions count
+          final aPreds = aData['predictions'] as Map<String, dynamic>? ?? {};
+          final bPreds = bData['predictions'] as Map<String, dynamic>? ?? {};
+          if (aPreds.length != bPreds.length) {
+            return bPreds.length.compareTo(aPreds.length); // Descending (more is better)
+          }
+
+          // 2. Rank by points
+          final aPoints = aData['points'] as int? ?? 0;
+          final bPoints = bData['points'] as int? ?? 0;
+          if (aPoints != bPoints) {
+            return bPoints.compareTo(aPoints); // Descending (more is better)
+          }
+
+          // 3. Rank by presence of username (non-empty & not default)
+          final aUser = aData['username'] as String? ?? '';
+          final bUser = bData['username'] as String? ?? '';
+          final aHasRealUser = aUser.isNotEmpty && aUser != 'User' && aUser != 'Tactitien';
+          final bHasRealUser = bUser.isNotEmpty && bUser != 'User' && bUser != 'Tactitien';
+          if (aHasRealUser && !bHasRealUser) return -1;
+          if (!aHasRealUser && bHasRealUser) return 1;
+
+          // 4. Rank by presence of supported team
+          final aTeam = aData['supportedTeam'] as String? ?? '';
+          final bTeam = bData['supportedTeam'] as String? ?? '';
+          if (aTeam.isNotEmpty && bTeam.isEmpty) return -1;
+          if (aTeam.isEmpty && bTeam.isNotEmpty) return 1;
+
+          // 5. Fallback to updatedAt timestamp (most recent is better)
+          final aTime = aData['updatedAt'] as Timestamp?;
+          final bTime = bData['updatedAt'] as Timestamp?;
+          if (aTime != null && bTime != null) {
+            return bTime.compareTo(aTime); // Descending (most recent is better)
+          }
+          if (aTime != null) return -1;
+          if (bTime != null) return 1;
+
+          return 0;
+        });
+
+        final doc = docs.first;
         final data = doc.data();
         final uid = await getOrCreateUserId();
         
-        // If the found document is our current one, just mark as restored
+        // If the best found document is our current one, just mark as restored
         if (doc.id == uid) {
           await prefs.setBool('wc2026_device_restored', true);
           return true;
         }
 
-        debugPrint("RECOVERY: Found previous installation profile: ${doc.id}");
+        debugPrint("RECOVERY: Found previous installation profile: ${doc.id} (matching deviceId: $deviceId)");
         
         // 1. Restore Profile details locally
         final username = data['username'] as String? ?? '';
@@ -283,6 +354,49 @@ class WCFirebaseService {
           'championCode': championCode,
           'goldenBootPlayer': goldenBootPlayer,
         }, SetOptions(merge: true));
+
+        // 3. Find and copy group memberships from old UID to new UID
+        try {
+          final oldUid = doc.id;
+          final groupsSnapshot = await _firestore
+              .collection('groups')
+              .where('members', arrayContains: oldUid)
+              .get()
+              .timeout(const Duration(seconds: 8));
+          
+          for (final groupDoc in groupsSnapshot.docs) {
+            await groupDoc.reference.update({
+              'members': FieldValue.arrayUnion([uid])
+            });
+            // If the old user was the creator, also update creatorId to new UID
+            final creatorId = groupDoc.data()['creatorId'] as String?;
+            if (creatorId == oldUid) {
+              await groupDoc.reference.update({
+                'creatorId': uid
+              });
+            }
+            debugPrint("RECOVERY: Copied group membership for group ${groupDoc.id} from $oldUid to $uid");
+          }
+        } catch (groupError) {
+          debugPrint("RECOVERY: Error copying group memberships: $groupError");
+        }
+
+        // 4. Clean up: Delete the old profile document and its notifications to avoid duplicates on the leaderboard
+        try {
+          final oldUid = doc.id;
+          final sub = await _firestore
+              .collection('users')
+              .doc(oldUid)
+              .collection('notifications')
+              .get();
+          for (final notificationDoc in sub.docs) {
+            await notificationDoc.reference.delete();
+          }
+          await _firestore.collection('users').doc(oldUid).delete();
+          debugPrint("RECOVERY: Deleted old profile document $oldUid to avoid duplicates.");
+        } catch (cleanupError) {
+          debugPrint("RECOVERY: Error cleaning up old profile document: $cleanupError");
+        }
 
         // Mark as restored successfully
         await prefs.setBool('wc2026_device_restored', true);
