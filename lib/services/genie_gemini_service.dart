@@ -11,6 +11,7 @@ import 'prediction_service.dart';
 import 'odds_service.dart';
 import 'insights_service.dart';
 import 'espn_api_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GenieAnalysis {
   final String summaryLine;
@@ -104,59 +105,196 @@ class GenieGeminiService {
 
   // ─── Core Prediction loading ───────────────────────────────────────────────
 
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Helper to fetch the Genie Gemini document from Firestore.
+  static Future<DocumentSnapshot<Map<String, dynamic>>?> _fetchBotDocFromFirestore() async {
+    try {
+      return await _firestore.collection('users').doc('user_genie_gemini').get().timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint("GenieGeminiService: Error fetching bot doc from Firestore: $e");
+      return null;
+    }
+  }
+
+  /// Helper to write/sync Genie Gemini data to Firestore.
+  static Future<void> _writeBotDocToFirestore(
+    PredictionData botData,
+    Map<String, GenieAnalysis> analyses, {
+    Map<String, String>? lastRefreshedMatches,
+  }) async {
+    try {
+      final predictionsMap = botData.matchPredictions.map((key, val) => MapEntry(key, val.toJson()));
+      final analysesMap = analyses.map((key, val) => MapEntry(key, val.toJson()));
+
+      final data = {
+        'username': 'Genie Gemini',
+        'avatar': '🧠',
+        'points': botData.points ?? 0,
+        'championCode': botData.championCode,
+        'goldenBootPlayer': botData.goldenBootPlayer,
+        'predictions': predictionsMap,
+        'analyses': analysesMap,
+        'lastRefreshedAt': DateTime.now().toIso8601String(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      if (lastRefreshedMatches != null) {
+        data['lastRefreshedMatches'] = lastRefreshedMatches;
+      }
+
+      await _firestore.collection('users').doc('user_genie_gemini').set(data, SetOptions(merge: true));
+      debugPrint("GenieGeminiService: Successfully synced bot predictions/analyses to Firestore.");
+    } catch (e) {
+      debugPrint("GenieGeminiService: Error writing bot doc to Firestore: $e");
+    }
+  }
+
+  /// Helper to update the local SharedPreferences cache using the Firestore document data.
+  static Future<PredictionData> _updateLocalCacheFromDoc(DocumentSnapshot<Map<String, dynamic>> doc) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = doc.data() ?? {};
+
+    // 1. Build PredictionData
+    final Map<String, MatchPrediction> preds = {};
+    final rawPreds = data['predictions'] as Map<String, dynamic>? ?? {};
+    rawPreds.forEach((key, val) {
+      try {
+        preds[key] = MatchPrediction.fromJson(Map<String, dynamic>.from(val));
+      } catch (e) {
+        debugPrint("GenieGeminiService: Error parsing prediction $key: $e");
+      }
+    });
+
+    final botData = PredictionData(
+      username: data['username'] as String? ?? 'Genie Gemini',
+      avatar: data['avatar'] as String? ?? '🧠',
+      championCode: data['championCode'] as String?,
+      goldenBootPlayer: data['goldenBootPlayer'] as String?,
+      preds: preds,
+      points: data['points'] as int? ?? 0,
+    );
+
+    // Save predictions to local prefs
+    await prefs.setString(_botPredictionsPrefsKey, jsonEncode(botData.toJson()));
+
+    // 2. Parse and save analyses
+    final rawAnalyses = data['analyses'] as Map<String, dynamic>? ?? {};
+    final lastRefreshedMatches = data['lastRefreshedMatches'] as Map<String, dynamic>? ?? {};
+    rawAnalyses.forEach((key, val) {
+      try {
+        final analysis = GenieAnalysis.fromJson(Map<String, dynamic>.from(val));
+        final analysisKey = '$_botAnalysisPrefix$key';
+        prefs.setString(analysisKey, jsonEncode(analysis.toJson()));
+        
+        final refTime = lastRefreshedMatches[key] ?? data['lastRefreshedAt'];
+        if (refTime != null) {
+          prefs.setString('${analysisKey}_time', refTime.toString());
+        }
+      } catch (e) {
+        debugPrint("GenieGeminiService: Error parsing analysis $key: $e");
+      }
+    });
+
+    return botData;
+  }
+
   /// Loads the full prediction profile for Genie Gemini.
   /// If predictions are missing or need updates, they are computed/fetched.
   static Future<PredictionData> loadBotData(List<WorldCupMatch> allMatches, {String lang = 'fr'}) async {
     final prefs = await SharedPreferences.getInstance();
-    final cachedJsonStr = prefs.getString(_botPredictionsPrefsKey);
-    PredictionData botData;
-
-    if (cachedJsonStr != null) {
-      try {
-        final decoded = jsonDecode(cachedJsonStr) as Map<String, dynamic>;
-        botData = PredictionData.fromJson(decoded);
-      } catch (e) {
-        debugPrint("GenieGeminiService: Error parsing cached predictions: $e");
+    
+    // 1. Try to fetch from Firestore first
+    PredictionData? botData;
+    Map<String, GenieAnalysis> analyses = {};
+    Map<String, String> lastRefreshedMatches = {};
+    DateTime? docLastRefreshed;
+    
+    final botDoc = await _fetchBotDocFromFirestore();
+    if (botDoc != null && botDoc.exists) {
+      botData = await _updateLocalCacheFromDoc(botDoc);
+      
+      final data = botDoc.data() ?? {};
+      final rawAnalyses = data['analyses'] as Map<String, dynamic>? ?? {};
+      rawAnalyses.forEach((key, val) {
+        try {
+          analyses[key] = GenieAnalysis.fromJson(Map<String, dynamic>.from(val));
+        } catch (_) {}
+      });
+      
+      final rawRefMap = data['lastRefreshedMatches'] as Map<String, dynamic>? ?? {};
+      rawRefMap.forEach((key, val) {
+        lastRefreshedMatches[key] = val.toString();
+      });
+      
+      docLastRefreshed = DateTime.tryParse(data['lastRefreshedAt'] ?? '');
+    } else {
+      // Offline or doc doesn't exist, read from SharedPreferences
+      final cachedJsonStr = prefs.getString(_botPredictionsPrefsKey);
+      if (cachedJsonStr != null) {
+        try {
+          final decoded = jsonDecode(cachedJsonStr) as Map<String, dynamic>;
+          botData = PredictionData.fromJson(decoded);
+        } catch (e) {
+          debugPrint("GenieGeminiService: Error parsing cached predictions: $e");
+          botData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+        }
+      } else {
         botData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
       }
-    } else {
-      botData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+      
+      // Load local analyses
+      for (final m in allMatches) {
+        final key = '$_botAnalysisPrefix${m.id}';
+        final cached = prefs.getString(key);
+        if (cached != null) {
+          try {
+            analyses[m.id] = GenieAnalysis.fromJson(jsonDecode(cached) as Map<String, dynamic>);
+          } catch (_) {}
+        }
+      }
     }
 
     botData.username = 'Genie Gemini';
     botData.avatar = '🧠';
 
-    // 1. Check Champion and Golden Boot predictions
-    final bool isTourneyLocked = PredictionService.isTournamentPredictionLocked(allMatches);
-    if (!isTourneyLocked || botData.championCode == null || botData.goldenBootPlayer == null) {
-      // Check if we need to initialize or refresh tournament predictions
-      final needsRefresh = botData.championCode == null || botData.goldenBootPlayer == null;
-      if (needsRefresh) {
-        await _fetchOrGenerateTournamentPredictions(botData, allMatches, lang);
-      }
-    }
-
-    // 2. Ensure every match has a prediction
+    final apiKey = await getApiKey();
     bool hasChanges = false;
-    for (final match in allMatches) {
-      final String mId = match.id;
-      final existingPred = botData.matchPredictions[mId];
-      final bool isLocked = PredictionService.isPredictionLocked(match);
+    
+    // We only perform generation/updates if the device has an API key, OR if Firestore is empty.
+    // This prevents API-key-less clients from overwriting Firestore predictions with fallbacks.
+    final bool canGenerate = apiKey.isNotEmpty || (botDoc == null || !botDoc.exists);
 
-      bool needsPrediction = false;
-      if (existingPred == null) {
-        needsPrediction = true;
-      } else if (!isLocked) {
-        final analysisKey = '$_botAnalysisPrefix$mId';
-        final cachedAnalysis = prefs.getString(analysisKey);
-        if (cachedAnalysis == null) {
+    if (canGenerate) {
+      // 1. Check Champion and Golden Boot predictions
+      final bool isTourneyLocked = PredictionService.isTournamentPredictionLocked(allMatches);
+      if (!isTourneyLocked || botData.championCode == null || botData.goldenBootPlayer == null) {
+        final needsRefresh = botData.championCode == null || botData.goldenBootPlayer == null;
+        if (needsRefresh) {
+          await _fetchOrGenerateTournamentPredictions(botData, allMatches, lang);
+          hasChanges = true;
+        }
+      }
+
+      // 2. Ensure every match has a prediction & respect dynamic TTL cache refinement
+      for (final match in allMatches) {
+        final String mId = match.id;
+        final existingPred = botData.matchPredictions[mId];
+        final bool isLocked = PredictionService.isPredictionLocked(match);
+
+        bool needsPrediction = false;
+        if (existingPred == null) {
           needsPrediction = true;
-        } else {
-          final timestampKey = '${analysisKey}_time';
-          final savedTimeStr = prefs.getString(timestampKey);
-          if (savedTimeStr != null) {
-            final savedTime = DateTime.tryParse(savedTimeStr);
-            if (savedTime != null) {
+        } else if (!isLocked) {
+          final analysisKey = '$_botAnalysisPrefix$mId';
+          final cachedAnalysis = analyses[mId];
+          if (cachedAnalysis == null) {
+            needsPrediction = true;
+          } else {
+            // Check dynamic cache TTL based on time-to-kickoff
+            final refTimeStr = lastRefreshedMatches[mId] ?? prefs.getString('${analysisKey}_time');
+            final refTime = refTimeStr != null ? DateTime.tryParse(refTimeStr) : docLastRefreshed;
+            
+            if (refTime != null) {
               final timeToKickoff = match.date.difference(DateTime.now());
               int cacheTtlHours = 24;
               if (timeToKickoff.inHours <= 2) {
@@ -166,37 +304,52 @@ class GenieGeminiService {
               } else if (timeToKickoff.inHours <= 24) {
                 cacheTtlHours = 6; // Refine every 6 hours on the final day
               }
-              if (DateTime.now().difference(savedTime).inHours >= cacheTtlHours) {
+              if (DateTime.now().difference(refTime).inHours >= cacheTtlHours) {
                 needsPrediction = true;
               }
             } else {
               needsPrediction = true;
             }
-          } else {
-            needsPrediction = true;
           }
+        }
+
+        if (needsPrediction) {
+          debugPrint("GenieGeminiService: Generating/refining prediction for match ${match.id} (${match.t1} vs ${match.t2})");
+          final result = await _fetchOrGeneratePrediction(match, allMatches, lang);
+          botData.matchPredictions[mId] = result.prediction;
+          analyses[mId] = result.analysis;
+          lastRefreshedMatches[mId] = DateTime.now().toIso8601String();
+          
+          // Save analysis to local SharedPreferences key
+          final analysisKey = '$_botAnalysisPrefix$mId';
+          await prefs.setString(analysisKey, jsonEncode(result.analysis.toJson()));
+          await prefs.setString('${analysisKey}_time', lastRefreshedMatches[mId]!);
+          hasChanges = true;
         }
       }
 
-      if (needsPrediction) {
-        debugPrint("GenieGeminiService: Generating prediction for match ${match.id} (${match.t1} vs ${match.t2})");
-        final result = await _fetchOrGeneratePrediction(match, allMatches, lang);
-        botData.matchPredictions[mId] = result.prediction;
-        
-        // Save analysis to its own key
-        final analysisKey = '$_botAnalysisPrefix$mId';
-        await prefs.setString(analysisKey, jsonEncode(result.analysis.toJson()));
-        await prefs.setString('${analysisKey}_time', DateTime.now().toIso8601String());
-        hasChanges = true;
+      if (hasChanges) {
+        // Save locally
+        await prefs.setString(_botPredictionsPrefsKey, jsonEncode(botData.toJson()));
+
+        // Calculate dynamic score excluding ignored matches
+        final ignoredIds = await getIgnoredMatchIds();
+        final cleanData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+        cleanData.championCode = botData.championCode;
+        cleanData.goldenBootPlayer = botData.goldenBootPlayer;
+        botData.matchPredictions.forEach((key, val) {
+          if (!ignoredIds.contains(key)) {
+            cleanData.matchPredictions[key] = val;
+          }
+        });
+        botData.points = PredictionService.calculateTotalPoints(cleanData, allMatches);
+
+        // Sync to Firestore
+        await _writeBotDocToFirestore(botData, analyses, lastRefreshedMatches: lastRefreshedMatches);
       }
     }
 
-    if (hasChanges) {
-      // Save updated predictions to cache
-      await prefs.setString(_botPredictionsPrefsKey, jsonEncode(botData.toJson()));
-    }
-
-    // Calculate dynamic score excluding ignored matches
+    // Always ensure botData has updated points calculated locally in memory
     final ignoredIds = await getIgnoredMatchIds();
     final cleanData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
     cleanData.championCode = botData.championCode;
@@ -212,10 +365,28 @@ class GenieGeminiService {
 
   /// Force a refresh of the prediction for a specific match.
   static Future<void> refreshMatchPrediction(WorldCupMatch match, List<WorldCupMatch> allMatches, {String lang = 'fr'}) async {
-    final prefs = await SharedPreferences.getInstance();
+    final doc = await _fetchBotDocFromFirestore();
+    
+    // Check spam protection / cooldown: 30 seconds
+    if (doc != null && doc.exists) {
+      final lastRefreshedMap = doc.data()?['lastRefreshedMatches'] as Map<String, dynamic>? ?? {};
+      final lastRefreshedStr = lastRefreshedMap[match.id] as String?;
+      if (lastRefreshedStr != null) {
+        final lastRefreshed = DateTime.tryParse(lastRefreshedStr);
+        if (lastRefreshed != null && DateTime.now().difference(lastRefreshed).inSeconds < 30) {
+          debugPrint("GenieGeminiService: Refresh request for match ${match.id} throttled due to cooldown.");
+          // Update local cache from Firestore to ensure sync
+          await _updateLocalCacheFromDoc(doc);
+          return;
+        }
+      }
+    }
+
+    // Call Gemini API (or fallback if no API key) to refresh the match prediction
     final result = await _fetchOrGeneratePrediction(match, allMatches, lang, forceRefresh: true);
 
     // Load current prediction data
+    final prefs = await SharedPreferences.getInstance();
     final cachedJsonStr = prefs.getString(_botPredictionsPrefsKey);
     PredictionData botData;
     if (cachedJsonStr != null) {
@@ -230,17 +401,57 @@ class GenieGeminiService {
 
     botData.matchPredictions[match.id] = result.prediction;
     
-    // Save analysis and predictions
+    // Save to local prefs
     final analysisKey = '$_botAnalysisPrefix${match.id}';
     await prefs.setString(analysisKey, jsonEncode(result.analysis.toJson()));
     await prefs.setString('${analysisKey}_time', DateTime.now().toIso8601String());
     await prefs.setString(_botPredictionsPrefsKey, jsonEncode(botData.toJson()));
+
+    // Sync to Firestore
+    // First, let's load all other analyses from local prefs so we don't drop them
+    final allAnalyses = <String, GenieAnalysis>{};
+    for (final m in allMatches) {
+      final key = '$_botAnalysisPrefix${m.id}';
+      final cached = prefs.getString(key);
+      if (cached != null) {
+        try {
+          allAnalyses[m.id] = GenieAnalysis.fromJson(jsonDecode(cached) as Map<String, dynamic>);
+        } catch (_) {}
+      }
+    }
+    allAnalyses[match.id] = result.analysis;
+
+    // Load lastRefreshedMatches from Firestore if available
+    final lastRefreshedMatches = <String, String>{};
+    if (doc != null && doc.exists) {
+      final existing = doc.data()?['lastRefreshedMatches'] as Map<String, dynamic>? ?? {};
+      existing.forEach((k, v) {
+        lastRefreshedMatches[k] = v.toString();
+      });
+    }
+    lastRefreshedMatches[match.id] = DateTime.now().toIso8601String();
+
+    // Re-calculate points for the bot
+    final ignoredIds = await getIgnoredMatchIds();
+    final cleanData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+    cleanData.championCode = botData.championCode;
+    cleanData.goldenBootPlayer = botData.goldenBootPlayer;
+    botData.matchPredictions.forEach((key, val) {
+      if (!ignoredIds.contains(key)) {
+        cleanData.matchPredictions[key] = val;
+      }
+    });
+    botData.points = PredictionService.calculateTotalPoints(cleanData, allMatches);
+
+    await _writeBotDocToFirestore(botData, allAnalyses, lastRefreshedMatches: lastRefreshedMatches);
   }
 
   /// Get the cached analysis for a match.
   static Future<GenieAnalysis?> getMatchAnalysis(String matchId, WorldCupMatch match, List<WorldCupMatch> allMatches, {String lang = 'fr'}) async {
     final prefs = await SharedPreferences.getInstance();
     final analysisKey = '$_botAnalysisPrefix$matchId';
+    
+    // 1. Try SharedPreferences
     final cachedJsonStr = prefs.getString(analysisKey);
     if (cachedJsonStr != null) {
       try {
@@ -250,15 +461,28 @@ class GenieGeminiService {
       }
     }
 
-    // If missing from cache, generate it (either from API or fallback)
+    // 2. Try Firestore
+    final doc = await _fetchBotDocFromFirestore();
+    if (doc != null && doc.exists) {
+      await _updateLocalCacheFromDoc(doc);
+      final rawAnalyses = doc.data()?['analyses'] as Map<String, dynamic>? ?? {};
+      final matchAnalysisJson = rawAnalyses[matchId];
+      if (matchAnalysisJson != null) {
+        try {
+          return GenieAnalysis.fromJson(Map<String, dynamic>.from(matchAnalysisJson));
+        } catch (_) {}
+      }
+    }
+
+    // 3. Generate new prediction and analysis if missing entirely
     debugPrint("GenieGeminiService: Analysis missing for $matchId, generating...");
     final result = await _fetchOrGeneratePrediction(match, allMatches, lang);
     
-    // Save to cache
+    // Save to local cache
     await prefs.setString(analysisKey, jsonEncode(result.analysis.toJson()));
     await prefs.setString('${analysisKey}_time', DateTime.now().toIso8601String());
     
-    // Also save prediction
+    // Save prediction
     final cachedPredsStr = prefs.getString(_botPredictionsPrefsKey);
     PredictionData botData;
     if (cachedPredsStr != null) {
@@ -272,6 +496,40 @@ class GenieGeminiService {
     }
     botData.matchPredictions[matchId] = result.prediction;
     await prefs.setString(_botPredictionsPrefsKey, jsonEncode(botData.toJson()));
+
+    // Sync back to Firestore (since it was missing entirely)
+    final allAnalyses = <String, GenieAnalysis>{};
+    if (doc != null && doc.exists) {
+      final rawAnalyses = doc.data()?['analyses'] as Map<String, dynamic>? ?? {};
+      rawAnalyses.forEach((k, v) {
+        try {
+          allAnalyses[k] = GenieAnalysis.fromJson(Map<String, dynamic>.from(v));
+        } catch (_) {}
+      });
+    }
+    allAnalyses[matchId] = result.analysis;
+    
+    final lastRefreshedMatches = <String, String>{};
+    if (doc != null && doc.exists) {
+      final rawRefMap = doc.data()?['lastRefreshedMatches'] as Map<String, dynamic>? ?? {};
+      rawRefMap.forEach((k, v) {
+        lastRefreshedMatches[k] = v.toString();
+      });
+    }
+    lastRefreshedMatches[matchId] = DateTime.now().toIso8601String();
+
+    final ignoredIds = await getIgnoredMatchIds();
+    final cleanData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+    cleanData.championCode = botData.championCode;
+    cleanData.goldenBootPlayer = botData.goldenBootPlayer;
+    botData.matchPredictions.forEach((key, val) {
+      if (!ignoredIds.contains(key)) {
+        cleanData.matchPredictions[key] = val;
+      }
+    });
+    botData.points = PredictionService.calculateTotalPoints(cleanData, allMatches);
+
+    await _writeBotDocToFirestore(botData, allAnalyses, lastRefreshedMatches: lastRefreshedMatches);
 
     return result.analysis;
   }

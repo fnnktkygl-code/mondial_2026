@@ -1437,6 +1437,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         // Compute points on-the-fly and filter
         final List<Map<String, dynamic>> computedUsers = [];
         for (final doc in allDocs) {
+          if (doc.id == 'user_genie_gemini') continue;
           final data = doc.data();
           final isHidden = data['isHidden'] as bool? ?? false;
           final username = (data['username'] as String? ?? '').trim();
