@@ -2888,15 +2888,25 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                         children: [
                           const Icon(Icons.psychology, color: Colors.cyanAccent, size: 24),
                           const SizedBox(width: 8),
-                          Text(
-                            '${mPred.t1Score} - ${mPred.t2Score}',
-                            style: const TextStyle(
-                              color: Colors.cyanAccent,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: 'monospace',
+                          if (isPlayed)
+                            Text(
+                              '${mPred.t1Score} - ${mPred.t2Score}',
+                              style: const TextStyle(
+                                color: Colors.cyanAccent,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'monospace',
+                              ),
+                            )
+                          else
+                            Text(
+                              AppTranslations.get(widget.lang, 'genieHiddenScore'),
+                              style: TextStyle(
+                                color: Colors.cyanAccent.withValues(alpha: 0.6),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
                           const Spacer(),
                           if (analysis != null) ...[
                             Text(
@@ -2906,10 +2916,16 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           ],
                         ],
                       ),
-                      if (mPred.predictedScorers.isNotEmpty) ...[
+                      if (isPlayed && mPred.predictedScorers.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
                           '⚽ ${mPred.predictedScorers.keys.join(', ')}',
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
+                        ),
+                      ] else if (!isPlayed) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          AppTranslations.get(widget.lang, 'genieHiddenScorers'),
                           style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
                         ),
                       ],
@@ -2920,14 +2936,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ],
-                      if (analysis != null && analysis.summaryLine.isNotEmpty) ...[
+                      if (isPlayed && analysis != null && analysis.summaryLine.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         Text(
                           analysis.summaryLine,
                           style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
                         ),
                       ],
-                      if (analysis != null) ...[
+                      if (isPlayed && analysis != null) ...[
                         const SizedBox(height: 12),
                         Theme(
                           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -2948,6 +2964,12 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieScorers'), analysis.scorerReasoning, Icons.sports_soccer),
                             ],
                           ),
+                        ),
+                      ] else if (!isPlayed) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          AppTranslations.get(widget.lang, 'genieLockedExplanation'),
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
                         ),
                       ],
                     ],

@@ -1080,6 +1080,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
     final champName = champCode != null 
         ? AppTranslations.getTeam(widget.lang, champCode) 
         : null;
+    final isTourneyLocked = PredictionService.isTournamentPredictionLocked(widget.allMatches);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1110,24 +1111,33 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        champName ?? champCode.toUpperCase(),
+                        isTourneyLocked ? (champName ?? champCode.toUpperCase()) : AppTranslations.get(widget.lang, 'genieHiddenTournament'),
                         style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
-                      FutureBuilder<String>(
-                        future: GenieGeminiService.getTournamentReasoning('champion', widget.lang),
-                        builder: (context, snapshot) {
-                          return Text(
-                            snapshot.data ?? '...',
-                            style: const TextStyle(color: AppColors.textDim, fontSize: 11),
-                          );
-                        },
-                      ),
+                      if (isTourneyLocked)
+                        FutureBuilder<String>(
+                          future: GenieGeminiService.getTournamentReasoning('champion', widget.lang),
+                          builder: (context, snapshot) {
+                            return Text(
+                              snapshot.data ?? '...',
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                            );
+                          },
+                        )
+                      else
+                        Text(
+                          AppTranslations.get(widget.lang, 'genieHiddenTournamentReason'),
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                        ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                TeamFlagWidget(code: champCode, width: 24, height: 16, borderRadius: 3),
+                if (isTourneyLocked)
+                  TeamFlagWidget(code: champCode, width: 24, height: 16, borderRadius: 3)
+                else
+                  const Icon(Icons.lock_outline, color: AppColors.textDim, size: 18),
               ],
             ),
             const SizedBox(height: 14),
@@ -1141,19 +1151,25 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        goldenBoot,
+                        isTourneyLocked ? goldenBoot : AppTranslations.get(widget.lang, 'genieHiddenGoldenBoot'),
                         style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
-                      FutureBuilder<String>(
-                        future: GenieGeminiService.getTournamentReasoning('goldenboot', widget.lang),
-                        builder: (context, snapshot) {
-                          return Text(
-                            snapshot.data ?? '...',
-                            style: const TextStyle(color: AppColors.textDim, fontSize: 11),
-                          );
-                        },
-                      ),
+                      if (isTourneyLocked)
+                        FutureBuilder<String>(
+                          future: GenieGeminiService.getTournamentReasoning('goldenboot', widget.lang),
+                          builder: (context, snapshot) {
+                            return Text(
+                              snapshot.data ?? '...',
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                            );
+                          },
+                        )
+                      else
+                        Text(
+                          AppTranslations.get(widget.lang, 'genieHiddenTournamentReason'),
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                        ),
                     ],
                   ),
                 ),
@@ -1233,7 +1249,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
             side: BorderSide(color: isExpanded ? Colors.cyan.withValues(alpha: 0.4) : AppColors.border),
           ),
           child: InkWell(
-            onTap: () {
+            onTap: !isPlayed ? null : () {
               setState(() {
                 if (isExpanded) {
                   _expandedMatchIds.remove(match.id);
@@ -1255,8 +1271,13 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                       Text(match.t1.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                       const SizedBox(width: 8),
                       Text(
-                        '${mPred.t1Score} - ${mPred.t2Score}',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, fontFamily: 'monospace'),
+                        isPlayed ? '${mPred.t1Score} - ${mPred.t2Score}' : AppTranslations.get(widget.lang, 'genieHiddenScore'),
+                        style: TextStyle(
+                          color: isPlayed ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                          fontWeight: FontWeight.w900,
+                          fontSize: isPlayed ? 14 : 12,
+                          fontFamily: isPlayed ? 'monospace' : null,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(match.t2.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
@@ -1286,16 +1307,24 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                         const SizedBox(width: 8),
                       ],
                       Icon(
-                        isExpanded ? Icons.expand_less : Icons.expand_more,
+                        !isPlayed
+                            ? Icons.lock_outline
+                            : (isExpanded ? Icons.expand_less : Icons.expand_more),
                         color: AppColors.textDim,
                         size: 18,
                       ),
                     ],
                   ),
-                  if (mPred.predictedScorers.isNotEmpty) ...[
+                  if (isPlayed && mPred.predictedScorers.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Text(
                       '⚽ ${mPred.predictedScorers.keys.join(', ')}',
+                      style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
+                    ),
+                  ] else if (!isPlayed) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      AppTranslations.get(widget.lang, 'genieHiddenScorers'),
                       style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
                     ),
                   ],
@@ -1310,7 +1339,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                       Text(verdictText, style: TextStyle(color: verdictColor, fontSize: 11, fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  if (analysis != null && analysis.summaryLine.isNotEmpty) ...[
+                  if (isPlayed && analysis != null && analysis.summaryLine.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
                       analysis.summaryLine,

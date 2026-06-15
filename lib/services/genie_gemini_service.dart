@@ -150,7 +150,7 @@ class GenieGeminiService {
           final savedTimeStr = prefs.getString(timestampKey);
           if (savedTimeStr != null) {
             final savedTime = DateTime.tryParse(savedTimeStr);
-            if (savedTime != null && DateTime.now().difference(savedTime).inHours >= 6) {
+            if (savedTime != null && DateTime.now().difference(savedTime).inHours >= 24) {
               needsPrediction = true;
             }
           } else {
