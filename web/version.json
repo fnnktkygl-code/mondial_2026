@@ -1,10 +1,10 @@
 {
-  "version": "1.3.8",
-  "buildNumber": 12,
+  "version": "1.3.9",
+  "buildNumber": 13,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Règle Blowout Flex GD pour une meilleure flexibilité sur les scores larges.",
-    "en": "Blowout Flex GD rule for better flexibility on high margin scores.",
-    "es": "Regla Blowout Flex GD para mayor flexibilidad en marcadores abultados."
+    "fr": "Correction historique des pronostics et nouveaux badges d'état des matchs.",
+    "en": "Fixed prediction history visibility and new match status badges.",
+    "es": "Corrección historial de pronósticos y nuevos distintivos de estado."
   }
 }
