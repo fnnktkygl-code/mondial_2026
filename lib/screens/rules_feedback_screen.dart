@@ -72,32 +72,40 @@ class _RulesFeedbackPageState extends State<RulesFeedbackPage> {
                   widget.lang == 'fr' ? 'Issue du Match (1N2)' : 'Match Outcome (1X2)', 
                   widget.lang == 'fr' ? '+50 pts × Cote' : '+50 pts × Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Points de base si vous trouvez le bon résultat final (Victoire 1, Nul ou Victoire 2).' 
-                    : 'Base points for predicting the correct winner or draw.'
+                    ? 'Points de base si vous trouvez le bon résultat final (Victoire 1, Nul ou Victoire 2). La cote FIFA multiplie les points selon la difficulté.'
+                    : 'Base points for predicting the correct winner or draw. FIFA odds multiply points based on match difficulty.'
                 ),
                 _buildRuleItem(
                   '↔️', 
-                  widget.lang == 'fr' ? 'Même Écart de Buts (GD)' : 'Same Goal Difference (GD)', 
-                  widget.lang == 'fr' ? '+20 à +350 pts × Cote' : '+20 to +350 pts × Odds',
+                  widget.lang == 'fr' ? 'Écart de Buts (GD) Exact' : 'Exact Goal Difference (GD)', 
+                  widget.lang == 'fr' ? '+20 à +500 pts × Cote' : '+20 to +500 pts × Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Si l\'issue est correcte : Écart de 0 ou 1 but (+20 pts) | 2 buts (+100 pts) | 3 buts (+200 pts) | 4+ buts (+350 pts).' 
-                    : 'If outcome is correct: GD of 0 or 1 (+20 pts) | 2 (+100 pts) | 3 (+200 pts) | 4+ (+350 pts).'
+                    ? 'Si l\'issue est correcte — Écart 0 ou 1 (+20 pts) | 2 buts (+100 pts) | 3 buts (+200 pts) | 4 buts (+350 pts) | 5+ buts (+500 pts). Plus l\'écart est grand, plus c\'est risqué et récompensé !'
+                    : 'If outcome is correct — GD 0 or 1 (+20 pts) | 2 goals (+100 pts) | 3 goals (+200 pts) | 4 goals (+350 pts) | 5+ goals (+500 pts). Bigger gap = bigger reward!'
+                ),
+                _buildRuleItem(
+                  '📊🎯', 
+                  widget.lang == 'fr' ? 'Presque Parfait (GD ±1)' : 'Near-Miss GD (±1 off)',
+                  widget.lang == 'fr' ? '½ Bonus GD × Cote' : '½ GD Bonus × Odds',
+                  description: widget.lang == 'fr'
+                    ? 'Si vous avez prédit un grand écart (≥3 buts) et que vous n\'étiez qu\'à 1 but près, vous recevez la moitié du bonus. Ex. : 5-0 prédit, 7-1 réel → ½ bonus GD 5+.'
+                    : 'Predicted a big margin (≥3 GD) and only off by 1? You get half the GD bonus. e.g. predicted 5-0, actual 7-1 → ½ of GD 5+ bonus.'
                 ),
                 _buildRuleItem(
                   '🎯', 
                   widget.lang == 'fr' ? 'SCORE EXACT (SUMMUM)' : 'EXACT SCORE (SUMMUM)', 
                   widget.lang == 'fr' ? '+200 pts × Cote × Risque' : '+200 pts × Odds × Risk',
                   description: widget.lang == 'fr' 
-                    ? 'Trouver le score exact. Facteur Risque = 1.0 + (|Écart| × 0.40) + (Total Buts × 0.20) pour récompenser la prise de risque.' 
-                    : 'Predicting correct score. Risk Factor = 1.0 + (|GD| × 0.40) + (Total Goals × 0.20) to reward daring scores.'
+                    ? 'Trouver le score exact. Facteur Risque = 1.0 + (|Écart| × 0.40) + (Total Buts × 0.20). Récompense les pronostics audacieux à fort enjeu.'
+                    : 'Predicting the exact score. Risk Factor = 1.0 + (|GD| × 0.40) + (Total Goals × 0.20). Rewards bold, high-stakes predictions.'
                 ),
                 _buildRuleItem(
                   '🔢', 
                   widget.lang == 'fr' ? 'Même Nombre Total de Buts' : 'Same Total Goals', 
                   widget.lang == 'fr' ? '+50 pts × Cote' : '+50 pts × Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Si l\'issue est correcte mais pas le score exact, et que le nombre total de buts est correct.' 
-                    : 'Outcome is correct, wrong score but same total goal count.'
+                    ? 'Si l\'issue est correcte mais pas le score exact, et que le nombre total de buts est correct (ex. 2-1 prédit, 3-0 réel = 3 buts dans les deux cas).'
+                    : 'Correct outcome, wrong score but same total goals (e.g. predicted 2-1, actual 3-0 = 3 goals each).'
                 ),
               ],
             ),
@@ -108,34 +116,34 @@ class _RulesFeedbackPageState extends State<RulesFeedbackPage> {
                 _buildRuleItem(
                   '🛡️', 
                   widget.lang == 'fr' ? 'Buteur Défenseur ou GK' : 'GK/Defender Goalscorer', 
-                  widget.lang == 'fr' ? '+200 pts × Cote Équipe' : '+200 pts × Team Odds',
+                  widget.lang == 'fr' ? '+250 pts × Cote Équipe' : '+250 pts × Team Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Un défenseur ou gardien marque un but. Multiplié par la cote de son équipe.' 
+                    ? 'Un défenseur ou gardien marque un but. Multiplié par la cote de son équipe.'
                     : 'A defender or goalkeeper scores. Multiplied by their team\'s odds.'
                 ),
                 _buildRuleItem(
                   '🎩', 
                   widget.lang == 'fr' ? 'Buteur Milieu de Terrain' : 'Midfielder Goalscorer', 
-                  widget.lang == 'fr' ? '+100 pts × Cote Équipe' : '+100 pts × Team Odds',
+                  widget.lang == 'fr' ? '+120 pts × Cote Équipe' : '+120 pts × Team Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Un milieu de terrain marque un but. Multiplié par la cote de son équipe.' 
+                    ? 'Un milieu de terrain marque un but. Multiplié par la cote de son équipe.'
                     : 'A midfielder scores. Multiplied by their team\'s odds.'
                 ),
                 _buildRuleItem(
                   '👟', 
                   widget.lang == 'fr' ? 'Buteur Attaquant' : 'Forward Goalscorer', 
-                  widget.lang == 'fr' ? '+50 pts × Cote Équipe' : '+50 pts × Team Odds',
+                  widget.lang == 'fr' ? '+60 pts × Cote Équipe' : '+60 pts × Team Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Un attaquant marque un but. Multiplié par la cote de son équipe.' 
+                    ? 'Un attaquant marque un but. Multiplié par la cote de son équipe.'
                     : 'A forward scores. Multiplied by their team\'s odds.'
                 ),
                 _buildRuleItem(
-                  '⚽', 
-                  widget.lang == 'fr' ? 'Doublé / Triplé Exact' : 'Exact Goal Tally per Scorer', 
-                  widget.lang == 'fr' ? '+80 pts × Cote Équipe' : '+80 pts × Team Odds',
+                  '⚽⚽', 
+                  widget.lang == 'fr' ? 'Nombre de Buts Exact par Buteur' : 'Exact Goal Tally per Scorer', 
+                  widget.lang == 'fr' ? '+80 à +700 pts × Cote' : '+80 to +700 pts × Odds',
                   description: widget.lang == 'fr' 
-                    ? 'Bonus si vous prédisez exactement le nombre de buts (ex. doublé) d\'un buteur.' 
-                    : 'Bonus for predicting the exact goal count of a scorer.'
+                    ? 'Bonus exponentiel si vous prédisez exactement le nombre de buts : Doublé (+80 pts) | Triplé (+200 pts) | 4 buts (+400 pts) | 5 buts (+700 pts). Multiplié par la cote équipe.'
+                    : 'Exponential bonus for exact goal count: Brace (+80 pts) | Hat-trick (+200 pts) | 4 goals (+400 pts) | 5 goals (+700 pts). All multiplied by team odds.'
                 ),
               ],
             ),
@@ -146,18 +154,18 @@ class _RulesFeedbackPageState extends State<RulesFeedbackPage> {
                 _buildRuleItem(
                   '🦁', 
                   widget.lang == 'fr' ? 'Victoire d\'un Outsider' : 'Underdog Win', 
-                  widget.lang == 'fr' ? '+50 pts × Cote' : '+50 pts × Odds',
+                  widget.lang == 'fr' ? '+100 pts (fixe)' : '+100 pts (flat)',
                   description: widget.lang == 'fr' 
-                    ? 'Actif si vous pronostiquez la victoire d\'une équipe avec une probabilité < 30% (Cote > 3.33).' 
-                    : 'Triggered when predicting a win for a team with < 30% probability (Odds > 3.33).'
+                    ? 'Bonus fixe de +100 pts si vous pronostiquez la victoire d\'une équipe avec une probabilité < 30% (Cote > 3.33). Récompense la prise de risque sans sur-amplifier les extrêmes.'
+                    : 'Flat +100 pts bonus when predicting a win for a team with < 30% probability (Odds > 3.33). Rewards risk-taking without over-inflating extreme upsets.'
                 ),
                 _buildRuleItem(
                   '🚀', 
                   widget.lang == 'fr' ? 'Joker (Booster)' : 'Booster (Joker) Active', 
                   widget.lang == 'fr' ? 'x2.0 Score / x1.5 Issue' : 'x2.0 Score / x1.5 Outcome',
                   description: widget.lang == 'fr' 
-                    ? 'Allocation : 3 Jokers pour les Groupes, puis 1 par tour de Phase Finale. Double le score exact, x1.5 pour l\'issue.' 
-                    : 'Jokers: 3 for Group Stage, 1 per Knockout stage. Doubles Exact Score points, x1.5 for outcome points.'
+                    ? 'Allocation : 1 Joker par session de groupe (3 sessions = 3 jokers en phase de poules), puis 1 Joker par tour éliminatoire. Utilisable une seule fois par phase. Double le score exact, ×1.5 pour l\'issue correcte.'
+                    : 'Allocation: 1 Joker per group session (3 sessions = 3 jokers during group stage), then 1 per knockout round. One use per phase. Doubles exact score, ×1.5 for correct outcome.'
                 ),
                 _buildRuleItem(
                   '🔥', 

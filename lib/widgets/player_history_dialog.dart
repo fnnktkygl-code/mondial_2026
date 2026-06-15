@@ -1005,23 +1005,29 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
     );
 
     addBreakdownRow(
-      widget.lang == 'fr' ? 'Score exact' : (widget.lang == 'es' ? 'Resultado exacto' : 'Exact score'),
+      widget.lang == 'fr' ? 'Score exact 💯' : (widget.lang == 'es' ? 'Resultado exacto 💯' : 'Exact score 💯'),
       breakdown['exactScorePoints'],
-      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +100 pts $oddsStr ${widget.lang == 'fr' ? '(facteur de risque appliqué)' : '(risk factor applied)'}',
+      subtitle: widget.lang == 'fr'
+        ? 'Summum ! Base +200 pts $oddsStr × facteur risque (|GD| × 0.40 + buts × 0.20)'
+        : (widget.lang == 'es'
+          ? 'Summum ! Base +200 pts $oddsStr × factor riesgo'
+          : 'Summum! Base +200 pts $oddsStr × risk factor (|GD| × 0.40 + goals × 0.20)'),
       icon: '🎯',
     );
 
     addBreakdownRow(
       widget.lang == 'fr' ? 'Total de buts correct' : (widget.lang == 'es' ? 'Total de goles correcto' : 'Correct total goals'),
       breakdown['totalGoalsPoints'],
-      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +15 pts $oddsStr',
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +50 pts $oddsStr',
       icon: '⚽',
     );
 
     addBreakdownRow(
-      widget.lang == 'fr' ? 'Bonus Outsider' : (widget.lang == 'es' ? 'Bono Outsider' : 'Outsider Bonus'),
+      widget.lang == 'fr' ? 'Bonus Outsider 🦁' : (widget.lang == 'es' ? 'Bono Outsider 🦁' : 'Outsider Bonus 🦁'),
       breakdown['outsiderPoints'],
-      subtitle: widget.lang == 'fr' ? 'Victoire surprise d\'un outsider' : 'Surprise outsider victory',
+      subtitle: widget.lang == 'fr'
+        ? '+100 pts fixe — victoire surprise (prob. < 30%)'
+        : (widget.lang == 'es' ? '+100 pts fijo — victoria sorpresa (prob. < 30%)' : '+100 pts flat — upset win (prob. < 30%)'),
       icon: '⭐',
     );
 
@@ -1038,14 +1044,14 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
     addBreakdownRow(
       widget.lang == 'fr' ? 'Vainqueur en prolongations' : (widget.lang == 'es' ? 'Ganador en prórroga' : 'Extra time winner'),
       breakdown['extraTimePoints'],
-      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +20 pts $oddsStr',
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +150 pts $oddsStr',
       icon: '⏰',
     );
 
     addBreakdownRow(
       widget.lang == 'fr' ? 'Vainqueur aux tirs au but' : (widget.lang == 'es' ? 'Ganador en penaltis' : 'Penalty shootout winner'),
       breakdown['penaltyPoints'],
-      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +25 pts $oddsStr',
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +200 pts $oddsStr',
       icon: '🥅',
     );
 
