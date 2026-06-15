@@ -604,16 +604,34 @@
     "date": "2026-06-15T22:00:00Z",
     "t1": "sa",
     "t2": "uy",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "Hard Rock Stadium",
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-15T23:15:31.863Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "A. Al-Amri",
+        "minute": 41
+      }
+    ],
+    "stats": {
+      "possessionT1": 40,
+      "shotsT1": 5,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 5,
+      "foulsT2": 5,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537364",
