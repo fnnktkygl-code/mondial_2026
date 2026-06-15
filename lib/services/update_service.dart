@@ -181,8 +181,10 @@ class WCUpdateService {
           ElevatedButton(
             onPressed: () async {
               final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
+              try {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } catch (e) {
+                debugPrint('Impossible d\'ouvrir $uri : $e');
               }
             },
             style: ElevatedButton.styleFrom(

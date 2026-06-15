@@ -20,13 +20,9 @@ class _UpdateRequiredScreenState extends State<UpdateRequiredScreen> {
       final String updateUrl = await WCUpdateService.getUpdateUrl();
       final Uri uri = Uri.parse(updateUrl);
 
-      // externalNonBrowserApplication force Android à utiliser le gestionnaire de
-      // téléchargement plutôt qu'un navigateur, ce qui déclenche le téléchargement APK.
-      bool launched = await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
-      if (!launched) {
-        // Fallback : ouvrir dans n'importe quelle app externe (navigateur inclus)
-        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      // On utilise direct LaunchMode.externalApplication pour ouvrir le navigateur par défaut
+      // qui va gérer le téléchargement de l'APK de manière fiable et sécurisée.
+      bool launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched) {
         debugPrint('Impossible d\'ouvrir $uri');
       }

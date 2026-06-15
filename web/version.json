@@ -1,10 +1,10 @@
 {
-  "version": "1.3.3",
-  "buildNumber": 7,
+  "version": "1.3.4",
+  "buildNumber": 8,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Plafonnement des cotes à 5.0 pour rééquilibrer le classement, bonus outsider forfaitaire à 100 points, et correction de l'actualisation en temps réel de la minute de jeu.",
-    "en": "Capped odds multipliers to 5.0 to balance the standings, flat +100 points outsider bonus, and fixed real-time match minute updates.",
-    "es": "Límite de multiplicador de cuotas a 5.0 para reequilibrar la clasificación, bono outsider plano de 100 puntos, y corrección de actualización en tiempo real de minutos."
+    "fr": "Correction du bouton de téléchargement de la mise à jour (package visibility Android 11+), plafonnement des cotes à 5.0, et correction de l'actualisation en temps réel.",
+    "en": "Fixed update download button (Android 11+ package visibility queries), capped odds to 5.0, and fixed real-time match minute updates.",
+    "es": "Corrección del botón de actualización (Android 11+ queries), límite de multiplicador de cuotas a 5.0, y actualización en tiempo real."
   }
 }
