@@ -570,16 +570,34 @@
     "date": "2026-06-15T19:00:00Z",
     "t1": "be",
     "t2": "eg",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 1,
     "venue": "Lumen Field",
     "group": "G",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-15T21:24:11.934Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "E. Ashour",
+        "minute": 19
+      }
+    ],
+    "stats": {
+      "possessionT1": 53,
+      "shotsT1": 15,
+      "shotsT2": 14,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 15,
+      "foulsT2": 15,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537370",
