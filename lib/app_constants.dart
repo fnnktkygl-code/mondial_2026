@@ -200,7 +200,7 @@ const Map<String, double> kTeamRatings = {
   'it': 1704.73,
   'co': 1698.35,
   'mx': 1687.48,
-  'sn': 1686.41,
+  'sn': 1684.07,
   'uy': 1673.07,
   'us': 1671.23,
   'jp': 1661.58,
@@ -264,9 +264,9 @@ const Map<String, double> kTeamRatings = {
   'il': 1333.90,
   'bo': 1325.99,
   'xk': 1319.12,
-  'cw': 1320.00, // Curaçao
-  'ht': 1467.00, // Haïti
-  'nz': 1580.00, // Nouvelle-Zélande
+  'cw': 1294.77, // Curaçao — FIFA ranking juin 2026 (82e)
+  'ht': 1293.00, // Haïti — FIFA ranking juin 2026 (83e)
+  'nz': 1275.00, // Nouvelle-Zélande — FIFA ranking juin 2026 (85e)
 };
 
 // ─── UI ───────────────────────────────────────────────────────────────────────

@@ -33,20 +33,39 @@ void main() {
 
       test('Exact scoreline (4-1) returns outcome + GD bonus + exact bonus (scaled by betting odds & risk)', () {
         final pred = MatchPrediction(matchId: '1', t1Score: 4, t2Score: 1);
-        expect(PredictionService.evaluatePoints(match, pred), 1344);
+        // cw = 1294.77 (FIFA juin 2026), de = 1735.77
+        expect(PredictionService.evaluatePoints(match, pred), 1095);
       });
 
       test('Correct outcome (win) but wrong scoreline (2-0) returns outcome points (scaled by betting odds)', () {
         final pred = MatchPrediction(matchId: '1', t1Score: 2, t2Score: 0);
         // GD is 2 in prediction, 3 in actual match. No GD bonus if GD doesn't match.
-        // Actual GD = 3. Pred GD = 2. So 0 GD bonus.
-        expect(PredictionService.evaluatePoints(match, pred), 76);
+        // Actual GD = 3. Pred GD = 2. So 0 GD bonus. cw = 1294.77 (FIFA juin 2026)
+        expect(PredictionService.evaluatePoints(match, pred), 62);
       });
 
       test('Correct outcome (win) and matching GD (3-0) returns outcome + GD points (scaled by betting odds)', () {
         final pred = MatchPrediction(matchId: '1', t1Score: 3, t2Score: 0);
         // Actual GD = 3. Pred GD = 3. 
-        expect(PredictionService.evaluatePoints(match, pred), 378);
+        // cw = 1294.77 (FIFA juin 2026), de = 1735.77
+        expect(PredictionService.evaluatePoints(match, pred), 308);
+      });
+      
+      test('Near-miss GD: 7-1 actual, 5-0 prediction returns outcome + near-miss GD points (scaled by betting odds)', () {
+        final match71 = WorldCupMatch(
+          id: '1',
+          date: DateTime.now(),
+          t1: 'de',
+          t2: 'cw',
+          t1Score: 7,
+          t2Score: 1,
+          stage: '',
+        );
+        final pred50 = MatchPrediction(matchId: '1', t1Score: 5, t2Score: 0);
+        // actualGD = 6, predGD = 5 (near miss)
+        // Outcome base = 50. Near-miss GD base = 500 * 0.5 = 250.
+        // Total base = 300. cw = 1294.77 (FIFA juin 2026)
+        expect(PredictionService.evaluatePoints(match71, pred50), 369);
       });
       
       test('Incorrect outcome returns 0 points', () {
