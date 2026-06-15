@@ -1,10 +1,10 @@
 {
-  "version": "1.3.5",
-  "buildNumber": 9,
+  "version": "1.3.6",
+  "buildNumber": 10,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Suppression des espaces et sauts de ligne lors du traitement de l'URL de mise à jour pour éviter tout crash de redirection.",
-    "en": "Trimmed newlines and whitespaces from update URL to prevent redirection crashes.",
-    "es": "Eliminación de espacios y saltos de línea de la URL de actualización para evitar fallos."
+    "fr": "Mise à jour du barème des points et suppression des pronoms.",
+    "en": "Scoring table updates and pronouns removal.",
+    "es": "Actualización del sistema de puntos y eliminación de pronombres."
   }
 }
