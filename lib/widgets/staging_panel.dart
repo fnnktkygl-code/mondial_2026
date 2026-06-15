@@ -725,9 +725,31 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
         'Zizou10', 'TikiTaka', 'LaPulga', 'Maestro', 'GoldenBoot'
       ];
 
+      // Load matches to generate predictions
+      await PlayerDatabaseService.loadPlayers();
+      final List<WorldCupMatch> matches = await ApiService.loadMatches(forceRefresh: false);
+
       for (int i = 0; i < count; i++) {
         final pseudo = '${mockPseudos[random.nextInt(mockPseudos.length)]}${random.nextInt(999)}';
         final avatarId = random.nextInt(32) + 1;
+        
+        final Map<String, dynamic> predictionsMap = {};
+        for (final match in matches) {
+          if (match.t1.isEmpty || match.t2.isEmpty || match.t1 == 'TBD' || match.t2 == 'TBD') continue;
+          
+          // 80% chance to predict a match
+          if (random.nextDouble() < 0.8) {
+            final p1 = random.nextInt(4);
+            final p2 = random.nextInt(4);
+            predictionsMap[match.id] = {
+              'matchId': match.id,
+              't1Score': p1,
+              't2Score': p2,
+              'predictedScorers': {},
+              'outcomeOnly': false,
+            };
+          }
+        }
         
         await firestore.collection('users').add({
           'username': pseudo,
@@ -738,9 +760,10 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
           'isHidden': false,
           'isMock': true,
           'updatedAt': FieldValue.serverTimestamp(),
+          'predictions': predictionsMap,
         });
       }
-      _showSnackBar('$count joueurs générés !');
+      _showSnackBar('$count joueurs générés avec pronostics !');
     } catch (e) {
       _showSnackBar('Erreur : $e');
     } finally {

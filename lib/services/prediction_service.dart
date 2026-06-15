@@ -364,6 +364,18 @@ class PredictionService {
           supportedTeam: remoteJson['supportedTeam'],
         );
 
+        bool needsUpload = false;
+        if (localData != null) {
+          for (final key in localData.matchPredictions.keys) {
+            if (!remotePreds.containsKey(key)) {
+              needsUpload = true;
+              break;
+            }
+          }
+          if (localData.championCode != null && remoteJson['championCode'] == null) needsUpload = true;
+          if (localData.goldenBootPlayer != null && remoteJson['goldenBootPlayer'] == null) needsUpload = true;
+        }
+
         // Merge logic: prefer local but fill missing from remote
         remotePreds.forEach((key, value) {
           if (!finalData.matchPredictions.containsKey(key)) {
@@ -375,6 +387,10 @@ class PredictionService {
         finalData.goldenBootPlayer ??= remoteJson['goldenBootPlayer'];
         
         localData = finalData;
+
+        if (needsUpload) {
+          await savePredictionData(localData);
+        }
       }
     } catch (e) {
       debugPrint("Error loading predictions from Firestore: $e");
