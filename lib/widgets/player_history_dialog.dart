@@ -47,7 +47,6 @@ class PlayerHistoryDialog extends StatefulWidget {
 
 class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
   int _activeTabIndex = 0; // 0: Info & Badges, 1: Predictions History
-  bool _pronounsHistoryExpanded = false;
   final Set<String> _expandedMatchIds = {};
 
   @override
@@ -117,7 +116,6 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
 
   Widget _buildHeader(BuildContext context, int points, Map<String, dynamic> xp) {
     final hasAvatar = widget.predictionData.avatar.isNotEmpty;
-    final hasPronouns = widget.predictionData.pronouns != null && widget.predictionData.pronouns!.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
@@ -156,35 +154,6 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (hasPronouns) ...[
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _pronounsHistoryExpanded = !_pronounsHistoryExpanded;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.accent.withValues(alpha: 0.4), width: 1),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                widget.predictionData.pronouns!,
-                                style: const TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(width: 3),
-                              const Icon(Icons.history_rounded, color: AppColors.accent, size: 10),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -276,12 +245,6 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Pronouns History (Collapsible timeline)
-          if (_pronounsHistoryExpanded) ...[
-            _buildPronounsHistoryTimeline(context),
-            const SizedBox(height: 16),
-          ],
-
           // Tournament Predictions Overview
           Text(
             AppTranslations.get(widget.lang, 'tournamentPredictions').toUpperCase(),
@@ -304,117 +267,6 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
 
           // Badges Grid
           _buildBadgesGrid(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPronounsHistoryTimeline(BuildContext context) {
-    final history = widget.predictionData.pronounsHistory;
-    if (history.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.history_rounded, color: AppColors.textDim, size: 16),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                AppTranslations.get(widget.lang, 'noPronounHistory'),
-                style: const TextStyle(color: AppColors.textDim, fontSize: 12, fontStyle: FontStyle.italic),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final sortedHistory = List<PronounsHistoryItem>.from(history)
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppTranslations.get(widget.lang, 'pronounsHistory'),
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              GestureDetector(
-                onTap: () => setState(() => _pronounsHistoryExpanded = false),
-                child: const Icon(Icons.keyboard_arrow_up_rounded, color: AppColors.textDim, size: 18),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: sortedHistory.length,
-            itemBuilder: (context, index) {
-              final item = sortedHistory[index];
-              final dateStr = DateFormat('MMM dd, yyyy - HH:mm', widget.lang).format(item.updatedAt);
-              final isLast = index == sortedHistory.length - 1;
-
-              return IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.accent,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        if (!isLast)
-                          Expanded(
-                            child: Container(
-                              width: 1.5,
-                              color: AppColors.border,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.pronouns.isNotEmpty ? item.pronouns : AppTranslations.get(widget.lang, 'pronounsPreferNotToSay'),
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            dateStr,
-                            style: const TextStyle(color: AppColors.textDim, fontSize: 9),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
         ],
       ),
     );

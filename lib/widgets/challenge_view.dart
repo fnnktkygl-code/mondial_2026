@@ -323,10 +323,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                           Flexible(
                             child: Text(username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ),
-                          if (_userPreds.pronouns != null && _userPreds.pronouns!.isNotEmpty) ...[
-                            const SizedBox(width: 6),
-                            _buildBadge(_userPreds.pronouns!, AppColors.accent),
-                          ],
                           const SizedBox(width: 8),
                           if (streak >= 3) _buildBadge('🔥 $streak', AppColors.danger),
                           if (guruCount >= 1) ...[const SizedBox(width: 6), _buildBadge('🎯', AppColors.accent)],
