@@ -10,6 +10,7 @@ import 'player_database_service.dart';
 import 'prediction_service.dart';
 import 'odds_service.dart';
 import 'insights_service.dart';
+import 'espn_api_service.dart';
 
 class GenieAnalysis {
   final String summaryLine;
@@ -302,6 +303,42 @@ class GenieGeminiService {
     final team1Players = PlayerDatabaseService.getPlayersForTeam(team1Name);
     final team2Players = PlayerDatabaseService.getPlayersForTeam(team2Name);
 
+    // Try to load rosters/lineups from ESPN if available
+    MatchLineups? espnLineups = match.lineups;
+    if (espnLineups == null && match.espnId != null && match.espnId!.isNotEmpty) {
+      try {
+        final espnSummary = await EspnApiService.fetchMatchSummary(match.espnId!);
+        if (espnSummary != null && espnSummary.lineups != null) {
+          espnLineups = espnSummary.lineups;
+        }
+      } catch (e) {
+        debugPrint("GenieGeminiService: Failed to fetch lineups from ESPN for match ${match.id}: $e");
+      }
+    }
+
+    String squadsContext = "";
+    if (espnLineups != null) {
+      final t1Starters = espnLineups.t1Players.where((p) => p.starter).map((p) => "${p.name} (${p.position ?? ''})").toList();
+      final t1Bench = espnLineups.t1Players.where((p) => !p.starter).map((p) => p.name).toList();
+      final t2Starters = espnLineups.t2Players.where((p) => p.starter).map((p) => "${p.name} (${p.position ?? ''})").toList();
+      final t2Bench = espnLineups.t2Players.where((p) => !p.starter).map((p) => p.name).toList();
+
+      squadsContext = """
+$team1Name OFFICIAL LINEUP (Starters): ${t1Starters.join(', ')}
+$team1Name Bench/Subs: ${t1Bench.join(', ')}
+
+$team2Name OFFICIAL LINEUP (Starters): ${t2Starters.join(', ')}
+$team2Name Bench/Subs: ${t2Bench.join(', ')}
+Note: Lineups are official. Focus on starting forwards/midfielders for goalscorer predictions. Do not select goalscorers who are absent from the roster above.
+""";
+    } else {
+      squadsContext = """
+$team1Name Squad: ${team1Players.join(', ')}
+$team2Name Squad: ${team2Players.join(', ')}
+Note: If you predict any goalscorers, you MUST select them EXACTLY from these lists.
+""";
+    }
+
     final promptText = """
 You are "Genie Gemini", an expert football analyst, AI sports oracle, and game theorist. Analyze the upcoming FIFA World Cup 2026 match:
 Team 1: $team1Name (FIFA Rank: $rank1, Country Code: ${match.t1})
@@ -314,9 +351,8 @@ Odds (implied probabilities):
 
 Match History Fact: $matchupFact
 
-Here are the squads. If you predict any goalscorers, you MUST select them EXACTLY from these lists (otherwise return empty scorers):
-$team1Name Squad: ${team1Players.join(', ')}
-$team2Name Squad: ${team2Players.join(', ')}
+Here is the squad/lineup context:
+$squadsContext
 
 Predict the final score after 90 minutes of play (t1Score and t2Score).
 If this is a knockout match (${match.isKnockout}) AND you predict a draw (t1Score == t2Score), you MUST specify:
@@ -435,8 +471,16 @@ Also provide a confidenceScore between 0.0 and 1.0.
               final rawScorers = parsedResult['predictedScorers'] as Map<String, dynamic>? ?? {};
               rawScorers.forEach((key, value) {
                 final canonical = PlayerDatabaseService.findCanonicalName(key);
-                if (canonical != null && (team1Players.contains(canonical) || team2Players.contains(canonical))) {
-                  validatedScorers[canonical] = (value as num).toInt();
+                if (canonical != null) {
+                  if (espnLineups != null) {
+                    final allRosterNames = espnLineups.t1Players.map((p) => p.name.toLowerCase()).toList()
+                      + espnLineups.t2Players.map((p) => p.name.toLowerCase()).toList();
+                    if (allRosterNames.contains(canonical.toLowerCase())) {
+                      validatedScorers[canonical] = (value as num).toInt();
+                    }
+                  } else if (team1Players.contains(canonical) || team2Players.contains(canonical)) {
+                    validatedScorers[canonical] = (value as num).toInt();
+                  }
                 }
               });
 
