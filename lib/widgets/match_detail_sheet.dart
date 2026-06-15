@@ -2830,6 +2830,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   Widget _buildGenieOpinion() {
+    if (!kIsStaging) return const SizedBox.shrink();
     return FutureBuilder<PredictionData>(
       future: GenieGeminiService.loadBotData(widget.allMatches, lang: widget.lang),
       builder: (context, snapshot) {

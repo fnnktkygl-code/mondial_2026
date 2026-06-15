@@ -88,14 +88,16 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       final preds = await PredictionService.loadPredictionData();
       final groups = await PredictionService.loadChallengeGroups(preds, widget.matches);
       final uid = await WCFirebaseService.getOrCreateUserId();
-      final genieData = await GenieGeminiService.loadBotData(widget.matches, lang: widget.lang);
+      final genieData = kIsStaging
+          ? await GenieGeminiService.loadBotData(widget.matches, lang: widget.lang)
+          : null;
       if (mounted) {
         setState(() {
           _userPreds = preds;
           _groups = groups;
           _myUserId = uid;
           _genieGeminiData = genieData;
-          _genieGeminiPoints = genieData.points;
+          _genieGeminiPoints = genieData?.points;
           _isLoading = false;
         });
       }
@@ -1466,7 +1468,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         }
 
         // Inject Genie Gemini bot
-        if (_genieGeminiData != null) {
+        if (_genieGeminiData != null && kIsStaging) {
           computedUsers.add({
             'id': 'user_genie_gemini',
             'username': 'Genie Gemini',
