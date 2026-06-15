@@ -142,6 +142,93 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     }
   }
 
+  Future<void> _manageIgnoredMatches(BuildContext context) async {
+    setState(() => _isLoading = true);
+    try {
+      final matches = await ApiService.loadMatches();
+      final currentIgnored = await GenieGeminiService.getIgnoredMatchIds();
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.85,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1E1E2C),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.white12)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Exclure des Matchs (Genie Gemini)',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Fermer', style: TextStyle(color: Colors.cyanAccent)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: matches.length,
+                        itemBuilder: (context, index) {
+                          final match = matches[index];
+                          final isIgnored = currentIgnored.contains(match.id);
+                          final matchLabel = '${match.id.toUpperCase()} : ${AppTranslations.getTeam("fr", match.t1)} vs ${AppTranslations.getTeam("fr", match.t2)}';
+                          return CheckboxListTile(
+                            title: Text(matchLabel, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                            subtitle: Text(
+                              'Date: ${match.date.toLocal().toString().substring(0, 16)} | Élimination directe: ${match.isKnockout ? "Oui" : "Non"}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                            value: isIgnored,
+                            activeColor: Colors.redAccent,
+                            onChanged: (bool? value) async {
+                              if (value == true) {
+                                if (!currentIgnored.contains(match.id)) {
+                                  currentIgnored.add(match.id);
+                                }
+                              } else {
+                                currentIgnored.remove(match.id);
+                              }
+                              await GenieGeminiService.saveIgnoredMatchIds(currentIgnored);
+                              setSheetState(() {});
+                              await GenieGeminiService.loadBotData(matches);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showSnackBar('Erreur lors du chargement des matchs : $e');
+    }
+  }
+
   void _showSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
@@ -838,6 +925,13 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
               icon: const Icon(Icons.refresh),
               label: const Text('Forcer Régénération Genie Gemini'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : () => _manageIgnoredMatches(context),
+              icon: const Icon(Icons.playlist_remove),
+              label: const Text('Gérer les Matchs Exclus'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
             ),
           ],
         ),

@@ -89,6 +89,18 @@ class GenieGeminiService {
     await prefs.setString(_modelPrefsKey, model.trim());
   }
 
+  static const String _ignoredMatchesPrefsKey = 'genie_gemini_ignored_match_ids';
+
+  static Future<List<String>> getIgnoredMatchIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_ignoredMatchesPrefsKey) ?? [];
+  }
+
+  static Future<void> saveIgnoredMatchIds(List<String> ids) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_ignoredMatchesPrefsKey, ids);
+  }
+
   // ─── Core Prediction loading ───────────────────────────────────────────────
 
   /// Loads the full prediction profile for Genie Gemini.
@@ -177,8 +189,17 @@ class GenieGeminiService {
       await prefs.setString(_botPredictionsPrefsKey, jsonEncode(botData.toJson()));
     }
 
-    // Calculate dynamic score
-    botData.points = PredictionService.calculateTotalPoints(botData, allMatches);
+    // Calculate dynamic score excluding ignored matches
+    final ignoredIds = await getIgnoredMatchIds();
+    final cleanData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+    cleanData.championCode = botData.championCode;
+    cleanData.goldenBootPlayer = botData.goldenBootPlayer;
+    botData.matchPredictions.forEach((key, val) {
+      if (!ignoredIds.contains(key)) {
+        cleanData.matchPredictions[key] = val;
+      }
+    });
+    botData.points = PredictionService.calculateTotalPoints(cleanData, allMatches);
     return botData;
   }
 

@@ -5,6 +5,8 @@ import '../l10n/translations.dart';
 import '../models/match.dart';
 import '../services/prediction_service.dart';
 import '../services/genie_gemini_service.dart';
+import '../services/team_profile_service.dart';
+import 'team_profile_dialog.dart';
 import 'team_flag.dart';
 import 'wc_tooltip.dart';
 import 'profile_dialog.dart';
@@ -53,15 +55,47 @@ class PlayerHistoryDialog extends StatefulWidget {
 class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
   int _activeTabIndex = 0; // 0: Info & Badges, 1: Predictions History
   final Set<String> _expandedMatchIds = {};
+  List<String> _ignoredMatchIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isGenieGemini) {
+      _loadIgnoredMatches();
+    }
+  }
+
+  Future<void> _loadIgnoredMatches() async {
+    final ids = await GenieGeminiService.getIgnoredMatchIds();
+    if (mounted) {
+      setState(() {
+        _ignoredMatchIds = ids;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final hasPredictions = widget.predictionData.matchPredictions.isNotEmpty ||
         widget.predictionData.championCode != null ||
         widget.predictionData.goldenBootPlayer != null;
-    final totalPoints = hasPredictions
-        ? PredictionService.calculateTotalPoints(widget.predictionData, widget.allMatches)
-        : (widget.predictionData.points ?? 0);
+
+    final int totalPoints;
+    if (widget.isGenieGemini) {
+      final cleanData = PredictionData(username: 'Genie Gemini', avatar: '🧠');
+      cleanData.championCode = widget.predictionData.championCode;
+      cleanData.goldenBootPlayer = widget.predictionData.goldenBootPlayer;
+      widget.predictionData.matchPredictions.forEach((key, val) {
+        if (!_ignoredMatchIds.contains(key)) {
+          cleanData.matchPredictions[key] = val;
+        }
+      });
+      totalPoints = PredictionService.calculateTotalPoints(cleanData, widget.allMatches);
+    } else {
+      totalPoints = hasPredictions
+          ? PredictionService.calculateTotalPoints(widget.predictionData, widget.allMatches)
+          : (widget.predictionData.points ?? 0);
+    }
     final xpInfo = PredictionService.getXpDetails(totalPoints, widget.lang);
 
     final playedMatches = widget.allMatches.where((m) => widget.predictionData.matchPredictions.containsKey(m.id)).toList()
@@ -588,20 +622,21 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
     final canSeeDetails = widget.viewingOwnHistory || isFinished;
 
     final isBooster = widget.predictionData.boosterMatchIds.contains(match.id);
-    final points = isFinished ? PredictionService.evaluatePointsWithBooster(match, pred, isBooster) : 0;
+    final bool isExcluded = widget.isGenieGemini && _ignoredMatchIds.contains(match.id);
+    final points = (isFinished && !isExcluded) ? PredictionService.evaluatePointsWithBooster(match, pred, isBooster) : 0;
     final bool isExpanded = _expandedMatchIds.contains(match.id);
 
     return InkWell(
-      onTap: isFinished
+      onTap: isFinished && !isExcluded
           ? () {
-              setState(() {
-                if (isExpanded) {
-                  _expandedMatchIds.remove(match.id);
-                } else {
-                  _expandedMatchIds.add(match.id);
-                }
-              });
-            }
+               setState(() {
+                 if (isExpanded) {
+                   _expandedMatchIds.remove(match.id);
+                 } else {
+                   _expandedMatchIds.add(match.id);
+                 }
+               });
+             }
           : null,
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
@@ -612,7 +647,9 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isExpanded ? AppColors.accent.withValues(alpha: 0.5) : AppColors.border, 
+            color: isExcluded
+                ? Colors.redAccent.withValues(alpha: 0.3)
+                : (isExpanded ? AppColors.accent.withValues(alpha: 0.5) : AppColors.border), 
             width: isExpanded ? 1.5 : 1.0,
           ),
         ),
@@ -636,7 +673,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    if (isFinished)
+                    if (isFinished && !isExcluded)
                       Icon(
                         isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                         color: AppColors.textDim,
@@ -657,7 +694,31 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                 Expanded(child: _buildTeam(match.t2, false)),
               ],
             ),
-            if (isFinished) ...[
+            if (isExcluded) ...[
+              const SizedBox(height: 12),
+              const Divider(color: AppColors.border, height: 1),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      widget.lang == 'fr' 
+                          ? 'EXCLU' 
+                          : (widget.lang == 'es' ? 'EXCLUIDO' : 'EXCLUDED'),
+                      style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ] else if (isFinished) ...[
               const SizedBox(height: 12),
               const Divider(color: AppColors.border, height: 1),
               const SizedBox(height: 10),
@@ -694,6 +755,50 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                   style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
                 ),
               ),
+            if (widget.isGenieGemini) ...[
+              const SizedBox(height: 10),
+              const Divider(color: AppColors.border, height: 1),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.info_outline, size: 12, color: isExcluded ? Colors.redAccent.withValues(alpha: 0.7) : Colors.cyanAccent.withValues(alpha: 0.7)),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.lang == 'fr' 
+                        ? 'Sources :' 
+                        : (widget.lang == 'es' ? 'Fuentes:' : 'Sources:'),
+                    style: const TextStyle(color: AppColors.textDim, fontSize: 10),
+                  ),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: () => _showTeamWebView(context, match.t1),
+                    child: Text(
+                      '${AppTranslations.getTeam(widget.lang, match.t1)} (FIFA)',
+                      style: TextStyle(
+                        color: isExcluded ? Colors.redAccent : Colors.cyanAccent,
+                        fontSize: 10,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text('·', style: TextStyle(color: AppColors.textDim)),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: () => _showTeamWebView(context, match.t2),
+                    child: Text(
+                      '${AppTranslations.getTeam(widget.lang, match.t2)} (FIFA)',
+                      style: TextStyle(
+                        color: isExcluded ? Colors.redAccent : Colors.cyanAccent,
+                        fontSize: 10,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -1186,11 +1291,12 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
     if (mPred == null) return const SizedBox.shrink();
 
     final isPlayed = match.isPlayed;
+    final bool isExcluded = _ignoredMatchIds.contains(match.id);
     bool isCorrectOutcome = false;
     bool isExactScore = false;
     int ptsEarned = 0;
 
-    if (isPlayed) {
+    if (isPlayed && !isExcluded) {
       final singleMatchData = PredictionData(username: 'Bot');
       singleMatchData.matchPredictions[match.id] = mPred;
       ptsEarned = PredictionService.calculateTotalPoints(singleMatchData, widget.allMatches);
@@ -1220,7 +1326,12 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
 
     final String verdictText;
     final Color verdictColor;
-    if (!isPlayed) {
+    if (isExcluded) {
+      verdictText = widget.lang == 'fr' 
+          ? 'EXCLU DU CLASSEMENT' 
+          : (widget.lang == 'es' ? 'EXCLUIDO DEL RANKING' : 'EXCLUDED FROM STANDINGS');
+      verdictColor = Colors.redAccent;
+    } else if (!isPlayed) {
       verdictText = AppTranslations.get(widget.lang, 'geniePending');
       verdictColor = AppColors.textDim;
     } else if (isExactScore) {
@@ -1246,10 +1357,14 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
           color: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: isExpanded ? Colors.cyan.withValues(alpha: 0.4) : AppColors.border),
+            side: BorderSide(
+              color: isExcluded 
+                  ? Colors.redAccent.withValues(alpha: 0.3)
+                  : (isExpanded ? Colors.cyan.withValues(alpha: 0.4) : AppColors.border),
+            ),
           ),
           child: InkWell(
-            onTap: !isPlayed ? null : () {
+            onTap: !isPlayed || isExcluded ? null : () {
               setState(() {
                 if (isExpanded) {
                   _expandedMatchIds.remove(match.id);
@@ -1273,7 +1388,9 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                       Text(
                         isPlayed ? '${mPred.t1Score} - ${mPred.t2Score}' : AppTranslations.get(widget.lang, 'genieHiddenScore'),
                         style: TextStyle(
-                          color: isPlayed ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                          color: isExcluded
+                              ? Colors.redAccent.withValues(alpha: 0.6)
+                              : (isPlayed ? Colors.white : Colors.white.withValues(alpha: 0.5)),
                           fontWeight: FontWeight.w900,
                           fontSize: isPlayed ? 14 : 12,
                           fontFamily: isPlayed ? 'monospace' : null,
@@ -1288,18 +1405,18 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.cyan.withValues(alpha: 0.1),
+                            color: isExcluded ? Colors.redAccent.withValues(alpha: 0.1) : Colors.cyan.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.cyan.withValues(alpha: 0.3)),
+                            border: Border.all(color: isExcluded ? Colors.redAccent.withValues(alpha: 0.3) : Colors.cyan.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.psychology, size: 12, color: Colors.cyanAccent),
+                              Icon(Icons.psychology, size: 12, color: isExcluded ? Colors.redAccent : Colors.cyanAccent),
                               const SizedBox(width: 3),
                               Text(
                                 '${(analysis.confidenceScore * 100).round()}%',
-                                style: const TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: isExcluded ? Colors.redAccent : Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -1307,10 +1424,12 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                         const SizedBox(width: 8),
                       ],
                       Icon(
-                        !isPlayed
-                            ? Icons.lock_outline
-                            : (isExpanded ? Icons.expand_less : Icons.expand_more),
-                        color: AppColors.textDim,
+                        isExcluded 
+                            ? Icons.block
+                            : (!isPlayed
+                                ? Icons.lock_outline
+                                : (isExpanded ? Icons.expand_less : Icons.expand_more)),
+                        color: isExcluded ? Colors.redAccent : AppColors.textDim,
                         size: 18,
                       ),
                     ],
@@ -1398,6 +1517,27 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
             style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showTeamWebView(BuildContext context, String teamCode) {
+    final profile = WCTeamProfileService.getProfile(teamCode, widget.lang);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: WCEmbeddedWebView(
+          url: profile.profileUrl,
+          title: '${AppTranslations.getTeam(widget.lang, teamCode)} - FIFA Profile',
+        ),
       ),
     );
   }

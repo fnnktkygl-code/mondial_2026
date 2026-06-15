@@ -16,6 +16,7 @@ import '../services/insights_service.dart';
 import '../services/player_database_service.dart';
 import '../services/espn_api_service.dart';
 import '../services/genie_gemini_service.dart';
+import '../services/team_profile_service.dart';
 
 class MatchDetailSheet extends StatefulWidget {
   final WorldCupMatch match;
@@ -2831,20 +2832,25 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
   Widget _buildGenieOpinion() {
     if (!kIsStaging) return const SizedBox.shrink();
-    return FutureBuilder<PredictionData>(
-      future: GenieGeminiService.loadBotData(widget.allMatches, lang: widget.lang),
+    return FutureBuilder<List<dynamic>>(
+      future: Future.wait([
+        GenieGeminiService.loadBotData(widget.allMatches, lang: widget.lang),
+        GenieGeminiService.getIgnoredMatchIds(),
+      ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SizedBox.shrink();
         }
         
-        final botData = snapshot.data!;
+        final botData = snapshot.data![0] as PredictionData;
+        final ignoredIds = snapshot.data![1] as List<String>;
         final mPred = botData.matchPredictions[_matchState.id];
         if (mPred == null) return const SizedBox.shrink();
 
+        final isExcluded = ignoredIds.contains(_matchState.id);
         int ptsEarned = 0;
         final isPlayed = _matchState.isPlayed;
-        if (isPlayed) {
+        if (isPlayed && !isExcluded) {
           final singleMatchData = PredictionData(username: 'Bot');
           singleMatchData.matchPredictions[_matchState.id] = mPred;
           ptsEarned = PredictionService.calculateTotalPoints(singleMatchData, widget.allMatches);
@@ -2868,10 +2874,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.cyan.withValues(alpha: 0.3)),
+                border: Border.all(color: isExcluded ? Colors.redAccent.withValues(alpha: 0.3) : Colors.cyan.withValues(alpha: 0.3)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.cyanAccent.withValues(alpha: 0.05),
+                    color: isExcluded ? Colors.redAccent.withValues(alpha: 0.05) : Colors.cyanAccent.withValues(alpha: 0.05),
                     blurRadius: 10,
                   )
                 ],
@@ -2886,13 +2892,28 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.psychology, color: Colors.cyanAccent, size: 24),
+                          Icon(Icons.psychology, color: isExcluded ? Colors.redAccent : Colors.cyanAccent, size: 24),
                           const SizedBox(width: 8),
+                          if (isExcluded) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                              ),
+                              child: Text(
+                                widget.lang == 'fr' ? 'EXCLU' : (widget.lang == 'es' ? 'EXCLUIDO' : 'EXCLUDED'),
+                                style: const TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           if (isPlayed)
                             Text(
                               '${mPred.t1Score} - ${mPred.t2Score}',
-                              style: const TextStyle(
-                                color: Colors.cyanAccent,
+                              style: TextStyle(
+                                color: isExcluded ? Colors.redAccent : Colors.cyanAccent,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
                                 fontFamily: 'monospace',
@@ -2902,7 +2923,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                             Text(
                               AppTranslations.get(widget.lang, 'genieHiddenScore'),
                               style: TextStyle(
-                                color: Colors.cyanAccent.withValues(alpha: 0.6),
+                                color: isExcluded ? Colors.redAccent.withValues(alpha: 0.6) : Colors.cyanAccent.withValues(alpha: 0.6),
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -2929,11 +2950,19 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
                         ),
                       ],
-                      if (isPlayed) ...[
+                      if (isPlayed && !isExcluded) ...[
                         const SizedBox(height: 6),
                         Text(
                           '+$ptsEarned PTS',
                           style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ] else if (isExcluded) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          widget.lang == 'fr' 
+                              ? 'Exclu du classement (0 PTS)' 
+                              : (widget.lang == 'es' ? 'Excluido del ranking (0 PTS)' : 'Excluded from standings (0 PTS)'),
+                          style: const TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ],
                       if (isPlayed && analysis != null && analysis.summaryLine.isNotEmpty) ...[
@@ -2950,7 +2979,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           child: ExpansionTile(
                             title: Text(
                               AppTranslations.get(widget.lang, 'genieFullAnalysis'),
-                              style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: isExcluded ? Colors.redAccent : Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             tilePadding: EdgeInsets.zero,
                             childrenPadding: EdgeInsets.zero,
@@ -2972,6 +3001,53 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                           style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
                         ),
                       ],
+                      const SizedBox(height: 12),
+                      const Divider(color: Colors.white12, height: 1),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 12, color: isExcluded ? Colors.redAccent.withValues(alpha: 0.7) : Colors.cyanAccent.withValues(alpha: 0.7)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(
+                                  widget.lang == 'fr' 
+                                      ? 'Fiches FIFA :' 
+                                      : (widget.lang == 'es' ? 'Fichas FIFA:' : 'FIFA Profiles:'),
+                                  style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                                ),
+                                InkWell(
+                                  onTap: () => _showTeamWebView(context, _matchState.t1),
+                                  child: Text(
+                                    AppTranslations.getTeam(widget.lang, _matchState.t1),
+                                    style: TextStyle(
+                                      color: isExcluded ? Colors.redAccent : Colors.cyanAccent,
+                                      fontSize: 11,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                                const Text('·', style: TextStyle(color: AppColors.textDim)),
+                                InkWell(
+                                  onTap: () => _showTeamWebView(context, _matchState.t2),
+                                  child: Text(
+                                    AppTranslations.getTeam(widget.lang, _matchState.t2),
+                                    style: TextStyle(
+                                      color: isExcluded ? Colors.redAccent : Colors.cyanAccent,
+                                      fontSize: 11,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   );
                 },
@@ -2981,6 +3057,27 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           ],
         );
       },
+    );
+  }
+
+  void _showTeamWebView(BuildContext context, String teamCode) {
+    final profile = WCTeamProfileService.getProfile(teamCode, widget.lang);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: WCEmbeddedWebView(
+          url: profile.profileUrl,
+          title: '${AppTranslations.getTeam(widget.lang, teamCode)} - FIFA Profile',
+        ),
+      ),
     );
   }
 
