@@ -493,23 +493,44 @@
     "date": "2026-06-15T02:00:00Z",
     "t1": "se",
     "t2": "tn",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 5,
+    "t2Score": 1,
     "venue": "Estadio BBVA",
     "group": "F",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-15T02:06:16.118Z",
-    "goals": [],
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-15T07:36:23.274Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "A. Isak",
+        "minute": 30
+      },
+      {
+        "team": "t1",
+        "scorer": "V. Gyökeres",
+        "minute": 59
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Svanberg",
+        "minute": 84
+      },
+      {
+        "team": "t1",
+        "scorer": "Y. Ayari",
+        "minute": 90
+      }
+    ],
     "stats": {
-      "possessionT1": 58,
-      "shotsT1": 1,
-      "shotsT2": 0,
-      "shotsOnTargetT1": 0,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 0,
-      "foulsT2": 1,
+      "possessionT1": 48,
+      "shotsT1": 13,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 10,
+      "foulsT2": 8,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
