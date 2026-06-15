@@ -131,6 +131,7 @@ class WorldCupMatch {
   final List<GoalEvent> goals;
   final MatchStats? stats;
   final String? status; // TIMED / SCHEDULED / IN_PLAY / FINISHED / POSTPONED
+  final String? liveMinute; // "64'", "45+2'", etc.
   final DateTime? lastUpdated;
   final bool? _isKnockoutOverride; // explicit override from JSON
 
@@ -169,6 +170,7 @@ class WorldCupMatch {
     this.goals = const [],
     this.stats,
     this.status,
+    this.liveMinute,
     this.lastUpdated,
     bool? isKnockoutOverride,
     this.wentToET,
@@ -219,6 +221,7 @@ class WorldCupMatch {
           ? MatchStats.fromJson(json['stats'] as Map<String, dynamic>)
           : null,
       status: json['status'] as String?,
+      liveMinute: json['liveMinute'] as String?,
       lastUpdated: lastUpd,
       isKnockoutOverride: json['isKnockout'] as bool?,
       wentToET: json['wentToET'] as bool?,
@@ -260,6 +263,7 @@ class WorldCupMatch {
       'stage': stage,
       'isKnockout': isKnockout,
       'status': status,
+      'liveMinute': liveMinute,
       'goals': goals.map((g) => g.toJson()).toList(),
       if (stats != null) 'stats': stats!.toJson(),
       'wentToET': wentToET,
@@ -348,6 +352,7 @@ class WorldCupMatch {
     List<GoalEvent>? goals,
     MatchStats? stats,
     String? status,
+    String? liveMinute,
     DateTime? lastUpdated,
     bool? isKnockoutOverride,
     bool? wentToET,
@@ -375,6 +380,7 @@ class WorldCupMatch {
       goals: goals ?? this.goals,
       stats: stats ?? this.stats,
       status: status ?? this.status,
+      liveMinute: liveMinute ?? this.liveMinute,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       isKnockoutOverride: isKnockoutOverride ?? _isKnockoutOverride,
       wentToET: wentToET ?? this.wentToET,

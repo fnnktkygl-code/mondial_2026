@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-import 'dart:math';
 import '../services/odds_service.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -27,7 +26,7 @@ class MatchDetailSheet extends StatefulWidget {
   final List<String> boosterMatchIds;
   final Function(bool isBoosterActive)? onBoosterChanged;
   final Function(WorldCupMatch updatedMatch)? onMatchUpdated;
-  final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner, Map<String, int>? predictedScorers)? onPredictionChanged;
+  final Function(int t1Score, int t2Score, String? etWinner, bool? pkWinner, Map<String, int>? predictedScorers, bool outcomeOnly)? onPredictionChanged;
 
   const MatchDetailSheet({
     super.key,
@@ -54,6 +53,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   int? _localT2Score;
   String? _localEtWinner;
   bool? _localPkWinner;
+  bool _outcomeOnly = true;
   bool _isEditing = false;
   Timer? _countdownTimer;
   Timer? _funFactTimer;
@@ -117,11 +117,13 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       _localT2Score = widget.prediction!.t2Score;
       _localEtWinner = widget.prediction!.extraTimeWinner;
       _localPkWinner = widget.prediction!.penaltyWinner;
+      _outcomeOnly = widget.prediction!.outcomeOnly;
     } else {
       _localT1Score = 0;
       _localT2Score = 0;
       _localEtWinner = null;
       _localPkWinner = null;
+      _outcomeOnly = true;
     }
   }
 
@@ -602,11 +604,21 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
     final bool isLocked = PredictionService.isPredictionLocked(widget.match);
 
     if (isLocked) {
-      String predText = widget.prediction != null
-          ? 'Prono : ${widget.prediction!.t1Score} - ${widget.prediction!.t2Score}'
-          : AppTranslations.get(widget.lang, 'noPrediction');
-
-      if (widget.prediction != null) {
+      String predText = '';
+      if (widget.prediction == null) {
+        predText = AppTranslations.get(widget.lang, 'noPrediction');
+      } else if (widget.prediction!.outcomeOnly) {
+        final t1Name = AppTranslations.getTeam(widget.lang, _matchState.t1);
+        final t2Name = AppTranslations.getTeam(widget.lang, _matchState.t2);
+        if (widget.prediction!.t1Score > widget.prediction!.t2Score) {
+          predText = AppTranslations.get(widget.lang, 'outcomeT1Wins').replaceAll('{team}', t1Name);
+        } else if (widget.prediction!.t1Score < widget.prediction!.t2Score) {
+          predText = AppTranslations.get(widget.lang, 'outcomeT2Wins').replaceAll('{team}', t2Name);
+        } else {
+          predText = AppTranslations.get(widget.lang, 'outcomeDraw');
+        }
+      } else {
+        predText = 'Prono : ${widget.prediction!.t1Score} - ${widget.prediction!.t2Score}';
         if (widget.prediction!.penaltyWinner != null) {
           predText += ' (PK)';
         } else if (widget.prediction!.extraTimeWinner != null) {
@@ -731,7 +743,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     _localT1Score = 0;
                     _localT2Score = 0;
                   });
-                  widget.onPredictionChanged?.call(0, 0, null, null, null);
+                  widget.onPredictionChanged?.call(0, 0, null, null, null, true);
                 },
                 child: const Icon(Icons.delete_sweep_outlined, color: AppColors.danger, size: 20),
               ),
@@ -739,37 +751,57 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildScoreAdjuster(_localT1Score!, (val) => setState(() {
-                _localT1Score = val;
-                if (_localT1Score != _localT2Score) {
-                  _localEtWinner = null;
-                  _localPkWinner = null;
-                }
-              }), true),
-              const Text(
-                '-',
-                style: TextStyle(color: AppColors.borderStrong, fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              _buildScoreAdjuster(_localT2Score!, (val) => setState(() {
-                _localT2Score = val;
-                if (_localT1Score != _localT2Score) {
-                  _localEtWinner = null;
-                  _localPkWinner = null;
-                }
-              }), false),
+              _buildModeToggle(true, AppTranslations.get(widget.lang, 'predictionModeOutcome'), Icons.emoji_events_outlined),
+              const SizedBox(width: 12),
+              _buildModeToggle(false, AppTranslations.get(widget.lang, 'predictionModeExactScore'), Icons.track_changes_outlined),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildScorerPredictionSection(),
-          if (_matchState.isKnockout && _localT1Score == _localT2Score) ...[
+          const SizedBox(height: 24),
+          if (_outcomeOnly) ...[
+            Row(
+              children: [
+                _buildOutcomeButton(1, AppTranslations.getTeam(widget.lang, _matchState.t1)),
+                const SizedBox(width: 8),
+                _buildOutcomeButton(0, AppTranslations.get(widget.lang, 'drawLabel')),
+                const SizedBox(width: 8),
+                _buildOutcomeButton(-1, AppTranslations.getTeam(widget.lang, _matchState.t2)),
+              ],
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildScoreAdjuster(_localT1Score!, (val) => setState(() {
+                  _localT1Score = val;
+                  if (_localT1Score != _localT2Score) {
+                    _localEtWinner = null;
+                    _localPkWinner = null;
+                  }
+                }), true),
+                const Text(
+                  '-',
+                  style: TextStyle(color: AppColors.borderStrong, fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+                _buildScoreAdjuster(_localT2Score!, (val) => setState(() {
+                  _localT2Score = val;
+                  if (_localT1Score != _localT2Score) {
+                    _localEtWinner = null;
+                    _localPkWinner = null;
+                  }
+                }), false),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildScorerPredictionSection(),
+          ],
+          if (!_outcomeOnly && _matchState.isKnockout && _localT1Score == _localT2Score) ...[
             const SizedBox(height: 20),
             _buildKnockoutPredictionControls(),
           ],
           const SizedBox(height: 20),
           _buildBoosterSection(),
-          if (_scorerWarning() != null) ...[
+          if (!_outcomeOnly && _scorerWarning() != null) ...[
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -810,6 +842,95 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildModeToggle(bool isOutcome, String label, IconData icon) {
+    final bool active = _outcomeOnly == isOutcome;
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          setState(() {
+            _outcomeOnly = isOutcome;
+            if (isOutcome) {
+              _localPredictedScorers.clear();
+              if (_localT1Score == _localT2Score) {
+                // already a draw, keep it
+              } else if (_localT1Score! > _localT2Score!) {
+                _localT1Score = 1; _localT2Score = 0;
+              } else {
+                _localT1Score = 0; _localT2Score = 1;
+              }
+            }
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: active ? AppColors.accent.withValues(alpha: 0.1) : AppColors.cardDark,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: active ? AppColors.accent : AppColors.border,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: active ? AppColors.accent : AppColors.textDim, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: active ? AppColors.accent : AppColors.textDim,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOutcomeButton(int outcome, String label) {
+    final bool active = (outcome == 1 && _localT1Score! > _localT2Score!) ||
+                        (outcome == 0 && _localT1Score! == _localT2Score!) ||
+                        (outcome == -1 && _localT1Score! < _localT2Score!);
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            if (outcome == 1) {
+              _localT1Score = 1; _localT2Score = 0;
+            } else if (outcome == 0) {
+              _localT1Score = 0; _localT2Score = 0;
+            } else {
+              _localT1Score = 0; _localT2Score = 1;
+            }
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: active ? AppColors.accent : AppColors.cardDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: active ? AppColors.accent : AppColors.border),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: active ? Colors.black : AppColors.textSecondary,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -863,6 +984,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         _localEtWinner,
         _localPkWinner,
         _localPredictedScorers,
+        _outcomeOnly,
       );
     }
   }
@@ -893,6 +1015,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         _localEtWinner,
         _localPkWinner,
         _localPredictedScorers,
+        _outcomeOnly,
       );
     }
 
@@ -932,14 +1055,14 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       );
     }
 
-    final String phase = PredictionService.getMatchPhase(widget.match);
+    final String phase = PredictionService.getMatchPhase(widget.match, widget.allMatches);
     final int limit = PredictionService.getAvailableBoostersForPhase(phase);
     
     // Count how many boosters are used in this phase by looking up the matches
     int boostersUsedInPhase = 0;
     for (String id in widget.boosterMatchIds) {
       final m = widget.allMatches.firstWhere((element) => element.id == id, orElse: () => widget.allMatches.first);
-      if (PredictionService.getMatchPhase(m) == phase) {
+      if (PredictionService.getMatchPhase(m, widget.allMatches) == phase) {
         boostersUsedInPhase++;
       }
     }
@@ -1131,7 +1254,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
        else if (position == 'Defenders' || position == 'Goalkeepers') { ptsPerGoal = kScorerBonusDefenderOrGK; }
        
        points = ptsPerGoal;
-       if (actualCount == predictedCount) { points += kScorerExactCountBonus; }
+       if (actualCount == predictedCount) { 
+         final int bonusIndex = actualCount.clamp(0, kScorerExactCountBonusByGoals.length - 1);
+         points += kScorerExactCountBonusByGoals[bonusIndex]; 
+       }
     }
 
     final color = hasScored ? AppColors.accent : AppColors.danger;
@@ -1243,19 +1369,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       },
     );
   }
-
-  static const Map<String, Color> _positionColors = {
-    'Goalkeepers': Color(0xFFFFC107),
-    'Defenders':   Color(0xFF4CAF50),
-    'Midfielders': Color(0xFF2196F3),
-    'Forwards':    Color(0xFFF44336),
-  };
-  static const Map<String, String> _positionAbbr = {
-    'Goalkeepers': 'GK',
-    'Defenders':   'DEF',
-    'Midfielders': 'MID',
-    'Forwards':    'FWD',
-  };
 
   Widget _buildScorerList(List<String> players, String teamCode, StateSetter setPickerState) {
     if (players.isEmpty) {
@@ -1798,7 +1911,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               Positioned(
                 right: 48,
                 top: 12,
-                child: _matchState.isLive ? const _LivePulseBadge() : const SizedBox.shrink(),
+                child: _matchState.isLive ? _LivePulseBadge(minute: _matchState.liveMinute) : const SizedBox.shrink(),
               ),
               Positioned(
                 right: 8,
@@ -2130,62 +2243,63 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     ),
                   ],
                   const SizedBox(height: 48),
-                  ],
-                  ),
-                  ),
-                  ),
-                  ],
-                  ),
-                  );
-                  }
-                  }
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-                  class _LivePulseBadge extends StatefulWidget {
-                  const _LivePulseBadge();
+class _LivePulseBadge extends StatefulWidget {
+  final String? minute;
+  const _LivePulseBadge({super.key, this.minute});
 
-                  @override
-                  State<_LivePulseBadge> createState() => _LivePulseBadgeState();
-                  }
+  @override
+  State<_LivePulseBadge> createState() => _LivePulseBadgeState();
+}
 
-                  class _LivePulseBadgeState extends State<_LivePulseBadge> with SingleTickerProviderStateMixin {
-                  late AnimationController _controller;
-                  late Animation<double> _animation;
+class _LivePulseBadgeState extends State<_LivePulseBadge> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
-                  @override
-                  void initState() {
-                  super.initState();
-                  _controller = AnimationController(
-                  duration: const Duration(milliseconds: 1000),
-                  vsync: this,
-                  )..repeat(reverse: true);
-                  _animation = Tween<double>(begin: 0.4, end: 1.0).animate(_controller);
-                  }
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(_controller);
+  }
 
-                  @override
-                  void dispose() {
-                  _controller.dispose();
-                  super.dispose();
-                  }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-                  @override
-                  Widget build(BuildContext context) {
-                  return FadeTransition(
-                  opacity: _animation,
-                  child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                  'LIVE',
-                  style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  ),
-                  ),
-                  ),
-                  );
-                  }
-                  }
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          widget.minute ?? 'LIVE',
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -59,10 +59,11 @@ const int kExactScoreBonus = 200; // SUMMUM: Added on top of Outcome + GD (Incre
 const int kTotalGoalsBonus = 50; // (Increased to 50)
 
 // Scorers (Massive rewards for defenders/GKs)
-const int kScorerBonusForward = 50;      // (Increased to 50)
-const int kScorerBonusMidfielder = 100;   // (Increased to 100)
-const int kScorerBonusDefenderOrGK = 200; // High risk = High reward (Increased to 200)
-const int kScorerExactCountBonus = 80;   // Predicted 2 goals, got 2 (Increased to 80)
+const int kScorerBonusForward = 60;      // Was 50
+const int kScorerBonusMidfielder = 120;   // Was 100
+const int kScorerBonusDefenderOrGK = 250; // Was 200
+// Exponential bonus for exact count [0, 1 goal, 2 goals, 3 goals, 4+ goals]
+const List<int> kScorerExactCountBonusByGoals = [0, 0, 80, 200, 400, 700];
 
 // Stage Multipliers
 const double kKnockoutMultiplier = 1.5; // x1.5 for KO stage
@@ -78,8 +79,9 @@ const int kExactScorePoints = 75;
 const int kScorerMatchBonusPoints = 15;
 
 // Prise de risque
-const int kOutsiderBonusPoints = 50; // (Increased to 50)
+const int kOutsiderBonusPoints = 100; // Flat outsider bonus
 const double kOutsiderProbabilityThreshold = 0.30;
+const double kMaxOddsMultiplier = 5.0; // Cap on odds multiplier to prevent over-scaling on extreme underdogs
 
 // ─── XP / Niveaux ────────────────────────────────────────────────────────────
 const List<Map<String, dynamic>> kXpLevels = [

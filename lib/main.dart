@@ -323,6 +323,7 @@ class _MyHomePageState extends State<MyHomePage> {
               if (local.t1Score != espnMatch.t1Score || 
                   local.t2Score != espnMatch.t2Score ||
                   local.status != espnMatch.status ||
+                  local.liveMinute != espnMatch.liveMinute ||
                   local.espnId != espnMatch.id.replaceFirst('espn_', '')) {
                 
                 newMatches[i] = local.copyWith(
@@ -330,10 +331,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   t1Score: espnMatch.t1Score,
                   t2Score: espnMatch.t2Score,
                   status: espnMatch.status,
+                  liveMinute: espnMatch.liveMinute,
                   venue: espnMatch.venue ?? local.venue,
                   goals: espnMatch.goals,
                   stats: espnMatch.stats,
                   lastUpdated: DateTime.now(),
+                  wentToET: espnMatch.wentToET,
+                  wentToPK: espnMatch.wentToPK,
+                  etWinner: espnMatch.etWinner,
+                  pkWinner: espnMatch.pkWinner,
+                  t1Score90: espnMatch.t1Score90,
+                  t2Score90: espnMatch.t2Score90,
+                  t1ScoreET: espnMatch.t1ScoreET,
+                  t2ScoreET: espnMatch.t2ScoreET,
+                  t1ScorePK: espnMatch.t1ScorePK,
+                  t2ScorePK: espnMatch.t2ScorePK,
                 );
                 modified = true;
               }
@@ -1280,9 +1292,20 @@ class _MyHomePageState extends State<MyHomePage> {
                     t1Score: updatedMatch.t1Score,
                     t2Score: updatedMatch.t2Score,
                     status: updatedMatch.status,
+                    liveMinute: updatedMatch.liveMinute,
                     goals: updatedMatch.goals,
                     stats: updatedMatch.stats,
                     lastUpdated: updatedMatch.lastUpdated,
+                    wentToET: updatedMatch.wentToET,
+                    wentToPK: updatedMatch.wentToPK,
+                    etWinner: updatedMatch.etWinner,
+                    pkWinner: updatedMatch.pkWinner,
+                    t1Score90: updatedMatch.t1Score90,
+                    t2Score90: updatedMatch.t2Score90,
+                    t1ScoreET: updatedMatch.t1ScoreET,
+                    t2ScoreET: updatedMatch.t2ScoreET,
+                    t1ScorePK: updatedMatch.t1ScorePK,
+                    t2ScorePK: updatedMatch.t2ScorePK,
                   );
                   break;
                 }
@@ -1292,8 +1315,8 @@ class _MyHomePageState extends State<MyHomePage> {
             await _recalculateAndSyncPoints();
           }
         },
-        onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers) =>
-            _saveDirectPrediction(match.id, t1Score, t2Score, etWinner, pkWinner, predictedScorers),
+        onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers, outcomeOnly) =>
+            _saveDirectPrediction(match.id, t1Score, t2Score, etWinner, pkWinner, predictedScorers, outcomeOnly),
 
       ),
     );
@@ -1376,6 +1399,7 @@ class _MyHomePageState extends State<MyHomePage> {
     String? etWinner,
     bool? pkWinner,
     Map<String, int>? predictedScorers,
+    bool outcomeOnly,
   ) async {
     if (_userPreds == null) return;
 
@@ -1387,6 +1411,7 @@ class _MyHomePageState extends State<MyHomePage> {
         extraTimeWinner: etWinner,
         penaltyWinner: pkWinner,
         predictedScorers: predictedScorers,
+        outcomeOnly: outcomeOnly,
       );
     });
 
@@ -1586,19 +1611,6 @@ class _MyHomePageState extends State<MyHomePage> {
       'dk': '🇩🇰',
     };
     return flags[countryCode.toLowerCase()] ?? '🏳️';
-  }
-
-  String _getLanguageFlag(String langCode) {
-    switch (langCode) {
-      case 'fr':
-        return '🇫🇷';
-      case 'en':
-        return '🇬🇧';
-      case 'es':
-        return '🇪🇸';
-      default:
-        return '🏳️';
-    }
   }
 
   @override

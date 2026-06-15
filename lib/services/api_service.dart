@@ -89,6 +89,7 @@ class ApiService {
               t1Score: update.t1Score,
               t2Score: update.t2Score,
               status: update.status,
+              liveMinute: update.liveMinute,
               venue: update.venue ?? local.venue,
               goals: update.goals,
               stats: update.stats,
@@ -153,6 +154,7 @@ class ApiService {
         for (var item in decoded) {
           if (item['status'] == 'TIMED') {
             item['status'] = 'IN_PLAY';
+            item['liveMinute'] = "24'";
             item['t1Score'] = 1; // Simulate a goal
             item['t2Score'] = 0;
             modified = true;

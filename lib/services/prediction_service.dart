@@ -17,6 +17,7 @@ class MatchPrediction {
   final String? extraTimeWinner;
   final bool? penaltyWinner;
   final Map<String, int> predictedScorers;
+  final bool outcomeOnly;
 
   MatchPrediction({
     required this.matchId,
@@ -25,6 +26,7 @@ class MatchPrediction {
     this.extraTimeWinner,
     this.penaltyWinner,
     Map<String, int>? predictedScorers,
+    this.outcomeOnly = false,
   }) : predictedScorers = predictedScorers ?? {};
 
   factory MatchPrediction.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,7 @@ class MatchPrediction {
       extraTimeWinner: json['extraTimeWinner'] as String?,
       penaltyWinner: json['penaltyWinner'] as bool?,
       predictedScorers: scorers,
+      outcomeOnly: json['outcomeOnly'] as bool? ?? false,
     );
   }
 
@@ -59,6 +62,7 @@ class MatchPrediction {
       if (extraTimeWinner != null) 'extraTimeWinner': extraTimeWinner,
       if (penaltyWinner != null) 'penaltyWinner': penaltyWinner,
       if (predictedScorers.isNotEmpty) 'predictedScorers': predictedScorers,
+      'outcomeOnly': outcomeOnly,
     };
   }
 }
@@ -94,6 +98,7 @@ class PredictionData {
   Map<String, MatchPrediction> matchPredictions;
   String? pronouns;
   List<PronounsHistoryItem> pronounsHistory;
+  int? points;
 
   PredictionData({
     this.username = kDefaultUsername,
@@ -109,6 +114,7 @@ class PredictionData {
     Map<String, MatchPrediction>? preds,
     this.pronouns,
     List<PronounsHistoryItem>? pronounsHistory,
+    this.points,
   })  : matchPredictions = preds ?? {},
         boosterMatchIds = boosterMatchIds ?? [],
         pronounsHistory = pronounsHistory ?? [];
@@ -154,6 +160,7 @@ class PredictionData {
               .map((e) => PronounsHistoryItem.fromJson(Map<String, dynamic>.from(e as Map)))
               .toList()
           : [],
+      points: json['points'] as int?,
     );
   }
 
@@ -186,6 +193,7 @@ class PredictionData {
               .map((e) => PronounsHistoryItem.fromJson(Map<String, dynamic>.from(e as Map)))
               .toList()
           : [],
+      points: json['points'] as int?,
     );
   }
 
@@ -211,6 +219,7 @@ class PredictionData {
       'preds': predsJson,
       'pronouns': pronouns,
       'pronounsHistory': pronounsHistory.map((e) => e.toJson()).toList(),
+      if (points != null) 'points': points,
     };
   }
 }
@@ -382,22 +391,32 @@ class PredictionService {
 
   // ─── Scoring ─────────────────────────────────────────────────────────────────
 
-  static String getMatchPhase(WorldCupMatch match) {
+  static String getMatchPhase(WorldCupMatch match, List<WorldCupMatch> allMatches) {
     if (!match.isKnockout) {
-      return 'group'; // Un seul pool de Jokers pour toute la phase de poules
+      // Filter group stage matches
+      final groupMatches = allMatches.where((m) => !m.isKnockout).toList();
+      // Sort chronologically by date
+      groupMatches.sort((a, b) => a.date.compareTo(b.date));
+      // Find the index of the current match
+      final index = groupMatches.indexWhere((m) => m.id == match.id);
+      if (index == -1) {
+        return 'group_1'; // fallback
+      }
+      if (index < 24) return 'group_1';
+      if (index < 48) return 'group_2';
+      return 'group_3';
     }
     // Knockout phases
-    final mNum = int.tryParse(match.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-    if (mNum >= 73 && mNum <= 88) return 'round_32';
-    if (mNum >= 89 && mNum <= 96) return 'round_16';
-    if (mNum >= 97 && mNum <= 100) return 'quarter';
-    if (mNum >= 101 && mNum <= 102) return 'semi';
-    return 'final'; // 103, 104
+    final stg = match.stage;
+    if (stg == 'Round of 32') return 'round_32';
+    if (stg == 'Round of 16') return 'round_16';
+    if (stg == 'Quarter-Final') return 'quarter';
+    if (stg == 'Semi-Final') return 'semi';
+    return 'final'; // For 'Final' and 'Play-off for third place'
   }
 
   static int getAvailableBoostersForPhase(String phase) {
-    if (phase == 'group') return 3; // 3 jokers pour la phase de groupes
-    return 1; // 1 joker pour chaque phase éliminatoire
+    return 1; // 1 joker for each phase/session
   }
 
   static int evaluatePoints(WorldCupMatch match, MatchPrediction pred) {
@@ -415,14 +434,17 @@ class PredictionService {
     
     // Retrieve decimal odds from odds service (1X2)
     final odds = WCOddsService.calculateMatchOdds(match.t1, match.t2);
-    double oddsMultiplier = 1.0;
+    double rawOddsMultiplier = 1.0;
     if (predOutcome == 1) {
-      oddsMultiplier = odds['1'] ?? 1.0;
+      rawOddsMultiplier = odds['1'] ?? 1.0;
     } else if (predOutcome == -1) {
-      oddsMultiplier = odds['2'] ?? 1.0;
+      rawOddsMultiplier = odds['2'] ?? 1.0;
     } else {
-      oddsMultiplier = odds['X'] ?? 1.0;
+      rawOddsMultiplier = odds['X'] ?? 1.0;
     }
+    
+    // Cap the odds multiplier to prevent over-scaling on extreme underdogs
+    final double oddsMultiplier = rawOddsMultiplier.clamp(1.0, kMaxOddsMultiplier);
 
     double totalMatchPoints = 0.0;
 
@@ -430,36 +452,40 @@ class PredictionService {
       // 1. Base Outcome (Multiplied by outcome odds to reward risk)
       totalMatchPoints += kCorrectOutcomePoints * oddsMultiplier;
 
-      // 2. Goal Difference (GD) Bonus (Multiplied by outcome odds)
-      final actualGD = (actual1 - actual2).abs();
-      final predGD = (pred1 - pred2).abs();
-      if (actualGD == predGD) {
-        double gdPoints = 0;
-        if (actualGD == 0) { gdPoints = kGdDiff0Points.toDouble(); }
-        else if (actualGD == 1) { gdPoints = kGdDiff1Points.toDouble(); }
-        else if (actualGD == 2) { gdPoints = kGdDiff2Points.toDouble(); }
-        else if (actualGD == 3) { gdPoints = kGdDiff3Points.toDouble(); }
-        else if (actualGD >= 4) { gdPoints = kGdDiff4Points.toDouble(); }
-        
-        totalMatchPoints += gdPoints * oddsMultiplier;
-      }
+      // In outcomeOnly mode, we stop here for the match score part
+      if (!pred.outcomeOnly) {
+        // 2. Goal Difference (GD) Bonus (Multiplied by outcome odds)
+        final actualGD = (actual1 - actual2).abs();
+        final predGD = (pred1 - pred2).abs();
+        if (actualGD == predGD) {
+          double gdPoints = 0;
+          if (actualGD == 0) { gdPoints = kGdDiff0Points.toDouble(); }
+          else if (actualGD == 1) { gdPoints = kGdDiff1Points.toDouble(); }
+          else if (actualGD == 2) { gdPoints = kGdDiff2Points.toDouble(); }
+          else if (actualGD == 3) { gdPoints = kGdDiff3Points.toDouble(); }
+          else if (actualGD >= 4) { gdPoints = kGdDiff4Points.toDouble(); }
+          
+          totalMatchPoints += gdPoints * oddsMultiplier;
+        }
 
-      // 3. Exact Score "Summum" Bonus (Multiplied by odds and score risk/rarity factor)
-      if (isScoreExact) {
-        // High goals and high difference increase correct score rarity/risk
-        final double scoreRiskFactor = 1.0 + ((pred1 - pred2).abs() * 0.40) + ((pred1 + pred2) * 0.20);
-        totalMatchPoints += kExactScoreBonus * oddsMultiplier * scoreRiskFactor;
-      }
-      
-      // 4. Total Goals Bonus (if not exact score but same total; scaled by odds)
-      if (!isScoreExact && (actual1 + actual2 == pred1 + pred2)) {
-        totalMatchPoints += kTotalGoalsBonus * oddsMultiplier;
+        // 3. Exact Score "Summum" Bonus (Multiplied by odds and score risk/rarity factor)
+        if (isScoreExact) {
+          // High goals and high difference increase correct score rarity/risk
+          final double scoreRiskFactor = 1.0 + ((pred1 - pred2).abs() * 0.40) + ((pred1 + pred2) * 0.20);
+          totalMatchPoints += kExactScoreBonus * oddsMultiplier * scoreRiskFactor;
+        }
+        
+        // 4. Total Goals Bonus (if not exact score but same total; scaled by odds)
+        if (!isScoreExact && (actual1 + actual2 == pred1 + pred2)) {
+          totalMatchPoints += kTotalGoalsBonus * oddsMultiplier;
+        }
       }
     }
 
     // ── Scorer bonus (Exponential & scaled by team odds) ──
     double scorerBonus = 0.0;
-    if (pred.predictedScorers.isNotEmpty) {
+    // In outcomeOnly mode, we don't have scorers
+    if (!pred.outcomeOnly && pred.predictedScorers.isNotEmpty) {
       final actualGoalCounts = <String, int>{};
       for (final goal in match.goals) {
         if (goal.isOwnGoal) continue;
@@ -490,13 +516,16 @@ class PredictionService {
           if (position == 'Forwards') { ptsPerGoal = kScorerBonusForward.toDouble(); }
           else if (position == 'Defenders' || position == 'Goalkeepers') { ptsPerGoal = kScorerBonusDefenderOrGK.toDouble(); }
           
-          // Get the decimal odds of the team scoring (home team -> '1', away team -> '2')
-          final double teamOdds = goalEvent.team == 't1' ? (odds['1'] ?? 1.0) : (odds['2'] ?? 1.0);
+          // Get the decimal odds of the team scoring (home team -> '1', away team -> '2') and cap it
+          final double rawTeamOdds = goalEvent.team == 't1' ? (odds['1'] ?? 1.0) : (odds['2'] ?? 1.0);
+          final double teamOdds = rawTeamOdds.clamp(1.0, kMaxOddsMultiplier);
           double currentScorerPoints = ptsPerGoal * teamOdds;
           
           // Exponential: Exact goal count bonus (scaled by team odds)
           if (actualCount == predictedCount) {
-            currentScorerPoints += kScorerExactCountBonus * teamOdds;
+            // New logic: bonus depends on the number of goals
+            final int bonusIndex = actualCount.clamp(0, kScorerExactCountBonusByGoals.length - 1);
+            currentScorerPoints += kScorerExactCountBonusByGoals[bonusIndex] * teamOdds;
           }
           
           scorerBonus += currentScorerPoints;
@@ -504,12 +533,12 @@ class PredictionService {
       });
     }
 
-    // ── Outsider bonus (scaled by odds) ──
+    // ── Outsider bonus (flat) ──
     double outsiderBonus = 0.0;
     if (isOutcomeCorrect) {
-      double prob = 1.0 / oddsMultiplier;
+      double prob = 1.0 / rawOddsMultiplier;
       if (prob < kOutsiderProbabilityThreshold) {
-        outsiderBonus = kOutsiderBonusPoints * oddsMultiplier;
+        outsiderBonus = kOutsiderBonusPoints.toDouble();
       }
     }
 
@@ -557,6 +586,207 @@ class PredictionService {
     return pointsEarned;
   }
 
+  static Map<String, dynamic> evaluatePointsBreakdown(WorldCupMatch match, MatchPrediction pred, bool isBoosterActive) {
+    if (!match.isPlayed || match.t1Score == null || match.t2Score == null) {
+      return {
+        'outcomePoints': 0.0,
+        'gdPoints': 0.0,
+        'exactScorePoints': 0.0,
+        'totalGoalsPoints': 0.0,
+        'outsiderPoints': 0.0,
+        'scorerPoints': 0.0,
+        'scorerBreakdown': <String, double>{},
+        'extraTimePoints': 0.0,
+        'penaltyPoints': 0.0,
+        'knockoutMultiplier': 1.0,
+        'boosterMultiplier': 1.0,
+        'totalPoints': 0,
+        'oddsMultiplier': 1.0,
+        'isOutcomeCorrect': false,
+        'isScoreExact': false,
+        'isBoosterActive': isBoosterActive,
+        'outcomeText': '',
+      };
+    }
+
+    final actual1 = match.t1Score90 ?? match.t1Score!;
+    final actual2 = match.t2Score90 ?? match.t2Score!;
+    final pred1 = pred.t1Score;
+    final pred2 = pred.t2Score;
+
+    final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+    final predOutcome = pred1 > pred2 ? 1 : (pred1 < pred2 ? -1 : 0);
+    final bool isOutcomeCorrect = (actualOutcome == predOutcome);
+    final bool isScoreExact = (actual1 == pred1 && actual2 == pred2);
+    
+    // Retrieve decimal odds from odds service (1X2)
+    final odds = WCOddsService.calculateMatchOdds(match.t1, match.t2);
+    double rawOddsMultiplier = 1.0;
+    String outcomeText = '';
+    if (predOutcome == 1) {
+      rawOddsMultiplier = odds['1'] ?? 1.0;
+      outcomeText = '1';
+    } else if (predOutcome == -1) {
+      rawOddsMultiplier = odds['2'] ?? 1.0;
+      outcomeText = '2';
+    } else {
+      rawOddsMultiplier = odds['X'] ?? 1.0;
+      outcomeText = 'N';
+    }
+
+    final double oddsMultiplier = rawOddsMultiplier.clamp(1.0, kMaxOddsMultiplier);
+
+    double outcomePoints = 0.0;
+    double gdPoints = 0.0;
+    double exactScorePoints = 0.0;
+    double totalGoalsPoints = 0.0;
+
+    if (isOutcomeCorrect) {
+      // 1. Base Outcome
+      outcomePoints = kCorrectOutcomePoints * oddsMultiplier;
+
+      if (!pred.outcomeOnly) {
+        // 2. Goal Difference (GD) Bonus
+        final actualGD = (actual1 - actual2).abs();
+        final predGD = (pred1 - pred2).abs();
+        if (actualGD == predGD) {
+          double gdBase = 0;
+          if (actualGD == 0) { gdBase = kGdDiff0Points.toDouble(); }
+          else if (actualGD == 1) { gdBase = kGdDiff1Points.toDouble(); }
+          else if (actualGD == 2) { gdBase = kGdDiff2Points.toDouble(); }
+          else if (actualGD == 3) { gdBase = kGdDiff3Points.toDouble(); }
+          else if (actualGD >= 4) { gdBase = kGdDiff4Points.toDouble(); }
+          
+          gdPoints = gdBase * oddsMultiplier;
+        }
+
+        // 3. Exact Score Bonus
+        if (isScoreExact) {
+          final double scoreRiskFactor = 1.0 + ((pred1 - pred2).abs() * 0.40) + ((pred1 + pred2) * 0.20);
+          exactScorePoints = kExactScoreBonus * oddsMultiplier * scoreRiskFactor;
+        }
+        
+        // 4. Total Goals Bonus
+        if (!isScoreExact && (actual1 + actual2 == pred1 + pred2)) {
+          totalGoalsPoints = kTotalGoalsBonus * oddsMultiplier;
+        }
+      }
+    }
+
+    // Scorer Bonus
+    double scorerPoints = 0.0;
+    final Map<String, double> scorerBreakdown = <String, double>{};
+    if (!pred.outcomeOnly && pred.predictedScorers.isNotEmpty) {
+      final actualGoalCounts = <String, int>{};
+      for (final goal in match.goals) {
+        if (goal.isOwnGoal) continue;
+        final key = goal.scorer.trim().toLowerCase();
+        actualGoalCounts[key] = (actualGoalCounts[key] ?? 0) + 1;
+      }
+
+      pred.predictedScorers.forEach((predictedName, predictedCount) {
+        int actualCount = 0;
+        String? actualScorerName;
+        for (final entry in actualGoalCounts.entries) {
+          if (isSamePlayer(entry.key, predictedName)) {
+            actualCount = entry.value;
+            actualScorerName = entry.key;
+            break;
+          }
+        }
+        
+        if (actualCount > 0 && actualScorerName != null) {
+          final goalEvent = match.goals.firstWhere(
+            (g) => isSamePlayer(g.scorer, actualScorerName), 
+            orElse: () => GoalEvent(team: 't1', scorer: '', minute: 0)
+          );
+          final teamStr = goalEvent.team == 't1' ? match.t1 : match.t2;
+          final position = PlayerDatabaseService.getPlayerPosition(AppTranslations.getTeam('en', teamStr), actualScorerName);
+          
+          double ptsPerGoal = kScorerBonusMidfielder.toDouble();
+          if (position == 'Forwards') { ptsPerGoal = kScorerBonusForward.toDouble(); }
+          else if (position == 'Defenders' || position == 'Goalkeepers') { ptsPerGoal = kScorerBonusDefenderOrGK.toDouble(); }
+          
+          final double rawTeamOdds = goalEvent.team == 't1' ? (odds['1'] ?? 1.0) : (odds['2'] ?? 1.0);
+          final double teamOdds = rawTeamOdds.clamp(1.0, kMaxOddsMultiplier);
+          double currentScorerPoints = ptsPerGoal * teamOdds;
+          
+          if (actualCount == predictedCount) {
+            final int bonusIndex = actualCount.clamp(0, kScorerExactCountBonusByGoals.length - 1);
+            currentScorerPoints += kScorerExactCountBonusByGoals[bonusIndex] * teamOdds;
+          }
+          
+          scorerBreakdown[predictedName] = currentScorerPoints;
+          scorerPoints += currentScorerPoints;
+        }
+      });
+    }
+
+    // Outsider Bonus (flat)
+    double outsiderPoints = 0.0;
+    if (isOutcomeCorrect) {
+      double prob = 1.0 / rawOddsMultiplier;
+      if (prob < kOutsiderProbabilityThreshold) {
+        outsiderPoints = kOutsiderBonusPoints.toDouble();
+      }
+    }
+
+    double extraTimePoints = 0.0;
+    double penaltyPoints = 0.0;
+    double knockoutMultiplier = 1.0;
+
+    double matchSubtotal = outcomePoints + gdPoints + exactScorePoints + totalGoalsPoints + outsiderPoints + scorerPoints;
+
+    if (match.isKnockout) {
+      knockoutMultiplier = kKnockoutMultiplier;
+      matchSubtotal *= knockoutMultiplier;
+      
+      if (match.wentToET == true && pred.extraTimeWinner != null && match.etWinner == pred.extraTimeWinner) {
+        extraTimePoints = kExtraTimeBonusPoints * oddsMultiplier;
+      }
+      if (match.wentToPK == true && match.pkWinner != null) {
+        final bool predT1WinsPK = pred.penaltyWinner == true;
+        final String predPKWinner = predT1WinsPK ? match.t1 : match.t2;
+        if (predPKWinner.toLowerCase() == match.pkWinner!.toLowerCase()) {
+          penaltyPoints = kPenaltyShootoutBonusPoints * oddsMultiplier;
+        }
+      }
+    }
+
+    double finalScore = matchSubtotal + extraTimePoints + penaltyPoints;
+
+    double boosterMultiplier = 1.0;
+    if (isBoosterActive) {
+      if (isScoreExact) {
+        boosterMultiplier = 2.0;
+        finalScore *= 2.0;
+      } else if (isOutcomeCorrect) {
+        boosterMultiplier = 1.5;
+        finalScore *= 1.5;
+      }
+    }
+
+    return {
+      'outcomePoints': outcomePoints,
+      'gdPoints': gdPoints,
+      'exactScorePoints': exactScorePoints,
+      'totalGoalsPoints': totalGoalsPoints,
+      'outsiderPoints': outsiderPoints,
+      'scorerPoints': scorerPoints,
+      'scorerBreakdown': scorerBreakdown,
+      'extraTimePoints': extraTimePoints,
+      'penaltyPoints': penaltyPoints,
+      'knockoutMultiplier': knockoutMultiplier,
+      'boosterMultiplier': boosterMultiplier,
+      'totalPoints': finalScore.round(),
+      'oddsMultiplier': oddsMultiplier,
+      'isOutcomeCorrect': isOutcomeCorrect,
+      'isScoreExact': isScoreExact,
+      'isBoosterActive': isBoosterActive,
+      'outcomeText': outcomeText,
+    };
+  }
+
 
   // ─── Résultat du pronostic ───
 
@@ -570,10 +800,17 @@ class PredictionService {
     final pred = userPreds.matchPredictions[match.id];
     if (pred == null) return null;
 
-    // 1. Check for exact score
     final actual1 = match.t1Score90 ?? match.t1Score!;
     final actual2 = match.t2Score90 ?? match.t2Score!;
 
+    final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+    final predOutcome = pred.t1Score > pred.t2Score ? 1 : (pred.t1Score < pred.t2Score ? -1 : 0);
+
+    if (pred.outcomeOnly) {
+      return actualOutcome == predOutcome ? 'winner' : 'wrong';
+    }
+
+    // 1. Check for exact score
     if (pred.t1Score == actual1 && pred.t2Score == actual2) {
       if (!match.isKnockout) return 'exact';
       if (actual1 != actual2) return 'exact';
@@ -804,7 +1041,7 @@ class PredictionService {
     for (final match in matches) {
       if (match.isPlayed && match.t1Score != null && match.t2Score != null) {
         final pred = data.matchPredictions[match.id];
-        if (pred != null && match.t1Score == pred.t1Score && match.t2Score == pred.t2Score) {
+        if (pred != null && !pred.outcomeOnly && match.t1Score == pred.t1Score && match.t2Score == pred.t2Score) {
           count++;
         }
       }
@@ -889,9 +1126,20 @@ class PredictionService {
 
         for (final d in topSnap.docs) {
           final data = d.data();
+          final remoteData = PredictionData.fromFirestore(data);
+          
+          final int memberPoints;
+          if (remoteData.matchPredictions.isEmpty && 
+              remoteData.championCode == null && 
+              remoteData.goldenBootPlayer == null) {
+            memberPoints = data['points'] as int? ?? 0;
+          } else {
+            memberPoints = calculateTotalPoints(remoteData, matches);
+          }
+
           tempGlobalMembers.add(FriendScore(
             name: data['username'] ?? 'Unknown',
-            points: data['points'] ?? 0,
+            points: memberPoints,
             emblem: data['avatar'] ?? '👤',
             isUser: d.id == uid,
             userId: d.id,
@@ -1006,9 +1254,20 @@ class PredictionService {
                   .timeout(const Duration(seconds: 3));
               if (userDoc.exists) {
                 final uData = userDoc.data()!;
+                final remoteData = PredictionData.fromFirestore(uData);
+
+                final int memberPoints;
+                if (remoteData.matchPredictions.isEmpty && 
+                    remoteData.championCode == null && 
+                    remoteData.goldenBootPlayer == null) {
+                  memberPoints = uData['points'] as int? ?? 0;
+                } else {
+                  memberPoints = calculateTotalPoints(remoteData, matches);
+                }
+
                 return FriendScore(
                   name: uData['username'] ?? 'Unknown',
-                  points: uData['points'] ?? 0,
+                  points: memberPoints,
                   emblem: uData['avatar'] ?? '👤',
                   isUser: false,
                   userId: memberId,

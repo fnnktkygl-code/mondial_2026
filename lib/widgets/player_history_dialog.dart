@@ -48,10 +48,16 @@ class PlayerHistoryDialog extends StatefulWidget {
 class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
   int _activeTabIndex = 0; // 0: Info & Badges, 1: Predictions History
   bool _pronounsHistoryExpanded = false;
+  final Set<String> _expandedMatchIds = {};
 
   @override
   Widget build(BuildContext context) {
-    final totalPoints = PredictionService.calculateTotalPoints(widget.predictionData, widget.allMatches);
+    final hasPredictions = widget.predictionData.matchPredictions.isNotEmpty ||
+        widget.predictionData.championCode != null ||
+        widget.predictionData.goldenBootPlayer != null;
+    final totalPoints = hasPredictions
+        ? PredictionService.calculateTotalPoints(widget.predictionData, widget.allMatches)
+        : (widget.predictionData.points ?? 0);
     final xpInfo = PredictionService.getXpDetails(totalPoints, widget.lang);
 
     final playedMatches = widget.allMatches.where((m) => widget.predictionData.matchPredictions.containsKey(m.id)).toList()
@@ -675,76 +681,113 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
 
     final isBooster = widget.predictionData.boosterMatchIds.contains(match.id);
     final points = isFinished ? PredictionService.evaluatePointsWithBooster(match, pred, isBooster) : 0;
+    final bool isExpanded = _expandedMatchIds.contains(match.id);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                DateFormat('MMM dd - HH:mm', widget.lang).format(match.date),
-                style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold),
-              ),
-              if (isBooster)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
-                  child: const Text('JOKER 🔥', style: TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold)),
-                ),
-            ],
+    return InkWell(
+      onTap: isFinished
+          ? () {
+              setState(() {
+                if (isExpanded) {
+                  _expandedMatchIds.remove(match.id);
+                } else {
+                  _expandedMatchIds.add(match.id);
+                }
+              });
+            }
+          : null,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isExpanded ? AppColors.accent.withValues(alpha: 0.5) : AppColors.border, 
+            width: isExpanded ? 1.5 : 1.0,
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _buildTeam(match.t1, true)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: _buildScoreDisplay(match, pred, canSeeDetails),
-              ),
-              Expanded(child: _buildTeam(match.t2, false)),
-            ],
-          ),
-          if (isFinished) ...[
-            const SizedBox(height: 12),
-            const Divider(color: AppColors.border, height: 1),
-            const SizedBox(height: 10),
+        ),
+        child: Column(
+          children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Wrap(
-                    spacing: 4,
-                    runSpacing: 4,
-                    children: pred.predictedScorers.keys.map((s) => _buildScorerChip(s, match)).toList(),
-                  ),
+                Text(
+                  DateFormat('MMM dd - HH:mm', widget.lang).format(match.date),
+                  style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                  child: Text(
-                    '+$points PTS',
-                    style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 13, fontFamily: 'monospace'),
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isBooster) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
+                        child: const Text('JOKER 🔥', style: TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    if (isFinished)
+                      Icon(
+                        isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                        color: AppColors.textDim,
+                        size: 16,
+                      ),
+                  ],
                 ),
               ],
             ),
-          ],
-          if (!isFinished && !widget.viewingOwnHistory)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                AppTranslations.get(widget.lang, 'predictionLocked'),
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
-              ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _buildTeam(match.t1, true)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: _buildScoreDisplay(match, pred, canSeeDetails),
+                ),
+                Expanded(child: _buildTeam(match.t2, false)),
+              ],
             ),
-        ],
+            if (isFinished) ...[
+              const SizedBox(height: 12),
+              const Divider(color: AppColors.border, height: 1),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (!pred.outcomeOnly)
+                    Expanded(
+                      child: Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: pred.predictedScorers.keys.map((s) => _buildScorerChip(s, match)).toList(),
+                      ),
+                    )
+                  else
+                    const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                    child: Text(
+                      '+$points PTS',
+                      style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 13, fontFamily: 'monospace'),
+                    ),
+                  ),
+                ],
+              ),
+              if (isExpanded) _buildPointsBreakdown(match, pred, isBooster),
+            ],
+            if (!isFinished && !widget.viewingOwnHistory)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  AppTranslations.get(widget.lang, 'predictionLocked'),
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -777,17 +820,99 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
       );
     }
 
-    return Column(
-      children: [
-        Text(
-          '${pred.t1Score} - ${pred.t2Score}',
-          style: const TextStyle(color: AppColors.accent, fontSize: 18, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
-        ),
-        if (match.isPlayed)
-          Text(
-            'Final: ${match.t1Score} - ${match.t2Score}',
-            style: const TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold),
+    final pronoLabel = AppTranslations.get(widget.lang, 'predictionShort').toUpperCase();
+    final reelLabel = widget.lang == 'fr' ? 'RÉEL' : (widget.lang == 'es' ? 'REAL' : 'FINAL');
+
+    if (pred.outcomeOnly) {
+      String outcomeText = '';
+      if (pred.t1Score > pred.t2Score) {
+        outcomeText = '1';
+      } else if (pred.t1Score < pred.t2Score) {
+        outcomeText = '2';
+      } else {
+        outcomeText = 'N';
+      }
+
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Column(
+            children: [
+              Text(
+                pronoLabel,
+                style: const TextStyle(color: AppColors.textDim, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  outcomeText,
+                  style: const TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
           ),
+          if (match.isPlayed) ...[
+            const SizedBox(width: 12),
+            Container(width: 1, height: 24, color: AppColors.border),
+            const SizedBox(width: 12),
+            Column(
+              children: [
+                Text(
+                  reelLabel,
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${match.t1Score} - ${match.t2Score}',
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+                ),
+              ],
+            ),
+          ],
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Column(
+          children: [
+            Text(
+              pronoLabel,
+              style: const TextStyle(color: AppColors.textDim, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${pred.t1Score} - ${pred.t2Score}',
+              style: const TextStyle(color: AppColors.accent, fontSize: 16, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+            ),
+          ],
+        ),
+        if (match.isPlayed) ...[
+          const SizedBox(width: 12),
+          Container(width: 1, height: 24, color: AppColors.border),
+          const SizedBox(width: 12),
+          Column(
+            children: [
+              Text(
+                reelLabel,
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${match.t1Score} - ${match.t2Score}',
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -804,6 +929,200 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
       child: Text(
         name,
         style: TextStyle(color: didScore ? AppColors.accent : AppColors.textDim, fontSize: 9, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildPointsBreakdown(WorldCupMatch match, MatchPrediction pred, bool isBooster) {
+    final breakdown = PredictionService.evaluatePointsBreakdown(match, pred, isBooster);
+
+    final List<Widget> rows = [];
+
+    void addBreakdownRow(String label, double points, {String? subtitle, String? icon}) {
+      if (points == 0.0) return;
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  if (icon != null) ...[
+                    Text(icon, style: const TextStyle(fontSize: 14)),
+                    const SizedBox(width: 8),
+                  ],
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                      if (subtitle != null)
+                        Text(
+                          subtitle,
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 10),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+              Text(
+                '+${points.round()} PTS',
+                style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final double oddsMultiplier = breakdown['oddsMultiplier'] ?? 1.0;
+    final String oddsStr = '× ${oddsMultiplier.toStringAsFixed(2)}';
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Issue du match correcte' : (widget.lang == 'es' ? 'Resultado correcto' : 'Correct match outcome'),
+      breakdown['outcomePoints'],
+      subtitle: '${widget.lang == 'fr' ? 'Base' : 'Base'} +50 pts $oddsStr',
+      icon: '🏆',
+    );
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Différence de buts correcte' : (widget.lang == 'es' ? 'Diferencia de goles' : 'Correct goal difference'),
+      breakdown['gdPoints'],
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} $oddsStr',
+      icon: '📊',
+    );
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Score exact' : (widget.lang == 'es' ? 'Resultado exacto' : 'Exact score'),
+      breakdown['exactScorePoints'],
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +100 pts $oddsStr ${widget.lang == 'fr' ? '(facteur de risque appliqué)' : '(risk factor applied)'}',
+      icon: '🎯',
+    );
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Total de buts correct' : (widget.lang == 'es' ? 'Total de goles correcto' : 'Correct total goals'),
+      breakdown['totalGoalsPoints'],
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +15 pts $oddsStr',
+      icon: '⚽',
+    );
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Bonus Outsider' : (widget.lang == 'es' ? 'Bono Outsider' : 'Outsider Bonus'),
+      breakdown['outsiderPoints'],
+      subtitle: widget.lang == 'fr' ? 'Victoire surprise d\'un outsider' : 'Surprise outsider victory',
+      icon: '⭐',
+    );
+
+    final Map<String, dynamic> scorerBreakdown = breakdown['scorerBreakdown'] ?? {};
+    scorerBreakdown.forEach((scorerName, pts) {
+      addBreakdownRow(
+        '${widget.lang == 'fr' ? 'Buteur' : 'Scorer'} : $scorerName',
+        pts,
+        subtitle: widget.lang == 'fr' ? 'Bonus buteur' : 'Scorer bonus',
+        icon: '👟',
+      );
+    });
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Vainqueur en prolongations' : (widget.lang == 'es' ? 'Ganador en prórroga' : 'Extra time winner'),
+      breakdown['extraTimePoints'],
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +20 pts $oddsStr',
+      icon: '⏰',
+    );
+
+    addBreakdownRow(
+      widget.lang == 'fr' ? 'Vainqueur aux tirs au but' : (widget.lang == 'es' ? 'Ganador en penaltis' : 'Penalty shootout winner'),
+      breakdown['penaltyPoints'],
+      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} +25 pts $oddsStr',
+      icon: '🥅',
+    );
+
+    if (rows.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border, width: 1),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          widget.lang == 'fr' ? 'Aucun point marqué sur ce match.' : 'No points earned for this match.',
+          style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
+        ),
+      );
+    }
+
+    final double knockoutMultiplier = breakdown['knockoutMultiplier'] ?? 1.0;
+    final double boosterMultiplier = breakdown['boosterMultiplier'] ?? 1.0;
+    
+    final List<Widget> multiplierChips = [];
+    if (knockoutMultiplier > 1.0) {
+      multiplierChips.add(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppColors.purple.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.purple.withValues(alpha: 0.4), width: 1),
+          ),
+          child: Text(
+            '${widget.lang == 'fr' ? 'Phase finale' : 'Knockout'} (×$knockoutMultiplier)',
+            style: const TextStyle(color: AppColors.purple, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+    if (boosterMultiplier > 1.0) {
+      multiplierChips.add(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.amber.withValues(alpha: 0.4), width: 1),
+          ),
+          child: Text(
+            'JOKER (×$boosterMultiplier)',
+            style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            (widget.lang == 'fr' ? 'DÉTAIL DU SCORE' : 'POINTS BREAKDOWN').toUpperCase(),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          ),
+          const SizedBox(height: 8),
+          ...rows,
+          if (multiplierChips.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 6),
+              child: Divider(color: AppColors.border, height: 1),
+            ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: multiplierChips,
+            ),
+          ],
+        ],
       ),
     );
   }

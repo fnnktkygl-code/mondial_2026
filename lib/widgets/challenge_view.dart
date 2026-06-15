@@ -172,7 +172,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           await PredictionService.savePredictionData(_userPreds);
           _loadData();
         },
-        onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers) async {
+        onPredictionChanged: (t1Score, t2Score, etWinner, pkWinner, predictedScorers, outcomeOnly) async {
           setState(() {
             _userPreds.matchPredictions[match.id] = MatchPrediction(
               matchId: match.id,
@@ -181,6 +181,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
               extraTimeWinner: etWinner,
               penaltyWinner: pkWinner,
               predictedScorers: predictedScorers,
+              outcomeOnly: outcomeOnly,
             );
           });
           await PredictionService.savePredictionData(_userPreds);
@@ -533,184 +534,6 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
     );
   }
 
-  Widget _buildBoosterPanel() {
-    WorldCupMatch? boostedMatch;
-    if (_userPreds.boosterMatchId != null) {
-      final found = widget.matches.where((m) => m.id == _userPreds.boosterMatchId);
-      if (found.isNotEmpty) boostedMatch = found.first;
-    }
-
-    final bool isLocked = boostedMatch != null &&
-        widget.isLiveMode &&
-        (boostedMatch.isPlayed || boostedMatch.date.isBefore(DateTime.now()));
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      child: GestureDetector(
-        onTap: isLocked ? null : _showBoosterPicker,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(kCardRadius),
-            border: Border.all(
-              color: boostedMatch != null ? AppColors.warning : AppColors.borderMid,
-              width: boostedMatch != null ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.rocket_launch,
-                  color: boostedMatch != null ? AppColors.warning : AppColors.borderStrong,
-                  size: 16),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppTranslations.get(widget.lang, 'boosterLabel'),
-                      style: TextStyle(
-                        color: boostedMatch != null ? AppColors.warning : AppColors.borderStrong,
-                        fontSize: 11, fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      boostedMatch != null
-                          ? '${AppTranslations.getTeam(widget.lang, boostedMatch.t1)} vs ${AppTranslations.getTeam(widget.lang, boostedMatch.t2)} · ${boostedMatch.getFormattedDate(widget.lang)}'
-                          : AppTranslations.get(widget.lang, 'noMatchSelected'),
-                      style: TextStyle(
-                        color: boostedMatch != null ? AppColors.textBody : AppColors.textDim,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isLocked)
-                const Icon(Icons.lock, color: AppColors.warning, size: 14)
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
-                  ),
-                  child: Text(
-                    boostedMatch != null
-                        ? AppTranslations.get(widget.lang, 'change')
-                        : AppTranslations.get(widget.lang, 'select'),
-                    style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showBoosterPicker() {
-    final unplayed = widget.matches
-        .where((m) => !m.isPlayed && m.date.isAfter(DateTime.now()))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40, height: 5,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(color: AppColors.borderMid, borderRadius: BorderRadius.circular(2.5)),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppTranslations.get(widget.lang, 'chooseBoosterMatch'),
-                    style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  if (_userPreds.boosterMatchId != null)
-                    TextButton(
-                      onPressed: () async {
-                        setState(() => _userPreds.boosterMatchId = null);
-                        await PredictionService.savePredictionData(_userPreds);
-                        if (!ctx.mounted) return;
-                        Navigator.pop(ctx);
-                      },
-                      child: Text(AppTranslations.get(widget.lang, 'clear'),
-                          style: const TextStyle(color: AppColors.danger, fontSize: 13)),
-                    ),
-                ],
-              ),
-            ),
-            const Divider(color: AppColors.border, height: 1),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                itemCount: unplayed.length,
-                itemBuilder: (_, i) {
-                  final m = unplayed[i];
-                  final isSelected = _userPreds.boosterMatchId == m.id;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.warning.withValues(alpha: 0.07) : AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? AppColors.warning : AppColors.border,
-                        width: isSelected ? 1.5 : 1,
-                      ),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                      leading: TeamFlagWidget(code: m.t1, width: 28, height: 18, borderRadius: 4),
-                      title: Text(
-                        '${AppTranslations.getTeam(widget.lang, m.t1)} vs ${AppTranslations.getTeam(widget.lang, m.t2)}',
-                        style: TextStyle(
-                          color: isSelected ? AppColors.warning : AppColors.textSecondary,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                      subtitle: Text(m.getFormattedDate(widget.lang),
-                          style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
-                      trailing: isSelected
-                          ? const Icon(Icons.rocket_launch, color: AppColors.warning, size: 18)
-                          : null,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      onTap: () async {
-                        setState(() => _userPreds.boosterMatchId = m.id);
-                        await PredictionService.savePredictionData(_userPreds);
-                        if (!ctx.mounted) return;
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildFilterButton(String filter, String label) {
     final isSelected = _predsFilter == filter;
     return GestureDetector(
@@ -736,6 +559,41 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildOutcomeDisplayRow(WorldCupMatch m, MatchPrediction pred) {
+    String predText = '';
+    final t1Name = AppTranslations.getTeam(widget.lang, m.t1);
+    final t2Name = AppTranslations.getTeam(widget.lang, m.t2);
+    if (pred.t1Score > pred.t2Score) {
+      predText = AppTranslations.get(widget.lang, 'outcomeT1Wins').replaceAll('{team}', t1Name);
+    } else if (pred.t1Score < pred.t2Score) {
+      predText = AppTranslations.get(widget.lang, 'outcomeT2Wins').replaceAll('{team}', t2Name);
+    } else {
+      predText = AppTranslations.get(widget.lang, 'outcomeDraw');
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.emoji_events_outlined, color: AppColors.accent, size: 18),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              predText,
+              style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -841,14 +699,18 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             child: Column(
               children: [
                 if (!m.isPlayed) ...[
-                  _buildTeamDisplayRow(m.t1, hasPred ? p1Val : null, hasPred),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
-                  ),
-                  _buildTeamDisplayRow(m.t2, hasPred ? p2Val : null, hasPred),
+                  if (hasPred && pred.outcomeOnly) ...[
+                    _buildOutcomeDisplayRow(m, pred),
+                  ] else ...[
+                    _buildTeamDisplayRow(m.t1, hasPred ? p1Val : null, hasPred),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
+                    ),
+                    _buildTeamDisplayRow(m.t2, hasPred ? p2Val : null, hasPred),
+                  ],
                   if (hasPred) ...[
-                    if (m.isKnockout && p1Val == p2Val && (pred.extraTimeWinner != null || pred.penaltyWinner != null)) ...[
+                    if (!pred.outcomeOnly && m.isKnockout && p1Val == p2Val && (pred.extraTimeWinner != null || pred.penaltyWinner != null)) ...[
                       const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -864,7 +726,7 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                         ],
                       ),
                     ],
-                    if (pred.predictedScorers.isNotEmpty) ...[
+                    if (!pred.outcomeOnly && pred.predictedScorers.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
                         '${AppTranslations.get(widget.lang, 'scorers')}: ${pred.predictedScorers.entries.map((e) => "${e.key}${e.value > 1 ? ' x${e.value}' : ''}").join(', ')}',
@@ -967,14 +829,29 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '${AppTranslations.get(widget.lang, 'predictionShort')}: ${pred!.t1Score} — ${pred.t2Score}',
-                style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+                _buildPlayedPredictionText(pred!),
+                style: const TextStyle(color: AppColors.textDim, fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ],
           ),
         ],
       ],
     );
+  }
+
+  String _buildPlayedPredictionText(MatchPrediction pred) {
+    if (pred.outcomeOnly) {
+      final t1Name = AppTranslations.getTeam(widget.lang, widget.matches.firstWhere((m) => m.id == pred.matchId).t1);
+      final t2Name = AppTranslations.getTeam(widget.lang, widget.matches.firstWhere((m) => m.id == pred.matchId).t2);
+      if (pred.t1Score > pred.t2Score) {
+        return AppTranslations.get(widget.lang, 'outcomeT1Wins').replaceAll('{team}', t1Name);
+      } else if (pred.t1Score < pred.t2Score) {
+        return AppTranslations.get(widget.lang, 'outcomeT2Wins').replaceAll('{team}', t2Name);
+      } else {
+        return AppTranslations.get(widget.lang, 'outcomeDraw');
+      }
+    }
+    return '${AppTranslations.get(widget.lang, 'predictionShort')}: ${pred.t1Score} — ${pred.t2Score}';
   }
 
   Widget _buildPointsBadge(int points) {
@@ -1538,82 +1415,115 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
         }
 
         final allDocs = snapshot.data?.docs ?? [];
-        final docs = allDocs.where((doc) {
+        
+        // Compute points on-the-fly and filter
+        final List<Map<String, dynamic>> computedUsers = [];
+        for (final doc in allDocs) {
           final data = doc.data();
           final isHidden = data['isHidden'] as bool? ?? false;
-          final points = data['points'] as int? ?? 0;
           final username = (data['username'] as String? ?? '').trim();
-          if (doc.id == _myUserId) return true;
-          if (isHidden) return false;
-          if (points == 0 && username.isEmpty) return false;
-          return true;
-        }).take(50).toList();
+          final isMe = doc.id == _myUserId;
+          
+          if (!isMe) {
+            if (isHidden) continue;
+            final dbPoints = data['points'] as int? ?? 0;
+            if (dbPoints == 0 && username.isEmpty) continue;
+          }
 
-        if (docs.isEmpty) {
+          final remoteData = PredictionData.fromFirestore(data);
+          final int memberPoints;
+          if (remoteData.matchPredictions.isEmpty && 
+              remoteData.championCode == null && 
+              remoteData.goldenBootPlayer == null) {
+            memberPoints = data['points'] as int? ?? 0;
+          } else {
+            memberPoints = PredictionService.calculateTotalPoints(remoteData, widget.matches);
+          }
+
+          computedUsers.add({
+            'id': doc.id,
+            'username': username.isEmpty ? AppTranslations.get(widget.lang, 'playerDefault') : username,
+            'points': memberPoints,
+            'avatar': data['avatar'] as String? ?? '',
+            'isMe': isMe,
+          });
+        }
+
+        // Sort dynamically by computed points
+        computedUsers.sort((a, b) => (b['points'] as int).compareTo(a['points'] as int));
+
+        // Take top 50
+        final docsList = computedUsers.take(50).toList();
+
+        if (docsList.isEmpty) {
           return Center(child: Text(AppTranslations.get(widget.lang, 'noUsers'),
               style: const TextStyle(color: AppColors.textDim, fontSize: 13)));
         }
 
-        final myIdx  = docs.indexWhere((d) => d.id == _myUserId);
+        final myIdx  = docsList.indexWhere((u) => u['isMe'] == true);
         final myRank = myIdx >= 0 ? myIdx + 1 : null;
-        final myData = myIdx >= 0 ? docs[myIdx].data() : null;
+        final myUser = myIdx >= 0 ? docsList[myIdx] : null;
 
-        final maxPts = docs.isNotEmpty
-            ? ((docs.first.data()['points'] as int? ?? 0) > 0
-            ? (docs.first.data()['points'] as int)
-            : 1)
+        final int maxPts = docsList.isNotEmpty
+            ? ((docsList.first['points'] as int) > 0
+                ? (docsList.first['points'] as int)
+                : 1)
             : 1;
 
         return ListView.separated(
           padding: const EdgeInsets.all(16),
-          itemCount: docs.length + 1,
+          itemCount: docsList.length + 1,
           separatorBuilder: (_, _) => const SizedBox(height: 6),
           itemBuilder: (_, i) {
             if (i == 0) {
-              if (myRank == null || myData == null) return const SizedBox.shrink();
-              final pts = myData['points'] as int? ?? 0;
-              final pct = docs.isNotEmpty ? ((1 - (myRank - 1) / docs.length) * 100).round() : 0;
+              if (myRank == null || myUser == null) return const SizedBox.shrink();
+              final pts = myUser['points'] as int;
+              final pct = docsList.isNotEmpty ? ((1 - (myRank - 1) / docsList.length) * 100).round() : 0;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(kCardRadius),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.22), width: 1.5),
-                  ),
-                  child: Row(children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text('#$myRank',
-                          style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 16, height: 1)),
+                child: InkWell(
+                  onTap: () => _showUserHistory(myUser['id'], myUser['username']),
+                  borderRadius: BorderRadius.circular(kCardRadius),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(kCardRadius),
+                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.22), width: 1.5),
                     ),
-                    const SizedBox(width: 12),
-                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(
-                        AppTranslations.get(widget.lang, 'globalRank'),
-                        style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13),
+                    child: Row(children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('#$myRank',
+                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 16, height: 1)),
                       ),
-                      Text('$pts pts · top $pct%',
-                          style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
+                      const SizedBox(width: 12),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(
+                          AppTranslations.get(widget.lang, 'globalRank'),
+                          style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        Text('$pts pts · top $pct%',
+                            style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
+                      ]),
                     ]),
-                  ]),
+                  ),
                 ),
               );
             }
 
             final idx  = i - 1;
-            final data = docs[idx].data();
-            final username    = data['username'] as String? ?? AppTranslations.get(widget.lang, 'playerDefault');
-            final points      = data['points']   as int?    ?? 0;
-            final storedAvatar = data['avatar']  as String? ?? '';
-            final isMe = docs[idx].id == _myUserId;
-            final rank = idx + 1;
-            final barPct = (points / maxPts).clamp(0.0, 1.0);
+            final user = docsList[idx];
+            final username     = user['username'] as String;
+            final points       = user['points'] as int;
+            final storedAvatar = user['avatar'] as String;
+            final isMe         = user['isMe'] as bool;
+            final rank         = idx + 1;
+            final barPct       = (points / maxPts).clamp(0.0, 1.0);
 
             Widget rankWidget;
             if (rank == 1) {
@@ -1628,66 +1538,70 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   style: const TextStyle(color: AppColors.textDim, fontSize: 12, fontWeight: FontWeight.bold)));
             }
 
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isMe ? AppColors.accent.withValues(alpha: 0.05) : AppColors.card,
-                borderRadius: BorderRadius.circular(kButtonRadius),
-                border: Border.all(
-                  color: isMe ? AppColors.accent.withValues(alpha: 0.3) : AppColors.border,
-                  width: isMe ? 1.5 : 1,
-                ),
-              ),
-              child: Row(children: [
-                rankWidget,
-                const SizedBox(width: 12),
-                if (storedAvatar.isNotEmpty) ...[
-                  _buildEmblemWidget(storedAvatar, size: 24),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Text(
-                    isMe ? '$username ${AppTranslations.get(widget.lang, 'youSuffix')}' : username,
-                    style: TextStyle(
-                      color: isMe ? AppColors.accent : Colors.white,
-                      fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
+            return InkWell(
+              onTap: () => _showUserHistory(user['id'] as String?, username),
+              borderRadius: BorderRadius.circular(kButtonRadius),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isMe ? AppColors.accent.withValues(alpha: 0.05) : AppColors.card,
+                  borderRadius: BorderRadius.circular(kButtonRadius),
+                  border: Border.all(
+                    color: isMe ? AppColors.accent.withValues(alpha: 0.3) : AppColors.border,
+                    width: isMe ? 1.5 : 1,
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '$points ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
+                child: Row(children: [
+                  rankWidget,
+                  const SizedBox(width: 12),
+                  if (storedAvatar.isNotEmpty) ...[
+                    _buildEmblemWidget(storedAvatar, size: 24),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      isMe ? '$username ${AppTranslations.get(widget.lang, 'youSuffix')}' : username,
                       style: TextStyle(
-                        color: isMe ? AppColors.accent : AppColors.textMuted,
+                        color: isMe ? AppColors.accent : Colors.white,
                         fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
                         fontSize: 13,
                       ),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: 52, height: 3,
-                      decoration: BoxDecoration(
-                        color: AppColors.border,
-                        borderRadius: BorderRadius.circular(2),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$points ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
+                        style: TextStyle(
+                          color: isMe ? AppColors.accent : AppColors.textMuted,
+                          fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 13,
+                        ),
                       ),
-                      child: FractionallySizedBox(
-                        widthFactor: barPct,
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isMe ? AppColors.accent : AppColors.borderStrong,
-                            borderRadius: BorderRadius.circular(2),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 52, height: 3,
+                        decoration: BoxDecoration(
+                          color: AppColors.border,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: FractionallySizedBox(
+                          widthFactor: barPct,
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isMe ? AppColors.accent : AppColors.borderStrong,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ]),
+                    ],
+                  ),
+                ]),
+              ),
             );
           },
         );

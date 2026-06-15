@@ -51,6 +51,7 @@ class EspnApiService {
     final t2Code = _espnToInternal[awayCompetitor['team']['abbreviation']] ?? awayCompetitor['team']['abbreviation'].toLowerCase();
 
     final status = _mapEspnStatus(event['status']['type']['name']);
+    final liveMinute = event['status']['displayValue']?.toString();
     
     final List<GoalEvent> goals = [];
     int yellowCardsT1 = 0;
@@ -109,6 +110,7 @@ class EspnApiService {
       t1Score: int.tryParse(homeCompetitor['score'] ?? ''),
       t2Score: int.tryParse(awayCompetitor['score'] ?? ''),
       status: status,
+      liveMinute: liveMinute,
       venue: event['venue']?['displayName'],
       goals: goals,
       stats: stats,
@@ -153,6 +155,7 @@ class EspnApiService {
         final t2Code = _espnToInternal[awayCompetitor['team']['abbreviation']] ?? awayCompetitor['team']['abbreviation'].toLowerCase();
 
         final status = _mapEspnStatus(competition['status']['type']['name']);
+        final liveMinute = competition['status']['displayValue']?.toString();
 
         // Goals and Cards from keyEvents (more reliable than header details)
         final List<GoalEvent> goals = [];
@@ -224,6 +227,7 @@ class EspnApiService {
           t1Score: int.tryParse(homeCompetitor['score'] ?? ''),
           t2Score: int.tryParse(awayCompetitor['score'] ?? ''),
           status: status,
+          liveMinute: liveMinute,
           venue: data['gameInfo']?['venue']?['displayName'],
           goals: goals,
           stats: stats,

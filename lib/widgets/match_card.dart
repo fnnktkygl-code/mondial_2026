@@ -225,7 +225,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                   children: [
                     Row(
                       children: [
-                        if (live) const _LiveBadge() else Container(
+                        if (live || widget.match.isLive) _LiveBadge(minute: widget.match.liveMinute) else Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(color: AppColors.cardDark, borderRadius: BorderRadius.circular(10)),
                           child: Text(widget.match.getFormattedTime(), style: const TextStyle(color: AppColors.textPrimary, fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 13)),
@@ -267,13 +267,13 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Expanded(child: _buildTeamSection(widget.match.t1, t1Name, context, true)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: widget.match.isPlayed
+                      child: (widget.match.isPlayed || widget.match.isLive)
                           ? Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Safety: Fallback to '-' if a score is missing from the payload
                           Text(
-                            '${widget.match.t1Score ?? '-'} - ${widget.match.t2Score ?? '-'}',
+                            '${widget.match.t1Score ?? 0} - ${widget.match.t2Score ?? 0}',
                             style: const TextStyle(
                               color: AppColors.accent,
                               fontWeight: FontWeight.w900,
@@ -329,7 +329,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                             Icon(predIcon, color: predColor, size: 16),
                             const SizedBox(width: 6),
                             Text(
-                              '${AppTranslations.get(widget.lang, 'myPrediction')} : ${widget.userPrediction!.t1Score} - ${widget.userPrediction!.t2Score}',
+                              _buildPredictionText(),
                               style: TextStyle(
                                 color: widget.match.isPlayed ? predColor : AppColors.textDim,
                                 fontWeight: FontWeight.bold,
@@ -403,6 +403,22 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     );
   }
 
+  String _buildPredictionText() {
+    if (widget.userPrediction == null) return '';
+    if (widget.userPrediction!.outcomeOnly) {
+      final t1Name = AppTranslations.getTeam(widget.lang, widget.match.t1);
+      final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
+      if (widget.userPrediction!.t1Score > widget.userPrediction!.t2Score) {
+        return AppTranslations.get(widget.lang, 'outcomeT1Wins').replaceAll('{team}', t1Name);
+      } else if (widget.userPrediction!.t1Score < widget.userPrediction!.t2Score) {
+        return AppTranslations.get(widget.lang, 'outcomeT2Wins').replaceAll('{team}', t2Name);
+      } else {
+        return AppTranslations.get(widget.lang, 'outcomeDraw');
+      }
+    }
+    return '${AppTranslations.get(widget.lang, 'myPrediction')} : ${widget.userPrediction!.t1Score} - ${widget.userPrediction!.t2Score}';
+  }
+
   Widget _buildTeamSection(String teamCode, String teamName, BuildContext context, bool isLeft) {
     return GestureDetector(
       onTap: () {
@@ -431,11 +447,15 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
 }
 
 class _LiveBadge extends StatelessWidget {
-  const _LiveBadge();
+  final String? minute;
+  const _LiveBadge({this.minute});
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(kBadgeRadius)),
-    child: const Text('⚽ LIVE', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+    child: Text(
+      minute != null ? '⚽ $minute' : '⚽ LIVE',
+      style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2),
+    ),
   );
 }

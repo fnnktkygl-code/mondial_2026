@@ -161,21 +161,6 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
 
   final FocusNode _scorerFocusNode = FocusNode();
 
-  // Positions configurations
-  static const Map<String, Color> _positionColors = {
-    'Goalkeepers': Color(0xFFFFC107),
-    'Defenders': Color(0xFF4CAF50),
-    'Midfielders': Color(0xFF2196F3),
-    'Forwards': Color(0xFFF44336),
-  };
-
-  static const Map<String, String> _positionAbbr = {
-    'Goalkeepers': 'GK',
-    'Defenders': 'DEF',
-    'Midfielders': 'MID',
-    'Forwards': 'FWD',
-  };
-
   @override
   void initState() {
     super.initState();
