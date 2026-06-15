@@ -11,6 +11,7 @@ import '../app_constants.dart';
 import 'team_flag.dart';
 import 'profile_dialog.dart';
 import 'player_history_dialog.dart';
+import '../services/genie_gemini_service.dart';
 import 'user_statistics.dart';
 import 'wc_tooltip.dart';
 
@@ -48,6 +49,8 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   late String _subTab; // 'preds' | 'groups' | 'leaderboard'
   String _predsFilter = 'group'; // 'group' | 'knockout'
   String? _myUserId;
+  PredictionData? _genieGeminiData;
+  int? _genieGeminiPoints;
 
   // ── Contrôleurs ───────────────────────────────────────────────────────────
   final TextEditingController _codeController = TextEditingController();
@@ -85,11 +88,14 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
       final preds = await PredictionService.loadPredictionData();
       final groups = await PredictionService.loadChallengeGroups(preds, widget.matches);
       final uid = await WCFirebaseService.getOrCreateUserId();
+      final genieData = await GenieGeminiService.loadBotData(widget.matches, lang: widget.lang);
       if (mounted) {
         setState(() {
           _userPreds = preds;
           _groups = groups;
           _myUserId = uid;
+          _genieGeminiData = genieData;
+          _genieGeminiPoints = genieData.points;
           _isLoading = false;
         });
       }
@@ -117,6 +123,20 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
   void _showUserHistory(String? uid, String name) async {
     if (uid == null) return;
     
+    if (uid == 'user_genie_gemini') {
+      if (_genieGeminiData != null && mounted) {
+        PlayerHistoryDialog.show(
+          context: context,
+          predictionData: _genieGeminiData!,
+          allMatches: widget.matches,
+          lang: widget.lang,
+          viewingOwnHistory: false,
+          isGenieGemini: true,
+        );
+      }
+      return;
+    }
+
     final isMe = uid == _myUserId;
     if (isMe) {
       PlayerHistoryDialog.show(
@@ -1445,6 +1465,18 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
           });
         }
 
+        // Inject Genie Gemini bot
+        if (_genieGeminiData != null) {
+          computedUsers.add({
+            'id': 'user_genie_gemini',
+            'username': 'Genie Gemini',
+            'points': _genieGeminiPoints ?? 0,
+            'avatar': '🧠',
+            'isMe': false,
+            'isBot': true,
+          });
+        }
+
         // Sort dynamically by computed points
         computedUsers.sort((a, b) => (b['points'] as int).compareTo(a['points'] as int));
 
@@ -1534,18 +1566,31 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                   style: const TextStyle(color: AppColors.textDim, fontSize: 12, fontWeight: FontWeight.bold)));
             }
 
+            final isBot = user['isBot'] as bool? ?? false;
+
             return InkWell(
               onTap: () => _showUserHistory(user['id'] as String?, username),
               borderRadius: BorderRadius.circular(kButtonRadius),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isMe ? AppColors.accent.withValues(alpha: 0.05) : AppColors.card,
+                  color: isBot 
+                      ? Colors.cyan.withValues(alpha: 0.03)
+                      : (isMe ? AppColors.accent.withValues(alpha: 0.05) : AppColors.card),
                   borderRadius: BorderRadius.circular(kButtonRadius),
                   border: Border.all(
-                    color: isMe ? AppColors.accent.withValues(alpha: 0.3) : AppColors.border,
-                    width: isMe ? 1.5 : 1,
+                    color: isBot 
+                        ? Colors.cyanAccent.withValues(alpha: 0.7) 
+                        : (isMe ? AppColors.accent.withValues(alpha: 0.3) : AppColors.border),
+                    width: (isBot || isMe) ? 1.5 : 1,
                   ),
+                  boxShadow: isBot ? [
+                    BoxShadow(
+                      color: Colors.cyanAccent.withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    )
+                  ] : null,
                 ),
                 child: Row(children: [
                   rankWidget,
@@ -1558,9 +1603,17 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                     child: Text(
                       isMe ? '$username ${AppTranslations.get(widget.lang, 'youSuffix')}' : username,
                       style: TextStyle(
-                        color: isMe ? AppColors.accent : Colors.white,
-                        fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                        color: isBot 
+                            ? Colors.cyanAccent 
+                            : (isMe ? AppColors.accent : Colors.white),
+                        fontWeight: (isBot || isMe) ? FontWeight.bold : FontWeight.normal,
                         fontSize: 13,
+                        shadows: isBot ? [
+                          Shadow(
+                            color: Colors.cyanAccent.withValues(alpha: 0.5),
+                            blurRadius: 4,
+                          )
+                        ] : null,
                       ),
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
@@ -1571,8 +1624,10 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                       Text(
                         '$points ${AppTranslations.get(widget.lang, 'pointsSuffix')}',
                         style: TextStyle(
-                          color: isMe ? AppColors.accent : AppColors.textMuted,
-                          fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                          color: isBot 
+                              ? Colors.cyanAccent 
+                              : (isMe ? AppColors.accent : AppColors.textMuted),
+                          fontWeight: (isBot || isMe) ? FontWeight.bold : FontWeight.normal,
                           fontSize: 13,
                         ),
                       ),
@@ -1588,7 +1643,9 @@ class _ChallengeViewWidgetState extends State<ChallengeViewWidget> {
                           alignment: Alignment.centerLeft,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: isMe ? AppColors.accent : AppColors.borderStrong,
+                              color: isBot 
+                                  ? Colors.cyanAccent 
+                                  : (isMe ? AppColors.accent : AppColors.borderStrong),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),

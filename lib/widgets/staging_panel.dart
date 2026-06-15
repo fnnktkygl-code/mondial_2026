@@ -1,12 +1,16 @@
 import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/match.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/prediction_service.dart';
 import '../l10n/translations.dart';
 import '../services/player_database_service.dart';
+import '../services/genie_gemini_service.dart';
 
 // Player pools for simulation
 // REMOVED: Now using PlayerDatabaseService
@@ -42,12 +46,100 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   final _usersController = TextEditingController(text: '50');
   final _groupsController = TextEditingController(text: '10');
   final _levelController = TextEditingController(text: '3');
+  final _geminiApiKeyController = TextEditingController();
+  final _geminiModelController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     PlayerDatabaseService.loadPlayers();
+    _loadGeminiSettings();
+  }
+
+  @override
+  void dispose() {
+    _usersController.dispose();
+    _groupsController.dispose();
+    _levelController.dispose();
+    _geminiApiKeyController.dispose();
+    _geminiModelController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadGeminiSettings() async {
+    final key = await GenieGeminiService.getApiKey();
+    final model = await GenieGeminiService.getModel();
+    _geminiApiKeyController.text = key;
+    _geminiModelController.text = model;
+  }
+
+  Future<void> _saveGeminiSettings() async {
+    await GenieGeminiService.saveApiKey(_geminiApiKeyController.text);
+    await GenieGeminiService.saveModel(_geminiModelController.text);
+    _showSnackBar('Paramètres Gemini sauvegardés !');
+  }
+
+  Future<void> _testGeminiConnection() async {
+    setState(() => _isLoading = true);
+    final key = _geminiApiKeyController.text.trim();
+    if (key.isEmpty) {
+      _showSnackBar('Veuillez entrer une clé API Gemini.');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final model = _geminiModelController.text.trim();
+      final url = Uri.parse("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$key");
+      final requestBody = {
+        "contents": [
+          {
+            "parts": [
+              {"text": "Respond with the single word 'OK'."}
+            ]
+          }
+        ]
+      };
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(requestBody),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        _showSnackBar('Connexion Gemini réussie !');
+      } else {
+        _showSnackBar('Erreur API (${response.statusCode}) : ${response.body}');
+      }
+    } catch (e) {
+      _showSnackBar('Erreur de connexion : $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _forceRefreshGenieGemini() async {
+    setState(() => _isLoading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('genie_gemini_predictions');
+      final keys = prefs.getKeys();
+      for (final k in keys) {
+        if (k.startsWith('genie_gemini_analysis_')) {
+          await prefs.remove(k);
+        }
+      }
+      _showSnackBar('Cache Genie Gemini réinitialisé. Régénération...');
+      
+      final matches = await ApiService.loadMatches(forceRefresh: true);
+      await GenieGeminiService.loadBotData(matches);
+      _showSnackBar('Pronostics Genie Gemini régénérés !');
+    } catch (e) {
+      _showSnackBar('Erreur : $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _showSnackBar(String message) {
@@ -693,6 +785,59 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
                 const SizedBox(width: 10),
                 Expanded(child: ElevatedButton(onPressed: _isLoading ? null : _deleteAllGroups, style: ElevatedButton.styleFrom(backgroundColor: Colors.red), child: const Text('TOUT Purger'))),
               ],
+            ),
+            const Divider(height: 30),
+            const Text(
+              '🧠 Configuration Genie Gemini (AI Studio)',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.cyanAccent),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _geminiApiKeyController,
+              decoration: const InputDecoration(
+                labelText: 'Clé API Google AI Studio',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.key),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _geminiModelController,
+              decoration: const InputDecoration(
+                labelText: 'Modèle Gemini',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.android),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _saveGeminiSettings,
+                    icon: const Icon(Icons.save),
+                    label: const Text('Sauver'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan, foregroundColor: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _testGeminiConnection,
+                    icon: const Icon(Icons.network_ping),
+                    label: const Text('Tester'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _forceRefreshGenieGemini,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Forcer Régénération Genie Gemini'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
             ),
           ],
         ),

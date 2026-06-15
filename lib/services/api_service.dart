@@ -93,6 +93,7 @@ class ApiService {
               venue: update.venue ?? local.venue,
               goals: update.goals,
               stats: update.stats,
+              lineups: update.lineups ?? local.lineups,
               lastUpdated: DateTime.now(),
             );
             break;

@@ -4,6 +4,7 @@ import '../app_colors.dart';
 import '../l10n/translations.dart';
 import '../models/match.dart';
 import '../services/prediction_service.dart';
+import '../services/genie_gemini_service.dart';
 import 'team_flag.dart';
 import 'wc_tooltip.dart';
 import 'profile_dialog.dart';
@@ -13,6 +14,7 @@ class PlayerHistoryDialog extends StatefulWidget {
   final List<WorldCupMatch> allMatches;
   final String lang;
   final bool viewingOwnHistory;
+  final bool isGenieGemini;
 
   const PlayerHistoryDialog({
     super.key,
@@ -20,6 +22,7 @@ class PlayerHistoryDialog extends StatefulWidget {
     required this.allMatches,
     required this.lang,
     required this.viewingOwnHistory,
+    this.isGenieGemini = false,
   });
 
   static void show({
@@ -28,6 +31,7 @@ class PlayerHistoryDialog extends StatefulWidget {
     required List<WorldCupMatch> allMatches,
     required String lang,
     required bool viewingOwnHistory,
+    bool isGenieGemini = false,
   }) {
     showDialog(
       context: context,
@@ -37,6 +41,7 @@ class PlayerHistoryDialog extends StatefulWidget {
         allMatches: allMatches,
         lang: lang,
         viewingOwnHistory: viewingOwnHistory,
+        isGenieGemini: isGenieGemini,
       ),
     );
   }
@@ -104,6 +109,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                   children: [
                     _buildInfoTab(context),
                     _buildPredictionsTab(playedMatches),
+                    if (widget.isGenieGemini) _buildAiAnalysisTab(),
                   ],
                 ),
               ),
@@ -115,7 +121,56 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
   }
 
   Widget _buildHeader(BuildContext context, int points, Map<String, dynamic> xp) {
-    final hasAvatar = widget.predictionData.avatar.isNotEmpty;
+    final avatar = widget.predictionData.avatar;
+    final hasAssetAvatar = avatar.isNotEmpty && avatar.startsWith('assets/');
+    final isBot = widget.isGenieGemini;
+
+    Widget avatarWidget;
+    if (hasAssetAvatar) {
+      avatarWidget = Container(
+        width: 54,
+        height: 54,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: isBot ? Colors.cyanAccent : AppColors.accent, width: 2),
+          image: DecorationImage(image: AssetImage(avatar), fit: BoxFit.cover),
+          boxShadow: isBot ? [
+            BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.3), blurRadius: 8)
+          ] : null,
+        ),
+      );
+    } else if (avatar.isNotEmpty) {
+      avatarWidget = Container(
+        width: 54,
+        height: 54,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isBot ? Colors.cyan.withValues(alpha: 0.1) : AppColors.card,
+          border: Border.all(color: isBot ? Colors.cyanAccent : AppColors.accent, width: 2),
+          boxShadow: isBot ? [
+            BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.3), blurRadius: 8)
+          ] : null,
+        ),
+        child: Text(avatar, style: const TextStyle(fontSize: 32)),
+      );
+    } else {
+      avatarWidget = Container(
+        width: 54,
+        height: 54,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: isBot ? Colors.cyanAccent : AppColors.accent, width: 2),
+        ),
+        child: Icon(Icons.person, color: isBot ? Colors.cyanAccent : AppColors.accent, size: 32),
+      );
+    }
+
+    final String rankLabel = isBot
+        ? (widget.lang == 'fr'
+            ? 'Oracle IA'
+            : (widget.lang == 'es' ? 'Oráculo IA' : 'AI Oracle'))
+        : (xp['rankName'] as String);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
@@ -125,19 +180,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
       ),
       child: Row(
         children: [
-          // Avatar
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.accent, width: 2),
-              image: hasAvatar ? DecorationImage(image: AssetImage(widget.predictionData.avatar), fit: BoxFit.cover) : null,
-            ),
-            child: !hasAvatar
-                ? const Icon(Icons.person, color: AppColors.accent, size: 32)
-                : null,
-          ),
+          avatarWidget,
           const SizedBox(width: 14),
 
           // User Info
@@ -150,7 +193,14 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                     Flexible(
                       child: Text(
                         widget.predictionData.username.isEmpty ? AppTranslations.get(widget.lang, 'playerDefault') : widget.predictionData.username,
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: isBot ? Colors.cyanAccent : Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          shadows: isBot ? [
+                            Shadow(color: Colors.cyanAccent.withValues(alpha: 0.4), blurRadius: 4)
+                          ] : null,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -158,8 +208,12 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  xp['rankName'],
-                  style: const TextStyle(color: AppColors.textDim, fontSize: 12, fontWeight: FontWeight.w600),
+                  rankLabel,
+                  style: TextStyle(
+                    color: isBot ? Colors.cyanAccent.withValues(alpha: 0.7) : AppColors.textDim,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -201,6 +255,8 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
         children: [
           _buildTabButton(0, AppTranslations.get(widget.lang, 'badgesTab')),
           _buildTabButton(1, AppTranslations.get(widget.lang, 'historyTab')),
+          if (widget.isGenieGemini)
+            _buildTabButton(2, AppTranslations.get(widget.lang, 'genieAnalysisTab')),
         ],
       ),
     );
@@ -989,6 +1045,329 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
               children: multiplierChips,
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiAnalysisTab() {
+    final List<WorldCupMatch> sortedMatches = List.from(widget.allMatches)
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildAiTournamentPredictionsCard(),
+        const SizedBox(height: 16),
+        Text(
+          AppTranslations.get(widget.lang, 'historyTab').toUpperCase(),
+          style: const TextStyle(
+            color: AppColors.textDim,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...sortedMatches.map((match) => _buildAiMatchCard(match)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildAiTournamentPredictionsCard() {
+    final champCode = widget.predictionData.championCode;
+    final goldenBoot = widget.predictionData.goldenBootPlayer;
+    final champName = champCode != null 
+        ? AppTranslations.getTeam(widget.lang, champCode) 
+        : null;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppTranslations.get(widget.lang, 'tournamentPredictions').toUpperCase(),
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (champCode != null) ...[
+            Row(
+              children: [
+                const Text('🏆  ', style: TextStyle(fontSize: 18)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        champName ?? champCode.toUpperCase(),
+                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 2),
+                      FutureBuilder<String>(
+                        future: GenieGeminiService.getTournamentReasoning('champion', widget.lang),
+                        builder: (context, snapshot) {
+                          return Text(
+                            snapshot.data ?? '...',
+                            style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TeamFlagWidget(code: champCode, width: 24, height: 16, borderRadius: 3),
+              ],
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (goldenBoot != null) ...[
+            Row(
+              children: [
+                const Text('⚽  ', style: TextStyle(fontSize: 18)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        goldenBoot,
+                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 2),
+                      FutureBuilder<String>(
+                        future: GenieGeminiService.getTournamentReasoning('goldenboot', widget.lang),
+                        builder: (context, snapshot) {
+                          return Text(
+                            snapshot.data ?? '...',
+                            style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiMatchCard(WorldCupMatch match) {
+    final mPred = widget.predictionData.matchPredictions[match.id];
+    if (mPred == null) return const SizedBox.shrink();
+
+    final isPlayed = match.isPlayed;
+    bool isCorrectOutcome = false;
+    bool isExactScore = false;
+    int ptsEarned = 0;
+
+    if (isPlayed) {
+      final singleMatchData = PredictionData(username: 'Bot');
+      singleMatchData.matchPredictions[match.id] = mPred;
+      ptsEarned = PredictionService.calculateTotalPoints(singleMatchData, widget.allMatches);
+      
+      final actualWinner = match.getWinner();
+      final String predWinner;
+      if (mPred.extraTimeWinner != null) {
+        predWinner = mPred.extraTimeWinner == 't1' ? match.t1 : match.t2;
+      } else if (mPred.t1Score > mPred.t2Score) {
+        predWinner = match.t1;
+      } else if (mPred.t2Score > mPred.t1Score) {
+        predWinner = match.t2;
+      } else {
+        predWinner = ''; 
+      }
+      
+      if (actualWinner.isEmpty && predWinner.isEmpty) {
+        isCorrectOutcome = true;
+      } else if (actualWinner.isNotEmpty && predWinner.isNotEmpty && actualWinner.toLowerCase() == predWinner.toLowerCase()) {
+        isCorrectOutcome = true;
+      }
+      
+      if (match.t1Score == mPred.t1Score && match.t2Score == mPred.t2Score) {
+        isExactScore = true;
+      }
+    }
+
+    final String verdictText;
+    final Color verdictColor;
+    if (!isPlayed) {
+      verdictText = AppTranslations.get(widget.lang, 'geniePending');
+      verdictColor = AppColors.textDim;
+    } else if (isExactScore) {
+      verdictText = '${AppTranslations.get(widget.lang, 'genieCorrect')} (Exact) · +$ptsEarned pts';
+      verdictColor = Colors.cyanAccent;
+    } else if (isCorrectOutcome) {
+      verdictText = '${AppTranslations.get(widget.lang, 'genieCorrect')} · +$ptsEarned pts';
+      verdictColor = Colors.cyan;
+    } else {
+      verdictText = '${AppTranslations.get(widget.lang, 'genieIncorrect')} · +$ptsEarned pts';
+      verdictColor = AppColors.danger;
+    }
+
+    final isExpanded = _expandedMatchIds.contains(match.id);
+
+    return FutureBuilder<GenieAnalysis?>(
+      future: GenieGeminiService.getMatchAnalysis(match.id, match, widget.allMatches, lang: widget.lang),
+      builder: (context, snapshot) {
+        final analysis = snapshot.data;
+        
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          color: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: isExpanded ? Colors.cyan.withValues(alpha: 0.4) : AppColors.border),
+          ),
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                if (isExpanded) {
+                  _expandedMatchIds.remove(match.id);
+                } else {
+                  _expandedMatchIds.add(match.id);
+                }
+              });
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      TeamFlagWidget(code: match.t1, width: 24, height: 16, borderRadius: 3),
+                      const SizedBox(width: 6),
+                      Text(match.t1.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${mPred.t1Score} - ${mPred.t2Score}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, fontFamily: 'monospace'),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(match.t2.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(width: 6),
+                      TeamFlagWidget(code: match.t2, width: 24, height: 16, borderRadius: 3),
+                      const Spacer(),
+                      if (analysis != null) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.cyan.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.cyan.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.psychology, size: 12, color: Colors.cyanAccent),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${(analysis.confidenceScore * 100).round()}%',
+                                style: const TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Icon(
+                        isExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: AppColors.textDim,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                  if (mPred.predictedScorers.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '⚽ ${mPred.predictedScorers.keys.join(', ')}',
+                      style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        width: 6, height: 6,
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: verdictColor),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(verdictText, style: TextStyle(color: verdictColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  if (analysis != null && analysis.summaryLine.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      analysis.summaryLine,
+                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                  if (isExpanded) ...[
+                    const SizedBox(height: 12),
+                    const Divider(color: AppColors.border, height: 1),
+                    const SizedBox(height: 12),
+                    if (analysis == null)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent)),
+                        ),
+                      )
+                    else ...[
+                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieRankings'), analysis.rankingAnalysis, Icons.trending_up),
+                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieOdds'), analysis.oddsAnalysis, Icons.analytics_outlined),
+                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieHistory'), analysis.historyAnalysis, Icons.history),
+                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieSentiment'), analysis.sentimentAnalysis, Icons.insert_emoticon),
+                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieForm'), analysis.formAnalysis, Icons.bolt),
+                      _buildAnalysisSection(AppTranslations.get(widget.lang, 'genieScorers'), analysis.scorerReasoning, Icons.sports_soccer),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAnalysisSection(String title, String content, IconData icon) {
+    if (content.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: Colors.cyanAccent),
+              const SizedBox(width: 6),
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            content,
+            style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
+          ),
         ],
       ),
     );

@@ -15,6 +15,7 @@ import 'team_profile_dialog.dart';
 import '../services/insights_service.dart';
 import '../services/player_database_service.dart';
 import '../services/espn_api_service.dart';
+import '../services/genie_gemini_service.dart';
 
 class MatchDetailSheet extends StatefulWidget {
   final WorldCupMatch match;
@@ -65,6 +66,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   int _activeFactTeam = 0;
   Map<String, int> _localPredictedScorers = {};
   bool _localBoosterActive = false;
+  int _lineupSelectedTeamIndex = 0;
 
   @override
   void initState() {
@@ -824,6 +826,29 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               ),
             ),
           ],
+          if (!_outcomeOnly && _lineupScorerWarning() != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.danger.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.danger.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 15),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _lineupScorerWarning()!,
+                      style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -966,6 +991,50 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       if (widget.lang == 'fr') return '⚠️ Buteurs $teamName : $t2ScorerGoals buts saisis > $expectedT2 prédit';
       if (widget.lang == 'es') return '⚠️ Goleadores $teamName : $t2ScorerGoals > $expectedT2 previsto';
       return '⚠️ $teamName scorers: $t2ScorerGoals goals entered > $expectedT2 predicted';
+    }
+    return null;
+  }
+
+  String? _lineupScorerWarning() {
+    final lineups = _matchState.lineups;
+    if (lineups == null || _localPredictedScorers.isEmpty) return null;
+
+    final t1Players = lineups.t1Players;
+    final t2Players = lineups.t2Players;
+
+    final List<String> benchedOrAbsent = [];
+
+    for (final scorerName in _localPredictedScorers.keys) {
+      final normName = PlayerDatabaseService.normalize(scorerName);
+
+      final p1 = t1Players.firstWhere(
+        (p) => PlayerDatabaseService.normalize(p.name) == normName,
+        orElse: () => MatchLineupPlayer(name: '', starter: false),
+      );
+      final p2 = t2Players.firstWhere(
+        (p) => PlayerDatabaseService.normalize(p.name) == normName,
+        orElse: () => MatchLineupPlayer(name: '', starter: false),
+      );
+
+      final found = p1.name.isNotEmpty ? p1 : (p2.name.isNotEmpty ? p2 : null);
+
+      if (found == null) {
+        final statusText = AppTranslations.get(widget.lang, 'absentBadge');
+        benchedOrAbsent.add('$scorerName ($statusText)');
+      } else if (!found.starter) {
+        final statusText = AppTranslations.get(widget.lang, 'benchBadge');
+        benchedOrAbsent.add('$scorerName ($statusText)');
+      }
+    }
+
+    if (benchedOrAbsent.isNotEmpty) {
+      final joined = benchedOrAbsent.join(', ');
+      if (widget.lang == 'fr') {
+        return '⚠️ Attention, buteurs non titulaires : $joined. Vous pouvez modifier votre prono !';
+      } else if (widget.lang == 'es') {
+        return '⚠️ Goleadores no titulares: $joined. ¡Puedes modificar tu pronóstico!';
+      }
+      return '⚠️ Warning, non-starting scorers: $joined. You can modify your prediction!';
     }
     return null;
   }
@@ -1203,11 +1272,82 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   }
 
   Widget _buildScorerInputRow(String playerName, int goalCount) {
+    Widget? lineupBadge;
+    if (_matchState.lineups != null) {
+      final normName = PlayerDatabaseService.normalize(playerName);
+      final p1 = _matchState.lineups!.t1Players.firstWhere(
+        (p) => PlayerDatabaseService.normalize(p.name) == normName,
+        orElse: () => MatchLineupPlayer(name: '', starter: false),
+      );
+      final p2 = _matchState.lineups!.t2Players.firstWhere(
+        (p) => PlayerDatabaseService.normalize(p.name) == normName,
+        orElse: () => MatchLineupPlayer(name: '', starter: false),
+      );
+      final found = p1.name.isNotEmpty ? p1 : (p2.name.isNotEmpty ? p2 : null);
+
+      if (found == null) {
+        lineupBadge = Container(
+          margin: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.danger.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            AppTranslations.get(widget.lang, 'absentBadge').toUpperCase(),
+            style: const TextStyle(color: AppColors.danger, fontSize: 8, fontWeight: FontWeight.bold),
+          ),
+        );
+      } else if (!found.starter) {
+        lineupBadge = Container(
+          margin: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            AppTranslations.get(widget.lang, 'benchBadge').toUpperCase(),
+            style: const TextStyle(color: AppColors.warning, fontSize: 8, fontWeight: FontWeight.bold),
+          ),
+        );
+      } else {
+        lineupBadge = Container(
+          margin: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            AppTranslations.get(widget.lang, 'starterBadge').toUpperCase(),
+            style: const TextStyle(color: AppColors.accent, fontSize: 8, fontWeight: FontWeight.bold),
+          ),
+        );
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Expanded(child: Text(playerName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    playerName,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (lineupBadge != null) lineupBadge,
+              ],
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.remove_circle_outline, color: AppColors.textDim),
             onPressed: () => setState(() {
@@ -1288,8 +1428,43 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
   void _showScorerPicker(List<String> squad) {
     final t1En = AppTranslations.getTeam('en', _matchState.t1);
     final t2En = AppTranslations.getTeam('en', _matchState.t2);
-    final s1 = PlayerDatabaseService.getPlayersForTeam(t1En)..sort();
-    final s2 = PlayerDatabaseService.getPlayersForTeam(t2En)..sort();
+
+    int getPlayerLineupScore(String name, String teamEnName) {
+      if (_matchState.lineups == null) return 0;
+      final lineups = _matchState.lineups!;
+      final lineupPlayers = teamEnName == t1En ? lineups.t1Players : lineups.t2Players;
+      final normName = PlayerDatabaseService.normalize(name);
+      
+      final found = lineupPlayers.firstWhere(
+        (p) => PlayerDatabaseService.normalize(p.name) == normName,
+        orElse: () => MatchLineupPlayer(name: '', starter: false),
+      );
+
+      if (found.name.isEmpty) return 2; // absent
+      if (found.starter) return 0; // starter
+      return 1; // bench
+    }
+
+    final s1 = PlayerDatabaseService.getPlayersForTeam(t1En);
+    final s2 = PlayerDatabaseService.getPlayersForTeam(t2En);
+
+    if (_matchState.lineups != null) {
+      s1.sort((a, b) {
+        final scoreA = getPlayerLineupScore(a, t1En);
+        final scoreB = getPlayerLineupScore(b, t1En);
+        if (scoreA != scoreB) return scoreA.compareTo(scoreB);
+        return a.compareTo(b);
+      });
+      s2.sort((a, b) {
+        final scoreA = getPlayerLineupScore(a, t2En);
+        final scoreB = getPlayerLineupScore(b, t2En);
+        if (scoreA != scoreB) return scoreA.compareTo(scoreB);
+        return a.compareTo(b);
+      });
+    } else {
+      s1.sort();
+      s2.sort();
+    }
 
     showModalBottomSheet(
       context: context,
@@ -1375,6 +1550,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       return Center(child: Text(AppTranslations.get(widget.lang, 'scorerNotFound'), style: const TextStyle(color: AppColors.textDim)));
     }
 
+    final t1En = AppTranslations.getTeam('en', _matchState.t1);
+    final t2En = AppTranslations.getTeam('en', _matchState.t2);
+
     return ListView.builder(
       itemCount: players.length,
       itemBuilder: (context, index) {
@@ -1383,6 +1561,59 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
         final dbTeam = PlayerDatabaseService.getTeamForPlayer(p);
         final position = dbTeam != null ? PlayerDatabaseService.getPlayerPosition(dbTeam, p) : null;
+
+        Widget? statusBadge;
+        if (_matchState.lineups != null && dbTeam != null) {
+          final lineups = _matchState.lineups!;
+          final teamEnName = AppTranslations.getTeam('en', teamCode);
+          final lineupPlayers = teamEnName == t1En ? lineups.t1Players : lineups.t2Players;
+          final normName = PlayerDatabaseService.normalize(p);
+          final found = lineupPlayers.firstWhere(
+            (lp) => PlayerDatabaseService.normalize(lp.name) == normName,
+            orElse: () => MatchLineupPlayer(name: '', starter: false),
+          );
+
+          if (found.name.isEmpty) {
+            statusBadge = Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.danger.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                AppTranslations.get(widget.lang, 'absentBadge').toUpperCase(),
+                style: const TextStyle(color: AppColors.danger, fontSize: 8, fontWeight: FontWeight.bold),
+              ),
+            );
+          } else if (!found.starter) {
+            statusBadge = Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                AppTranslations.get(widget.lang, 'benchBadge').toUpperCase(),
+                style: const TextStyle(color: AppColors.warning, fontSize: 8, fontWeight: FontWeight.bold),
+              ),
+            );
+          } else {
+            statusBadge = Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                AppTranslations.get(widget.lang, 'starterBadge').toUpperCase(),
+                style: const TextStyle(color: AppColors.accent, fontSize: 8, fontWeight: FontWeight.bold),
+              ),
+            );
+          }
+        }
 
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -1402,7 +1633,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // 3. Le tag de position stylisé comme dans stats_view.dart
+              // 3. Le tag de position stylisé
               if (position != null) ...[
                 const SizedBox(width: 8),
                 Container(
@@ -1422,6 +1653,10 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     ),
                   ),
                 ),
+              ],
+              if (statusBadge != null) ...[
+                const SizedBox(width: 8),
+                statusBadge,
               ],
             ],
           ),
@@ -1558,6 +1793,345 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         ),
       ),
     );
+  }
+
+  Widget _buildLineupsSection() {
+    final lineups = _matchState.lineups;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTranslations.get(widget.lang, 'lineups').toUpperCase(),
+          style: const TextStyle(
+            color: AppColors.textDim,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: lineups == null
+              ? Row(
+                  children: [
+                    const Icon(Icons.groups_outlined, color: AppColors.textDim, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        AppTranslations.get(widget.lang, 'lineupsSoon'),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Segmented Toggle between Team 1 and Team 2
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _lineupSelectedTeamIndex = 0),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _lineupSelectedTeamIndex == 0
+                                    ? AppColors.card
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _lineupSelectedTeamIndex == 0
+                                      ? AppColors.accent.withValues(alpha: 0.5)
+                                      : Colors.transparent,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TeamFlagWidget.flag(_matchState.t1, width: 20, height: 14),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      AppTranslations.getTeam(widget.lang, _matchState.t1),
+                                      style: TextStyle(
+                                        color: _lineupSelectedTeamIndex == 0
+                                            ? AppColors.accent
+                                            : Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _lineupSelectedTeamIndex = 1),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _lineupSelectedTeamIndex == 1
+                                    ? AppColors.card
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _lineupSelectedTeamIndex == 1
+                                      ? AppColors.accent.withValues(alpha: 0.5)
+                                      : Colors.transparent,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TeamFlagWidget.flag(_matchState.t2, width: 20, height: 14),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      AppTranslations.getTeam(widget.lang, _matchState.t2),
+                                      style: TextStyle(
+                                        color: _lineupSelectedTeamIndex == 1
+                                            ? AppColors.accent
+                                            : Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Formation Display
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _lineupSelectedTeamIndex == 0
+                              ? (lineups.t1Formation != null ? '${AppTranslations.get(widget.lang, 'lineups')} : ${lineups.t1Formation}' : '')
+                              : (lineups.t2Formation != null ? '${AppTranslations.get(widget.lang, 'lineups')} : ${lineups.t2Formation}' : ''),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Divider(color: AppColors.borderMid),
+                    const SizedBox(height: 8),
+                    // Starters (Titulaires)
+                    Text(
+                      AppTranslations.get(widget.lang, 'startingXI').toUpperCase(),
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._buildLineupList(_lineupSelectedTeamIndex == 0 ? lineups.t1Players : lineups.t2Players, true),
+                    const SizedBox(height: 16),
+                    // Substitutes (Remplaçants)
+                    Text(
+                      AppTranslations.get(widget.lang, 'substitutes').toUpperCase(),
+                      style: const TextStyle(
+                        color: AppColors.info,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._buildLineupList(_lineupSelectedTeamIndex == 0 ? lineups.t1Players : lineups.t2Players, false),
+                    // Absents
+                    ..._buildAbsentsList(),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildLineupList(List<MatchLineupPlayer> players, bool startersOnly) {
+    final filtered = players.where((p) => p.starter == startersOnly).toList();
+    if (filtered.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 4),
+          child: Text('-', style: TextStyle(color: AppColors.textDim, fontSize: 13)),
+        )
+      ];
+    }
+
+    return filtered.map((player) {
+      final isScorerPredicted = _localPredictedScorers.containsKey(player.name);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: startersOnly ? AppColors.accent.withValues(alpha: 0.15) : AppColors.info.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                player.jersey ?? '-',
+                style: TextStyle(
+                  color: startersOnly ? AppColors.accent : AppColors.info,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                player.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (player.position != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.borderMid),
+                ),
+                child: Text(
+                  player.position!,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            if (isScorerPredicted) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sports_soccer, color: AppColors.accent, size: 10),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.lang == 'fr' ? 'Pronostiqué' : (widget.lang == 'es' ? 'Pronosticado' : 'Predicted'),
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ]
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildAbsentsList() {
+    final lineups = _matchState.lineups;
+    if (lineups == null) return [];
+
+    final teamCode = _lineupSelectedTeamIndex == 0 ? _matchState.t1 : _matchState.t2;
+    final teamNameEn = AppTranslations.getTeam('en', teamCode);
+    final squadPlayers = PlayerDatabaseService.getPlayersForTeam(teamNameEn);
+
+    final lineupPlayers = _lineupSelectedTeamIndex == 0 ? lineups.t1Players : lineups.t2Players;
+    final normalizedLineupNames = lineupPlayers.map((p) => PlayerDatabaseService.normalize(p.name)).toSet();
+
+    // Squad players not in lineup
+    final absentPlayers = squadPlayers.where((sp) {
+      return !normalizedLineupNames.contains(PlayerDatabaseService.normalize(sp));
+    }).toList();
+
+    if (absentPlayers.isEmpty) return [];
+
+    return [
+      const SizedBox(height: 16),
+      Text(
+        AppTranslations.get(widget.lang, 'absents').toUpperCase(),
+        style: const TextStyle(
+          color: AppColors.danger,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: absentPlayers.map((name) {
+          final isScorerPredicted = _localPredictedScorers.containsKey(name);
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isScorerPredicted ? AppColors.danger.withValues(alpha: 0.15) : AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: isScorerPredicted ? AppColors.danger : AppColors.borderMid),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: isScorerPredicted ? AppColors.danger : AppColors.textMuted,
+                    fontSize: 12,
+                    fontWeight: isScorerPredicted ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+                if (isScorerPredicted) ...[
+                  const SizedBox(width: 6),
+                  const Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 12),
+                ],
+              ],
+            ),
+          );
+        }).toList(),
+      )
+    ];
   }
 
   Widget _buildSmartAlerts(BuildContext context) {
@@ -2204,6 +2778,9 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     ),
                     const SizedBox(height: 20),
                   ],
+                  _buildGenieOpinion(),
+                  _buildLineupsSection(),
+                  const SizedBox(height: 20),
                   Text(
                     AppTranslations.get(widget.lang, 'setAlertTitle').toUpperCase(),
                     style: const TextStyle(
@@ -2246,6 +2823,165 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenieOpinion() {
+    return FutureBuilder<PredictionData>(
+      future: GenieGeminiService.loadBotData(widget.allMatches, lang: widget.lang),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+        
+        final botData = snapshot.data!;
+        final mPred = botData.matchPredictions[_matchState.id];
+        if (mPred == null) return const SizedBox.shrink();
+
+        int ptsEarned = 0;
+        final isPlayed = _matchState.isPlayed;
+        if (isPlayed) {
+          final singleMatchData = PredictionData(username: 'Bot');
+          singleMatchData.matchPredictions[_matchState.id] = mPred;
+          ptsEarned = PredictionService.calculateTotalPoints(singleMatchData, widget.allMatches);
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppTranslations.get(widget.lang, 'genieOpinion').toUpperCase(),
+              style: const TextStyle(
+                color: AppColors.textDim,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                letterSpacing: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.cyan.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.cyanAccent.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                  )
+                ],
+              ),
+              child: FutureBuilder<GenieAnalysis?>(
+                future: GenieGeminiService.getMatchAnalysis(_matchState.id, _matchState, widget.allMatches, lang: widget.lang),
+                builder: (context, analysisSnapshot) {
+                  final analysis = analysisSnapshot.data;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.psychology, color: Colors.cyanAccent, size: 24),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${mPred.t1Score} - ${mPred.t2Score}',
+                            style: const TextStyle(
+                              color: Colors.cyanAccent,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          const Spacer(),
+                          if (analysis != null) ...[
+                            Text(
+                              '${AppTranslations.get(widget.lang, 'genieConfidence')} : ${(analysis.confidenceScore * 100).round()}%',
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (mPred.predictedScorers.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          '⚽ ${mPred.predictedScorers.keys.join(', ')}',
+                          style: const TextStyle(color: AppColors.textDim, fontSize: 11, fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                      if (isPlayed) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          '+$ptsEarned PTS',
+                          style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                      if (analysis != null && analysis.summaryLine.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          analysis.summaryLine,
+                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                      if (analysis != null) ...[
+                        const SizedBox(height: 12),
+                        Theme(
+                          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                          child: ExpansionTile(
+                            title: Text(
+                              AppTranslations.get(widget.lang, 'genieFullAnalysis'),
+                              style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            tilePadding: EdgeInsets.zero,
+                            childrenPadding: EdgeInsets.zero,
+                            children: [
+                              const SizedBox(height: 8),
+                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieRankings'), analysis.rankingAnalysis, Icons.trending_up),
+                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieOdds'), analysis.oddsAnalysis, Icons.analytics_outlined),
+                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieHistory'), analysis.historyAnalysis, Icons.history),
+                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieSentiment'), analysis.sentimentAnalysis, Icons.insert_emoticon),
+                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieForm'), analysis.formAnalysis, Icons.bolt),
+                              _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieScorers'), analysis.scorerReasoning, Icons.sports_soccer),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildOpinionDetailSection(String title, String content, IconData icon) {
+    if (content.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: Colors.cyanAccent),
+              const SizedBox(width: 6),
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            content,
+            style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
           ),
         ],
       ),

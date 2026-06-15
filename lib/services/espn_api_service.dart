@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/match.dart';
+import '../l10n/translations.dart';
+import 'player_database_service.dart';
 
 class EspnApiService {
   static const String _baseUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
@@ -219,6 +221,109 @@ class EspnApiService {
           }
         }
 
+        MatchLineups? lineups;
+        final rosters = data['rosters'] as List<dynamic>?;
+        if (rosters != null && rosters.length >= 2) {
+          try {
+            final homeRosterContainer = rosters.firstWhere(
+              (r) => r['homeAway'] == 'home',
+              orElse: () => rosters[0],
+            );
+            final awayRosterContainer = rosters.firstWhere(
+              (r) => r['homeAway'] == 'away',
+              orElse: () => rosters[1],
+            );
+
+            final homeRoster = homeRosterContainer['roster'] as List<dynamic>? ?? [];
+            final awayRoster = awayRosterContainer['roster'] as List<dynamic>? ?? [];
+
+            final t1EnName = AppTranslations.getTeam('en', t1Code);
+            final t2EnName = AppTranslations.getTeam('en', t2Code);
+
+            final t1Players = homeRoster.map((item) {
+              final athlete = item['athlete'];
+              final espnName = athlete['displayName'] ?? athlete['fullName'] ?? '';
+              final canonical = PlayerDatabaseService.getBestMatchingName(t1EnName, espnName) ?? espnName;
+              final posName = item['position']?['displayName']?.toString();
+              final jerseyStr = item['jersey']?.toString();
+              final isStarter = item['starter'] == true;
+              return MatchLineupPlayer(
+                name: canonical,
+                position: posName,
+                jersey: jerseyStr,
+                starter: isStarter,
+              );
+            }).toList();
+
+            final t2Players = awayRoster.map((item) {
+              final athlete = item['athlete'];
+              final espnName = athlete['displayName'] ?? athlete['fullName'] ?? '';
+              final canonical = PlayerDatabaseService.getBestMatchingName(t2EnName, espnName) ?? espnName;
+              final posName = item['position']?['displayName']?.toString();
+              final jerseyStr = item['jersey']?.toString();
+              final isStarter = item['starter'] == true;
+              return MatchLineupPlayer(
+                name: canonical,
+                position: posName,
+                jersey: jerseyStr,
+                starter: isStarter,
+              );
+            }).toList();
+
+            lineups = MatchLineups(
+              t1Players: t1Players,
+              t2Players: t2Players,
+              t1Formation: homeRosterContainer['formation']?.toString(),
+              t2Formation: awayRosterContainer['formation']?.toString(),
+            );
+          } catch (_) {
+            // Silently skip if lineups parsing fails
+          }
+        }
+
+        // If lineups are null and we are in staging/dev mode, create mock lineups for manual testing
+        if (lineups == null && (const bool.fromEnvironment('STAGING') == true)) {
+          try {
+            final t1EnName = AppTranslations.getTeam('en', t1Code);
+            final t2EnName = AppTranslations.getTeam('en', t2Code);
+            final p1List = PlayerDatabaseService.getPlayersForTeam(t1EnName);
+            final p2List = PlayerDatabaseService.getPlayersForTeam(t2EnName);
+
+            if (p1List.isNotEmpty && p2List.isNotEmpty) {
+              final t1Players = <MatchLineupPlayer>[];
+              for (int i = 0; i < p1List.length; i++) {
+                // Exclude last player to test "Absent" status
+                if (i == p1List.length - 1) continue;
+                t1Players.add(MatchLineupPlayer(
+                  name: p1List[i],
+                  jersey: '${i + 1}',
+                  position: i == 0 ? 'Gardien' : (i < 5 ? 'Défenseur' : (i < 9 ? 'Milieu' : 'Attaquant')),
+                  starter: i < 11,
+                ));
+              }
+
+              final t2Players = <MatchLineupPlayer>[];
+              for (int i = 0; i < p2List.length; i++) {
+                // Exclude last player to test "Absent" status
+                if (i == p2List.length - 1) continue;
+                t2Players.add(MatchLineupPlayer(
+                  name: p2List[i],
+                  jersey: '${i + 1}',
+                  position: i == 0 ? 'Gardien' : (i < 5 ? 'Défenseur' : (i < 9 ? 'Milieu' : 'Attaquant')),
+                  starter: i < 11,
+                ));
+              }
+
+              lineups = MatchLineups(
+                t1Players: t1Players,
+                t2Players: t2Players,
+                t1Formation: '4-3-3',
+                t2Formation: '4-4-2',
+              );
+            }
+          } catch (_) {}
+        }
+
         return WorldCupMatch(
           id: 'espn_$espnEventId',
           date: DateTime.parse(competition['date']).toLocal(),
@@ -231,6 +336,7 @@ class EspnApiService {
           venue: data['gameInfo']?['venue']?['displayName'],
           goals: goals,
           stats: stats,
+          lineups: lineups,
           lastUpdated: DateTime.now(),
         );
       }

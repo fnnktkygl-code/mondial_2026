@@ -117,6 +117,74 @@ class MatchStats {
   }
 }
 
+class MatchLineupPlayer {
+  final String name;      // Canonical name (if matched) or ESPN name
+  final String? position; // e.g. "Goalkeeper", "Defender", "Midfielder", "Forward"
+  final String? jersey;   // e.g. "10"
+  final bool starter;     // true for starting XI, false for bench
+
+  MatchLineupPlayer({
+    required this.name,
+    this.position,
+    this.jersey,
+    required this.starter,
+  });
+
+  factory MatchLineupPlayer.fromJson(Map<String, dynamic> json) {
+    return MatchLineupPlayer(
+      name: json['name'] as String,
+      position: json['position'] as String?,
+      jersey: json['jersey'] as String?,
+      starter: json['starter'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      if (position != null) 'position': position,
+      if (jersey != null) 'jersey': jersey,
+      'starter': starter,
+    };
+  }
+}
+
+class MatchLineups {
+  final List<MatchLineupPlayer> t1Players;
+  final List<MatchLineupPlayer> t2Players;
+  final String? t1Formation;
+  final String? t2Formation;
+
+  MatchLineups({
+    required this.t1Players,
+    required this.t2Players,
+    this.t1Formation,
+    this.t2Formation,
+  });
+
+  factory MatchLineups.fromJson(Map<String, dynamic> json) {
+    return MatchLineups(
+      t1Players: (json['t1Players'] as List<dynamic>? ?? [])
+          .map((e) => MatchLineupPlayer.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      t2Players: (json['t2Players'] as List<dynamic>? ?? [])
+          .map((e) => MatchLineupPlayer.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      t1Formation: json['t1Formation'] as String?,
+      t2Formation: json['t2Formation'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      't1Players': t1Players.map((p) => p.toJson()).toList(),
+      't2Players': t2Players.map((p) => p.toJson()).toList(),
+      if (t1Formation != null) 't1Formation': t1Formation,
+      if (t2Formation != null) 't2Formation': t2Formation,
+    };
+  }
+}
+
 class WorldCupMatch {
   final String id;
   final String? espnId; // mapped ESPN event/match ID
@@ -134,6 +202,7 @@ class WorldCupMatch {
   final String? liveMinute; // "64'", "45+2'", etc.
   final DateTime? lastUpdated;
   final bool? _isKnockoutOverride; // explicit override from JSON
+  final MatchLineups? lineups; // Official pre-match lineups
 
   // ── Extra-time / Penalty shootout result (knockout matches only) ──────────
   /// True if the match was decided in extra time (regardless of penalties).
@@ -183,6 +252,7 @@ class WorldCupMatch {
     this.t2ScoreET,
     this.t1ScorePK,
     this.t2ScorePK,
+    this.lineups,
   }) : _isKnockoutOverride = isKnockoutOverride;
 
   factory WorldCupMatch.fromJson(Map<String, dynamic> json) {
@@ -234,6 +304,7 @@ class WorldCupMatch {
       t2ScoreET: json['t2ScoreET'] != null ? (json['t2ScoreET'] as num).toInt() : null,
       t1ScorePK: json['t1ScorePK'] != null ? (json['t1ScorePK'] as num).toInt() : null,
       t2ScorePK: json['t2ScorePK'] != null ? (json['t2ScorePK'] as num).toInt() : null,
+      lineups: json['lineups'] != null ? MatchLineups.fromJson(json['lineups'] as Map<String, dynamic>) : null,
     );
   }
 
@@ -276,6 +347,7 @@ class WorldCupMatch {
       't2ScoreET': t2ScoreET,
       't1ScorePK': t1ScorePK,
       't2ScorePK': t2ScorePK,
+      if (lineups != null) 'lineups': lineups!.toJson(),
     };
   }
 
@@ -364,6 +436,7 @@ class WorldCupMatch {
     int? t2ScoreET,
     int? t1ScorePK,
     int? t2ScorePK,
+    MatchLineups? lineups,
   }) {
     return WorldCupMatch(
       id: id ?? this.id,
@@ -392,6 +465,7 @@ class WorldCupMatch {
       t2ScoreET: t2ScoreET ?? this.t2ScoreET,
       t1ScorePK: t1ScorePK ?? this.t1ScorePK,
       t2ScorePK: t2ScorePK ?? this.t2ScorePK,
+      lineups: lineups ?? this.lineups,
     );
   }
 }
