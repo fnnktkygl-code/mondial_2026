@@ -180,7 +180,7 @@ class WCUpdateService {
           ),
           ElevatedButton(
             onPressed: () async {
-              final uri = Uri.parse(url);
+              final uri = Uri.parse(url.trim());
               try {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               } catch (e) {

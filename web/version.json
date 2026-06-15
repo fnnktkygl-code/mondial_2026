@@ -1,10 +1,10 @@
 {
-  "version": "1.3.4",
-  "buildNumber": 8,
+  "version": "1.3.5",
+  "buildNumber": 9,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Correction du bouton de téléchargement de la mise à jour (package visibility Android 11+), plafonnement des cotes à 5.0, et correction de l'actualisation en temps réel.",
-    "en": "Fixed update download button (Android 11+ package visibility queries), capped odds to 5.0, and fixed real-time match minute updates.",
-    "es": "Corrección del botón de actualización (Android 11+ queries), límite de multiplicador de cuotas a 5.0, y actualización en tiempo real."
+    "fr": "Suppression des espaces et sauts de ligne lors du traitement de l'URL de mise à jour pour éviter tout crash de redirection.",
+    "en": "Trimmed newlines and whitespaces from update URL to prevent redirection crashes.",
+    "es": "Eliminación de espacios y saltos de línea de la URL de actualización para evitar fallos."
   }
 }

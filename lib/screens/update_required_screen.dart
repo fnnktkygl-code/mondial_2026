@@ -18,7 +18,7 @@ class _UpdateRequiredScreenState extends State<UpdateRequiredScreen> {
     try {
       // Résoudre l'URL directe via GitHub API (évite la redirection vers la page HTML)
       final String updateUrl = await WCUpdateService.getUpdateUrl();
-      final Uri uri = Uri.parse(updateUrl);
+      final Uri uri = Uri.parse(updateUrl.trim());
 
       // On utilise direct LaunchMode.externalApplication pour ouvrir le navigateur par défaut
       // qui va gérer le téléchargement de l'APK de manière fiable et sécurisée.
