@@ -435,6 +435,7 @@ class AppTranslations {
       'starterBadge': 'Titulaire',
       'benchBadge': 'Banc',
       'absentBadge': 'Absent',
+      'matchFinished': 'TERMINÉ',
     },
     'en': {
       'pronounsLabel': 'Pronouns',
@@ -863,6 +864,7 @@ class AppTranslations {
       'starterBadge': 'Starter',
       'benchBadge': 'Bench',
       'absentBadge': 'Absent',
+      'matchFinished': 'FINISHED',
     },
     'es': {
       'pronounsLabel': 'Pronombres',
@@ -1274,6 +1276,7 @@ class AppTranslations {
       'starterBadge': 'Titular',
       'benchBadge': 'Banquillo',
       'absentBadge': 'Ausente',
+      'matchFinished': 'FINALIZADO',
     },
   };
 

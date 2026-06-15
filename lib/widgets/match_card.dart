@@ -225,11 +225,35 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                   children: [
                     Row(
                       children: [
-                        if (live || widget.match.isLive) _LiveBadge(minute: widget.match.liveMinute) else Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(color: AppColors.cardDark, borderRadius: BorderRadius.circular(10)),
-                          child: Text(widget.match.getFormattedTime(), style: const TextStyle(color: AppColors.textPrimary, fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 13)),
-                        ),
+                        if (live || widget.match.isLive)
+                          _LiveBadge(minute: widget.match.liveMinute)
+                        else if (widget.match.isPlayed || widget.match.isFinished)
+                          _FinishedBadge(lang: widget.lang)
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: AppColors.cardDark,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColors.border, width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.schedule, size: 12, color: AppColors.textMuted),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.match.getFormattedTime(),
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontFamily: 'monospace',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -456,6 +480,37 @@ class _LiveBadge extends StatelessWidget {
     child: Text(
       minute != null ? '⚽ $minute' : '⚽ LIVE',
       style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2),
+    ),
+  );
+}
+
+class _FinishedBadge extends StatelessWidget {
+  final String lang;
+  const _FinishedBadge({required this.lang});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: AppColors.border.withValues(alpha: 0.2),
+      borderRadius: BorderRadius.circular(kBadgeRadius),
+      border: Border.all(color: AppColors.borderMid),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('🏁', style: TextStyle(fontSize: 10)),
+        const SizedBox(width: 4),
+        Text(
+          AppTranslations.get(lang, 'matchFinished'),
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ],
     ),
   );
 }

@@ -619,8 +619,9 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
 
   Widget _buildMatchItem(BuildContext context, WorldCupMatch match) {
     final pred = widget.predictionData.matchPredictions[match.id]!;
-    final isFinished = match.isFinished;
-    final canSeeDetails = widget.viewingOwnHistory || isFinished;
+    final isFinished = match.isFinished || match.isPlayed;
+    final isLocked = PredictionService.isPredictionLocked(match) || isFinished;
+    final canSeeDetails = widget.viewingOwnHistory || isLocked;
 
     final isBooster = widget.predictionData.boosterMatchIds.contains(match.id);
     final bool isExcluded = widget.isGenieGemini && _ignoredMatchIds.contains(match.id);
@@ -748,7 +749,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
               ),
               if (isExpanded) _buildPointsBreakdown(match, pred, isBooster),
             ],
-            if (!isFinished && !widget.viewingOwnHistory)
+            if (!canSeeDetails && !widget.viewingOwnHistory)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
