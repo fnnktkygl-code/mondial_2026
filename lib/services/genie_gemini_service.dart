@@ -298,7 +298,9 @@ If this is a knockout match (${match.isKnockout}) AND you predict a draw (t1Scor
 
 For group stage matches, extraTimeWinner and penaltyWinner must be null.
 
-Also predict the goalscorers (predictedScorers map with player name as key and number of goals as value). Do not predict scorers who are not in the squads above.
+Also predict the goalscorers (predictedScorers map with player name as key and number of goals as value). Do not predict scorers who are not in the squads above. If you decide to predict only the outcome without an exact scoreline (outcomeOnly: true), set predictedScorers to an empty map.
+
+If you are not confident in predicting an exact scoreline (e.g. if the teams are very evenly matched, or there is extremely high uncertainty), set `outcomeOnly` to true in the JSON response. If `outcomeOnly` is true, you must still provide representative `t1Score` and `t2Score` values representing the direction of the outcome (e.g. 1-0 for team 1 victory, 0-1 for team 2 victory, 1-1 for a draw), but the system will treat it as an outcome-only prediction.
 
 Write analysis paragraphs in the requested language: ${lang == 'fr' ? 'French' : lang == 'es' ? 'Spanish' : 'English'}.
 Provide reasoning paragraphs for the following fields:
@@ -336,6 +338,7 @@ Also provide a confidenceScore between 0.0 and 1.0.
                 "additionalProperties": {"type": "INTEGER"},
                 "description": "Map of player name to goal count, matching keys of team players exactly"
               },
+              "outcomeOnly": {"type": "BOOLEAN", "description": "Set to true if you are not confident in predicting an exact scoreline and prefer to predict only the general outcome (victory of t1, victory of t2, or draw)"},
               "confidenceScore": {"type": "NUMBER"},
               "summaryLine": {"type": "STRING"},
               "rankingAnalysis": {"type": "STRING"},
@@ -397,6 +400,7 @@ Also provide a confidenceScore between 0.0 and 1.0.
                 extraTimeWinner: parsedResult['extraTimeWinner'] as String?,
                 penaltyWinner: parsedResult['penaltyWinner'] as bool?,
                 predictedScorers: validatedScorers,
+                outcomeOnly: parsedResult['outcomeOnly'] as bool? ?? false,
               );
 
               final analysis = GenieAnalysis(
@@ -600,26 +604,32 @@ Provide:
       t1Score = rand.nextInt(t2Score);
     }
 
+    // Determine if we should only predict the outcome (without exact score)
+    // 25% chance of outcomeOnly, or if odds are extremely close
+    final bool outcomeOnly = ((odd1 - odd2).abs() < 0.3 && rand.nextDouble() < 0.5) || (rand.nextDouble() < 0.15);
+
     // Predicted Scorers
     final Map<String, int> predictedScorers = {};
-    final t1Players = PlayerDatabaseService.getPlayersForTeam(team1Name);
-    final t2Players = PlayerDatabaseService.getPlayersForTeam(team2Name);
+    if (!outcomeOnly) {
+      final t1Players = PlayerDatabaseService.getPlayersForTeam(team1Name);
+      final t2Players = PlayerDatabaseService.getPlayersForTeam(team2Name);
 
-    void selectScorers(String team, int score, List<String> playerPool) {
-      if (score <= 0 || playerPool.isEmpty) return;
-      // Filter for forwards or midfielders if possible
-      final forwards = playerPool.where((p) => PlayerDatabaseService.getPlayerPosition(team, p) == 'Forwards').toList();
-      final midfielders = playerPool.where((p) => PlayerDatabaseService.getPlayerPosition(team, p) == 'Midfielders').toList();
-      final priorityPool = forwards.isNotEmpty ? forwards : (midfielders.isNotEmpty ? midfielders : playerPool);
+      void selectScorers(String team, int score, List<String> playerPool) {
+        if (score <= 0 || playerPool.isEmpty) return;
+        // Filter for forwards or midfielders if possible
+        final forwards = playerPool.where((p) => PlayerDatabaseService.getPlayerPosition(team, p) == 'Forwards').toList();
+        final midfielders = playerPool.where((p) => PlayerDatabaseService.getPlayerPosition(team, p) == 'Midfielders').toList();
+        final priorityPool = forwards.isNotEmpty ? forwards : (midfielders.isNotEmpty ? midfielders : playerPool);
 
-      for (int i = 0; i < score; i++) {
-        final scorer = priorityPool[rand.nextInt(priorityPool.length)];
-        predictedScorers[scorer] = (predictedScorers[scorer] ?? 0) + 1;
+        for (int i = 0; i < score; i++) {
+          final scorer = priorityPool[rand.nextInt(priorityPool.length)];
+          predictedScorers[scorer] = (predictedScorers[scorer] ?? 0) + 1;
+        }
       }
-    }
 
-    selectScorers(team1Name, t1Score, t1Players);
-    selectScorers(team2Name, t2Score, t2Players);
+      selectScorers(team1Name, t1Score, t1Players);
+      selectScorers(team2Name, t2Score, t2Players);
+    }
 
     final double confidence = 0.5 + (rand.nextDouble() * 0.4);
 
@@ -633,9 +643,13 @@ Provide:
     String scorerReasoning = "";
 
     if (lang == 'fr') {
-      summaryLine = t1Score == t2Score
-          ? "Un combat tactique équilibré. Je table sur un score de $t1Score-$t2Score."
-          : "Victoire attendue de ${t1Score > t2Score ? team1Name : team2Name} par la plus petite des marges ($t1Score-$t2Score).";
+      summaryLine = outcomeOnly
+          ? (t1Score == t2Score
+              ? "Un match nul semble très probable au vu des dynamiques équilibrées."
+              : "Je prévois une victoire de ${t1Score > t2Score ? team1Name : team2Name} mais la physionomie reste très incertaine.")
+          : (t1Score == t2Score
+              ? "Un combat tactique équilibré. Je table sur un score de $t1Score-$t2Score."
+              : "Victoire attendue de ${t1Score > t2Score ? team1Name : team2Name} par la plus petite des marges ($t1Score-$t2Score).");
 
       rankingAnalysis = "Selon les classements FIFA, $team1Name (rang $rank1) fait face à $team2Name (rang $rank2). " +
           (rank1 < rank2
@@ -653,13 +667,19 @@ Provide:
 
       formAnalysis = "L'état de forme des effectifs suggère un match physique. Les séances d'entraînement récentes révèlent une préparation solide et un moral au beau fixe pour les deux groupes.";
 
-      scorerReasoning = predictedScorers.isEmpty
-          ? "Aucun buteur n'est pronostiqué pour cette rencontre qui s'annonce très défensive."
-          : "Pour ce match, des attaquants clés comme ${predictedScorers.keys.first} sont pressentis pour débloquer la situation grâce à leur réalisme face au but.";
+      scorerReasoning = outcomeOnly
+          ? "Aucun buteur n'est pronostiqué car Genie Gemini a opté pour un pronostic de résultat uniquement."
+          : (predictedScorers.isEmpty
+              ? "Aucun buteur n'est pronostiqué pour cette rencontre qui s'annonce très défensive."
+              : "Pour ce match, des attaquants clés comme ${predictedScorers.keys.first} sont pressentis pour débloquer la situation grâce à leur réalisme face au but.");
     } else if (lang == 'es') {
-      summaryLine = t1Score == t2Score
-          ? "Un duelo táctico muy equilibrado. Pronostico un resultado de $t1Score-$t2Score."
-          : "Victoria esperada de ${t1Score > t2Score ? team1Name : team2Name} por un margen estrecho ($t1Score-$t2Score).";
+      summaryLine = outcomeOnly
+          ? (t1Score == t2Score
+              ? "Un empate táctico parece lo más probable según la forma de ambos equipos."
+              : "Espero una victoria de ${t1Score > t2Score ? team1Name : team2Name} sin arriesgar un marcador exacto.")
+          : (t1Score == t2Score
+              ? "Un duelo táctico muy equilibrado. Pronostico un resultado de $t1Score-$t2Score."
+              : "Victoria esperada de ${t1Score > t2Score ? team1Name : team2Name} por un margen estrecho ($t1Score-$t2Score).");
 
       rankingAnalysis = "El ranking FIFA sitúa a $team1Name (puesto $rank1) frente a $team2Name (puesto $rank2). " +
           (rank1 < rank2
@@ -677,14 +697,20 @@ Provide:
 
       formAnalysis = "El análisis físico indica que ambos combinados llegan con sus plantillas al 100%, enfocándose en la solidez defensiva.";
 
-      scorerReasoning = predictedScorers.isEmpty
-          ? "No se prevén goleadores en un encuentro de perfil marcadamente defensivo."
-          : "Se espera que delanteros de la calidad de ${predictedScorers.keys.first} lideren la ofensiva y consigan marcar durante el encuentro.";
+      scorerReasoning = outcomeOnly
+          ? "No se prevén goleadores ya que Genie Gemini optó por pronosticar solo el resultado."
+          : (predictedScorers.isEmpty
+              ? "No se prevén goleadores en un encuentro de perfil marcadamente defensivo."
+              : "Se espera que delanteros de la calidad de ${predictedScorers.keys.first} lideren la ofensiva y consigan marcar durante el encuentro.");
     } else {
       // Default to English
-      summaryLine = t1Score == t2Score
-          ? "A highly tactical draw. I predict a $t1Score-$t2Score final score."
-          : "Expected victory for ${t1Score > t2Score ? team1Name : team2Name} by a narrow margin ($t1Score-$t2Score).";
+      summaryLine = outcomeOnly
+          ? (t1Score == t2Score
+              ? "A tactical draw seems highly likely given the current dynamics."
+              : "I predict a victory for ${t1Score > t2Score ? team1Name : team2Name} but the exact score remains highly uncertain.")
+          : (t1Score == t2Score
+              ? "A highly tactical draw. I predict a $t1Score-$t2Score final score."
+              : "Expected victory for ${t1Score > t2Score ? team1Name : team2Name} by a narrow margin ($t1Score-$t2Score).");
 
       rankingAnalysis = "The FIFA Rankings place $team1Name at #$rank1 and $team2Name at #$rank2. " +
           (rank1 < rank2
@@ -702,9 +728,11 @@ Provide:
 
       formAnalysis = "Team training reports indicate high levels of fitness and intense preparation, suggesting a high-tempo physical matchup.";
 
-      scorerReasoning = predictedScorers.isEmpty
-          ? "No goalscorers predicted as this match is expected to be a defensive masterclass."
-          : "Key attackers like ${predictedScorers.keys.first} are expected to make the difference due to their excellent clinical finishing.";
+      scorerReasoning = outcomeOnly
+          ? "No goalscorers predicted as Genie Gemini opted for an outcome-only prediction."
+          : (predictedScorers.isEmpty
+              ? "No goalscorers predicted as this match is expected to be a defensive masterclass."
+              : "Key attackers like ${predictedScorers.keys.first} are expected to make the difference due to their excellent clinical finishing.");
     }
 
     final pred = MatchPrediction(
@@ -714,6 +742,7 @@ Provide:
       extraTimeWinner: extraTimeWinner,
       penaltyWinner: penaltyWinner,
       predictedScorers: predictedScorers,
+      outcomeOnly: outcomeOnly,
     );
 
     final analysis = GenieAnalysis(
