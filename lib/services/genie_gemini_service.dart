@@ -22,6 +22,7 @@ class GenieAnalysis {
   final String formAnalysis;
   final String scorerReasoning;
   final double confidenceScore;
+  final List<Map<String, String>> sources;
 
   GenieAnalysis({
     required this.summaryLine,
@@ -32,6 +33,7 @@ class GenieAnalysis {
     required this.formAnalysis,
     required this.scorerReasoning,
     required this.confidenceScore,
+    required this.sources,
   });
 
   Map<String, dynamic> toJson() => {
@@ -43,18 +45,34 @@ class GenieAnalysis {
         'formAnalysis': formAnalysis,
         'scorerReasoning': scorerReasoning,
         'confidenceScore': confidenceScore,
+        'sources': sources,
       };
 
-  factory GenieAnalysis.fromJson(Map<String, dynamic> json) => GenieAnalysis(
-        summaryLine: json['summaryLine'] as String? ?? '',
-        rankingAnalysis: json['rankingAnalysis'] as String? ?? '',
-        oddsAnalysis: json['oddsAnalysis'] as String? ?? '',
-        historyAnalysis: json['historyAnalysis'] as String? ?? '',
-        sentimentAnalysis: json['sentimentAnalysis'] as String? ?? '',
-        formAnalysis: json['formAnalysis'] as String? ?? '',
-        scorerReasoning: json['scorerReasoning'] as String? ?? '',
-        confidenceScore: (json['confidenceScore'] as num?)?.toDouble() ?? 0.5,
-      );
+  factory GenieAnalysis.fromJson(Map<String, dynamic> json) {
+    final List<Map<String, String>> parsedSources = [];
+    if (json['sources'] != null) {
+      final list = json['sources'] as List<dynamic>;
+      for (final item in list) {
+        if (item is Map) {
+          parsedSources.add({
+            'title': item['title']?.toString() ?? '',
+            'url': item['url']?.toString() ?? '',
+          });
+        }
+      }
+    }
+    return GenieAnalysis(
+      summaryLine: json['summaryLine'] as String? ?? '',
+      rankingAnalysis: json['rankingAnalysis'] as String? ?? '',
+      oddsAnalysis: json['oddsAnalysis'] as String? ?? '',
+      historyAnalysis: json['historyAnalysis'] as String? ?? '',
+      sentimentAnalysis: json['sentimentAnalysis'] as String? ?? '',
+      formAnalysis: json['formAnalysis'] as String? ?? '',
+      scorerReasoning: json['scorerReasoning'] as String? ?? '',
+      confidenceScore: (json['confidenceScore'] as num?)?.toDouble() ?? 0.5,
+      sources: parsedSources,
+    );
+  }
 }
 
 class GenieGeminiService {
@@ -665,6 +683,11 @@ Also provide a confidenceScore between 0.0 and 1.0.
             ]
           }
         ],
+        "tools": [
+          {
+            "googleSearch": {}
+          }
+        ],
         "generationConfig": {
           "responseMimeType": "application/json",
           "responseSchema": {
@@ -742,6 +765,34 @@ Also provide a confidenceScore between 0.0 and 1.0.
                 }
               });
 
+              final List<Map<String, String>> sources = [];
+              try {
+                final candidate = candidates[0] as Map<String, dynamic>;
+                final groundingMetadata = candidate['groundingMetadata'] as Map<String, dynamic>?;
+                if (groundingMetadata != null) {
+                  final chunks = groundingMetadata['groundingChunks'] as List<dynamic>?;
+                  if (chunks != null) {
+                    for (final chunk in chunks) {
+                      if (chunk is Map) {
+                        final web = chunk['web'] as Map<String, dynamic>?;
+                        if (web != null) {
+                          final uri = web['uri']?.toString() ?? '';
+                          final title = web['title']?.toString() ?? '';
+                          if (uri.isNotEmpty) {
+                            sources.add({
+                              'title': title.isNotEmpty ? title : uri,
+                              'url': uri,
+                            });
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+                debugPrint("GenieGeminiService: Error parsing grounding metadata: $e");
+              }
+
               final pred = MatchPrediction(
                 matchId: match.id,
                 t1Score: (parsedResult['t1Score'] as num).toInt(),
@@ -761,6 +812,7 @@ Also provide a confidenceScore between 0.0 and 1.0.
                 formAnalysis: parsedResult['formAnalysis'] as String? ?? '',
                 scorerReasoning: parsedResult['scorerReasoning'] as String? ?? '',
                 confidenceScore: (parsedResult['confidenceScore'] as num?)?.toDouble() ?? 0.5,
+                sources: sources,
               );
 
               return (prediction: pred, analysis: analysis);
@@ -831,6 +883,11 @@ Provide:
             "parts": [
               {"text": promptText}
             ]
+          }
+        ],
+        "tools": [
+          {
+            "googleSearch": {}
           }
         ],
         "generationConfig": {
@@ -1103,6 +1160,7 @@ Provide:
       formAnalysis: formAnalysis,
       scorerReasoning: scorerReasoning,
       confidenceScore: confidence,
+      sources: const [],
     );
 
     return (prediction: pred, analysis: analysis);

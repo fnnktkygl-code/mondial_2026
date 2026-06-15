@@ -36,11 +36,9 @@ class WCTeamProfileService {
 
   // List of 48 Qualified Teams for World Cup 2026
   static const Set<String> qualifiedTeams = {
-    'mx', 'de', 'us', 'en', 'ca', 'jp', 'fr', 'br', 'sn', 'ar', 
-    'ma', 'es', 'pt', 'nl', 'be', 'hr', 'uy', 'co', 'kr', 'cm', 
-    'ng', 'se', 'ch', 'dk', 'pl', 'dz', 'eg', 'tn', 'gh', 'ci', 
-    'cl', 'pe', 'ec', 've', 'au', 'nz', 'sa', 'ir', 'tr', 'cz', 
-    'at', 'ro', 'ba', 'cd', 'cw', 'cv', 'jo', 'uz', 'iq', 'qa', 'za', 'ht', 'pa'
+    'ar', 'at', 'au', 'ba', 'be', 'br', 'ca', 'cd', 'ch', 'ci', 'co', 'cv', 'cw', 'cz', 'de', 'dz', 
+    'ec', 'eg', 'en', 'es', 'fr', 'gh', 'hr', 'ht', 'iq', 'ir', 'jo', 'jp', 'kr', 'ma', 'mx', 'nl', 
+    'no', 'nz', 'pa', 'pt', 'py', 'qa', 'sa', 'sco', 'se', 'sn', 'tn', 'tr', 'us', 'uy', 'uz', 'za'
   };
 
   static Future<void> loadMediaMap() async {
@@ -72,13 +70,8 @@ class WCTeamProfileService {
     final trophies = _getTrophies(lookupCode, lang);
 
     final mediaEntry = _mediaMap[lookupCode];
-    final profileUrl = mediaEntry?['profile_url'] ?? 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/$lookupCode-team-profile-history';
-
-    // Correction spécifique pour l'Écosse si le lien par défaut est brisé
-    String finalProfileUrl = profileUrl;
-    if (lookupCode == 'sco' && mediaEntry == null) {
-      finalProfileUrl = 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/scotland-team-profile-history';
-    }
+    final profileUrl = mediaEntry?['profile_url'] ?? 'https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/teams/${_getTeamSlug(lookupCode)}';
+    final finalProfileUrl = profileUrl;
     final mediaUrl = mediaEntry?['media_url'];
     final imageUrl  = mediaEntry?['image_url'] as String?;
 
@@ -98,6 +91,60 @@ class WCTeamProfileService {
       imageUrl: imageUrl,
       worldCupRecord: worldCupRecord,
     );
+  }
+
+  static String _getTeamSlug(String code) {
+    switch (code.toLowerCase()) {
+      case 'ar': return 'argentina';
+      case 'at': return 'austria';
+      case 'au': return 'australia';
+      case 'ba': return 'bosnia-and-herzegovina';
+      case 'be': return 'belgium';
+      case 'br': return 'brazil';
+      case 'ca': return 'canada';
+      case 'cd': return 'democratic-republic-of-the-congo';
+      case 'ch': return 'switzerland';
+      case 'ci': return 'cote-divoire';
+      case 'co': return 'colombia';
+      case 'cv': return 'cabo-verde';
+      case 'cw': return 'curacao';
+      case 'cz': return 'czechia';
+      case 'de': return 'germany';
+      case 'dz': return 'algeria';
+      case 'ec': return 'ecuador';
+      case 'eg': return 'egypt';
+      case 'en': return 'england';
+      case 'es': return 'spain';
+      case 'fr': return 'france';
+      case 'gh': return 'ghana';
+      case 'hr': return 'croatia';
+      case 'ht': return 'haiti';
+      case 'iq': return 'iraq';
+      case 'ir': return 'ir-iran';
+      case 'jo': return 'jordan';
+      case 'jp': return 'japan';
+      case 'kr': return 'korea-republic';
+      case 'ma': return 'morocco';
+      case 'mx': return 'mexico';
+      case 'nl': return 'netherlands';
+      case 'no': return 'norway';
+      case 'nz': return 'new-zealand';
+      case 'pa': return 'panama';
+      case 'pt': return 'portugal';
+      case 'py': return 'paraguay';
+      case 'qa': return 'qatar';
+      case 'sa': return 'saudi-arabia';
+      case 'sco': return 'scotland';
+      case 'se': return 'sweden';
+      case 'sn': return 'senegal';
+      case 'tn': return 'tunisia';
+      case 'tr': return 'turkiye';
+      case 'us': return 'usa';
+      case 'uy': return 'uruguay';
+      case 'uz': return 'uzbekistan';
+      case 'za': return 'south-africa';
+      default: return code;
+    }
   }
 
   static String _getSymbol(String code, String lang) {

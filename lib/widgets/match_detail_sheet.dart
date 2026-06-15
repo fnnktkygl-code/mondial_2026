@@ -17,6 +17,7 @@ import '../services/player_database_service.dart';
 import '../services/espn_api_service.dart';
 import '../services/genie_gemini_service.dart';
 import '../services/team_profile_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MatchDetailSheet extends StatefulWidget {
   final WorldCupMatch match;
@@ -3015,6 +3016,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieSentiment'), analysis.sentimentAnalysis, Icons.insert_emoticon),
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieForm'), analysis.formAnalysis, Icons.bolt),
                               _buildOpinionDetailSection(AppTranslations.get(widget.lang, 'genieScorers'), analysis.scorerReasoning, Icons.sports_soccer),
+                              _buildOpinionSourcesSection(analysis.sources),
                             ],
                           ),
                         ),
@@ -3126,6 +3128,70 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
           Text(
             content,
             style: const TextStyle(color: AppColors.textDim, fontSize: 12, height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOpinionSourcesSection(List<Map<String, String>> sources) {
+    if (sources.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.link, size: 14, color: Colors.cyanAccent),
+              const SizedBox(width: 6),
+              Text(
+                AppTranslations.get(widget.lang, 'genieSources').toUpperCase(),
+                style: const TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: sources.map((source) {
+              final title = source['title'] ?? 'Source';
+              final url = source['url'] ?? '';
+              return InkWell(
+                onTap: () async {
+                  final uri = Uri.tryParse(url);
+                  if (uri != null && await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 160),
+                        child: Text(
+                          title,
+                          style: const TextStyle(color: Colors.white70, fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.open_in_new, size: 10, color: Colors.white30),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
