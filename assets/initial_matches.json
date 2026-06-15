@@ -548,10 +548,22 @@
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-15T18:14:50.162Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 74,
+      "shotsT1": 27,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 10,
+      "foulsT2": 1,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537363",
