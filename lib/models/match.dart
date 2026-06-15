@@ -279,16 +279,15 @@ class WorldCupMatch {
     };
   }
 
-  // FIX: Only consider a match played if the scores are actually loaded and present!
-  // Previously, this evaluated to true on `status == 'FINISHED'` alone, causing a
-  // null assertion crash (`t1Score!`) in your standings loops.
-  bool get isPlayed => t1Score != null && t2Score != null;
+  // FIX: Only consider a match played if the scores are actually loaded and the status is not TIMED/SCHEDULED!
+  // This prevents future scheduled matches from prematurely showing 0-0 or triggering point calculations.
+  bool get isPlayed => t1Score != null && t2Score != null && status != 'TIMED' && status != 'SCHEDULED';
 
   bool get isFinished => status == 'FINISHED' || status == 'FINAL';
 
   bool get isLive => status == 'IN_PLAY' || status == 'PAUSED';
 
-  bool get isFuture => !isLive && !isFinished && (t1Score == null);
+  bool get isFuture => (status == 'TIMED' || status == 'SCHEDULED') || (!isLive && !isFinished && t1Score == null);
 
   bool get isGroupStage => stage == null || stage!.isEmpty;
 

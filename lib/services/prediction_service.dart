@@ -467,14 +467,22 @@ class PredictionService {
           else if (actualGD == 3) { gdBase = kGdDiff3Points.toDouble(); }
           else if (actualGD == 4) { gdBase = kGdDiff4Points.toDouble(); }
           else                    { gdBase = kGdDiff5Points.toDouble(); } // GD ≥ 5
-        } else if ((actualGD - predGD).abs() == 1 && predGD >= 3) {
-          // Near-miss: off by 1 on a high-GD prediction — half bonus on lower tier
-          final refGD = predGD < actualGD ? predGD : actualGD;
-          double nearBase = 0;
-          if (refGD == 3)      { nearBase = kGdDiff3Points.toDouble(); }
-          else if (refGD == 4) { nearBase = kGdDiff4Points.toDouble(); }
-          else                 { nearBase = kGdDiff5Points.toDouble(); }
-          gdBase = nearBase * kGdNearMissFraction;
+        } else {
+          // Near-miss / Blowout flex rules:
+          // 1. Both predicted and actual are blowouts (GD >= 3)
+          // 2. Or off-by-one on a high-GD prediction (predGD >= 3)
+          final bool isBothBlowout = (predGD >= 3 && actualGD >= 3);
+          final bool isOffByOne = ((actualGD - predGD).abs() == 1 && predGD >= 3);
+
+          if (isBothBlowout || isOffByOne) {
+            final refGD = predGD < actualGD ? predGD : actualGD;
+            double nearBase = 0;
+            if (refGD == 2)      { nearBase = kGdDiff2Points.toDouble(); }
+            else if (refGD == 3) { nearBase = kGdDiff3Points.toDouble(); }
+            else if (refGD == 4) { nearBase = kGdDiff4Points.toDouble(); }
+            else if (refGD >= 5) { nearBase = kGdDiff5Points.toDouble(); }
+            gdBase = nearBase * kGdNearMissFraction;
+          }
         }
 
         totalMatchPoints += gdBase * oddsMultiplier;
@@ -671,15 +679,23 @@ class PredictionService {
           else if (actualGD == 3) { gdBase = kGdDiff3Points.toDouble(); }
           else if (actualGD == 4) { gdBase = kGdDiff4Points.toDouble(); }
           else                    { gdBase = kGdDiff5Points.toDouble(); } // GD ≥ 5
-        } else if ((actualGD - predGD).abs() == 1 && predGD >= 3) {
-          // Near-miss: off by 1 on a high-GD prediction — half bonus on lower tier
-          isGdNearMiss = true;
-          final refGD = predGD < actualGD ? predGD : actualGD;
-          double nearBase = 0;
-          if (refGD == 3)      { nearBase = kGdDiff3Points.toDouble(); }
-          else if (refGD == 4) { nearBase = kGdDiff4Points.toDouble(); }
-          else                 { nearBase = kGdDiff5Points.toDouble(); }
-          gdBase = nearBase * kGdNearMissFraction;
+        } else {
+          // Near-miss / Blowout flex rules:
+          // 1. Both predicted and actual are blowouts (GD >= 3)
+          // 2. Or off-by-one on a high-GD prediction (predGD >= 3)
+          final bool isBothBlowout = (predGD >= 3 && actualGD >= 3);
+          final bool isOffByOne = ((actualGD - predGD).abs() == 1 && predGD >= 3);
+
+          if (isBothBlowout || isOffByOne) {
+            isGdNearMiss = true;
+            final refGD = predGD < actualGD ? predGD : actualGD;
+            double nearBase = 0;
+            if (refGD == 2)      { nearBase = kGdDiff2Points.toDouble(); }
+            else if (refGD == 3) { nearBase = kGdDiff3Points.toDouble(); }
+            else if (refGD == 4) { nearBase = kGdDiff4Points.toDouble(); }
+            else if (refGD >= 5) { nearBase = kGdDiff5Points.toDouble(); }
+            gdBase = nearBase * kGdNearMissFraction;
+          }
         }
 
         gdPoints = gdBase * oddsMultiplier;

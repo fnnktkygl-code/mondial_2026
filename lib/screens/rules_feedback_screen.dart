@@ -85,11 +85,11 @@ class _RulesFeedbackPageState extends State<RulesFeedbackPage> {
                 ),
                 _buildRuleItem(
                   '📊🎯', 
-                  widget.lang == 'fr' ? 'Presque Parfait (GD ±1)' : 'Near-Miss GD (±1 off)',
+                  widget.lang == 'fr' ? 'Presque Parfait / Blowout Flex' : 'Near-Miss / Blowout Flex',
                   widget.lang == 'fr' ? '½ Bonus GD × Cote' : '½ GD Bonus × Odds',
                   description: widget.lang == 'fr'
-                    ? 'Si vous avez prédit un grand écart (≥3 buts) et que vous n\'étiez qu\'à 1 but près, vous recevez la moitié du bonus. Ex. : 5-0 prédit, 7-1 réel → ½ bonus GD 5+.'
-                    : 'Predicted a big margin (≥3 GD) and only off by 1? You get half the GD bonus. e.g. predicted 5-0, actual 7-1 → ½ of GD 5+ bonus.'
+                    ? 'Si vous avez prédit un grand écart (GD ≥ 3) et que le match finit aussi par un grand écart (GD réel ≥ 3), ou si vous êtes à 1 but d\'écart près, vous recevez la moitié du bonus GD correspondant. Ex. : 3-0 prédit, 7-1 réel (les deux sont des cartons) → ½ bonus GD 3.'
+                    : 'If you predict a blowout (GD ≥ 3) and the match also ends in a blowout (actual GD ≥ 3), or if you are off by only 1 goal, you get half of the corresponding GD bonus. e.g. predicted 3-0, actual 7-1 → ½ of GD 3 bonus.'
                 ),
                 _buildRuleItem(
                   '🎯', 

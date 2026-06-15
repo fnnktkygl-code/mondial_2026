@@ -67,6 +67,24 @@ void main() {
         // Total base = 300. cw = 1294.77 (FIFA juin 2026)
         expect(PredictionService.evaluatePoints(match71, pred50), 369);
       });
+
+      test('Blowout Flex GD: 7-1 actual, 3-0 prediction (both GD >= 3) returns outcome + blowout GD points (scaled by betting odds)', () {
+        final match71 = WorldCupMatch(
+          id: '1',
+          date: DateTime.now(),
+          t1: 'de',
+          t2: 'cw',
+          t1Score: 7,
+          t2Score: 1,
+          stage: '',
+        );
+        final pred30 = MatchPrediction(matchId: '1', t1Score: 3, t2Score: 0);
+        // actualGD = 6 (>=3), predGD = 3 (>=3)
+        // Outcome base = 50. Blowout GD base (refGD = min(3, 6) = 3) = 200 * 0.5 = 100.
+        // Total base = 150. cw = 1294.77 (FIFA juin 2026) -> oddsMultiplier = 1.23
+        // Expected points: 150 * 1.23 = 184.5 -> rounds to 185
+        expect(PredictionService.evaluatePoints(match71, pred30), 185);
+      });
       
       test('Incorrect outcome returns 0 points', () {
         final pred = MatchPrediction(matchId: '1', t1Score: 1, t2Score: 4);

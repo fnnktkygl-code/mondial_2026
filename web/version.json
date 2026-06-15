@@ -1,10 +1,10 @@
 {
-  "version": "1.3.6",
-  "buildNumber": 10,
+  "version": "1.3.7",
+  "buildNumber": 11,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Mise à jour du barème des points et suppression des pronoms.",
-    "en": "Scoring table updates and pronouns removal.",
-    "es": "Actualización del sistema de puntos y eliminación de pronombres."
+    "fr": "Règle Blowout Flex GD pour une meilleure flexibilité sur les scores larges.",
+    "en": "Blowout Flex GD rule for better flexibility on high margin scores.",
+    "es": "Regla Blowout Flex GD para mayor flexibilidad en marcadores abultados."
   }
 }

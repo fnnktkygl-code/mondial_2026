@@ -66,5 +66,29 @@ void main() {
 
       expect(match.isPlayed, false);
     });
+
+    test('isPlayed should return false when status is TIMED or SCHEDULED even with scores', () {
+      final matchTimed = WorldCupMatch(
+        id: '1',
+        date: DateTime.now(),
+        t1: 'Team A',
+        t2: 'Team B',
+        t1Score: 0,
+        t2Score: 0,
+        status: 'TIMED',
+      );
+      final matchScheduled = WorldCupMatch(
+        id: '2',
+        date: DateTime.now(),
+        t1: 'Team A',
+        t2: 'Team B',
+        t1Score: 0,
+        t2Score: 0,
+        status: 'SCHEDULED',
+      );
+
+      expect(matchTimed.isPlayed, false);
+      expect(matchScheduled.isPlayed, false);
+    });
   });
 }

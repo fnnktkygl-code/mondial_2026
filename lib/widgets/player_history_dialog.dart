@@ -845,7 +845,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
         ? (widget.lang == 'fr' ? 'Diff. buts : presque parfait !' : (widget.lang == 'es' ? 'Diferencia de goles: ¡casi!' : 'Goal difference: near miss!'))
         : (widget.lang == 'fr' ? 'Différence de buts correcte' : (widget.lang == 'es' ? 'Diferencia de goles' : 'Correct goal difference'));
     final String gdSubtitle = isGdNearMiss
-        ? (widget.lang == 'fr' ? '½ bonus (1 but d\'écart) $oddsStr' : (widget.lang == 'es' ? '½ bono (1 gol de diferencia) $oddsStr' : '½ bonus (off by 1 goal) $oddsStr'))
+        ? (widget.lang == 'fr' ? '½ bonus (presque parfait / blowout) $oddsStr' : (widget.lang == 'es' ? '½ bono (casi perfecto / blowout) $oddsStr' : '½ bonus (near-miss / blowout) $oddsStr'))
         : '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} $oddsStr';
     final String gdIcon = isGdNearMiss ? '📊🎯' : '📊';
 
