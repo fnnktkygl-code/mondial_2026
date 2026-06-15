@@ -988,11 +988,20 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
       icon: '🏆',
     );
 
+    final bool isGdNearMiss = breakdown['isGdNearMiss'] == true;
+    final String gdLabel = isGdNearMiss
+        ? (widget.lang == 'fr' ? 'Diff. buts : presque parfait !' : (widget.lang == 'es' ? 'Diferencia de goles: ¡casi!' : 'Goal difference: near miss!'))
+        : (widget.lang == 'fr' ? 'Différence de buts correcte' : (widget.lang == 'es' ? 'Diferencia de goles' : 'Correct goal difference'));
+    final String gdSubtitle = isGdNearMiss
+        ? (widget.lang == 'fr' ? '½ bonus (1 but d\'écart) $oddsStr' : (widget.lang == 'es' ? '½ bono (1 gol de diferencia) $oddsStr' : '½ bonus (off by 1 goal) $oddsStr'))
+        : '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} $oddsStr';
+    final String gdIcon = isGdNearMiss ? '📊🎯' : '📊';
+
     addBreakdownRow(
-      widget.lang == 'fr' ? 'Différence de buts correcte' : (widget.lang == 'es' ? 'Diferencia de goles' : 'Correct goal difference'),
+      gdLabel,
       breakdown['gdPoints'],
-      subtitle: '${widget.lang == 'fr' ? 'Bonus' : 'Bonus'} $oddsStr',
-      icon: '📊',
+      subtitle: gdSubtitle,
+      icon: gdIcon,
     );
 
     addBreakdownRow(

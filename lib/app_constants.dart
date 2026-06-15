@@ -47,9 +47,12 @@ const int kCorrectOutcomePoints = 50; // Found 1, N or 2
 // Goal Difference (GD) Bonuses (if outcome is correct)
 const int kGdDiff0Points = 20;  // Draw
 const int kGdDiff1Points = 20;  // Predicted 1-0, actual 2-1
-const int kGdDiff2Points = 100; // Predicted 2-0, actual 3-1 (Increased to 100)
-const int kGdDiff3Points = 200; // Predicted 3-0, actual 4-1 (Increased to 200)
-const int kGdDiff4Points = 350; // Predicted 4-0, actual 5-1 (Increased to 350 - massive risk reward!)
+const int kGdDiff2Points = 100; // Predicted 2-0, actual 3-1
+const int kGdDiff3Points = 200; // Predicted 3-0, actual 4-1
+const int kGdDiff4Points = 350; // Predicted 4-0, actual 5-1 (massive risk!)
+const int kGdDiff5Points = 500; // Predicted 5-0, actual 6-1 (extreme blowout!)
+// Near-miss GD: if predicted GD >= 3 and off by exactly 1, award this fraction
+const double kGdNearMissFraction = 0.5; // 50% of the full GD bonus
 
 // Precision Master
 const int kExactScoreBonus = 200; // SUMMUM: Added on top of Outcome + GD (Increased to 200)
@@ -261,6 +264,9 @@ const Map<String, double> kTeamRatings = {
   'il': 1333.90,
   'bo': 1325.99,
   'xk': 1319.12,
+  'cw': 1320.00, // Curaçao
+  'ht': 1467.00, // Haïti
+  'nz': 1580.00, // Nouvelle-Zélande
 };
 
 // ─── UI ───────────────────────────────────────────────────────────────────────

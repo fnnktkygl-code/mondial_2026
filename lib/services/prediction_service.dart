@@ -457,16 +457,27 @@ class PredictionService {
         // 2. Goal Difference (GD) Bonus (Multiplied by outcome odds)
         final actualGD = (actual1 - actual2).abs();
         final predGD = (pred1 - pred2).abs();
+        double gdBase = 0;
+
         if (actualGD == predGD) {
-          double gdPoints = 0;
-          if (actualGD == 0) { gdPoints = kGdDiff0Points.toDouble(); }
-          else if (actualGD == 1) { gdPoints = kGdDiff1Points.toDouble(); }
-          else if (actualGD == 2) { gdPoints = kGdDiff2Points.toDouble(); }
-          else if (actualGD == 3) { gdPoints = kGdDiff3Points.toDouble(); }
-          else if (actualGD >= 4) { gdPoints = kGdDiff4Points.toDouble(); }
-          
-          totalMatchPoints += gdPoints * oddsMultiplier;
+          // Exact GD match — full bonus
+          if (actualGD == 0)      { gdBase = kGdDiff0Points.toDouble(); }
+          else if (actualGD == 1) { gdBase = kGdDiff1Points.toDouble(); }
+          else if (actualGD == 2) { gdBase = kGdDiff2Points.toDouble(); }
+          else if (actualGD == 3) { gdBase = kGdDiff3Points.toDouble(); }
+          else if (actualGD == 4) { gdBase = kGdDiff4Points.toDouble(); }
+          else                    { gdBase = kGdDiff5Points.toDouble(); } // GD ≥ 5
+        } else if ((actualGD - predGD).abs() == 1 && predGD >= 3) {
+          // Near-miss: off by 1 on a high-GD prediction — half bonus on lower tier
+          final refGD = predGD < actualGD ? predGD : actualGD;
+          double nearBase = 0;
+          if (refGD == 3)      { nearBase = kGdDiff3Points.toDouble(); }
+          else if (refGD == 4) { nearBase = kGdDiff4Points.toDouble(); }
+          else                 { nearBase = kGdDiff5Points.toDouble(); }
+          gdBase = nearBase * kGdNearMissFraction;
         }
+
+        totalMatchPoints += gdBase * oddsMultiplier;
 
         // 3. Exact Score "Summum" Bonus (Multiplied by odds and score risk/rarity factor)
         if (isScoreExact) {
@@ -640,6 +651,7 @@ class PredictionService {
     double gdPoints = 0.0;
     double exactScorePoints = 0.0;
     double totalGoalsPoints = 0.0;
+    bool isGdNearMiss = false;
 
     if (isOutcomeCorrect) {
       // 1. Base Outcome
@@ -649,16 +661,28 @@ class PredictionService {
         // 2. Goal Difference (GD) Bonus
         final actualGD = (actual1 - actual2).abs();
         final predGD = (pred1 - pred2).abs();
+        double gdBase = 0;
+
         if (actualGD == predGD) {
-          double gdBase = 0;
-          if (actualGD == 0) { gdBase = kGdDiff0Points.toDouble(); }
+          // Exact GD match — full bonus
+          if (actualGD == 0)      { gdBase = kGdDiff0Points.toDouble(); }
           else if (actualGD == 1) { gdBase = kGdDiff1Points.toDouble(); }
           else if (actualGD == 2) { gdBase = kGdDiff2Points.toDouble(); }
           else if (actualGD == 3) { gdBase = kGdDiff3Points.toDouble(); }
-          else if (actualGD >= 4) { gdBase = kGdDiff4Points.toDouble(); }
-          
-          gdPoints = gdBase * oddsMultiplier;
+          else if (actualGD == 4) { gdBase = kGdDiff4Points.toDouble(); }
+          else                    { gdBase = kGdDiff5Points.toDouble(); } // GD ≥ 5
+        } else if ((actualGD - predGD).abs() == 1 && predGD >= 3) {
+          // Near-miss: off by 1 on a high-GD prediction — half bonus on lower tier
+          isGdNearMiss = true;
+          final refGD = predGD < actualGD ? predGD : actualGD;
+          double nearBase = 0;
+          if (refGD == 3)      { nearBase = kGdDiff3Points.toDouble(); }
+          else if (refGD == 4) { nearBase = kGdDiff4Points.toDouble(); }
+          else                 { nearBase = kGdDiff5Points.toDouble(); }
+          gdBase = nearBase * kGdNearMissFraction;
         }
+
+        gdPoints = gdBase * oddsMultiplier;
 
         // 3. Exact Score Bonus
         if (isScoreExact) {
@@ -782,6 +806,7 @@ class PredictionService {
       'oddsMultiplier': oddsMultiplier,
       'isOutcomeCorrect': isOutcomeCorrect,
       'isScoreExact': isScoreExact,
+      'isGdNearMiss': isGdNearMiss,
       'isBoosterActive': isBoosterActive,
       'outcomeText': outcomeText,
     };

@@ -305,7 +305,10 @@ class WCOddsService {
       final t1 = m.t1.toLowerCase().replaceAll('g_', '');
       final t2 = m.t2.toLowerCase().replaceAll('g_', '');
 
-      if (!currentRatings.containsKey(t1) || !currentRatings.containsKey(t2)) continue;
+      // Seed unknown teams with fallback so they still participate in Elo updates
+      const double kUnknownTeamFallbackRating = 1350.0;
+      if (!currentRatings.containsKey(t1)) currentRatings[t1] = kUnknownTeamFallbackRating;
+      if (!currentRatings.containsKey(t2)) currentRatings[t2] = kUnknownTeamFallbackRating;
 
       final r1 = currentRatings[t1]!;
       final r2 = currentRatings[t2]!;
@@ -369,8 +372,12 @@ class WCOddsService {
     // Use dynamic ratings if provided, otherwise fallback to static
     final ratings = resolvedMatches != null ? getDynamicRatings(resolvedMatches) : kTeamRatings;
 
-    final r1 = ratings[cleanT1] ?? 1500.0;
-    final r2 = ratings[cleanT2] ?? 1500.0;
+    // kUnknownTeamFallbackRating: teams not in our ratings map are treated as
+    // moderate underdogs (1350), not average teams (1500). This produces more
+    // realistic odds for debut nations like first-time WC qualifiers.
+    const double kUnknownTeamFallbackRating = 1350.0;
+    final r1 = ratings[cleanT1] ?? kUnknownTeamFallbackRating;
+    final r2 = ratings[cleanT2] ?? kUnknownTeamFallbackRating;
 
     // Basic Elo-based win probability formula
     // We adjust the 400 constant to control the spread of odds
