@@ -142,27 +142,33 @@ class GenieGeminiService {
       final existingPred = botData.matchPredictions[mId];
       final bool isLocked = PredictionService.isPredictionLocked(match);
 
-      // We generate a prediction if:
-      // - No prediction exists
-      // - OR: prediction exists but the match is not locked (upcoming) and the cache is older than 6 hours (fresh live data)
       bool needsPrediction = false;
       if (existingPred == null) {
         needsPrediction = true;
       } else if (!isLocked) {
-        // Check if the cached analysis exists and is older than 6 hours
         final analysisKey = '$_botAnalysisPrefix$mId';
         final cachedAnalysis = prefs.getString(analysisKey);
         if (cachedAnalysis == null) {
           needsPrediction = true;
         } else {
-          // Check timestamp of the match prediction
-          // Since MatchPrediction doesn't have a timestamp, we store match prediction update time separately or just let it update on explicit request.
-          // Let's implement an age check using SharedPreferences timestamp
           final timestampKey = '${analysisKey}_time';
           final savedTimeStr = prefs.getString(timestampKey);
           if (savedTimeStr != null) {
             final savedTime = DateTime.tryParse(savedTimeStr);
-            if (savedTime != null && DateTime.now().difference(savedTime).inHours >= 24) {
+            if (savedTime != null) {
+              final timeToKickoff = match.date.difference(DateTime.now());
+              int cacheTtlHours = 24;
+              if (timeToKickoff.inHours <= 2) {
+                cacheTtlHours = 1; // Refine up to 1 hour before kickoff
+              } else if (timeToKickoff.inHours <= 12) {
+                cacheTtlHours = 3; // Refine every 3 hours as kickoff approaches
+              } else if (timeToKickoff.inHours <= 24) {
+                cacheTtlHours = 6; // Refine every 6 hours on the final day
+              }
+              if (DateTime.now().difference(savedTime).inHours >= cacheTtlHours) {
+                needsPrediction = true;
+              }
+            } else {
               needsPrediction = true;
             }
           } else {
@@ -297,7 +303,7 @@ class GenieGeminiService {
     final team2Players = PlayerDatabaseService.getPlayersForTeam(team2Name);
 
     final promptText = """
-You are "Genie Gemini", an expert football analyst and AI sports oracle. Analyze the upcoming FIFA World Cup 2026 match:
+You are "Genie Gemini", an expert football analyst, AI sports oracle, and game theorist. Analyze the upcoming FIFA World Cup 2026 match:
 Team 1: $team1Name (FIFA Rank: $rank1, Country Code: ${match.t1})
 Team 2: $team2Name (FIFA Rank: $rank2, Country Code: ${match.t2})
 Stage: $stageName
@@ -321,16 +327,36 @@ For group stage matches, extraTimeWinner and penaltyWinner must be null.
 
 Also predict the goalscorers (predictedScorers map with player name as key and number of goals as value). Do not predict scorers who are not in the squads above. If you decide to predict only the outcome without an exact scoreline (outcomeOnly: true), set predictedScorers to an empty map.
 
-If you are not confident in predicting an exact scoreline (e.g. if the teams are very evenly matched, or there is extremely high uncertainty), set `outcomeOnly` to true in the JSON response. If `outcomeOnly` is true, you must still provide representative `t1Score` and `t2Score` values representing the direction of the outcome (e.g. 1-0 for team 1 victory, 0-1 for team 2 victory, 1-1 for a draw), but the system will treat it as an outcome-only prediction.
+─── GAME SCORING RULES & RISK MANAGEMENT ───
+Your score predictions affect your leaderboard points. You must manage risk strategically:
+1. Base Outcome: Correctly predicting win/draw/loss awards 50 points * oddsMultiplier (odds clamped to max 5.0).
+2. If `outcomeOnly` is FALSE:
+   - GD Bonus: Correct goal difference awards 25-50 points * oddsMultiplier (GD=0: 25, GD=1: 30, GD=2: 35, GD=3: 40, GD=4: 45, GD>=5: 50). Off-by-one or double blowout (GD>=3) receives 35% near-miss points.
+   - Exact Score Summum Bonus: Correct score awards 100 points * oddsMultiplier * riskFactor. The riskFactor increases exponentially with high scores and high differences (Formula: 1.0 + (abs(t1-t2)*0.4) + (sum(t1+t2)*0.2)). High-scoring exact matches yield massive points but are high risk.
+   - Total Goals Bonus: Correct total goals (if score is wrong) awards 15 points * oddsMultiplier.
+   - Scorer Bonus: Correctly predicting goalscorers adds additional points.
+3. If `outcomeOnly` is TRUE:
+   - You only get the Base Outcome points (50 * oddsMultiplier).
+   - No GD, exact score, total goals, or scorer points can be earned.
+   - Strategy: Set `outcomeOnly` to true if the match is highly volatile, unpredictable, has key squad injuries, or a tight tactical setup where predicting an exact scoreline has negative expected value. If you are highly confident, set `outcomeOnly` to false to maximize points.
+
+─── ADVANCED FOOTBALL ANALYTICS CRITERIA ───
+Do not limit your analysis to basic rankings. Evaluate the match using professional sports analytics:
+- Tactical Clash: How do their formations and tactical philosophies (e.g. low-block vs high-press possession) interact?
+- Quality of Chances (xG): Offensive and defensive expected goals.
+- Individual Matchups: Specific player battles, key injuries, and squad depth.
+- Fatigue & Environment: Rest days disparity, travel distance, and environmental conditions (altitude, heat).
+- Stake & Motivation: Pressure, tournament scenarios, and must-win dynamics.
+- Set-Pieces & Goalkeeper Form.
 
 Write analysis paragraphs in the requested language: ${lang == 'fr' ? 'French' : lang == 'es' ? 'Spanish' : 'English'}.
 Provide reasoning paragraphs for the following fields:
-- rankingAnalysis: Analysis based on FIFA ranks, squad values, and relative strength.
-- oddsAnalysis: Analysis based on the betting odds and implied probabilities.
-- historyAnalysis: Analysis based on head-to-head history and matchups.
-- sentimentAnalysis: Simulated public opinion / social media vibes.
-- formAnalysis: Analysis of recent form and tournament momentum.
-- scorerReasoning: Explanation of why you selected the predicted scorers.
+- rankingAnalysis: Analysis of FIFA ranks, squad values, tactical lineups, and relative strength.
+- oddsAnalysis: Analysis of betting odds, implied probabilities, and risk-benefit of scoreline vs outcome-only.
+- historyAnalysis: Analysis of head-to-head records and historical matchup facts.
+- sentimentAnalysis: Simulated public opinion, social media vibes, and tournament pressure.
+- formAnalysis: Analysis of recent form, xG trends, fatigue, rest days, and momentum.
+- scorerReasoning: Explanation of your selected goalscorers (if any) and set-piece threats.
 - summaryLine: A concise one-sentence prediction verdict.
 
 Also provide a confidenceScore between 0.0 and 1.0.

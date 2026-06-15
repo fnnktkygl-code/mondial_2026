@@ -99,7 +99,7 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
     final xpInfo = PredictionService.getXpDetails(totalPoints, widget.lang);
 
     final playedMatches = widget.allMatches.where((m) => widget.predictionData.matchPredictions.containsKey(m.id)).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final mediaQuery = MediaQuery.of(context);
     final isDesktop = mediaQuery.size.width > 700;

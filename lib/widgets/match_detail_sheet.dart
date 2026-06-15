@@ -2859,14 +2859,38 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppTranslations.get(widget.lang, 'genieOpinion').toUpperCase(),
-              style: const TextStyle(
-                color: AppColors.textDim,
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-                letterSpacing: 1.5,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  AppTranslations.get(widget.lang, 'genieOpinion').toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.textDim,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                if (!isPlayed)
+                  IconButton(
+                    icon: const Icon(Icons.refresh, size: 16, color: Colors.cyanAccent),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Forcer régénération du pronostic',
+                    onPressed: () async {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Régénération du pronostic en cours...'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      await GenieGeminiService.refreshMatchPrediction(_matchState, widget.allMatches, lang: widget.lang);
+                      if (mounted) {
+                        setState(() {});
+                      }
+                    },
+                  ),
+              ],
             ),
             const SizedBox(height: 12),
             Container(
