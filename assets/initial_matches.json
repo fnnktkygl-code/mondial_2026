@@ -605,13 +605,13 @@
     "t1": "sa",
     "t2": "uy",
     "t1Score": 1,
-    "t2Score": 0,
+    "t2Score": 1,
     "venue": "Hard Rock Stadium",
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-15T23:15:31.863Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-16T02:05:18.720Z",
     "goals": [
       {
         "team": "t1",
@@ -620,13 +620,13 @@
       }
     ],
     "stats": {
-      "possessionT1": 40,
-      "shotsT1": 5,
-      "shotsT2": 6,
+      "possessionT1": 33,
+      "shotsT1": 7,
+      "shotsT2": 27,
       "shotsOnTargetT1": 3,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 5,
-      "foulsT2": 5,
+      "shotsOnTargetT2": 10,
+      "foulsT1": 11,
+      "foulsT2": 6,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -638,16 +638,39 @@
     "date": "2026-06-16T01:00:00Z",
     "t1": "ir",
     "t2": "nz",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 1,
     "venue": "SoFi Stadium",
     "group": "G",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-16T02:05:18.721Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "E. Just",
+        "minute": 7
+      },
+      {
+        "team": "t1",
+        "scorer": "R. Rezaeian",
+        "minute": 32
+      }
+    ],
+    "stats": {
+      "possessionT1": 48,
+      "shotsT1": 7,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 2,
+      "foulsT2": 4,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537391",
