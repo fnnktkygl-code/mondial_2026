@@ -638,34 +638,34 @@
     "date": "2026-06-16T01:00:00Z",
     "t1": "ir",
     "t2": "nz",
-    "t1Score": 1,
-    "t2Score": 1,
+    "t1Score": 2,
+    "t2Score": 2,
     "venue": "SoFi Stadium",
     "group": "G",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-16T02:05:18.721Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-16T07:41:16.246Z",
     "goals": [
-      {
-        "team": "t2",
-        "scorer": "E. Just",
-        "minute": 7
-      },
       {
         "team": "t1",
         "scorer": "R. Rezaeian",
         "minute": 32
+      },
+      {
+        "team": "t2",
+        "scorer": "E. Just",
+        "minute": 54
       }
     ],
     "stats": {
       "possessionT1": 48,
-      "shotsT1": 7,
-      "shotsT2": 9,
-      "shotsOnTargetT1": 2,
-      "shotsOnTargetT2": 5,
-      "foulsT1": 2,
-      "foulsT2": 4,
+      "shotsT1": 17,
+      "shotsT2": 14,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 8,
+      "foulsT1": 10,
+      "foulsT2": 8,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
