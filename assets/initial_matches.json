@@ -765,32 +765,78 @@
     "date": "2026-06-17T01:00:00Z",
     "t1": "ar",
     "t2": "dz",
-    "t1Score": 0,
+    "t1Score": 3,
     "t2Score": 0,
     "venue": "GEHA Field at Arrowhead Stadium",
     "group": "J",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-17T05:14:23.543Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "minute": 17
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "minute": 60
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "minute": 76
+      }
+    ],
+    "stats": {
+      "possessionT1": 47,
+      "shotsT1": 10,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 13,
+      "foulsT2": 8,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537398",
     "date": "2026-06-17T04:00:00Z",
     "t1": "at",
     "t2": "jo",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "Levi's Stadium",
     "group": "J",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-17T05:14:23.543Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "R. Schmid",
+        "minute": 20
+      }
+    ],
+    "stats": {
+      "possessionT1": 63,
+      "shotsT1": 6,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 7,
+      "foulsT2": 3,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537403",
