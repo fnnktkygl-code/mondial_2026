@@ -876,14 +876,14 @@
     "date": "2026-06-17T20:00:00Z",
     "t1": "en",
     "t2": "hr",
-    "t1Score": 3,
+    "t1Score": 4,
     "t2Score": 2,
     "venue": "AT&T Stadium",
     "group": "L",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-17T21:26:51.164Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-17T22:56:24.127Z",
     "goals": [
       {
         "team": "t2",
@@ -899,16 +899,21 @@
         "team": "t1",
         "scorer": "J. Bellingham",
         "minute": 47
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Rashford",
+        "minute": 85
       }
     ],
     "stats": {
-      "possessionT1": 53,
-      "shotsT1": 18,
-      "shotsT2": 4,
-      "shotsOnTargetT1": 10,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 8,
-      "foulsT2": 6,
+      "possessionT1": 51,
+      "shotsT1": 22,
+      "shotsT2": 10,
+      "shotsOnTargetT1": 11,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 10,
+      "foulsT2": 12,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
