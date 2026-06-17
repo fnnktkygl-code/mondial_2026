@@ -876,16 +876,44 @@
     "date": "2026-06-17T20:00:00Z",
     "t1": "en",
     "t2": "hr",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 3,
+    "t2Score": 2,
     "venue": "AT&T Stadium",
     "group": "L",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-17T21:26:51.164Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "M. Baturina",
+        "minute": 36
+      },
+      {
+        "team": "t2",
+        "scorer": "P. Musa",
+        "minute": 45
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Bellingham",
+        "minute": 47
+      }
+    ],
+    "stats": {
+      "possessionT1": 53,
+      "shotsT1": 18,
+      "shotsT2": 4,
+      "shotsOnTargetT1": 10,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 8,
+      "foulsT2": 6,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537410",
