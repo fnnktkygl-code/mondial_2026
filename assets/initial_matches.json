@@ -1032,16 +1032,49 @@
     "date": "2026-06-18T19:00:00Z",
     "t1": "ch",
     "t2": "ba",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 4,
+    "t2Score": 1,
     "venue": "SoFi Stadium",
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-18T21:11:31.127Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "J. Manzambi",
+        "minute": 74
+      },
+      {
+        "team": "t1",
+        "scorer": "R. Vargas",
+        "minute": 84
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Manzambi",
+        "minute": 90
+      },
+      {
+        "team": "t2",
+        "scorer": "E. Mahmic",
+        "minute": 90
+      }
+    ],
+    "stats": {
+      "possessionT1": 62,
+      "shotsT1": 13,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 7,
+      "foulsT2": 18,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537336",
