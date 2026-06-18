@@ -14,7 +14,7 @@ void main() {
       final model = await GenieGeminiService.getModel();
       
       expect(key, isEmpty);
-      expect(model, equals('gemini-2.5-flash'));
+      expect(model, equals('gemini-3.1-flash-lite'));
     });
 
     test('Saving and retrieving API Key and Model', () async {

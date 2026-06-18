@@ -76,7 +76,7 @@ class GenieGeminiService {
   static const String _modelPrefsKey = 'gemini_model';
   static const String _botPredictionsPrefsKey = 'genie_gemini_predictions';
   static const String _botAnalysisPrefix = 'genie_gemini_analysis_';
-  static const String _defaultModel = 'gemini-2.5-flash';
+  static const String _defaultModel = 'gemini-3.1-flash-lite';
 
   // ─── API Settings ──────────────────────────────────────────────────────────
 
@@ -102,15 +102,23 @@ class GenieGeminiService {
     final cleaned = stored.trim().replaceFirst(RegExp(r'^models/'), '');
     // Normalize common user-visible display names to valid API identifiers
     const nameMap = <String, String>{
+      'gemini-3.1-flash-lite': 'gemini-3.1-flash-lite',
+      'gemini-3.1-flash-image-preview': 'gemini-3.1-flash-lite',
+      'gemini-3.1-pro-preview': 'gemini-3.1-flash-lite',
+      'gemini-3.5-flash': 'gemini-3.1-flash-lite',
+      'gemini-2.5-flash': 'gemini-3.1-flash-lite',
+      'gemini-2.5-pro': 'gemini-3.1-flash-lite',
+      'gemini-2.5-flash-lite': 'gemini-3.1-flash-lite',
+      'gemini-2.0-flash': 'gemini-3.1-flash-lite',
       'gemini 3.1 flash lite': 'gemini-3.1-flash-lite',
-      'gemini 3.5 flash': 'gemini-3.5-flash',
-      'gemini 3.1 pro preview': 'gemini-3.1-pro-preview',
-      'gemini 2.5 flash': 'gemini-2.5-flash',
-      'gemini 2.5 pro': 'gemini-2.5-pro',
-      'gemini 2.5 flash lite': 'gemini-2.5-flash-lite',
-      'gemini 2.0 flash': 'gemini-2.0-flash',
+      'gemini 3.5 flash': 'gemini-3.1-flash-lite',
+      'gemini 3.1 pro preview': 'gemini-3.1-flash-lite',
+      'gemini 2.5 flash': 'gemini-3.1-flash-lite',
+      'gemini 2.5 pro': 'gemini-3.1-flash-lite',
+      'gemini 2.5 flash lite': 'gemini-3.1-flash-lite',
+      'gemini 2.0 flash': 'gemini-3.1-flash-lite',
     };
-    return nameMap[cleaned.toLowerCase()] ?? cleaned;
+    return nameMap[cleaned.toLowerCase()] ?? nameMap[cleaned] ?? cleaned;
   }
 
   static Future<void> saveModel(String model) async {

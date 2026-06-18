@@ -48,12 +48,12 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   final _levelController = TextEditingController(text: '3');
   final _geminiApiKeyController = TextEditingController();
   final _geminiModelController = TextEditingController(); // kept for the test connection call
-  String _selectedModel = 'gemini-2.5-flash';
+  String _selectedModel = 'gemini-3.1-flash-lite';
   static const List<String> _validModels = [
     'gemini-3.1-flash-lite',
+    'gemini-3.5-flash',
     'gemini-3.1-flash-image-preview',
     'gemini-3.1-pro-preview',
-    'gemini-3.5-flash',
     'gemini-2.5-flash',
     'gemini-2.5-pro',
     'gemini-2.5-flash-lite',
@@ -84,7 +84,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
     _geminiApiKeyController.text = key;
     _geminiModelController.text = model;
     setState(() {
-      _selectedModel = _validModels.contains(model) ? model : 'gemini-2.5-flash';
+      _selectedModel = _validModels.contains(model) ? model : 'gemini-3.1-flash-lite';
     });
   }
 
