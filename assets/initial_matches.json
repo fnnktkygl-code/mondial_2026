@@ -1153,16 +1153,28 @@
     "date": "2026-06-19T19:00:00Z",
     "t1": "us",
     "t2": "au",
-    "t1Score": 0,
+    "t1Score": 2,
     "t2Score": 0,
     "venue": "Lumen Field",
     "group": "D",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-19T20:24:15.323Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 71,
+      "shotsT1": 10,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 9,
+      "foulsT2": 10,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537342",
