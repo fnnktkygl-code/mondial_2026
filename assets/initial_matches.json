@@ -1081,14 +1081,14 @@
     "date": "2026-06-18T22:00:00Z",
     "t1": "ca",
     "t2": "qa",
-    "t1Score": 3,
+    "t1Score": 6,
     "t2Score": 0,
     "venue": "BC Place",
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-18T23:04:23.504Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-19T01:51:59.600Z",
     "goals": [
       {
         "team": "t1",
@@ -1098,17 +1098,22 @@
       {
         "team": "t1",
         "scorer": "J. David",
-        "minute": 29
+        "minute": 45
+      },
+      {
+        "team": "t1",
+        "scorer": "J. David",
+        "minute": 90
       }
     ],
     "stats": {
-      "possessionT1": 67,
-      "shotsT1": 14,
+      "possessionT1": 78,
+      "shotsT1": 32,
       "shotsT2": 2,
-      "shotsOnTargetT1": 8,
+      "shotsOnTargetT1": 10,
       "shotsOnTargetT2": 0,
-      "foulsT1": 3,
-      "foulsT2": 5,
+      "foulsT1": 9,
+      "foulsT2": 10,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -1126,10 +1131,22 @@
     "group": "A",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-19T01:51:59.600Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 47,
+      "shotsT1": 3,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 4,
+      "foulsT2": 4,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537348",
