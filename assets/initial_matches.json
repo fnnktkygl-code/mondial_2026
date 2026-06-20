@@ -1260,15 +1260,33 @@
     "t1": "tr",
     "t2": "py",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 1,
     "venue": "Levi's Stadium",
     "group": "D",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-20T06:48:01.060Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "M. Galarza",
+        "minute": 2
+      }
+    ],
+    "stats": {
+      "possessionT1": 78,
+      "shotsT1": 32,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 14,
+      "foulsT2": 15,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537359",
