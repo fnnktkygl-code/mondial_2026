@@ -1293,16 +1293,39 @@
     "date": "2026-06-20T17:00:00Z",
     "t1": "nl",
     "t2": "se",
-    "t1Score": 0,
+    "t1Score": 2,
     "t2Score": 0,
     "venue": "NRG Stadium",
     "group": "F",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-20T17:18:02.980Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "B. Brobbey",
+        "minute": 5
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Brobbey",
+        "minute": 17
+      }
+    ],
+    "stats": {
+      "possessionT1": 64,
+      "shotsT1": 4,
+      "shotsT2": 1,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 1,
+      "foulsT2": 1,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537353",
