@@ -1299,8 +1299,8 @@
     "group": "F",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-20T18:53:02.189Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-20T20:11:53.380Z",
     "goals": [
       {
         "team": "t1",
@@ -1334,13 +1334,13 @@
       }
     ],
     "stats": {
-      "possessionT1": 51,
+      "possessionT1": 50,
       "shotsT1": 10,
-      "shotsT2": 14,
+      "shotsT2": 16,
       "shotsOnTargetT1": 7,
-      "shotsOnTargetT2": 7,
+      "shotsOnTargetT2": 8,
       "foulsT1": 9,
-      "foulsT2": 11,
+      "foulsT2": 12,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -1358,10 +1358,22 @@
     "group": "E",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-20T20:11:53.380Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 56,
+      "shotsT1": 2,
+      "shotsT2": 0,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 0,
+      "foulsT2": 0,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537354",
