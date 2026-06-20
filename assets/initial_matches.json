@@ -1187,8 +1187,8 @@
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-19T22:37:52.354Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-20T02:39:40.586Z",
     "goals": [
       {
         "team": "t2",
@@ -1197,13 +1197,13 @@
       }
     ],
     "stats": {
-      "possessionT1": 33,
-      "shotsT1": 0,
-      "shotsT2": 4,
+      "possessionT1": 41,
+      "shotsT1": 6,
+      "shotsT2": 12,
       "shotsOnTargetT1": 0,
-      "shotsOnTargetT2": 1,
-      "foulsT1": 4,
-      "foulsT2": 2,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 11,
+      "foulsT2": 8,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -1215,16 +1215,44 @@
     "date": "2026-06-20T00:30:00Z",
     "t1": "br",
     "t2": "ht",
-    "t1Score": 0,
+    "t1Score": 3,
     "t2Score": 0,
     "venue": "Lincoln Financial Field",
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-20T02:39:40.586Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "M. Cunha",
+        "minute": 23
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Cunha",
+        "minute": 36
+      },
+      {
+        "team": "t1",
+        "scorer": "Vinícius Júnior",
+        "minute": 45
+      }
+    ],
+    "stats": {
+      "possessionT1": 56,
+      "shotsT1": 8,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 13,
+      "foulsT2": 15,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537347",
