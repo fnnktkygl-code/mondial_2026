@@ -1352,29 +1352,39 @@
     "date": "2026-06-20T20:00:00Z",
     "t1": "de",
     "t2": "ci",
-    "t1Score": 1,
+    "t1Score": 2,
     "t2Score": 1,
     "venue": "BMO Field",
     "group": "E",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-20T21:39:42.878Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-20T22:48:10.070Z",
     "goals": [
       {
         "team": "t2",
         "scorer": "F. Kessié",
         "minute": 30
+      },
+      {
+        "team": "t1",
+        "scorer": "D. Undav",
+        "minute": 68
+      },
+      {
+        "team": "t1",
+        "scorer": "D. Undav",
+        "minute": 90
       }
     ],
     "stats": {
-      "possessionT1": 61,
-      "shotsT1": 12,
-      "shotsT2": 8,
-      "shotsOnTargetT1": 3,
+      "possessionT1": 59,
+      "shotsT1": 16,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 7,
       "shotsOnTargetT2": 2,
-      "foulsT1": 3,
-      "foulsT2": 5,
+      "foulsT1": 5,
+      "foulsT2": 7,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
