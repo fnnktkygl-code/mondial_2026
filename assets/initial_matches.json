@@ -1540,16 +1540,34 @@
     "date": "2026-06-21T22:00:00Z",
     "t1": "uy",
     "t2": "cv",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 2,
+    "t2Score": 1,
     "venue": "Hard Rock Stadium",
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-21T23:03:48.833Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "A. Cano",
+        "minute": 45
+      }
+    ],
+    "stats": {
+      "possessionT1": 65,
+      "shotsT1": 11,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 6,
+      "foulsT2": 2,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537366",
