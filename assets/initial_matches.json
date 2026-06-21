@@ -1474,8 +1474,8 @@
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-21T17:21:23.560Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-21T18:57:44.155Z",
     "goals": [
       {
         "team": "t1",
@@ -1494,13 +1494,13 @@
       }
     ],
     "stats": {
-      "possessionT1": 70,
-      "shotsT1": 20,
-      "shotsT2": 2,
+      "possessionT1": 67,
+      "shotsT1": 22,
+      "shotsT2": 3,
       "shotsOnTargetT1": 8,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 5,
-      "foulsT2": 1,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 10,
+      "foulsT2": 2,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
