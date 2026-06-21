@@ -53,7 +53,7 @@ class EspnApiService {
     final t2Code = _espnToInternal[awayCompetitor['team']['abbreviation']] ?? awayCompetitor['team']['abbreviation'].toLowerCase();
 
     final status = _mapEspnStatus(event['status']['type']['name']);
-    final liveMinute = event['status']['displayValue']?.toString();
+    final liveMinute = event['status']['type']['shortDetail']?.toString() ?? event['status']['displayClock']?.toString();
     
     final List<GoalEvent> goals = [];
     int yellowCardsT1 = 0;
@@ -164,7 +164,7 @@ class EspnApiService {
         final t2Code = _espnToInternal[awayCompetitor['team']['abbreviation']] ?? awayCompetitor['team']['abbreviation'].toLowerCase();
 
         final status = _mapEspnStatus(competition['status']['type']['name']);
-        final liveMinute = competition['status']['displayValue']?.toString();
+        final liveMinute = competition['status']['type']['shortDetail']?.toString() ?? competition['status']['displayClock']?.toString();
 
         // Goals and Cards from keyEvents (more reliable than header details)
         final List<GoalEvent> goals = [];
@@ -277,19 +277,22 @@ class EspnApiService {
               );
             }).toList();
 
-            lineups = MatchLineups(
-              t1Players: t1Players,
-              t2Players: t2Players,
-              t1Formation: homeRosterContainer['formation']?.toString(),
-              t2Formation: awayRosterContainer['formation']?.toString(),
-            );
+            if (t1Players.isNotEmpty || t2Players.isNotEmpty) {
+              lineups = MatchLineups(
+                t1Players: t1Players,
+                t2Players: t2Players,
+                t1Formation: homeRosterContainer['formation']?.toString(),
+                t2Formation: awayRosterContainer['formation']?.toString(),
+              );
+            }
           } catch (_) {
             // Silently skip if lineups parsing fails
           }
         }
 
         // If lineups are null and we are in staging/dev mode, create mock lineups for manual testing
-        if (lineups == null && (const bool.fromEnvironment('STAGING') == true)) {
+        final isStaging = const bool.fromEnvironment('STAGING', defaultValue: false) || const String.fromEnvironment('STAGING') == 'true';
+        if (lineups == null && isStaging) {
           try {
             final t1EnName = AppTranslations.getTeam('en', t1Code);
             final t2EnName = AppTranslations.getTeam('en', t2Code);

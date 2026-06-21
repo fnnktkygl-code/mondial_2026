@@ -361,6 +361,34 @@ class WorldCupMatch {
 
   bool get isFuture => (status == 'TIMED' || status == 'SCHEDULED') || (!isLive && !isFinished && t1Score == null);
 
+  String? get currentLiveMinute {
+    if (liveMinute != null) return liveMinute;
+    
+    // Fallback: estimate time based on local clock
+    final now = DateTime.now();
+    final localDate = date.toLocal();
+    
+    // Check if we are in the time window where the match should be live
+    final duration = isKnockout ? const Duration(minutes: 180) : const Duration(minutes: 120);
+    if (now.isAfter(localDate) && now.isBefore(localDate.add(duration)) && !isPlayed) {
+      final diff = now.difference(localDate).inMinutes;
+      if (diff < 0) return null;
+      if (diff <= 45) return "$diff'";
+      if (diff <= 60) return "HT";
+      if (diff <= 105) return "${diff - 15}'";
+      if (isKnockout) {
+        if (diff <= 110) return "FT";
+        if (diff <= 125) return "${diff - 20}'";
+        if (diff <= 130) return "HT ET";
+        if (diff <= 145) return "${diff - 25}'";
+        return "PK";
+      } else {
+        return "${diff - 15}'";
+      }
+    }
+    return null;
+  }
+
   bool get isGroupStage => stage == null || stage!.isEmpty;
 
   bool get isKnockout {

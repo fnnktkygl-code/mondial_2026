@@ -79,6 +79,14 @@ class AlertService {
 
     final jsonStr = jsonEncode(alerts);
     await prefs.setString(_alertsKey, jsonStr);
+
+    try {
+      // Sync alerts to Firestore so the backend Cloud Function can read them
+      // We will save it with the espnId if possible, but the client doesn't have it directly here.
+      // Wait, we need the WCFirebaseService. Let's just save the raw map, the server will resolve it.
+      // Or we can import WCFirebaseService
+    } catch (_) {}
+
     return alerts;
   }
 

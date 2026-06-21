@@ -24,5 +24,9 @@ service cloud.firestore {
     match /invites/{inviteId} {
       allow read, write, delete: if true;
     }
+
+    match /quotas/{quotaId} {
+      allow read, write: if true;
+    }
   }
 }

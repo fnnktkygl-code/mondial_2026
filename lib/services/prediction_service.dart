@@ -1093,6 +1093,35 @@ class PredictionService {
     return streak;
   }
 
+  static int calculateMaxStreak(PredictionData data, List<WorldCupMatch> matches) {
+    final playedMatches = matches.where((m) => m.isPlayed).toList()..sort((a, b) => a.date.compareTo(b.date));
+    int currentStreak = 0;
+    int maxStreak = 0;
+
+    for (final match in playedMatches) {
+      final pred = data.matchPredictions[match.id];
+      if (pred == null || match.t1Score == null || match.t2Score == null) {
+        currentStreak = 0;
+        continue;
+      }
+
+      final actual1 = match.t1Score!;
+      final actual2 = match.t2Score!;
+      final actualOutcome = actual1 > actual2 ? 1 : (actual1 < actual2 ? -1 : 0);
+      final predOutcome = pred.t1Score > pred.t2Score ? 1 : (pred.t1Score < pred.t2Score ? -1 : 0);
+      
+      if (actualOutcome == predOutcome) {
+        currentStreak++;
+        if (currentStreak > maxStreak) {
+          maxStreak = currentStreak;
+        }
+      } else {
+        currentStreak = 0;
+      }
+    }
+    return maxStreak;
+  }
+
   static int calculateExactScoreCount(PredictionData data, List<WorldCupMatch> matches) {
     int count = 0;
     for (final match in matches) {

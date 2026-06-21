@@ -56,7 +56,7 @@ Set<String> computeEarnedBadges({
 
   if (userPreds.matchPredictions.isNotEmpty) earned.add('first_pred');
 
-  final streak = PredictionService.calculateActiveStreak(userPreds, matches);
+  final streak = PredictionService.calculateMaxStreak(userPreds, matches);
   if (streak >= 3) earned.add('streak_3');
   if (streak >= 7) earned.add('streak_7');
 

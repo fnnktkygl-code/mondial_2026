@@ -226,7 +226,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Row(
                       children: [
                         if (live || widget.match.isLive)
-                          _LiveBadge(minute: widget.match.liveMinute)
+                          _LiveBadge(minute: widget.match.currentLiveMinute)
                         else if (widget.match.isPlayed || widget.match.isFinished)
                           _FinishedBadge(lang: widget.lang)
                         else

@@ -2747,7 +2747,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
               Positioned(
                 right: 48,
                 top: 12,
-                child: _matchState.isLive ? _LivePulseBadge(minute: _matchState.liveMinute) : const SizedBox.shrink(),
+                child: _matchState.isLive || _matchState.currentLiveMinute != null ? _LivePulseBadge(minute: _matchState.currentLiveMinute) : const SizedBox.shrink(),
               ),
               Positioned(
                 right: 8,
