@@ -1468,16 +1468,44 @@
     "date": "2026-06-21T16:00:00Z",
     "t1": "es",
     "t2": "sa",
-    "t1Score": 0,
+    "t1Score": 4,
     "t2Score": 0,
     "venue": "Mercedes-Benz Stadium",
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-21T17:21:23.560Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "L. Yamal",
+        "minute": 10
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Oyarzabal",
+        "minute": 21
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Oyarzabal",
+        "minute": 24
+      }
+    ],
+    "stats": {
+      "possessionT1": 70,
+      "shotsT1": 20,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 8,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 5,
+      "foulsT2": 1,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537365",
