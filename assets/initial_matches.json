@@ -1402,17 +1402,17 @@
     "group": "E",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-21T00:00:52.423Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-21T05:17:05.416Z",
     "goals": [],
     "stats": {
-      "possessionT1": 100,
-      "shotsT1": 0,
-      "shotsT2": 0,
-      "shotsOnTargetT1": 0,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 0,
-      "foulsT2": 0,
+      "possessionT1": 74,
+      "shotsT1": 27,
+      "shotsT2": 10,
+      "shotsOnTargetT1": 15,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 7,
+      "foulsT2": 10,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -1425,15 +1425,38 @@
     "t1": "tn",
     "t2": "jp",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 2,
     "venue": "Estadio BBVA",
     "group": "F",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-21T05:17:05.417Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "D. Kamada",
+        "minute": 4
+      },
+      {
+        "team": "t2",
+        "scorer": "A. Ueda",
+        "minute": 31
+      }
+    ],
+    "stats": {
+      "possessionT1": 37,
+      "shotsT1": 2,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 5,
+      "foulsT2": 10,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537371",
