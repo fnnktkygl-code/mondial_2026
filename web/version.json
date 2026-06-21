@@ -1,10 +1,10 @@
 {
-  "version": "1.4.0",
-  "buildNumber": 14,
+  "version": "1.4.1",
+  "buildNumber": 15,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Ajout des pronostics lors de la génération de joueurs fictifs sur le Staging Panel.",
-    "en": "Added mock predictions to mock users generated via the Staging Panel.",
-    "es": "Añadida generación de pronósticos simulados para usuarios ficticios."
+    "fr": "Ajout du minuteur en direct sur la feuille de match et diverses améliorations.",
+    "en": "Added live timer to match details and various improvements.",
+    "es": "Añadido temporizador en vivo en los detalles del partido y varias mejoras."
   }
 }
