@@ -1574,16 +1574,34 @@
     "date": "2026-06-22T01:00:00Z",
     "t1": "nz",
     "t2": "eg",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 3,
     "venue": "BC Place",
     "group": "G",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-22T05:39:18.596Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "M. Salah",
+        "minute": 67
+      }
+    ],
+    "stats": {
+      "possessionT1": 44,
+      "shotsT1": 11,
+      "shotsT2": 19,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 7,
+      "foulsT1": 14,
+      "foulsT2": 8,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537399",
