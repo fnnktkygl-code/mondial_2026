@@ -1608,16 +1608,39 @@
     "date": "2026-06-22T17:00:00Z",
     "t1": "ar",
     "t2": "at",
-    "t1Score": 0,
+    "t1Score": 2,
     "t2Score": 0,
     "venue": "AT&T Stadium",
     "group": "J",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-22T19:45:19.025Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "minute": 38
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "minute": 90
+      }
+    ],
+    "stats": {
+      "possessionT1": 53,
+      "shotsT1": 12,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 13,
+      "foulsT2": 13,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537393",
