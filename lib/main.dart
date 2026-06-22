@@ -922,9 +922,6 @@ class _MyHomePageState extends State<MyHomePage> {
       return a.teamCode.compareTo(b.teamCode);
     });
 
-    final bool allGroupsComplete =
-        groupStandings.isNotEmpty &&
-        groupStandings.values.every((list) => list.every((e) => e.played == 3));
 
     List<WorldCupMatch> resolved = List.from(rawMatches);
     final Map<String, String> matchWinners = {};
@@ -966,11 +963,8 @@ class _MyHomePageState extends State<MyHomePage> {
           final grp = newT1.substring(1, 2);
           final groupList = groupStandings[grp];
           if (groupList != null && groupList.isNotEmpty) {
-            final isGroupComplete = groupList.every((e) => e.played == 3);
-            if (isGroupComplete) {
-              final idx = int.parse(pos) - 1;
-              if (idx < groupList.length) newT1 = groupList[idx].teamCode;
-            }
+            final idx = int.parse(pos) - 1;
+            if (idx < groupList.length) newT1 = groupList[idx].teamCode;
           }
         }
         if (newT2.length == 2 &&
@@ -979,28 +973,21 @@ class _MyHomePageState extends State<MyHomePage> {
           final grp = newT2.substring(1, 2);
           final groupList = groupStandings[grp];
           if (groupList != null && groupList.isNotEmpty) {
-            final isGroupComplete = groupList.every((e) => e.played == 3);
-            if (isGroupComplete) {
-              final idx = int.parse(pos) - 1;
-              if (idx < groupList.length) newT2 = groupList[idx].teamCode;
-            }
+            final idx = int.parse(pos) - 1;
+            if (idx < groupList.length) newT2 = groupList[idx].teamCode;
           }
         }
 
         if (newT1.startsWith('3rd') && newT1.length > 3) {
-          if (allGroupsComplete) {
-            final idx = int.parse(newT1.substring(3)) - 1;
-            if (idx >= 0 && idx < thirdPlaces.length) {
-              newT1 = thirdPlaces[idx].teamCode;
-            }
+          final idx = int.parse(newT1.substring(3)) - 1;
+          if (idx >= 0 && idx < thirdPlaces.length) {
+            newT1 = thirdPlaces[idx].teamCode;
           }
         }
         if (newT2.startsWith('3rd') && newT2.length > 3) {
-          if (allGroupsComplete) {
-            final idx = int.parse(newT2.substring(3)) - 1;
-            if (idx >= 0 && idx < thirdPlaces.length) {
-              newT2 = thirdPlaces[idx].teamCode;
-            }
+          final idx = int.parse(newT2.substring(3)) - 1;
+          if (idx >= 0 && idx < thirdPlaces.length) {
+            newT2 = thirdPlaces[idx].teamCode;
           }
         }
 
