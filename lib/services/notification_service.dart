@@ -11,6 +11,7 @@ import '../services/team_profile_service.dart';
 import '../services/prediction_service.dart';
 import '../services/firebase_service.dart';
 import '../services/api_service.dart';
+import '../services/live_match_service.dart';
 import 'espn_api_service.dart';
 import '../l10n/translations.dart';
 import '../../firebase_options.dart';
@@ -193,6 +194,11 @@ class WCNotificationService {
     FirebaseMessaging.instance.requestPermission();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.data['action'] == 'live_ticker' && message.data.containsKey('payload')) {
+        LiveMatchService.updateFromPayload(message.data['payload']);
+        return; // It's a silent data message, do not show a notification
+      }
+
       if (message.notification != null) {
         // Build payload from data map
         String payload = '';
@@ -228,7 +234,41 @@ class WCNotificationService {
       }
     });
 
+    updateFCMSubscriptions();
+    LiveMatchService.initialize();
     _startFirestoreListener();
+  }
+
+  static Future<void> updateFCMSubscriptions() async {
+    try {
+      FirebaseMessaging.instance.subscribeToTopic('live_ticker');
+      
+      final predsData = await PredictionService.loadPredictionData();
+      final matches = await ApiService.loadMatches();
+      
+      for (final matchId in predsData.matchPredictions.keys) {
+        try {
+          final match = matches.firstWhere((m) => m.id == matchId);
+          if (match.espnId != null) {
+            FirebaseMessaging.instance.subscribeToTopic('match_${match.espnId}');
+          }
+        } catch (_) {}
+      }
+
+      if (predsData.supportedTeam != null) {
+        final favTeamMatches = matches.where((m) => 
+          m.t1.toLowerCase().replaceAll('g_', '') == predsData.supportedTeam!.toLowerCase() || 
+          m.t2.toLowerCase().replaceAll('g_', '') == predsData.supportedTeam!.toLowerCase()
+        );
+        for (final m in favTeamMatches) {
+          if (m.espnId != null) {
+            FirebaseMessaging.instance.subscribeToTopic('match_${m.espnId}');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error updating FCM subscriptions: $e');
+    }
   }
 
   static void _startFirestoreListener() async {

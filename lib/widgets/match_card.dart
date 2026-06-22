@@ -7,6 +7,7 @@ import '../app_constants.dart';
 import 'team_flag.dart';
 import 'team_profile_dialog.dart';
 import 'wc_tooltip.dart';
+import '../services/live_match_service.dart';
 
 class MatchCard extends StatefulWidget {
   final WorldCupMatch match;
@@ -42,7 +43,10 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
-  bool get _isLive {
+  bool _computeIsLive(LiveMatchData? liveData) {
+    if (liveData != null) {
+      return liveData.status == 'in';
+    }
     final now = DateTime.now();
     final matchDateLocal = widget.match.date.toLocal();
     final duration = widget.match.isKnockout 
@@ -51,6 +55,13 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     return !widget.match.isPlayed &&
         now.isAfter(matchDateLocal) &&
         now.isBefore(matchDateLocal.add(duration));
+  }
+
+  bool _computeIsFinished(LiveMatchData? liveData) {
+    if (liveData != null) {
+      return liveData.status == 'post';
+    }
+    return widget.match.isPlayed || widget.match.isFinished;
   }
 
   @override
@@ -63,7 +74,9 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     _pulseAnimation = Tween<double>(begin: kLivePulseMin, end: kLivePulseMax).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    if (_isLive) {
+    // Initial check (won't catch liveData instantly if not mounted yet, but handled in build)
+    final liveData = LiveMatchService.getLiveData(widget.match.espnId);
+    if (_computeIsLive(liveData)) {
       _pulseController.repeat(reverse: true);
     }
   }
@@ -71,9 +84,11 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
   @override
   void didUpdateWidget(covariant MatchCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_isLive && !_pulseController.isAnimating) {
+    final liveData = LiveMatchService.getLiveData(widget.match.espnId);
+    final live = _computeIsLive(liveData);
+    if (live && !_pulseController.isAnimating) {
       _pulseController.repeat(reverse: true);
-    } else if (!_isLive && _pulseController.isAnimating) {
+    } else if (!live && _pulseController.isAnimating) {
       _pulseController.stop();
     }
   }
@@ -110,9 +125,15 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    final t1Name = AppTranslations.getTeam(widget.lang, widget.match.t1);
-    final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
-    final live = _isLive;
+    return ValueListenableBuilder<Map<String, LiveMatchData>>(
+      valueListenable: LiveMatchService.liveScoresNotifier,
+      builder: (context, liveScores, child) {
+        final liveData = liveScores[widget.match.espnId];
+        final bool live = _computeIsLive(liveData);
+        final bool finished = _computeIsFinished(liveData);
+        
+        final t1Name = AppTranslations.getTeam(widget.lang, widget.match.t1);
+        final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
     final isUserTeam = widget.supportedTeamCode != null &&
         (widget.match.t1.toLowerCase() == widget.supportedTeamCode!.toLowerCase() ||
             widget.match.t2.toLowerCase() == widget.supportedTeamCode!.toLowerCase());
@@ -127,7 +148,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     final IconData predIcon;
     final Color predColor;
 
-    if (widget.match.isPlayed && hasPrediction) {
+    if (finished && hasPrediction) {
       switch (widget.predictionResult) {
         case 'exact':
           predIcon = Icons.star_rounded;
@@ -223,12 +244,12 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        if (live || widget.match.isLive)
-                          _LiveBadge(minute: widget.match.currentLiveMinute)
-                        else if (widget.match.isPlayed || widget.match.isFinished)
-                          _FinishedBadge(lang: widget.lang)
+                      Row(
+                        children: [
+                          if (live)
+                            _LiveBadge(minute: liveData?.clock ?? widget.match.currentLiveMinute)
+                          else if (finished)
+                            _FinishedBadge(lang: widget.lang)
                         else
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -291,13 +312,14 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Expanded(child: _buildTeamSection(widget.match.t1, t1Name, context, true)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: (widget.match.isPlayed || widget.match.isLive)
+                      child: (finished || live)
                           ? Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Safety: Fallback to '-' if a score is missing from the payload
                           Text(
-                            '${widget.match.t1Score ?? 0} - ${widget.match.t2Score ?? 0}',
+                            liveData != null 
+                              ? liveData.score.replaceAll('-', ' - ')
+                              : '${widget.match.t1Score ?? 0} - ${widget.match.t2Score ?? 0}',
                             style: const TextStyle(
                               color: AppColors.accent,
                               fontWeight: FontWeight.w900,
@@ -335,12 +357,12 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                     decoration: BoxDecoration(
-                      color: widget.match.isPlayed
+                      color: finished
                           ? predColor.withValues(alpha: 0.1)
                           : AppColors.surface,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: widget.match.isPlayed
+                        color: finished
                             ? predColor.withValues(alpha: 0.3)
                             : AppColors.border,
                       ),
@@ -355,12 +377,12 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                             Text(
                               _buildPredictionText(),
                               style: TextStyle(
-                                color: widget.match.isPlayed ? predColor : AppColors.textDim,
+                                color: finished ? predColor : AppColors.textDim,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
                             ),
-                            if (widget.match.isPlayed) ...[
+                            if (finished) ...[
                               const SizedBox(width: 8),
                               Text(
                                 widget.predictionResult == 'wrong'
@@ -383,7 +405,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                                   ? '(+ PK)'
                                   : '(+ ET)',
                               style: TextStyle(
-                                color: (widget.match.isPlayed ? predColor : AppColors.textDim).withValues(alpha: 0.7),
+                                color: (finished ? predColor : AppColors.textDim).withValues(alpha: 0.7),
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -392,7 +414,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                       ],
                     ),
                   ),
-                ] else if (widget.match.isPlayed) ...[
+                ] else if (finished) ...[
                   // Cas où le match est fini mais aucun prono n'a été fait
                   const SizedBox(height: 12),
                   Container(
@@ -424,6 +446,8 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
           ),
         ),
       ),
+    );
+      },
     );
   }
 

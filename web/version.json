@@ -1,10 +1,10 @@
 {
-  "version": "1.4.2",
-  "buildNumber": 16,
+  "version": "1.4.3",
+  "buildNumber": 17,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Ajout des projections en temps réel pour le tournoi (16e de finale et plus) et diverses améliorations.",
-    "en": "Added real-time bracket projections (Round of 32 onwards) and various improvements.",
-    "es": "Se agregaron proyecciones del torneo en tiempo real (16vos de final en adelante) y varias mejoras."
+    "fr": "Ajout du Live Match Center : score et chronomètre en temps réel pendant les matchs (aucun rafraîchissement nécessaire) !",
+    "en": "Added Live Match Center: real-time score and clock during matches (no refresh required)!",
+    "es": "Se agregó el Centro de Partidos en Vivo: marcador y reloj en tiempo real durante los partidos."
   }
 }
