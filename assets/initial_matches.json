@@ -1647,16 +1647,34 @@
     "date": "2026-06-22T21:00:00Z",
     "t1": "fr",
     "t2": "iq",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "Lincoln Financial Field",
     "group": "I",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-22T21:56:32.144Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "minute": 14
+      }
+    ],
+    "stats": {
+      "possessionT1": 58,
+      "shotsT1": 7,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 5,
+      "foulsT2": 2,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537394",
