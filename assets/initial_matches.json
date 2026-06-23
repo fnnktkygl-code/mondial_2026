@@ -1780,10 +1780,22 @@
     "group": "K",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-23T17:03:20.501Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 92,
+      "shotsT1": 0,
+      "shotsT2": 0,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 0,
+      "foulsT2": 0,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537411",
