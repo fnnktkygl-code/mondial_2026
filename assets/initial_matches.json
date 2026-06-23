@@ -1774,23 +1774,39 @@
     "date": "2026-06-23T17:00:00Z",
     "t1": "pt",
     "t2": "uz",
-    "t1Score": 0,
+    "t1Score": 5,
     "t2Score": 0,
     "venue": "NRG Stadium",
     "group": "K",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-23T17:03:20.501Z",
-    "goals": [],
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-23T19:18:01.396Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "C. Ronaldo",
+        "minute": 6
+      },
+      {
+        "team": "t1",
+        "scorer": "C. Ronaldo",
+        "minute": 39
+      },
+      {
+        "team": "t1",
+        "scorer": "R. Leão",
+        "minute": 87
+      }
+    ],
     "stats": {
-      "possessionT1": 92,
-      "shotsT1": 0,
-      "shotsT2": 0,
-      "shotsOnTargetT1": 0,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 0,
-      "foulsT2": 0,
+      "possessionT1": 66,
+      "shotsT1": 17,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 9,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 14,
+      "foulsT2": 15,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
