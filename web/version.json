@@ -1,10 +1,10 @@
 {
-  "version": "1.4.4",
-  "buildNumber": 18,
+  "version": "1.4.5",
+  "buildNumber": 19,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Nouveau : Onglet 'Meilleurs 3e' avec classement en temps réel des 8 meilleurs troisièmes + Correctifs sur le classement des poules.",
-    "en": "New: 'Best 3rds' tab with real-time standings of the 8 best third-placed teams + Group standings fixes.",
-    "es": "Nuevo: Pestaña 'Mejores 3º' con clasificación en tiempo real de los 8 mejores terceros + Correcciones en la fase de grupos."
+    "fr": "Correction du calendrier et intégration des vraies minutes en direct + Notifications push en temps réel de mi-temps et fin de match via le backend.",
+    "en": "Fixed calendar times using real live clock + Real-time push notifications for half-time and full-time.",
+    "es": "Tiempos del calendario corregidos usando el reloj en vivo + Notificaciones push en tiempo real para el medio tiempo y final del partido."
   }
 }

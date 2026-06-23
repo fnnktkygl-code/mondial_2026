@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import '../services/player_database_service.dart';
+import '../services/live_match_service.dart';
 import '../l10n/translations.dart';
 
 class GoalEvent {
@@ -191,15 +192,15 @@ class WorldCupMatch {
   final DateTime date;
   final String t1;
   final String t2;
-  final int? t1Score;
-  final int? t2Score;
+  final int? _t1ScoreStatic;
+  final int? _t2ScoreStatic;
   final String? venue; // null for live API data (not in free tier)
   final String? group;
   final String? stage;
   final List<GoalEvent> goals;
   final MatchStats? stats;
-  final String? status; // TIMED / SCHEDULED / IN_PLAY / FINISHED / POSTPONED
-  final String? liveMinute; // "64'", "45+2'", etc.
+  final String? _statusStatic; // TIMED / SCHEDULED / IN_PLAY / FINISHED / POSTPONED
+  final String? _liveMinuteStatic; // "64'", "45+2'", etc.
   final DateTime? lastUpdated;
   final bool? _isKnockoutOverride; // explicit override from JSON
   final MatchLineups? lineups; // Official pre-match lineups
@@ -231,15 +232,15 @@ class WorldCupMatch {
     required this.date,
     required this.t1,
     required this.t2,
-    this.t1Score,
-    this.t2Score,
+    int? t1Score,
+    int? t2Score,
     this.venue,
     this.group,
     this.stage,
     this.goals = const [],
     this.stats,
-    this.status,
-    this.liveMinute,
+    String? status,
+    String? liveMinute,
     this.lastUpdated,
     bool? isKnockoutOverride,
     this.wentToET,
@@ -253,7 +254,11 @@ class WorldCupMatch {
     this.t1ScorePK,
     this.t2ScorePK,
     this.lineups,
-  }) : _isKnockoutOverride = isKnockoutOverride;
+  }) : _isKnockoutOverride = isKnockoutOverride,
+       _t1ScoreStatic = t1Score,
+       _t2ScoreStatic = t2Score,
+       _statusStatic = status,
+       _liveMinuteStatic = liveMinute;
 
   factory WorldCupMatch.fromJson(Map<String, dynamic> json) {
     var goalsList = const <GoalEvent>[];
@@ -327,14 +332,14 @@ class WorldCupMatch {
       'date': date.toUtc().toIso8601String(),
       't1': t1,
       't2': t2,
-      't1Score': t1Score,
-      't2Score': t2Score,
+      't1Score': _t1ScoreStatic,
+      't2Score': _t2ScoreStatic,
       'venue': venue,
       'group': group,
       'stage': stage,
       'isKnockout': isKnockout,
-      'status': status,
-      'liveMinute': liveMinute,
+      'status': _statusStatic,
+      'liveMinute': _liveMinuteStatic,
       'goals': goals.map((g) => g.toJson()).toList(),
       if (stats != null) 'stats': stats!.toJson(),
       'wentToET': wentToET,
@@ -351,9 +356,39 @@ class WorldCupMatch {
     };
   }
 
+  int? get t1Score {
+    final live = LiveMatchService.getLiveData(espnId);
+    if (live != null && live.score.isNotEmpty && live.score.contains('-')) {
+      return int.tryParse(live.score.split('-')[0].trim());
+    }
+    return _t1ScoreStatic;
+  }
+
+  int? get t2Score {
+    final live = LiveMatchService.getLiveData(espnId);
+    if (live != null && live.score.isNotEmpty && live.score.contains('-')) {
+      return int.tryParse(live.score.split('-')[1].trim());
+    }
+    return _t2ScoreStatic;
+  }
+
+  String? get status {
+    final live = LiveMatchService.getLiveData(espnId);
+    if (live != null) {
+      if (live.status == 'post' || live.detail == 'STATUS_FULL_TIME' || live.detail == 'STATUS_FINAL') {
+        return 'FINISHED';
+      }
+      if (live.status == 'in' || live.detail.contains('HALFTIME') || live.detail == 'STATUS_IN_PROGRESS') {
+        return 'IN_PLAY';
+      }
+    }
+    return _statusStatic;
+  }
+
+  String? get liveMinute => _liveMinuteStatic;
+
   // FIX: Only consider a match played if the scores are actually loaded and the status is not TIMED/SCHEDULED!
-  // This prevents future scheduled matches from prematurely showing 0-0 or triggering point calculations.
-  bool get isPlayed => t1Score != null && t2Score != null && status != 'TIMED' && status != 'SCHEDULED';
+  bool get isPlayed => isFinished || (t1Score != null && t2Score != null && status != 'TIMED' && status != 'SCHEDULED');
 
   bool get isFinished => status == 'FINISHED' || status == 'FINAL';
 
@@ -362,30 +397,17 @@ class WorldCupMatch {
   bool get isFuture => (status == 'TIMED' || status == 'SCHEDULED') || (!isLive && !isFinished && t1Score == null);
 
   String? get currentLiveMinute {
-    if (liveMinute != null) return liveMinute;
-    
-    // Fallback: estimate time based on local clock
-    final now = DateTime.now();
-    final localDate = date.toLocal();
-    
-    // Check if we are in the time window where the match should be live
-    final duration = isKnockout ? const Duration(minutes: 180) : const Duration(minutes: 120);
-    if (now.isAfter(localDate) && now.isBefore(localDate.add(duration)) && !isPlayed) {
-      final diff = now.difference(localDate).inMinutes;
-      if (diff < 0) return null;
-      if (diff <= 45) return "$diff'";
-      if (diff <= 60) return "HT";
-      if (diff <= 105) return "${diff - 15}'";
-      if (isKnockout) {
-        if (diff <= 110) return "FT";
-        if (diff <= 125) return "${diff - 20}'";
-        if (diff <= 130) return "HT ET";
-        if (diff <= 145) return "${diff - 25}'";
-        return "PK";
-      } else {
-        return "${diff - 15}'";
-      }
+    final live = LiveMatchService.getLiveData(espnId);
+    if (live != null && (live.status == 'in' || live.status == 'post')) {
+      if (live.detail == 'STATUS_HALFTIME') return 'HT';
+      if (live.detail == 'STATUS_FULL_TIME' || live.detail == 'STATUS_FINAL') return 'FT';
+      if (live.clock.isNotEmpty && live.clock != "0'") return live.clock;
     }
+    
+    if (_liveMinuteStatic != null) return _liveMinuteStatic;
+    
+    // We removed the unreliable local clock fallback logic based on the user request.
+    // The calendar and match cards will now strictly rely on real live data.
     return null;
   }
 
@@ -472,15 +494,15 @@ class WorldCupMatch {
       date: date ?? this.date,
       t1: t1 ?? this.t1,
       t2: t2 ?? this.t2,
-      t1Score: t1Score ?? this.t1Score,
-      t2Score: t2Score ?? this.t2Score,
+      t1Score: t1Score ?? this._t1ScoreStatic,
+      t2Score: t2Score ?? this._t2ScoreStatic,
       venue: venue ?? this.venue,
       group: group ?? this.group,
       stage: stage ?? this.stage,
       goals: goals ?? this.goals,
       stats: stats ?? this.stats,
-      status: status ?? this.status,
-      liveMinute: liveMinute ?? this.liveMinute,
+      status: status ?? this._statusStatic,
+      liveMinute: liveMinute ?? this._liveMinuteStatic,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       isKnockoutOverride: isKnockoutOverride ?? _isKnockoutOverride,
       wentToET: wentToET ?? this.wentToET,

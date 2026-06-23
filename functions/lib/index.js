@@ -7,7 +7,7 @@ const axios_1 = require("axios");
 admin.initializeApp();
 const ESPN_URL = "http://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 exports.pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").onRun(async (context) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     try {
         const response = await axios_1.default.get(ESPN_URL);
         const data = response.data;
@@ -41,6 +41,7 @@ exports.pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").onRun(a
             const scoreStr = `${home.score}-${away.score}`;
             const previousScoreObj = cachedScores[espnId];
             const previousScoreStr = previousScoreObj ? previousScoreObj.score : null;
+            const previousDetail = previousScoreObj ? previousScoreObj.detail : null;
             const liveData = {
                 score: scoreStr,
                 clock: e.status.displayClock || "0'",
@@ -72,6 +73,41 @@ exports.pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").onRun(a
                     }
                     catch (err) {
                         console.error(`Error sending push for ${espnId}`, err);
+                    }
+                }
+            }
+            if (previousDetail !== liveData.detail) {
+                const homeName = ((_j = home.team) === null || _j === void 0 ? void 0 : _j.name) || "Home";
+                const awayName = ((_k = away.team) === null || _k === void 0 ? void 0 : _k.name) || "Away";
+                let title = "";
+                let body = "";
+                let type = "";
+                if (liveData.detail === "STATUS_HALFTIME") {
+                    title = "⚽ Mi-temps";
+                    body = `${homeName} ${home.score} - ${away.score} ${awayName}`;
+                    type = "ht";
+                }
+                else if (liveData.detail === "STATUS_FULL_TIME" || liveData.detail === "STATUS_FINAL") {
+                    title = "🏆 Fin du match";
+                    body = `${homeName} ${home.score} - ${away.score} ${awayName}`;
+                    type = "ft";
+                }
+                if (title !== "") {
+                    console.log(`Match state changed for ${espnId}: ${liveData.detail}`);
+                    const stateMessage = {
+                        notification: { title, body },
+                        data: {
+                            matchId: `espn_${espnId}`,
+                            action: `match_espn_${espnId}`,
+                            type: type,
+                        },
+                        condition: `'match_${espnId}' in topics || 'team_${(_l = home.team) === null || _l === void 0 ? void 0 : _l.abbreviation}' in topics || 'team_${(_m = away.team) === null || _m === void 0 ? void 0 : _m.abbreviation}' in topics`
+                    };
+                    try {
+                        await admin.messaging().send(stateMessage);
+                    }
+                    catch (err) {
+                        console.error(`Error sending state push for ${espnId}`, err);
                     }
                 }
             }

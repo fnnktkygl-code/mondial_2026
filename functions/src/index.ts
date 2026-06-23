@@ -44,6 +44,7 @@ export const pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").on
       const scoreStr = `${home.score}-${away.score}`;
       const previousScoreObj = cachedScores[espnId];
       const previousScoreStr = previousScoreObj ? previousScoreObj.score : null;
+      const previousDetail = previousScoreObj ? previousScoreObj.detail : null;
 
       const liveData = {
         score: scoreStr,
@@ -80,6 +81,42 @@ export const pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").on
             await admin.messaging().send(message);
           } catch (err) {
             console.error(`Error sending push for ${espnId}`, err);
+          }
+        }
+      }
+
+      if (previousDetail !== liveData.detail) {
+        const homeName = home.team?.name || "Home";
+        const awayName = away.team?.name || "Away";
+        let title = "";
+        let body = "";
+        let type = "";
+
+        if (liveData.detail === "STATUS_HALFTIME") {
+          title = "⚽ Mi-temps";
+          body = `${homeName} ${home.score} - ${away.score} ${awayName}`;
+          type = "ht";
+        } else if (liveData.detail === "STATUS_FULL_TIME" || liveData.detail === "STATUS_FINAL") {
+          title = "🏆 Fin du match";
+          body = `${homeName} ${home.score} - ${away.score} ${awayName}`;
+          type = "ft";
+        }
+
+        if (title !== "") {
+          console.log(`Match state changed for ${espnId}: ${liveData.detail}`);
+          const stateMessage = {
+            notification: { title, body },
+            data: {
+              matchId: `espn_${espnId}`,
+              action: `match_espn_${espnId}`,
+              type: type,
+            },
+            condition: `'match_${espnId}' in topics || 'team_${home.team?.abbreviation}' in topics || 'team_${away.team?.abbreviation}' in topics`
+          };
+          try {
+            await admin.messaging().send(stateMessage);
+          } catch (err) {
+            console.error(`Error sending state push for ${espnId}`, err);
           }
         }
       }
