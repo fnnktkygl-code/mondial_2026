@@ -48,6 +48,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
   late Animation<double> _pulseAnimation;
 
   bool _computeIsLive(LiveMatchData? liveData) {
+    if (widget.match.status == 'FINISHED' || widget.match.isPlayed) return false;
     if (liveData != null) {
       return liveData.status == 'in';
     }
@@ -56,16 +57,16 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     final duration = widget.match.isKnockout 
         ? const Duration(minutes: 180) 
         : const Duration(minutes: 120);
-    return !widget.match.isPlayed &&
-        now.isAfter(matchDateLocal) &&
+    return now.isAfter(matchDateLocal) &&
         now.isBefore(matchDateLocal.add(duration));
   }
 
   bool _computeIsFinished(LiveMatchData? liveData) {
+    if (widget.match.status == 'FINISHED' || widget.match.isPlayed) return true;
     if (liveData != null) {
       return liveData.status == 'post';
     }
-    return widget.match.isPlayed || widget.match.isFinished;
+    return widget.match.isFinished;
   }
 
   @override

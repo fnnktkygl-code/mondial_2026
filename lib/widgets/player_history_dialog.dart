@@ -961,28 +961,33 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  if (icon != null) ...[
-                    Text(icon, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 8),
-                  ],
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
-                      ),
-                      if (subtitle != null)
-                        Text(
-                          subtitle,
-                          style: const TextStyle(color: AppColors.textDim, fontSize: 10),
-                        ),
+              Expanded(
+                child: Row(
+                  children: [
+                    if (icon != null) ...[
+                      Text(icon, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 8),
                     ],
-                  ),
-                ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                          if (subtitle != null)
+                            Text(
+                              subtitle,
+                              style: const TextStyle(color: AppColors.textDim, fontSize: 10),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '+${points.round()} PTS',
                 style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
