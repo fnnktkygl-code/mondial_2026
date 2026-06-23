@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "min_app_version": {
+      "defaultValue": {
+        "value": "1.4.2"
+      },
+      "valueType": "STRING"
+    },
+    "update_url": {
+      "defaultValue": {
+        "value": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk"
+      },
+      "valueType": "STRING"
+    }
+  }
+}

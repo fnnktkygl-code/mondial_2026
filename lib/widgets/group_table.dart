@@ -34,18 +34,11 @@ class GroupTableWidget extends StatefulWidget {
     this.supportedTeamCode,
   });
 
-  @override
-  State<GroupTableWidget> createState() => _GroupTableWidgetState();
-}
-
-class _GroupTableWidgetState extends State<GroupTableWidget> {
-  String _selectedGroup = 'A';
-
-  Map<String, List<GroupEntry>> _calculateStandings() {
+  static Map<String, List<GroupEntry>> calculateStandings(List<WorldCupMatch> matches) {
     final Map<String, List<GroupEntry>> standings = {};
 
     // First pass: scan all matches to discover which teams belong to which groups
-    for (final match in widget.matches) {
+    for (final match in matches) {
       if (match.group == null || match.group!.isEmpty) continue;
       final grp = match.group!;
 
@@ -61,7 +54,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     }
 
     // Second pass: compile match scores for played matches
-    for (final match in widget.matches) {
+    for (final match in matches) {
       if (match.group == null || match.group!.isEmpty || !match.isPlayed) {
         continue;
       }
@@ -103,11 +96,18 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
 
     // Sort teams inside each group
     standings.forEach((group, teamEntries) {
-      FIFARegulations.sortStandings(teamEntries, widget.matches);
+      FIFARegulations.sortStandings(teamEntries, matches);
     });
 
     return standings;
   }
+
+  @override
+  State<GroupTableWidget> createState() => _GroupTableWidgetState();
+}
+
+class _GroupTableWidgetState extends State<GroupTableWidget> {
+  String _selectedGroup = 'A';
 
   Widget _buildFlag(String code) {
     return TeamFlagWidget(code: code, width: 28, height: 18, borderRadius: 4);
@@ -356,7 +356,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final standings = _calculateStandings();
+    final standings = GroupTableWidget.calculateStandings(widget.matches);
     final groups = standings.keys.toList()..sort();
 
     // Default select first group if current selected isn't in standings

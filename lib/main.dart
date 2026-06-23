@@ -21,6 +21,8 @@ import 'l10n/translations.dart';
 import 'widgets/match_card.dart';
 import 'widgets/match_detail_sheet.dart';
 import 'widgets/group_table.dart';
+import 'widgets/best_thirds_table.dart';
+
 import 'widgets/calendar_view.dart';
 import 'screens/rules_feedback_screen.dart';
 import 'widgets/bracket_view.dart';
@@ -213,7 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _lang = 'fr';
   String _activeTab =
       'matches'; // 'matches', 'standings', 'bracket', 'challenge'
-  String _standingsSubTab = 'groups'; // 'groups', 'scorers', 'assists', 'team'
+  String _standingsSubTab = 'groups'; // 'groups', 'thirds', 'scorers', 'assists', 'team'
   String _matchFilter = 'all'; // 'all', 'alerts'
   String _viewMode = 'list'; // 'list', 'calendar'
   String _challengeInitialSubTab = 'preds';
@@ -950,10 +952,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
         if (m.isKnockout) {
           if (newT1.toLowerCase() == 'tbd') {
-            newT1 = _getKnockoutPlaceholderT1(m.id);
+            newT1 = 'TBD';
           }
           if (newT2.toLowerCase() == 'tbd') {
-            newT2 = _getKnockoutPlaceholderT2(m.id);
+            newT2 = 'TBD';
           }
         }
 
@@ -1018,147 +1020,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return resolved;
   }
 
-  String _getKnockoutPlaceholderT1(String matchId) {
-    switch (matchId) {
-      case 'm49':
-        return '1A';
-      case 'm50':
-        return '2B';
-      case 'm51':
-        return '1C';
-      case 'm52':
-        return '2A';
-      case 'm53':
-        return '1E';
-      case 'm54':
-        return '2F';
-      case 'm55':
-        return '1G';
-      case 'm56':
-        return '2H';
-      case 'm57':
-        return '1B';
-      case 'm58':
-        return '2E';
-      case 'm59':
-        return '1D';
-      case 'm60':
-        return '2K';
-      case 'm61':
-        return '1F';
-      case 'm62':
-        return '1H';
-      case 'm63':
-        return '1I';
-      case 'm64':
-        return '1K';
-      case 'm65':
-        return 'w49';
-      case 'm66':
-        return 'w51';
-      case 'm67':
-        return 'w53';
-      case 'm68':
-        return 'w55';
-      case 'm69':
-        return 'w57';
-      case 'm70':
-        return 'w59';
-      case 'm71':
-        return 'w61';
-      case 'm72':
-        return 'w63';
-      case 'm73':
-        return 'w65';
-      case 'm74':
-        return 'w67';
-      case 'm75':
-        return 'w69';
-      case 'm76':
-        return 'w71';
-      case 'm77':
-        return 'w73';
-      case 'm78':
-        return 'w75';
-      case 'm79':
-        return 'l77';
-      case 'm80':
-        return 'w77';
-      default:
-        return 'tbd';
-    }
-  }
 
-  String _getKnockoutPlaceholderT2(String matchId) {
-    switch (matchId) {
-      case 'm49':
-        return '3rd1';
-      case 'm50':
-        return '2C';
-      case 'm51':
-        return '3rd2';
-      case 'm52':
-        return '2D';
-      case 'm53':
-        return '3rd3';
-      case 'm54':
-        return '2G';
-      case 'm55':
-        return '3rd4';
-      case 'm56':
-        return '2I';
-      case 'm57':
-        return '3rd5';
-      case 'm58':
-        return '2J';
-      case 'm59':
-        return '3rd6';
-      case 'm60':
-        return '2L';
-      case 'm61':
-        return '3rd7';
-      case 'm62':
-        return '3rd8';
-      case 'm63':
-        return '1J';
-      case 'm64':
-        return '1L';
-      case 'm65':
-        return 'w50';
-      case 'm66':
-        return 'w52';
-      case 'm67':
-        return 'w54';
-      case 'm68':
-        return 'w56';
-      case 'm69':
-        return 'w58';
-      case 'm70':
-        return 'w60';
-      case 'm71':
-        return 'w62';
-      case 'm72':
-        return 'w64';
-      case 'm73':
-        return 'w66';
-      case 'm74':
-        return 'w68';
-      case 'm75':
-        return 'w70';
-      case 'm76':
-        return 'w72';
-      case 'm77':
-        return 'w74';
-      case 'm78':
-        return 'w76';
-      case 'm79':
-        return 'l78';
-      case 'm80':
-        return 'w78';
-      default:
-        return 'tbd';
-    }
-  }
 
   Future<void> _saveAlert(String matchId, String alertType) async {
     final updatedAlerts = await AlertService.saveAlert(matchId, alertType);
@@ -2184,6 +2046,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const SizedBox(width: 8),
                 _buildStandingsSubTabButton(
+                  'thirds',
+                  AppTranslations.get(_lang, 'bestThirdsTab') ?? 'Meilleurs 3e',
+                  Icons.format_list_numbered,
+                ),
+                const SizedBox(width: 8),
+                _buildStandingsSubTabButton(
                   'scorers',
                   AppTranslations.get(_lang, 'scorersTab'),
                   Icons.sports_soccer,
@@ -2240,7 +2108,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _getStandingsSubTabContent() {
-    if (_standingsSubTab == 'scorers') {
+    if (_standingsSubTab == 'thirds') {
+      return BestThirdsTableWidget(matches: _resolvedMatches, lang: _lang);
+    } else if (_standingsSubTab == 'scorers') {
       return ScorersLeaderboardWidget(matches: _resolvedMatches, lang: _lang);
     } else if (_standingsSubTab == 'team') {
       return TeamStatsWidget(

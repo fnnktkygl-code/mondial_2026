@@ -17,22 +17,22 @@ import '../services/genie_gemini_service.dart';
 
 
 const List<Map<String, String>> r32Pairings = [
-  {'id': 'm49', 't1': '1A', 't2': '3rd1'},
-  {'id': 'm50', 't1': '2B', 't2': '2C'},
-  {'id': 'm51', 't1': '1C', 't2': '3rd2'},
-  {'id': 'm52', 't1': '2A', 't2': '2D'},
-  {'id': 'm53', 't1': '1E', 't2': '3rd3'},
-  {'id': 'm54', 't1': '2F', 't2': '2G'},
-  {'id': 'm55', 't1': '1G', 't2': '3rd4'},
-  {'id': 'm56', 't1': '2H', 't2': '2I'},
-  {'id': 'm57', 't1': '1B', 't2': '3rd5'},
-  {'id': 'm58', 't1': '2E', 't2': '2J'},
-  {'id': 'm59', 't1': '1D', 't2': '3rd6'},
-  {'id': 'm60', 't1': '2K', 't2': '2L'},
-  {'id': 'm61', 't1': '1F', 't2': '3rd7'},
-  {'id': 'm62', 't1': '1H', 't2': '3rd8'},
-  {'id': 'm63', 't1': '1I', 't2': '1J'},
-  {'id': 'm64', 't1': '1K', 't2': '1L'}
+  {'id': 'm73', 't1': '2A', 't2': '2B'},
+  {'id': 'm74', 't1': '1E', 't2': '3rd1'},
+  {'id': 'm75', 't1': '1F', 't2': '2C'},
+  {'id': 'm76', 't1': '1C', 't2': '2F'},
+  {'id': 'm77', 't1': '1I', 't2': '3rd2'},
+  {'id': 'm78', 't1': '2E', 't2': '2I'},
+  {'id': 'm79', 't1': '1A', 't2': '3rd3'},
+  {'id': 'm80', 't1': '1L', 't2': '3rd4'},
+  {'id': 'm81', 't1': '1D', 't2': '3rd5'},
+  {'id': 'm82', 't1': '1G', 't2': '3rd6'},
+  {'id': 'm83', 't1': '2K', 't2': '2L'},
+  {'id': 'm84', 't1': '1H', 't2': '2J'},
+  {'id': 'm85', 't1': '1B', 't2': '3rd7'},
+  {'id': 'm86', 't1': '1J', 't2': '2H'},
+  {'id': 'm87', 't1': '1K', 't2': '3rd8'},
+  {'id': 'm88', 't1': '2D', 't2': '2G'}
 ];
 
 class StagingPanelWidget extends StatefulWidget {
@@ -517,11 +517,11 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
 
         // 3. Round of 16
         final List<List<String>> r16Pairs = [
-          ['m49', 'm50'], ['m51', 'm52'], ['m53', 'm54'], ['m55', 'm56'],
-          ['m57', 'm58'], ['m59', 'm60'], ['m61', 'm62'], ['m63', 'm64']
+          ['m74', 'm77'], ['m73', 'm75'], ['m76', 'm78'], ['m79', 'm80'],
+          ['m81', 'm82'], ['m83', 'm84'], ['m85', 'm86'], ['m87', 'm88']
         ];
         for (int i = 0; i < r16Pairs.length; i++) {
-          final id = 'm${65 + i}';
+          final id = 'm${89 + i}';
           final mIdx = matches.indexWhere((m) => m.id == id);
           if (mIdx != -1) {
             final t1 = winners[r16Pairs[i][0]] ?? 'TBD';
@@ -534,10 +534,10 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
 
         // 4. Quarter-Finals
         final List<List<String>> qfPairs = [
-          ['m65', 'm66'], ['m67', 'm68'], ['m69', 'm70'], ['m71', 'm72']
+          ['m89', 'm90'], ['m93', 'm94'], ['m91', 'm92'], ['m95', 'm96']
         ];
         for (int i = 0; i < qfPairs.length; i++) {
-          final id = 'm${73 + i}';
+          final id = 'm${97 + i}';
           final mIdx = matches.indexWhere((m) => m.id == id);
           if (mIdx != -1) {
             final t1 = winners[qfPairs[i][0]] ?? 'TBD';
@@ -552,10 +552,10 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
         if (!stopAtQF) {
           // 5. Semi-Finals
           final List<List<String>> sfPairs = [
-            ['m73', 'm74'], ['m75', 'm76']
+            ['m97', 'm98'], ['m99', 'm100']
           ];
           for (int i = 0; i < sfPairs.length; i++) {
-            final id = 'm${77 + i}';
+            final id = 'm${101 + i}';
             final mIdx = matches.indexWhere((m) => m.id == id);
             if (mIdx != -1) {
               final t1 = winners[sfPairs[i][0]] ?? 'TBD';
@@ -567,25 +567,25 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
           }
 
           // 6. 3rd Place & Final
-          final m79Idx = matches.indexWhere((m) => m.id == 'm79');
-          final m80Idx = matches.indexWhere((m) => m.id == 'm80');
+          final m103Idx = matches.indexWhere((m) => m.id == 'm103');
+          final m104Idx = matches.indexWhere((m) => m.id == 'm104');
           
-          if (m79Idx != -1 && m80Idx != -1) {
-             final sf1Idx = matches.indexWhere((m) => m.id == 'm77');
-             final sf2Idx = matches.indexWhere((m) => m.id == 'm78');
+          if (m103Idx != -1 && m104Idx != -1) {
+             final sf1Idx = matches.indexWhere((m) => m.id == 'm101');
+             final sf2Idx = matches.indexWhere((m) => m.id == 'm102');
              
              if (sf1Idx != -1 && sf2Idx != -1) {
                final sf1 = matches[sf1Idx];
                final sf2 = matches[sf2Idx];
                
-               final w1 = winners['m77'] ?? 'TBD';
+               final w1 = winners['m101'] ?? 'TBD';
                final l1 = sf1.t1 == w1 ? sf1.t2 : sf1.t1;
                
-               final w2 = winners['m78'] ?? 'TBD';
+               final w2 = winners['m102'] ?? 'TBD';
                final l2 = sf2.t1 == w2 ? sf2.t2 : sf2.t1;
                
-               matches[m79Idx] = _simulateSingleMatch(matches[m79Idx].copyWith(t1: l1, t2: l2), random);
-               matches[m80Idx] = _simulateSingleMatch(matches[m80Idx].copyWith(t1: w1, t2: w2), random);
+               matches[m103Idx] = _simulateSingleMatch(matches[m103Idx].copyWith(t1: l1, t2: l2), random);
+               matches[m104Idx] = _simulateSingleMatch(matches[m104Idx].copyWith(t1: w1, t2: w2), random);
              }
           }
         }
@@ -642,7 +642,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       final stats = TournamentStats.compute(matches);
       final String actualScorer = stats.scorers.isNotEmpty ? stats.scorers.first.name : 'Kylian Mbappé';
 
-      final finalMatch = matches.firstWhere((m) => m.id == 'm80', orElse: () => matches[0]);
+      final finalMatch = matches.firstWhere((m) => m.id == 'm104', orElse: () => matches[0]);
       String actualChampion = 'fr';
       if (finalMatch.isPlayed) {
         actualChampion = finalMatch.wentToPK == true ? finalMatch.pkWinner! :
