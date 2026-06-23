@@ -15,13 +15,13 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "J. Qui\u00f1ones",
+        "scorer": "J. Quiñones",
         "assistant": null,
         "minute": 9
       },
       {
         "team": "t1",
-        "scorer": "R. Jim\u00e9nez",
+        "scorer": "R. Jiménez",
         "assistant": null,
         "minute": 67
       }
@@ -60,7 +60,7 @@
     "goals": [
       {
         "team": "t2",
-        "scorer": "L. Krej\u010d\u00ed",
+        "scorer": "L. Krejčí",
         "assistant": null,
         "minute": 59
       },
@@ -117,7 +117,7 @@
       },
       {
         "team": "t2",
-        "scorer": "Jovo Luki\u0107",
+        "scorer": "Jovo Lukić",
         "assistant": null,
         "minute": 21
       }
@@ -174,7 +174,7 @@
       },
       {
         "team": "t2",
-        "scorer": "Maur\u00edcio",
+        "scorer": "Maurício",
         "assistant": null,
         "minute": 73
       },
@@ -266,7 +266,7 @@
       },
       {
         "team": "t1",
-        "scorer": "V. J\u00fanior",
+        "scorer": "V. Júnior",
         "assistant": null,
         "minute": 32
       }
@@ -509,7 +509,7 @@
       },
       {
         "team": "t1",
-        "scorer": "V. Gy\u00f6keres",
+        "scorer": "V. Gyökeres",
         "minute": 59
       },
       {
@@ -688,7 +688,7 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "K. Mbapp\u00e9",
+        "scorer": "K. Mbappé",
         "minute": 66
       },
       {
@@ -703,7 +703,7 @@
       },
       {
         "team": "t1",
-        "scorer": "K. Mbapp\u00e9",
+        "scorer": "K. Mbappé",
         "minute": 90
       }
     ],
@@ -970,12 +970,12 @@
     "goals": [
       {
         "team": "t2",
-        "scorer": "D. Mu\u00f1oz",
+        "scorer": "D. Muñoz",
         "minute": 40
       },
       {
         "team": "t2",
-        "scorer": "L. D\u00edaz",
+        "scorer": "L. Díaz",
         "minute": 65
       }
     ],
@@ -1009,7 +1009,7 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "M. Sad\u00edlek",
+        "scorer": "M. Sadílek",
         "minute": 6
       }
     ],
@@ -1236,7 +1236,7 @@
       },
       {
         "team": "t1",
-        "scorer": "Vin\u00edcius J\u00fanior",
+        "scorer": "Vinícius Júnior",
         "minute": 45
       }
     ],
@@ -1363,7 +1363,7 @@
     "goals": [
       {
         "team": "t2",
-        "scorer": "F. Kessi\u00e9",
+        "scorer": "F. Kessié",
         "minute": 30
       },
       {
@@ -1692,13 +1692,13 @@
     "t1": "no",
     "t2": "sn",
     "t1Score": 3,
-    "t2Score": 1,
+    "t2Score": 2,
     "venue": "MetLife Stadium",
     "group": "I",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-23T01:28:29.536Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-23T05:42:01.234Z",
     "goals": [
       {
         "team": "t1",
@@ -1714,16 +1714,21 @@
         "team": "t2",
         "scorer": "I. Sarr",
         "minute": 53
+      },
+      {
+        "team": "t2",
+        "scorer": "I. Sarr",
+        "minute": 90
       }
     ],
     "stats": {
-      "possessionT1": 44,
-      "shotsT1": 11,
-      "shotsT2": 9,
-      "shotsOnTargetT1": 6,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 7,
-      "foulsT2": 2,
+      "possessionT1": 41,
+      "shotsT1": 13,
+      "shotsT2": 16,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 13,
+      "foulsT2": 5,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -1735,16 +1740,34 @@
     "date": "2026-06-23T03:00:00Z",
     "t1": "jo",
     "t2": "dz",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 2,
     "venue": "Levi's Stadium",
     "group": "J",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-23T05:42:01.234Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "N. Al-Rashdan",
+        "minute": 36
+      }
+    ],
+    "stats": {
+      "possessionT1": 27,
+      "shotsT1": 8,
+      "shotsT2": 17,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 8,
+      "foulsT1": 11,
+      "foulsT2": 6,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537405",
