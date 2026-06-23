@@ -1,10 +1,10 @@
 {
-  "version": "1.4.5",
-  "buildNumber": 19,
+  "version": "1.4.6",
+  "buildNumber": 20,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Correction du calendrier et intégration des vraies minutes en direct + Notifications push en temps réel de mi-temps et fin de match via le backend.",
-    "en": "Fixed calendar times using real live clock + Real-time push notifications for half-time and full-time.",
-    "es": "Tiempos del calendario corregidos usando el reloj en vivo + Notificaciones push en tiempo real para el medio tiempo y final del partido."
+    "fr": "Nouveau Mode Simulation ! Testez la fin du tournoi de manière réaliste et modifiez les scores.",
+    "en": "New Simulation Mode! Test the end of the tournament realistically and modify scores.",
+    "es": "¡Nuevo Modo de Simulación! Prueba el final del torneo de forma realista y modifica los resultados."
   }
 }

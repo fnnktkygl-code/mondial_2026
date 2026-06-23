@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pollLiveMatchesV1 = void 0;
+exports.onUserPredictionUpdate = exports.pollLiveMatchesV1 = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios_1 = require("axios");
@@ -137,5 +137,58 @@ exports.pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").onRun(a
         console.error("Error polling ESPN", error);
     }
     return null;
+});
+exports.onUserPredictionUpdate = functions.firestore
+    .document("users/{userId}")
+    .onWrite(async (change, context) => {
+    const beforeData = change.before.data() || {};
+    const afterData = change.after.data() || {};
+    const beforePreds = beforeData.predictions || {};
+    const afterPreds = afterData.predictions || {};
+    const db = admin.firestore();
+    const trendsRef = db.collection("system").doc("prediction_trends");
+    // We will build an object of increments
+    const updates = {};
+    let hasChanges = false;
+    // Helper to get outcome: "t1", "t2", or "draw"
+    const getOutcome = (pred) => {
+        if (!pred || typeof pred.t1Score !== 'number' || typeof pred.t2Score !== 'number')
+            return null;
+        if (pred.t1Score > pred.t2Score)
+            return "t1";
+        if (pred.t1Score < pred.t2Score)
+            return "t2";
+        return "draw";
+    };
+    // Find removed or changed predictions
+    for (const matchId in beforePreds) {
+        const beforeOutcome = getOutcome(beforePreds[matchId]);
+        const afterOutcome = getOutcome(afterPreds[matchId]);
+        if (beforeOutcome !== afterOutcome) {
+            if (beforeOutcome) {
+                // Decrement old outcome
+                updates[`${matchId}.${beforeOutcome}`] = admin.firestore.FieldValue.increment(-1);
+                updates[`${matchId}.total`] = admin.firestore.FieldValue.increment(-1);
+                hasChanges = true;
+            }
+        }
+    }
+    // Find added or changed predictions
+    for (const matchId in afterPreds) {
+        const beforeOutcome = getOutcome(beforePreds[matchId]);
+        const afterOutcome = getOutcome(afterPreds[matchId]);
+        if (beforeOutcome !== afterOutcome) {
+            if (afterOutcome) {
+                // Increment new outcome
+                updates[`${matchId}.${afterOutcome}`] = admin.firestore.FieldValue.increment(1);
+                updates[`${matchId}.total`] = admin.firestore.FieldValue.increment(1);
+                hasChanges = true;
+            }
+        }
+    }
+    if (hasChanges) {
+        // Set merge: true so we don't overwrite other matches
+        await trendsRef.set(updates, { merge: true });
+    }
 });
 //# sourceMappingURL=index.js.map

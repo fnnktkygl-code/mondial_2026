@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import '../services/player_database_service.dart';
 import '../services/live_match_service.dart';
+import '../services/simulation_service.dart';
 import '../l10n/translations.dart';
 
 class GoalEvent {
@@ -357,6 +358,9 @@ class WorldCupMatch {
   }
 
   int? get t1Score {
+    final sim = SimulationService.instance.getSimulatedScore(id);
+    if (sim != null) return sim.t1;
+
     final live = LiveMatchService.getLiveData(espnId);
     if (live != null && live.score.isNotEmpty && live.score.contains('-')) {
       return int.tryParse(live.score.split('-')[0].trim());
@@ -365,6 +369,9 @@ class WorldCupMatch {
   }
 
   int? get t2Score {
+    final sim = SimulationService.instance.getSimulatedScore(id);
+    if (sim != null) return sim.t2;
+
     final live = LiveMatchService.getLiveData(espnId);
     if (live != null && live.score.isNotEmpty && live.score.contains('-')) {
       return int.tryParse(live.score.split('-')[1].trim());
@@ -373,6 +380,10 @@ class WorldCupMatch {
   }
 
   String? get status {
+    if (SimulationService.instance.getSimulatedScore(id) != null) {
+      return 'FINISHED';
+    }
+
     final live = LiveMatchService.getLiveData(espnId);
     if (live != null) {
       if (live.status == 'post' || live.detail == 'STATUS_FULL_TIME' || live.detail == 'STATUS_FINAL') {

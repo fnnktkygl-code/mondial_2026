@@ -30,7 +30,10 @@ import 'widgets/stats_view.dart';
 import 'widgets/challenge_view.dart';
 import 'widgets/profile_dialog.dart';
 import 'widgets/anthem_player_sheet.dart';
+import 'services/api_service.dart';
 import 'services/prediction_service.dart';
+import 'services/prediction_trends_service.dart';
+import 'services/simulation_service.dart';
 import 'services/firebase_service.dart';
 import 'services/notification_service.dart';
 import 'services/audio_service.dart';
@@ -85,6 +88,7 @@ void main() async {
     debugPrint('Firebase initialization error: $e');
   }
   await WCNotificationService.init();
+  PredictionTrendsService.init();
   await initializeDateFormatting('fr', null);
   await initializeDateFormatting('en', null);
   await initializeDateFormatting('es', null);
@@ -1523,6 +1527,25 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         actions: [
+          // 0. Mode Simulation Toggle
+          ListenableBuilder(
+            listenable: SimulationService.instance,
+            builder: (context, _) {
+              final isSim = SimulationService.instance.isSimulationMode;
+              return IconButton(
+                icon: Icon(
+                  isSim ? Icons.auto_awesome : Icons.science_outlined,
+                  color: isSim ? Colors.purpleAccent : AppColors.textDim,
+                ),
+                tooltip: 'Mode Simulation',
+                onPressed: () {
+                  SimulationService.instance.toggleSimulation(_resolvedMatches);
+                  setState(() {}); // Force full UI rebuild to update matches across all tabs
+                },
+              );
+            },
+          ),
+
           // 0. Manual Refresh / Live Indicator
           _buildLiveRefreshButton(),
 

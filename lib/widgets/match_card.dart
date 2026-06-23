@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../services/prediction_service.dart';
+import '../services/prediction_trends_service.dart';
+import '../models/prediction_trend.dart';
 import '../l10n/translations.dart';
 import '../app_colors.dart';
 import '../app_constants.dart';
 import 'team_flag.dart';
 import 'team_profile_dialog.dart';
 import 'wc_tooltip.dart';
+import 'prediction_trend_bar.dart';
 import '../services/live_match_service.dart';
+import '../services/simulation_service.dart';
 
 class MatchCard extends StatefulWidget {
   final WorldCupMatch match;
@@ -123,14 +127,67 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
     return 'https://flagcdn.com/w320/$cleanCode.png';
   }
 
+  void _editSimulatedScore(BuildContext context, String matchId, int t1, int t2) {
+    int newT1 = t1;
+    int newT2 = t2;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppColors.cardDark,
+              title: const Text('Modifier la simulation', style: TextStyle(color: Colors.white)),
+              content: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(icon: const Icon(Icons.keyboard_arrow_up, color: Colors.white), onPressed: () => setState(() => newT1++)),
+                      Text('$newT1', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                      IconButton(icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white), onPressed: () => setState(() => newT1 > 0 ? newT1-- : 0)),
+                    ],
+                  ),
+                  const Text(' - ', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(icon: const Icon(Icons.keyboard_arrow_up, color: Colors.white), onPressed: () => setState(() => newT2++)),
+                      Text('$newT2', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                      IconButton(icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white), onPressed: () => setState(() => newT2 > 0 ? newT2-- : 0)),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+                TextButton(
+                  onPressed: () {
+                    SimulationService.instance.updateSimulatedScore(matchId, newT1, newT2);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Valider'),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Map<String, LiveMatchData>>(
       valueListenable: LiveMatchService.liveScoresNotifier,
       builder: (context, liveScores, child) {
-        final liveData = liveScores[widget.match.espnId];
-        final bool live = _computeIsLive(liveData);
-        final bool finished = _computeIsFinished(liveData);
+        return ListenableBuilder(
+          listenable: SimulationService.instance,
+          builder: (context, _) {
+            final liveData = liveScores[widget.match.espnId];
+            final bool live = _computeIsLive(liveData);
+            final bool finished = _computeIsFinished(liveData);
         
         final t1Name = AppTranslations.getTeam(widget.lang, widget.match.t1);
         final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
@@ -316,14 +373,29 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                           ? Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            liveData != null 
-                              ? liveData.score.replaceAll('-', ' - ')
-                              : '${widget.match.t1Score ?? 0} - ${widget.match.t2Score ?? 0}',
-                            style: const TextStyle(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 22,
+                          GestureDetector(
+                            onTap: SimulationService.instance.getSimulatedScore(widget.match.id) != null
+                                ? () => _editSimulatedScore(context, widget.match.id, widget.match.t1Score ?? 0, widget.match.t2Score ?? 0)
+                                : null,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  liveData != null 
+                                    ? liveData.score.replaceAll('-', ' - ')
+                                    : '${widget.match.t1Score ?? 0} - ${widget.match.t2Score ?? 0}',
+                                  style: TextStyle(
+                                    color: SimulationService.instance.getSimulatedScore(widget.match.id) != null ? Colors.purpleAccent : AppColors.accent,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 22,
+                                  ),
+                                ),
+                                if (SimulationService.instance.getSimulatedScore(widget.match.id) != null)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 4.0),
+                                    child: Icon(Icons.edit, size: 14, color: Colors.purpleAccent),
+                                  ),
+                              ],
                             ),
                           ),
                           if (widget.match.wentToPK == true && widget.match.t1ScorePK != null && widget.match.t2ScorePK != null)
@@ -350,6 +422,23 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     ),
                     Expanded(child: _buildTeamSection(widget.match.t2, t2Name, context, false)),
                   ],
+                ),
+                ValueListenableBuilder<Map<String, PredictionTrend>>(
+                  valueListenable: PredictionTrendsService.trendsNotifier,
+                  builder: (context, trends, child) {
+                    final trend = trends[widget.match.id];
+                    if (trend != null && trend.total > 0 && (hasPrediction || finished)) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: PredictionTrendBar(
+                          trend: trend,
+                          t1: widget.match.t1,
+                          t2: widget.match.t2,
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
 
                 if (hasPrediction) ...[
@@ -448,7 +537,9 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
       ),
     );
       },
-    );
+     );
+    },
+   );
   }
 
   String _buildPredictionText() {
