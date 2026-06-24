@@ -1914,26 +1914,61 @@
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-24T20:04:36.444Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 69,
+      "shotsT1": 4,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 11,
+      "foulsT2": 5,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537338",
     "date": "2026-06-24T19:00:00Z",
     "t1": "ba",
     "t2": "qa",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 2,
+    "t2Score": 1,
     "venue": "Lumen Field",
     "group": "B",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-24T20:04:36.444Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Alajbegovic",
+        "minute": 29
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Al-Haydos",
+        "minute": 42
+      }
+    ],
+    "stats": {
+      "possessionT1": 58,
+      "shotsT1": 9,
+      "shotsT2": 4,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 6,
+      "foulsT2": 6,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537344",
