@@ -1874,16 +1874,34 @@
     "date": "2026-06-24T02:00:00Z",
     "t1": "co",
     "t2": "cd",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "Estadio Akron",
     "group": "K",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-24T05:48:45.807Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "D. Muñoz",
+        "minute": 76
+      }
+    ],
+    "stats": {
+      "possessionT1": 63,
+      "shotsT1": 20,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 9,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 12,
+      "foulsT2": 16,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537337",
