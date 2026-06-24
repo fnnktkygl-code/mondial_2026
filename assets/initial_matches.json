@@ -1991,16 +1991,44 @@
     "date": "2026-06-24T22:00:00Z",
     "t1": "ma",
     "t2": "ht",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 2,
+    "t2Score": 2,
     "venue": "Mercedes-Benz Stadium",
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-24T22:52:22.541Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "A. Hakimi",
+        "minute": 39
+      },
+      {
+        "team": "t2",
+        "scorer": "W. Isidor",
+        "minute": 43
+      },
+      {
+        "team": "t1",
+        "scorer": "I. Saibari",
+        "minute": 45
+      }
+    ],
+    "stats": {
+      "possessionT1": 66,
+      "shotsT1": 13,
+      "shotsT2": 4,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 3,
+      "foulsT2": 9,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537343",
@@ -2008,15 +2036,33 @@
     "t1": "sco",
     "t2": "br",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 2,
     "venue": "Hard Rock Stadium",
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-24T22:52:22.542Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Vinícius Júnior",
+        "minute": 7
+      }
+    ],
+    "stats": {
+      "possessionT1": 48,
+      "shotsT1": 3,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 3,
+      "foulsT2": 2,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537331",
