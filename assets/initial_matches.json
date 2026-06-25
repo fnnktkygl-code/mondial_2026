@@ -2162,16 +2162,39 @@
     "date": "2026-06-25T20:00:00Z",
     "t1": "ec",
     "t2": "de",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 1,
     "venue": "MetLife Stadium",
     "group": "E",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-25T20:21:08.516Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "L. Sané",
+        "minute": 2
+      },
+      {
+        "team": "t1",
+        "scorer": "N. Angulo",
+        "minute": 9
+      }
+    ],
+    "stats": {
+      "possessionT1": 33,
+      "shotsT1": 1,
+      "shotsT2": 3,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 7,
+      "foulsT2": 2,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537356",
@@ -2179,15 +2202,33 @@
     "t1": "cw",
     "t2": "ci",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 1,
     "venue": "Lincoln Financial Field",
     "group": "E",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-25T20:21:08.516Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "N. Pépé",
+        "minute": 7
+      }
+    ],
+    "stats": {
+      "possessionT1": 28,
+      "shotsT1": 2,
+      "shotsT2": 3,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 3,
+      "foulsT2": 0,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537361",
