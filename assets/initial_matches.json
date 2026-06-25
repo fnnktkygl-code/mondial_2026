@@ -1997,8 +1997,8 @@
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-25T00:01:13.428Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-25T04:22:21.409Z",
     "goals": [
       {
         "team": "t1",
@@ -2029,7 +2029,7 @@
     "stats": {
       "possessionT1": 69,
       "shotsT1": 22,
-      "shotsT2": 7,
+      "shotsT2": 9,
       "shotsOnTargetT1": 11,
       "shotsOnTargetT2": 2,
       "foulsT1": 10,
@@ -2051,8 +2051,8 @@
     "group": "C",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-25T00:01:13.428Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-25T04:22:21.409Z",
     "goals": [
       {
         "team": "t2",
@@ -2067,12 +2067,12 @@
     ],
     "stats": {
       "possessionT1": 46,
-      "shotsT1": 13,
-      "shotsT2": 20,
-      "shotsOnTargetT1": 4,
+      "shotsT1": 14,
+      "shotsT2": 21,
+      "shotsOnTargetT1": 5,
       "shotsOnTargetT2": 9,
       "foulsT1": 10,
-      "foulsT2": 10,
+      "foulsT2": 11,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -2085,31 +2085,77 @@
     "t1": "cz",
     "t2": "mx",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 3,
     "venue": "Estadio Banorte",
     "group": "A",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-25T04:22:21.409Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "M. Chávez",
+        "minute": 55
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Quiñones",
+        "minute": 61
+      },
+      {
+        "team": "t2",
+        "scorer": "Á. Fidalgo",
+        "minute": 90
+      }
+    ],
+    "stats": {
+      "possessionT1": 51,
+      "shotsT1": 13,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 9,
+      "foulsT2": 13,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537332",
     "date": "2026-06-25T01:00:00Z",
     "t1": "za",
     "t2": "kr",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "Estadio BBVA",
     "group": "A",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-25T04:22:21.409Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "T. Maseko",
+        "minute": 63
+      }
+    ],
+    "stats": {
+      "possessionT1": 31,
+      "shotsT1": 13,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 7,
+      "foulsT2": 9,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537355",
