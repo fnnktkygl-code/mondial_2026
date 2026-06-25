@@ -1991,14 +1991,14 @@
     "date": "2026-06-24T22:00:00Z",
     "t1": "ma",
     "t2": "ht",
-    "t1Score": 2,
+    "t1Score": 4,
     "t2Score": 2,
     "venue": "Mercedes-Benz Stadium",
     "group": "C",
     "stage": null,
     "isKnockout": false,
     "status": "IN_PLAY",
-    "lastUpdated": "2026-06-24T22:52:22.541Z",
+    "lastUpdated": "2026-06-25T00:01:13.428Z",
     "goals": [
       {
         "team": "t1",
@@ -2014,16 +2014,26 @@
         "team": "t1",
         "scorer": "I. Saibari",
         "minute": 45
+      },
+      {
+        "team": "t1",
+        "scorer": "S. Rahimi",
+        "minute": 78
+      },
+      {
+        "team": "t1",
+        "scorer": "G. Yassine",
+        "minute": 89
       }
     ],
     "stats": {
-      "possessionT1": 66,
-      "shotsT1": 13,
-      "shotsT2": 4,
-      "shotsOnTargetT1": 7,
-      "shotsOnTargetT2": 1,
-      "foulsT1": 3,
-      "foulsT2": 9,
+      "possessionT1": 69,
+      "shotsT1": 22,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 11,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 10,
+      "foulsT2": 18,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -2036,28 +2046,33 @@
     "t1": "sco",
     "t2": "br",
     "t1Score": 0,
-    "t2Score": 2,
+    "t2Score": 3,
     "venue": "Hard Rock Stadium",
     "group": "C",
     "stage": null,
     "isKnockout": false,
     "status": "IN_PLAY",
-    "lastUpdated": "2026-06-24T22:52:22.542Z",
+    "lastUpdated": "2026-06-25T00:01:13.428Z",
     "goals": [
       {
         "team": "t2",
         "scorer": "Vinícius Júnior",
         "minute": 7
+      },
+      {
+        "team": "t2",
+        "scorer": "M. Cunha",
+        "minute": 60
       }
     ],
     "stats": {
-      "possessionT1": 48,
-      "shotsT1": 3,
-      "shotsT2": 9,
-      "shotsOnTargetT1": 0,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 3,
-      "foulsT2": 2,
+      "possessionT1": 46,
+      "shotsT1": 13,
+      "shotsT2": 20,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 9,
+      "foulsT1": 10,
+      "foulsT2": 10,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
