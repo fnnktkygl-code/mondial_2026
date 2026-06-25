@@ -2241,15 +2241,27 @@
     "t1": "tn",
     "t2": "nl",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 2,
     "venue": "GEHA Field at Arrowhead Stadium",
     "group": "F",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-25T23:19:53.137Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 34,
+      "shotsT1": 3,
+      "shotsT2": 3,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 3,
+      "foulsT2": 0,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537362",
@@ -2262,10 +2274,22 @@
     "group": "F",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-25T23:19:53.137Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 56,
+      "shotsT1": 1,
+      "shotsT2": 1,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 4,
+      "foulsT2": 1,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537349",
