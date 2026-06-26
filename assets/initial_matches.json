@@ -2395,32 +2395,78 @@
     "date": "2026-06-26T19:00:00Z",
     "t1": "no",
     "t2": "fr",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 2,
     "venue": "Gillette Stadium",
     "group": "I",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-26T19:29:56.458Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "O. Dembélé",
+        "minute": 7
+      },
+      {
+        "team": "t2",
+        "scorer": "O. Dembélé",
+        "minute": 20
+      },
+      {
+        "team": "t1",
+        "scorer": "T. Aasgaard",
+        "minute": 21
+      }
+    ],
+    "stats": {
+      "possessionT1": 30,
+      "shotsT1": 4,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 7,
+      "foulsT1": 4,
+      "foulsT2": 3,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537396",
     "date": "2026-06-26T19:00:00Z",
     "t1": "sn",
     "t2": "iq",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "BMO Field",
     "group": "I",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-26T19:29:56.458Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "H. Diarra",
+        "minute": 4
+      }
+    ],
+    "stats": {
+      "possessionT1": 45,
+      "shotsT1": 6,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 2,
+      "foulsT2": 3,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537373",
