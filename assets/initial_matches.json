@@ -2313,16 +2313,54 @@
     "date": "2026-06-26T02:00:00Z",
     "t1": "tr",
     "t2": "us",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 3,
+    "t2Score": 2,
     "venue": "SoFi Stadium",
     "group": "D",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-26T05:54:30.157Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "A. Trusty",
+        "minute": 3
+      },
+      {
+        "team": "t1",
+        "scorer": "A. Güler",
+        "minute": 10
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Yilmaz",
+        "minute": 31
+      },
+      {
+        "team": "t2",
+        "scorer": "S. Berhalter",
+        "minute": 49
+      },
+      {
+        "team": "t1",
+        "scorer": "K. Ayhan",
+        "minute": 90
+      }
+    ],
+    "stats": {
+      "possessionT1": 47,
+      "shotsT1": 9,
+      "shotsT2": 18,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 7,
+      "foulsT1": 13,
+      "foulsT2": 13,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537350",
@@ -2335,10 +2373,22 @@
     "group": "D",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-26T05:54:30.157Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 44,
+      "shotsT1": 7,
+      "shotsT2": 12,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 9,
+      "foulsT2": 6,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537395",
