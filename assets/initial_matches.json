@@ -2396,13 +2396,13 @@
     "t1": "no",
     "t2": "fr",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 4,
     "venue": "Gillette Stadium",
     "group": "I",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-26T19:29:56.458Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-26T21:07:22.719Z",
     "goals": [
       {
         "team": "t2",
@@ -2418,16 +2418,21 @@
         "team": "t1",
         "scorer": "T. Aasgaard",
         "minute": 21
+      },
+      {
+        "team": "t2",
+        "scorer": "O. Dembélé",
+        "minute": 32
       }
     ],
     "stats": {
-      "possessionT1": 30,
-      "shotsT1": 4,
-      "shotsT2": 11,
-      "shotsOnTargetT1": 2,
-      "shotsOnTargetT2": 7,
-      "foulsT1": 4,
-      "foulsT2": 3,
+      "possessionT1": 43,
+      "shotsT1": 10,
+      "shotsT2": 18,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 9,
+      "foulsT1": 9,
+      "foulsT2": 11,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -2439,29 +2444,49 @@
     "date": "2026-06-26T19:00:00Z",
     "t1": "sn",
     "t2": "iq",
-    "t1Score": 1,
+    "t1Score": 5,
     "t2Score": 0,
     "venue": "BMO Field",
     "group": "I",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-26T19:29:56.458Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-26T21:07:22.719Z",
     "goals": [
       {
         "team": "t1",
         "scorer": "H. Diarra",
         "minute": 4
+      },
+      {
+        "team": "t1",
+        "scorer": "I. Sarr",
+        "minute": 56
+      },
+      {
+        "team": "t1",
+        "scorer": "P. Gueye",
+        "minute": 59
+      },
+      {
+        "team": "t1",
+        "scorer": "P. Gueye",
+        "minute": 71
+      },
+      {
+        "team": "t1",
+        "scorer": "I. Ndiaye",
+        "minute": 82
       }
     ],
     "stats": {
-      "possessionT1": 45,
-      "shotsT1": 6,
-      "shotsT2": 2,
-      "shotsOnTargetT1": 2,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 2,
-      "foulsT2": 3,
+      "possessionT1": 69,
+      "shotsT1": 28,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 12,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 10,
+      "foulsT2": 11,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
