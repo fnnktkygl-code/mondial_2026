@@ -2659,26 +2659,56 @@
     "group": "L",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-27T21:35:35.471Z",
     "goals": [],
-    "stats": null
+    "stats": {
+      "possessionT1": 29,
+      "shotsT1": 3,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 7,
+      "foulsT2": 3,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537414",
     "date": "2026-06-27T21:00:00Z",
     "t1": "hr",
     "t2": "gh",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "Lincoln Financial Field",
     "group": "L",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-27T21:35:35.471Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "P. Sucic",
+        "minute": 31
+      }
+    ],
+    "stats": {
+      "possessionT1": 46,
+      "shotsT1": 4,
+      "shotsT2": 0,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 1,
+      "foulsT2": 5,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537407",
