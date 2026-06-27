@@ -2504,8 +2504,8 @@
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-27T01:33:49.345Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-27T05:37:53.340Z",
     "goals": [
       {
         "team": "t2",
@@ -2514,13 +2514,13 @@
       }
     ],
     "stats": {
-      "possessionT1": 29,
-      "shotsT1": 4,
-      "shotsT2": 5,
-      "shotsOnTargetT1": 0,
+      "possessionT1": 33,
+      "shotsT1": 5,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 1,
       "shotsOnTargetT2": 1,
-      "foulsT1": 7,
-      "foulsT2": 10,
+      "foulsT1": 14,
+      "foulsT2": 14,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -2538,17 +2538,17 @@
     "group": "H",
     "stage": null,
     "isKnockout": false,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-27T01:33:49.345Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-27T05:37:53.339Z",
     "goals": [],
     "stats": {
-      "possessionT1": 54,
-      "shotsT1": 8,
-      "shotsT2": 5,
-      "shotsOnTargetT1": 1,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 8,
-      "foulsT2": 12,
+      "possessionT1": 51,
+      "shotsT1": 15,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 10,
+      "foulsT2": 16,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
@@ -2560,32 +2560,93 @@
     "date": "2026-06-27T03:00:00Z",
     "t1": "nz",
     "t2": "be",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 5,
     "venue": "BC Place",
     "group": "G",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-27T05:37:53.340Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "L. Trossard",
+        "minute": 28
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Trossard",
+        "minute": 50
+      },
+      {
+        "team": "t2",
+        "scorer": "K. De Bruyne",
+        "minute": 66
+      },
+      {
+        "team": "t1",
+        "scorer": "E. Just",
+        "minute": 84
+      },
+      {
+        "team": "t2",
+        "scorer": "A. Saelemaekers",
+        "minute": 90
+      }
+    ],
+    "stats": {
+      "possessionT1": 45,
+      "shotsT1": 6,
+      "shotsT2": 35,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 10,
+      "foulsT1": 10,
+      "foulsT2": 7,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537368",
     "date": "2026-06-27T03:00:00Z",
     "t1": "eg",
     "t2": "ir",
-    "t1Score": 0,
-    "t2Score": 0,
+    "t1Score": 1,
+    "t2Score": 1,
     "venue": "Lumen Field",
     "group": "G",
     "stage": null,
     "isKnockout": false,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-14T19:56:19.783Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-27T05:37:53.340Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "M. Saber",
+        "minute": 5
+      },
+      {
+        "team": "t2",
+        "scorer": "R. Rezaeian",
+        "minute": 14
+      }
+    ],
+    "stats": {
+      "possessionT1": 61,
+      "shotsT1": 15,
+      "shotsT2": 13,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 11,
+      "foulsT2": 16,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    }
   },
   {
     "id": "g_537413",
