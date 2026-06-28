@@ -1,10 +1,10 @@
 {
-  "version": "1.4.7",
-  "buildNumber": 21,
+  "version": "1.4.8",
+  "buildNumber": 22,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Correction du bug visuel des anciens matchs apparaissant comme \"En cours\", et correction du texte coupé dans l'historique des pronostics.",
-    "en": "Fixed visual bug showing old matches as 'Live', and fixed truncated text in prediction history.",
-    "es": "Corregido el error visual que mostraba partidos antiguos como 'En vivo', y corregido el texto cortado en el historial de predicciones."
+    "fr": "Affiches officielles des 16e de finale avec suivi en direct ESPN et mode simulation amélioré.",
+    "en": "Official Round of 32 matchups with ESPN live tracking and improved simulation mode.",
+    "es": "Cruces oficiales de los 16avos de final con seguimiento en vivo de ESPN y modo de simulación mejorado."
   }
 }
