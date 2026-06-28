@@ -14,11 +14,27 @@ exports.pollLiveMatchesV1 = functions.pubsub.schedule("every 1 minutes").onRun(a
         if (!data.events || data.events.length === 0) {
             return null;
         }
+        // Include live matches AND recently-finished matches (to catch FT transitions)
         const liveEvents = data.events.filter((e) => {
             var _a, _b, _c, _d;
             const state = (_b = (_a = e.status) === null || _a === void 0 ? void 0 : _a.type) === null || _b === void 0 ? void 0 : _b.state;
             const name = (_d = (_c = e.status) === null || _c === void 0 ? void 0 : _c.type) === null || _d === void 0 ? void 0 : _d.name;
-            return state === "in" || name === "STATUS_HALFTIME";
+            if (state === "in" || name === "STATUS_HALFTIME")
+                return true;
+            // Also include matches that just finished (state="post") so we can detect the FT transition
+            if (state === "post" && (name === "STATUS_FULL_TIME" || name === "STATUS_FINAL" || name === "STATUS_FINAL_PEN" || name === "STATUS_FINAL_AET")) {
+                // Only process if the match ended recently (within 10 minutes)
+                const matchDate = e.date ? new Date(e.date) : null;
+                if (matchDate) {
+                    const now = new Date();
+                    const hoursSinceKickoff = (now.getTime() - matchDate.getTime()) / (1000 * 60 * 60);
+                    // A match + possible extra time + penalties = max ~3.5 hours from kickoff
+                    // If it's within 4 hours of kickoff, it likely just ended
+                    if (hoursSinceKickoff <= 4)
+                        return true;
+                }
+            }
+            return false;
         });
         if (liveEvents.length === 0) {
             return null;

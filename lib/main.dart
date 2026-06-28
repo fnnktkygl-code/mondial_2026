@@ -572,6 +572,10 @@ class _MyHomePageState extends State<MyHomePage> {
         return isFav || hasPred || hasAlert;
       }).toList();
 
+      // Cancel all old pre-scheduled HT/FT local notifications (legacy from older builds).
+      // HT/FT notifications are now exclusively cloud-driven via ESPN live data.
+      await WCNotificationService.cancelAll();
+
       await WCNotificationService.scheduleHalfTimeAndFullTimeNotifications(
         matches: filteredMatches,
         lang: _lang,
