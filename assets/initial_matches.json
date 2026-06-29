@@ -2916,10 +2916,22 @@
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-28T19:51:40.135Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-29T20:50:17.645Z",
     "goals": [],
-    "stats": null,
+    "stats": {
+      "possessionT1": 79,
+      "shotsT1": 2,
+      "shotsT2": 2,
+      "shotsOnTargetT1": 0,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 3,
+      "foulsT2": 1,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
     "espnId": "760489"
   },
   {
@@ -2950,8 +2962,8 @@
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-29T18:59:39.960Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-06-29T20:50:17.644Z",
     "goals": [
       {
         "team": "t2",
@@ -2965,13 +2977,13 @@
       }
     ],
     "stats": {
-      "possessionT1": 69,
+      "possessionT1": 68,
       "shotsT1": 19,
       "shotsT2": 5,
       "shotsOnTargetT1": 7,
       "shotsOnTargetT2": 2,
       "foulsT1": 4,
-      "foulsT2": 11,
+      "foulsT2": 13,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
