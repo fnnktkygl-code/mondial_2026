@@ -3014,16 +3014,34 @@
     "date": "2026-06-30T21:00:00Z",
     "t1": "fr",
     "t2": "se",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-28T19:51:40.135Z",
-    "goals": [],
-    "stats": null,
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-06-30T21:53:11.711Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "minute": 45
+      }
+    ],
+    "stats": {
+      "possessionT1": 71,
+      "shotsT1": 15,
+      "shotsT2": 3,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 8,
+      "foulsT2": 6,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
     "espnId": "760492"
   },
   {
