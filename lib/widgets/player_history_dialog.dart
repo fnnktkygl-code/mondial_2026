@@ -817,7 +817,8 @@ class _PlayerHistoryDialogState extends State<PlayerHistoryDialog> {
           child: Text(
             name,
             style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-            overflow: TextOverflow.ellipsis,
+            maxLines: 3,
+            overflow: TextOverflow.visible,
             textAlign: isHome ? TextAlign.right : TextAlign.left,
           ),
         ),

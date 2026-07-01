@@ -309,14 +309,44 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     final champion = fMatches.isNotEmpty && fMatches[0].isPlayed ? fMatches[0].getWinner() : null;
     final confettiColors = champion != null ? _getConfettiColors(champion) : [Colors.amber];
 
-    final leftR32 = r32Matches.where((m) => _getParsedId(m.id) >= 49 && _getParsedId(m.id) <= 56).toList()..sort((a, b) => a.id.compareTo(b.id));
-    final rightR32 = r32Matches.where((m) => _getParsedId(m.id) >= 57 && _getParsedId(m.id) <= 64).toList()..sort((a, b) => a.id.compareTo(b.id));
-    final leftR16 = r16Matches.where((m) => _getParsedId(m.id) >= 65 && _getParsedId(m.id) <= 68).toList()..sort((a, b) => a.id.compareTo(b.id));
-    final rightR16 = r16Matches.where((m) => _getParsedId(m.id) >= 69 && _getParsedId(m.id) <= 72).toList()..sort((a, b) => a.id.compareTo(b.id));
-    final leftQF = qfMatches.where((m) => _getParsedId(m.id) >= 73 && _getParsedId(m.id) <= 74).toList()..sort((a, b) => a.id.compareTo(b.id));
-    final rightQF = qfMatches.where((m) => _getParsedId(m.id) >= 75 && _getParsedId(m.id) <= 76).toList()..sort((a, b) => a.id.compareTo(b.id));
-    final leftSF = sfMatches.where((m) => m.id == 'm77').toList();
-    final rightSF = sfMatches.where((m) => m.id == 'm78').toList();
+    final leftR32 = r32Matches.where((m) => ['m74','m77','m73','m75','m81','m82','m83','m84'].contains(m.id)).toList()
+      ..sort((a, b) {
+        final order = ['m74','m77','m73','m75','m81','m82','m83','m84'];
+        return order.indexOf(a.id).compareTo(order.indexOf(b.id));
+      });
+      
+    final rightR32 = r32Matches.where((m) => ['m76','m78','m79','m80','m85','m86','m87','m88'].contains(m.id)).toList()
+      ..sort((a, b) {
+        final order = ['m76','m78','m79','m80','m85','m86','m87','m88'];
+        return order.indexOf(a.id).compareTo(order.indexOf(b.id));
+      });
+      
+    final leftR16 = r16Matches.where((m) => ['m89','m90','m93','m94'].contains(m.id)).toList()
+      ..sort((a, b) {
+        final order = ['m89','m90','m93','m94'];
+        return order.indexOf(a.id).compareTo(order.indexOf(b.id));
+      });
+      
+    final rightR16 = r16Matches.where((m) => ['m91','m92','m95','m96'].contains(m.id)).toList()
+      ..sort((a, b) {
+        final order = ['m91','m92','m95','m96'];
+        return order.indexOf(a.id).compareTo(order.indexOf(b.id));
+      });
+      
+    final leftQF = qfMatches.where((m) => ['m97','m98'].contains(m.id)).toList()
+      ..sort((a, b) {
+        final order = ['m97','m98'];
+        return order.indexOf(a.id).compareTo(order.indexOf(b.id));
+      });
+      
+    final rightQF = qfMatches.where((m) => ['m99','m100'].contains(m.id)).toList()
+      ..sort((a, b) {
+        final order = ['m99','m100'];
+        return order.indexOf(a.id).compareTo(order.indexOf(b.id));
+      });
+      
+    final leftSF = sfMatches.where((m) => m.id == 'm101').toList();
+    final rightSF = sfMatches.where((m) => m.id == 'm102').toList();
 
     const double cardHeight = 96.0;
     const double r32BlockHeight = 120.0;
