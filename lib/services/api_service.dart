@@ -215,14 +215,16 @@ class ApiService {
     int qfCount = 0;
     int sfCount = 0;
 
-    return decoded.map((item) {
-      final map = Map<String, dynamic>.from(item as Map);
+    // Pass 1: Build ID remapping table
+    final Map<String, String> idRemap = {}; // originalId -> newId
+    for (final item in decoded) {
+      final map = item as Map;
       final stage = map['stage'] as String?;
       final isKnockout =
           map['isKnockout'] as bool? ?? (stage != null && stage.isNotEmpty);
-
       if (isKnockout) {
-        String newId = map['id'] as String;
+        final originalId = map['id'] as String;
+        String newId = originalId;
         if (stage == 'Round of 32') {
           newId = 'm${49 + r32Count}';
           r32Count++;
@@ -240,8 +242,40 @@ class ApiService {
         } else if (stage == 'Final') {
           newId = 'm80';
         }
-        map['id'] = newId;
+        idRemap[originalId] = newId;
+      }
+    }
+
+    // Helper to remap a winner/loser reference like "w74" or "l101"
+    String remapRef(String ref) {
+      if ((ref.startsWith('w') || ref.startsWith('l')) && ref.length > 1) {
+        final prefix = ref.substring(0, 1); // 'w' or 'l'
+        final origMatchId = 'm${ref.substring(1)}';
+        if (idRemap.containsKey(origMatchId)) {
+          final newMatchId = idRemap[origMatchId]!;
+          return '$prefix${newMatchId.substring(1)}'; // e.g. w50
+        }
+      }
+      return ref;
+    }
+
+    // Pass 2: Apply remapping
+    return decoded.map((item) {
+      final map = Map<String, dynamic>.from(item as Map);
+      final stage = map['stage'] as String?;
+      final isKnockout =
+          map['isKnockout'] as bool? ?? (stage != null && stage.isNotEmpty);
+
+      if (isKnockout) {
+        final originalId = map['id'] as String;
+        map['id'] = idRemap[originalId] ?? originalId;
         map['isKnockout'] = true;
+
+        // Remap t1/t2 winner/loser references
+        final t1 = map['t1'] as String? ?? '';
+        final t2 = map['t2'] as String? ?? '';
+        map['t1'] = remapRef(t1);
+        map['t2'] = remapRef(t2);
       } else {
         final id = map['id'] as String;
         if (!id.startsWith(kGroupMatchIdPrefix)) {

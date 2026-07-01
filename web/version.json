@@ -1,10 +1,10 @@
 {
-  "version": "1.4.9",
-  "buildNumber": 23,
+  "version": "1.5.0",
+  "buildNumber": 24,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Correction du tableau des brackets, de la troncature des historiques de pronostics et corrections mineures.",
-    "en": "Fixed bracket UI, prediction history truncation and minor fixes.",
-    "es": "Corrección de la interfaz de brackets, la truncación del historial de pronósticos y correcciones menores."
+    "fr": "Correction critique du tableau des brackets (page vide) et de la résolution des affiches des tours éliminatoires.",
+    "en": "Critical fix for bracket view (empty page) and knockout round team resolution.",
+    "es": "Corrección crítica de la vista de brackets (página vacía) y la resolución de equipos en eliminatorias."
   }
 }
