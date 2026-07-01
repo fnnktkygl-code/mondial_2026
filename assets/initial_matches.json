@@ -3104,16 +3104,39 @@
     "date": "2026-07-01T01:00:00Z",
     "t1": "mx",
     "t2": "ec",
-    "t1Score": 0,
+    "t1Score": 2,
     "t2Score": 0,
     "venue": "Estadio Banorte",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-28T19:51:40.135Z",
-    "goals": [],
-    "stats": null,
+    "status": "FINISHED",
+    "lastUpdated": "2026-07-01T05:00:49.391Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "J. Quiñones",
+        "minute": 22
+      },
+      {
+        "team": "t1",
+        "scorer": "R. Jiménez",
+        "minute": 31
+      }
+    ],
+    "stats": {
+      "possessionT1": 43,
+      "shotsT1": 15,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 10,
+      "foulsT2": 14,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
     "espnId": "760491"
   },
   {
