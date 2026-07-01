@@ -399,9 +399,11 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                               ],
                             ),
                           ),
-                          if (widget.match.wentToPK == true && widget.match.t1ScorePK != null && widget.match.t2ScorePK != null)
+                          if (widget.match.wentToPK == true)
                             Text(
-                              '(${widget.match.t1ScorePK} - ${widget.match.t2ScorePK} PK)',
+                              (widget.match.t1ScorePK != null && widget.match.t2ScorePK != null)
+                                ? '(${widget.match.t1ScorePK} - ${widget.match.t2ScorePK} PK)'
+                                : '(PK)',
                               style: TextStyle(
                                 color: AppColors.accent.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.bold,

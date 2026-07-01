@@ -1,10 +1,10 @@
 {
-  "version": "1.5.0",
-  "buildNumber": 24,
+  "version": "1.5.1",
+  "buildNumber": 25,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
-    "fr": "Correction critique du tableau des brackets (page vide) et de la résolution des affiches des tours éliminatoires.",
-    "en": "Critical fix for bracket view (empty page) and knockout round team resolution.",
-    "es": "Corrección crítica de la vista de brackets (página vacía) y la resolución de equipos en eliminatorias."
+    "fr": "Correctif sur la qualification des vainqueurs aux tirs au but après un match nul.",
+    "en": "Fix for penalty shootout winners advancing after a draw.",
+    "es": "Corrección para el avance de los ganadores en tanda de penales después de un empate."
   }
 }

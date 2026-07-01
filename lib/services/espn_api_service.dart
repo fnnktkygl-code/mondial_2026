@@ -104,18 +104,44 @@ class EspnApiService {
       redCardsT2: redCardsT2 > 0 ? redCardsT2 : _getStatValue(awayStats, 'redCards'),
     );
 
+    final t1ScoreRaw = int.tryParse(homeCompetitor['score'] ?? '');
+    final t2ScoreRaw = int.tryParse(awayCompetitor['score'] ?? '');
+    
+    final t1Winner = homeCompetitor['winner'] == true;
+    final t2Winner = awayCompetitor['winner'] == true;
+    
+    final t1Shootout = homeCompetitor['shootoutScore'] != null ? int.tryParse(homeCompetitor['shootoutScore'].toString()) : null;
+    final t2Shootout = awayCompetitor['shootoutScore'] != null ? int.tryParse(awayCompetitor['shootoutScore'].toString()) : null;
+
+    bool wentToPK = t1Shootout != null || t2Shootout != null;
+    String? pkWinner;
+    
+    if (wentToPK || (status == 'FINISHED' && t1ScoreRaw != null && t2ScoreRaw != null && t1ScoreRaw == t2ScoreRaw && (t1Winner || t2Winner))) {
+      wentToPK = true;
+      if (t1Winner) { pkWinner = t1Code; }
+      else if (t2Winner) { pkWinner = t2Code; }
+      else if (t1Shootout != null && t2Shootout != null) {
+        if (t1Shootout > t2Shootout) { pkWinner = t1Code; }
+        else if (t2Shootout > t1Shootout) { pkWinner = t2Code; }
+      }
+    }
+
     return WorldCupMatch(
       id: 'espn_${event['id']}',
       date: DateTime.parse(event['date']).toLocal(),
       t1: t1Code,
       t2: t2Code,
-      t1Score: int.tryParse(homeCompetitor['score'] ?? ''),
-      t2Score: int.tryParse(awayCompetitor['score'] ?? ''),
+      t1Score: t1ScoreRaw,
+      t2Score: t2ScoreRaw,
       status: status,
       liveMinute: liveMinute,
       venue: event['venue']?['displayName'],
       goals: goals,
       stats: stats,
+      wentToPK: wentToPK ? true : null,
+      pkWinner: pkWinner,
+      t1ScorePK: t1Shootout,
+      t2ScorePK: t2Shootout,
       lastUpdated: DateTime.now(),
     );
   }
@@ -334,19 +360,45 @@ class EspnApiService {
           } catch (_) {}
         }
 
+        final t1ScoreRaw = int.tryParse(homeCompetitor['score'] ?? '');
+        final t2ScoreRaw = int.tryParse(awayCompetitor['score'] ?? '');
+        
+        final t1Winner = homeCompetitor['winner'] == true;
+        final t2Winner = awayCompetitor['winner'] == true;
+        
+        final t1Shootout = homeCompetitor['shootoutScore'] != null ? int.tryParse(homeCompetitor['shootoutScore'].toString()) : null;
+        final t2Shootout = awayCompetitor['shootoutScore'] != null ? int.tryParse(awayCompetitor['shootoutScore'].toString()) : null;
+
+        bool wentToPK = t1Shootout != null || t2Shootout != null;
+        String? pkWinner;
+        
+        if (wentToPK || (status == 'FINISHED' && t1ScoreRaw != null && t2ScoreRaw != null && t1ScoreRaw == t2ScoreRaw && (t1Winner || t2Winner))) {
+          wentToPK = true;
+          if (t1Winner) { pkWinner = t1Code; }
+          else if (t2Winner) { pkWinner = t2Code; }
+          else if (t1Shootout != null && t2Shootout != null) {
+            if (t1Shootout > t2Shootout) { pkWinner = t1Code; }
+            else if (t2Shootout > t1Shootout) { pkWinner = t2Code; }
+          }
+        }
+
         return WorldCupMatch(
           id: 'espn_$espnEventId',
           date: DateTime.parse(competition['date']).toLocal(),
           t1: t1Code,
           t2: t2Code,
-          t1Score: int.tryParse(homeCompetitor['score'] ?? ''),
-          t2Score: int.tryParse(awayCompetitor['score'] ?? ''),
+          t1Score: t1ScoreRaw,
+          t2Score: t2ScoreRaw,
           status: status,
           liveMinute: liveMinute,
           venue: data['gameInfo']?['venue']?['displayName'],
           goals: goals,
           stats: stats,
           lineups: lineups,
+          wentToPK: wentToPK ? true : null,
+          pkWinner: pkWinner,
+          t1ScorePK: t1Shootout,
+          t2ScorePK: t2Shootout,
           lastUpdated: DateTime.now(),
         );
       }

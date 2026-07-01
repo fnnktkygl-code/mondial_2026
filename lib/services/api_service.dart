@@ -94,6 +94,12 @@ class ApiService {
               goals: update.goals,
               stats: update.stats,
               lineups: update.lineups ?? local.lineups,
+              wentToPK: update.wentToPK ?? local.wentToPK,
+              pkWinner: update.pkWinner ?? local.pkWinner,
+              t1ScorePK: update.t1ScorePK ?? local.t1ScorePK,
+              t2ScorePK: update.t2ScorePK ?? local.t2ScorePK,
+              wentToET: update.wentToET ?? local.wentToET,
+              etWinner: update.etWinner ?? local.etWinner,
               lastUpdated: DateTime.now(),
             );
             break;
