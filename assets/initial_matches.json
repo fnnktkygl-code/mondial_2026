@@ -3202,15 +3202,33 @@
     "t1": "be",
     "t2": "sn",
     "t1Score": 0,
-    "t2Score": 0,
+    "t2Score": 1,
     "venue": "Lumen Field",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-28T19:51:40.135Z",
-    "goals": [],
-    "stats": null,
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-07-01T20:28:05.215Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "H. Diarra",
+        "minute": 25
+      }
+    ],
+    "stats": {
+      "possessionT1": 35,
+      "shotsT1": 2,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 4,
+      "foulsT2": 0,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
     "espnId": "760493"
   },
   {
