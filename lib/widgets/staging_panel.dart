@@ -423,8 +423,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
   }
 
   String _getMatchWinner(WorldCupMatch m) {
-    if (m.wentToPK == true) return m.pkWinner!;
-    return (m.t1Score! > m.t2Score!) ? m.t1 : m.t2;
+    return m.getWinner();
   }
 
   Future<void> _simulateMatches({required bool allMatches, bool stopAtQF = false}) async {
@@ -645,8 +644,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       final finalMatch = matches.firstWhere((m) => m.id == 'm104', orElse: () => matches[0]);
       String actualChampion = 'fr';
       if (finalMatch.isPlayed) {
-        actualChampion = finalMatch.wentToPK == true ? finalMatch.pkWinner! :
-                        (finalMatch.t1Score! > finalMatch.t2Score! ? finalMatch.t1 : finalMatch.t2);
+        actualChampion = finalMatch.getWinner();
       }
 
       preds.championCode = actualChampion;

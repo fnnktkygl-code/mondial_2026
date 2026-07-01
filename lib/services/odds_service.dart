@@ -64,13 +64,7 @@ class WCOddsService {
 
     if (finalMatch.id == kFinalMatchId && finalMatch.isPlayed) {
       final Map<String, double> result = {};
-      final winner =
-          matchWinners[kFinalMatchId] ??
-          (finalMatch.pkWinner ?? finalMatch.etWinner)?.toLowerCase() ??
-          (finalMatch.t1Score! > finalMatch.t2Score!
-                  ? finalMatch.t1
-                  : finalMatch.t2)
-              .toLowerCase();
+      final winner = matchWinners[kFinalMatchId] ?? finalMatch.getWinner().toLowerCase();
 
       for (final t in allTeams) {
         result[t] = (t == winner) ? 100.0 : 0.0;

@@ -940,12 +940,10 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int pass = 0; pass < 6; pass++) {
       for (final m in resolved) {
         if (m.isPlayed) {
-          if (m.t1Score! > m.t2Score!) {
-            matchWinners[m.id] = m.t1;
-            matchLosers[m.id] = m.t2;
-          } else if (m.t2Score! > m.t1Score!) {
-            matchWinners[m.id] = m.t2;
-            matchLosers[m.id] = m.t1;
+          final winner = m.getWinner();
+          if (winner.isNotEmpty) {
+            matchWinners[m.id] = winner;
+            matchLosers[m.id] = (winner == m.t1) ? m.t2 : m.t1;
           } else {
             matchWinners[m.id] = m.t1;
             matchLosers[m.id] = m.t2;

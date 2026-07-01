@@ -1052,8 +1052,8 @@ class PredictionService {
     final starts = getStageStartTimes(matches);
     final finalMatch = matches.firstWhere((m) => m.id == kFinalMatchId, orElse: () => matches[0]);
     if (finalMatch.isPlayed && userPreds.championCode != null && finalMatch.t1Score != null && finalMatch.t2Score != null) {
-      final actualChampion = finalMatch.t1Score! > finalMatch.t2Score! ? finalMatch.t1 : finalMatch.t2;
-      if (actualChampion.toLowerCase() == userPreds.championCode!.toLowerCase()) {
+      final actualChampion = finalMatch.getWinner();
+      if (actualChampion.isNotEmpty && actualChampion.toLowerCase() == userPreds.championCode!.toLowerCase()) {
         final mult = getPenaltyMultiplier(userPreds.championPredictedAt, starts);
         score += (kChampionBonusPoints * mult).round();
       }
