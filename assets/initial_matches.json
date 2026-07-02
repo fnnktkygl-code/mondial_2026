@@ -3270,10 +3270,22 @@
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-28T19:51:40.135Z",
+    "status": "IN_PLAY",
+    "lastUpdated": "2026-07-02T23:46:17.085Z",
     "goals": [],
-    "stats": null,
+    "stats": {
+      "possessionT1": 70,
+      "shotsT1": 8,
+      "shotsT2": 3,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 3,
+      "foulsT2": 5,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
     "espnId": "760496"
   },
   {
