@@ -3281,29 +3281,34 @@
     "date": "2026-07-02T19:00:00Z",
     "t1": "es",
     "t2": "at",
-    "t1Score": 1,
+    "t1Score": 3,
     "t2Score": 0,
     "venue": "SoFi Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-07-02T20:14:53.751Z",
+    "status": "FINISHED",
+    "lastUpdated": "2026-07-02T21:34:10.783Z",
     "goals": [
       {
         "team": "t1",
         "scorer": "M. Oyarzabal",
         "minute": 36
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Oyarzabal",
+        "minute": 89
       }
     ],
     "stats": {
-      "possessionT1": 65,
-      "shotsT1": 13,
-      "shotsT2": 2,
-      "shotsOnTargetT1": 7,
+      "possessionT1": 64,
+      "shotsT1": 23,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 10,
       "shotsOnTargetT2": 0,
-      "foulsT1": 5,
-      "foulsT2": 7,
+      "foulsT1": 8,
+      "foulsT2": 15,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
