@@ -3380,28 +3380,33 @@
     "t1": "ar",
     "t2": "cv",
     "t1Score": 1,
-    "t2Score": 0,
+    "t2Score": 1,
     "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "IN_PLAY",
-    "lastUpdated": "2026-07-03T22:31:45.337Z",
+    "lastUpdated": "2026-07-03T23:41:40.443Z",
     "goals": [
       {
         "team": "t1",
         "scorer": "L. Messi",
         "minute": 29
+      },
+      {
+        "team": "t2",
+        "scorer": "D. Duarte",
+        "minute": 59
       }
     ],
     "stats": {
       "possessionT1": 65,
-      "shotsT1": 3,
-      "shotsT2": 1,
-      "shotsOnTargetT1": 2,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 2,
-      "foulsT2": 1,
+      "shotsT1": 9,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 9,
+      "foulsT2": 8,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
