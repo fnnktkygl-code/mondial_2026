@@ -3379,14 +3379,14 @@
     "date": "2026-07-03T22:00:00Z",
     "t1": "ar",
     "t2": "cv",
-    "t1Score": 1,
-    "t2Score": 1,
+    "t1Score": 3,
+    "t2Score": 2,
     "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "IN_PLAY",
-    "lastUpdated": "2026-07-03T23:41:40.443Z",
+    "lastUpdated": "2026-07-04T01:15:39.859Z",
     "goals": [
       {
         "team": "t1",
@@ -3397,16 +3397,26 @@
         "team": "t2",
         "scorer": "D. Duarte",
         "minute": 59
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Martínez",
+        "minute": 92
+      },
+      {
+        "team": "t2",
+        "scorer": "S. Lopes Cabral",
+        "minute": 103
       }
     ],
     "stats": {
-      "possessionT1": 65,
-      "shotsT1": 9,
-      "shotsT2": 6,
-      "shotsOnTargetT1": 5,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 9,
-      "foulsT2": 8,
+      "possessionT1": 63,
+      "shotsT1": 22,
+      "shotsT2": 16,
+      "shotsOnTargetT1": 10,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 13,
+      "foulsT2": 12,
       "yellowCardsT1": 0,
       "yellowCardsT2": 0,
       "redCardsT1": 0,
