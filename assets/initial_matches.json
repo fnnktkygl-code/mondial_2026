@@ -3429,16 +3429,34 @@
     "date": "2026-07-04T01:30:00Z",
     "t1": "co",
     "t2": "gh",
-    "t1Score": 0,
+    "t1Score": 1,
     "t2Score": 0,
     "venue": "GEHA Field at Arrowhead Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "SCHEDULED",
-    "lastUpdated": "2026-06-28T19:51:40.135Z",
-    "goals": [],
-    "stats": null,
+    "status": "FINISHED",
+    "lastUpdated": "2026-07-04T05:03:02.631Z",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "J. Arias",
+        "minute": 14
+      }
+    ],
+    "stats": {
+      "possessionT1": 60,
+      "shotsT1": 20,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 8,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 14,
+      "foulsT2": 10,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
     "espnId": "760501"
   },
   {
