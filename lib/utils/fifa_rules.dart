@@ -24,6 +24,41 @@ class GroupEntry {
 }
 
 class FIFARegulations {
+  static const Map<String, List<String>> knockoutRouting = {
+    'm73': ['2A', '2B'],
+    'm74': ['1E', '3rd1'],
+    'm75': ['1F', '2C'],
+    'm76': ['1C', '2F'],
+    'm77': ['1I', '3rd2'],
+    'm78': ['2E', '2I'],
+    'm79': ['1A', '3rd3'],
+    'm80': ['1L', '3rd4'],
+    'm81': ['1G', '3rd5'],
+    'm82': ['1D', '3rd6'],
+    'm83': ['1H', '2J'],
+    'm84': ['2K', '2L'],
+    'm85': ['1B', '3rd7'],
+    'm86': ['2D', '2G'],
+    'm87': ['1J', '2H'],
+    'm88': ['1K', '3rd8'],
+    'm89': ['w74', 'w77'],
+    'm90': ['w73', 'w75'],
+    'm91': ['w76', 'w78'],
+    'm92': ['w79', 'w80'],
+    'm93': ['w83', 'w84'],
+    'm94': ['w81', 'w82'],
+    'm95': ['w86', 'w88'],
+    'm96': ['w85', 'w87'],
+    'm97': ['w89', 'w90'],
+    'm98': ['w93', 'w94'],
+    'm99': ['w91', 'w92'],
+    'm100': ['w95', 'w96'],
+    'm101': ['w97', 'w98'],
+    'm102': ['w99', 'w100'],
+    'm103': ['l101', 'l102'],
+    'm104': ['w101', 'w102'],
+  };
+
   /// Calculates disciplinary points for a team in a match based on yellow/red card counts.
   /// Deductions:
   /// - Yellow card: -1 point
@@ -266,6 +301,11 @@ class FIFARegulations {
         String newT2 = m.t2;
 
         if (m.isKnockout) {
+          if (knockoutRouting.containsKey(m.id)) {
+            newT1 = knockoutRouting[m.id]![0];
+            newT2 = knockoutRouting[m.id]![1];
+          }
+          
           if (newT1.toLowerCase() == 'tbd') {
             newT1 = 'TBD';
           }

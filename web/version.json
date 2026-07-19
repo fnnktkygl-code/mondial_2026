@@ -1,6 +1,6 @@
 {
-  "version": "1.5.5",
-  "buildNumber": 29,
+  "version": "1.5.6",
+  "buildNumber": 30,
   "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
   "releaseNotes": {
     "fr": "Correction ultime : Résolution de la synchronisation des scores en direct pour les 8es, quarts et demi-finales.",
