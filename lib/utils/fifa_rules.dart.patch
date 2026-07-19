@@ -1,0 +1,24 @@
+--- lib/utils/fifa_rules.dart
++++ lib/utils/fifa_rules.dart
+@@ -6,6 +6,21 @@
+   int gf = 0;
+ }
+ 
++class GroupEntry {
++  final String teamCode;
++  int played = 0;
++  int wins = 0;
++  int draws = 0;
++  int losses = 0;
++  int goalsFor = 0;
++  int goalsAgainst = 0;
++  int fairPlay = 0;
++
++  int get points => wins * 3 + draws;
++  int get goalDifference => goalsFor - goalsAgainst;
++
++  GroupEntry(this.teamCode);
++}
++
+ class FIFARegulations {
+   /// Calculates disciplinary points for a team in a match based on yellow/red card counts.

@@ -278,42 +278,39 @@ class FIFARegulations {
     });
 
     List<WorldCupMatch> resolved = List.from(rawMatches);
-    final Map<String, String> matchWinners = {};
-    final Map<String, String> matchLosers = {};
 
+    // We run multiple passes because later rounds depend on earlier rounds being resolved first.
+    // In each pass:
+    //   Step 1: Resolve all placeholder team codes (group positions, 3rd places, knockoutRouting)
+    //   Step 2: THEN collect winners/losers from the now-resolved matches
+    //   Step 3: Use those winners/losers to resolve w## and l## references
+    // This ensures matchWinners always contains real team codes (e.g., 'us'), never placeholders (e.g., '1D').
     for (int pass = 0; pass < 6; pass++) {
-      for (final m in resolved) {
-        if (m.isPlayed) {
-          final winner = m.getWinner();
-          if (winner.isNotEmpty) {
-            matchWinners[m.id] = winner;
-            matchLosers[m.id] = (winner == m.t1) ? m.t2 : m.t1;
-          } else {
-            matchWinners[m.id] = m.t1;
-            matchLosers[m.id] = m.t2;
-          }
-        }
-      }
+      final Map<String, String> matchWinners = {};
+      final Map<String, String> matchLosers = {};
 
+      // Step 1: Resolve group/3rd-place placeholders for ALL knockout matches first
       for (int i = 0; i < resolved.length; i++) {
         final m = resolved[i];
+        if (!m.isKnockout) continue;
+
         String newT1 = m.t1;
         String newT2 = m.t2;
 
-        if (m.isKnockout) {
-          if (knockoutRouting.containsKey(m.id)) {
-            newT1 = knockoutRouting[m.id]![0];
-            newT2 = knockoutRouting[m.id]![1];
-          }
-          
-          if (newT1.toLowerCase() == 'tbd') {
-            newT1 = 'TBD';
-          }
-          if (newT2.toLowerCase() == 'tbd') {
-            newT2 = 'TBD';
-          }
+        // Always reset to original routing placeholders to prevent stale cached team codes
+        if (knockoutRouting.containsKey(m.id)) {
+          final routing = knockoutRouting[m.id]!;
+          // Only reset if the routing points to group/3rd placeholders (not w## or l##)
+          // For R32 matches, the routing contains group placeholders like '1D', '3rd5'
+          // For R16+, the routing contains w## references like 'w74', 'w77'
+          newT1 = routing[0];
+          newT2 = routing[1];
         }
 
+        if (newT1.toLowerCase() == 'tbd') newT1 = 'TBD';
+        if (newT2.toLowerCase() == 'tbd') newT2 = 'TBD';
+
+        // Resolve group position placeholders (e.g., '1D' → 'us', '2K' → 'co')
         if (newT1.length == 2 &&
             (newT1.startsWith('1') || newT1.startsWith('2'))) {
           final pos = newT1.substring(0, 1);
@@ -335,6 +332,7 @@ class FIFARegulations {
           }
         }
 
+        // Resolve 3rd-place placeholders (e.g., '3rd5' → 'sn')
         if (newT1.startsWith('3rd') && newT1.length > 3) {
           final idx = int.parse(newT1.substring(3)) - 1;
           if (idx >= 0 && idx < thirdPlaces.length) {
@@ -345,6 +343,46 @@ class FIFARegulations {
           final idx = int.parse(newT2.substring(3)) - 1;
           if (idx >= 0 && idx < thirdPlaces.length) {
             newT2 = thirdPlaces[idx].teamCode;
+          }
+        }
+
+        if (newT1 != m.t1 || newT2 != m.t2) {
+          resolved[i] = m.copyWith(t1: newT1, t2: newT2);
+        }
+      }
+
+      // Step 2: Now that R32 matches have real team codes, collect winners/losers
+      for (final m in resolved) {
+        if (m.isPlayed) {
+          final winner = m.getWinner();
+          if (winner.isNotEmpty) {
+            matchWinners[m.id] = winner;
+            matchLosers[m.id] = (winner == m.t1) ? m.t2 : m.t1;
+          } else {
+            // Draw (shouldn't happen in knockout, but handle gracefully)
+            matchWinners[m.id] = m.t1;
+            matchLosers[m.id] = m.t2;
+          }
+        }
+      }
+
+      // Step 3: Resolve w## and l## references using the now-correct winners/losers
+      for (int i = 0; i < resolved.length; i++) {
+        final m = resolved[i];
+        if (!m.isKnockout) continue;
+
+        String newT1 = m.t1;
+        String newT2 = m.t2;
+
+        // Re-apply routing for matches that reference winners/losers (R16, QF, SF, F)
+        if (knockoutRouting.containsKey(m.id)) {
+          final routing = knockoutRouting[m.id]!;
+          // Only override if the routing is a w## or l## reference
+          if (routing[0].startsWith('w') || routing[0].startsWith('l')) {
+            newT1 = routing[0];
+          }
+          if (routing[1].startsWith('w') || routing[1].startsWith('l')) {
+            newT2 = routing[1];
           }
         }
 
