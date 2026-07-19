@@ -28,7 +28,7 @@ dependencies:
   google_fonts: ^8.1.0
   flutter_timezone: ^5.1.0
   package_info_plus: ^10.1.0
-  firebase_analytics: ^12.4.2
+  firebase_analytics: ^12.4.3
   firebase_crashlytics: ^5.2.3
   permission_handler: ^12.0.3
   app_links: ^7.0.0
