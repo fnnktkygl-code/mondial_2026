@@ -123,10 +123,10 @@ const int kGuruBadgeMinCount = 3;
 
 // ─── Structure du tournoi ─────────────────────────────────────────────────────
 // kFinalMatchId : ID interne utilisé dans la logique de prédiction locale.
-// Il correspond au match m80 dans le JSON de l'asset bundled.
+// Il correspond au match m104 dans le JSON de l'asset bundled.
 // En parallèle, l'ID réel API-Football sera récupéré dynamiquement via
 // /fixtures/rounds (dernier round = "Final") et stocké en Hive.
-const String kFinalMatchId = 'm80';
+const String kFinalMatchId = 'm104';
 const String kGroupMatchIdPrefix = 'g_';
 const int kGroupMatchMaxIndex =
     72; // Les matchs m1..m72 sont en phase de groupes

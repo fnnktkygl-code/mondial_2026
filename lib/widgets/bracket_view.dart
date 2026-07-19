@@ -309,48 +309,47 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     final champion = fMatches.isNotEmpty && fMatches[0].isPlayed ? fMatches[0].getWinner() : null;
     final confettiColors = champion != null ? _getConfettiColors(champion) : [Colors.amber];
 
-    // IDs are remapped by _parseMatchesJson in api_service.dart:
-    // R32: m49-m64, R16: m65-m72, QF: m73-m76, SF: m77-m78, Final: m80
+    // R32: m73-m88, R16: m89-m96, QF: m97-m100, SF: m101-m102, Final: m104
     // Left half: first 8 R32 → first 4 R16 → first 2 QF → SF1
     // Right half: last 8 R32 → last 4 R16 → last 2 QF → SF2
-    final leftR32 = r32Matches.where((m) => ['m50','m53','m49','m51','m57','m58','m59','m60'].contains(m.id)).toList()
+    final leftR32 = r32Matches.where((m) => ['m74','m77','m73','m75','m81','m82','m83','m84'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m50','m53','m49','m51','m57','m58','m59','m60'];
+        final order = ['m74','m77','m73','m75','m81','m82','m83','m84'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final rightR32 = r32Matches.where((m) => ['m52','m54','m55','m56','m61','m62','m63','m64'].contains(m.id)).toList()
+    final rightR32 = r32Matches.where((m) => ['m76','m78','m79','m80','m85','m86','m87','m88'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m52','m54','m55','m56','m61','m62','m63','m64'];
+        final order = ['m76','m78','m79','m80','m85','m86','m87','m88'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final leftR16 = r16Matches.where((m) => ['m65','m66','m69','m70'].contains(m.id)).toList()
+    final leftR16 = r16Matches.where((m) => ['m89','m90','m93','m94'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m65','m66','m69','m70'];
+        final order = ['m89','m90','m93','m94'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final rightR16 = r16Matches.where((m) => ['m67','m68','m71','m72'].contains(m.id)).toList()
+    final rightR16 = r16Matches.where((m) => ['m91','m92','m95','m96'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m67','m68','m71','m72'];
+        final order = ['m91','m92','m95','m96'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final leftQF = qfMatches.where((m) => ['m73','m74'].contains(m.id)).toList()
+    final leftQF = qfMatches.where((m) => ['m97','m98'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m73','m74'];
+        final order = ['m97','m98'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final rightQF = qfMatches.where((m) => ['m75','m76'].contains(m.id)).toList()
+    final rightQF = qfMatches.where((m) => ['m99','m100'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m75','m76'];
+        final order = ['m99','m100'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final leftSF = sfMatches.where((m) => m.id == 'm77').toList();
-    final rightSF = sfMatches.where((m) => m.id == 'm78').toList();
+    final leftSF = sfMatches.where((m) => m.id == 'm101').toList();
+    final rightSF = sfMatches.where((m) => m.id == 'm102').toList();
 
     const double cardHeight = 96.0;
     const double r32BlockHeight = 120.0;

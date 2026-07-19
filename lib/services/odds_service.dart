@@ -53,9 +53,9 @@ class WCOddsService {
       }
     }
 
-    // 3. Short-circuit: If the Final (m80) is finished, that team is 100%, others 0%
+    // 3. Short-circuit: If the Final (m104) is finished, that team is 100%, others 0%
     final finalMatch = resolvedMatches.firstWhere(
-      (m) => m.id == kFinalMatchId,
+      (m) => m.id == 'm104',
       orElse: () => resolvedMatches.lastWhere(
         (m) => m.isKnockout,
         orElse: () => resolvedMatches.last,

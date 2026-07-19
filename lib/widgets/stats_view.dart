@@ -709,7 +709,7 @@ class ScorersLeaderboardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final list = TournamentStats.compute(matches).scorers;
     final isFinished =
-    matches.any((m) => m.id == 'm80' && m.isPlayed);
+    matches.any((m) => m.id == 'm104' && m.isPlayed);
     return _LeaderboardView(
       fullList: list,
       matches: matches,
