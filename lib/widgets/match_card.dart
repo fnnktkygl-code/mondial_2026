@@ -189,6 +189,8 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
             final liveData = liveScores[widget.match.espnId];
             final bool live = _computeIsLive(liveData);
             final bool finished = _computeIsFinished(liveData);
+            final bool hasScoreData = widget.match.t1Score != null && widget.match.t2Score != null;
+            final bool showScore = finished || live || (hasScoreData && widget.match.date.toLocal().isBefore(DateTime.now()));
         
         final t1Name = AppTranslations.getTeam(widget.lang, widget.match.t1);
         final t2Name = AppTranslations.getTeam(widget.lang, widget.match.t2);
@@ -370,7 +372,7 @@ class _MatchCardState extends State<MatchCard> with SingleTickerProviderStateMix
                     Expanded(child: _buildTeamSection(widget.match.t1, t1Name, context, true)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: (finished || live)
+                      child: showScore
                           ? Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
