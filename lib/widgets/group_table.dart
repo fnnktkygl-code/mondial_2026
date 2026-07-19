@@ -6,21 +6,6 @@ import 'team_flag.dart';
 import 'team_profile_dialog.dart';
 import '../utils/fifa_rules.dart';
 
-class GroupEntry {
-  final String teamCode;
-  int played = 0;
-  int wins = 0;
-  int draws = 0;
-  int losses = 0;
-  int goalsFor = 0;
-  int goalsAgainst = 0;
-  int fairPlay = 0;
-
-  int get points => wins * 3 + draws;
-  int get goalDifference => goalsFor - goalsAgainst;
-
-  GroupEntry(this.teamCode);
-}
 
 class GroupTableWidget extends StatefulWidget {
   final List<WorldCupMatch> matches;

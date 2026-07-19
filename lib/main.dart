@@ -278,7 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (mounted) {
         setState(() {
           _rawMatches = freshMatches;
-          _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+          _resolvedMatches = FIFARegulations.resolveMatchesPlaceholders(_rawMatches);
         });
       }
 
@@ -364,7 +364,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (modified && mounted) {
         setState(() {
           _rawMatches = newMatches;
-          _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+          _resolvedMatches = FIFARegulations.resolveMatchesPlaceholders(_rawMatches);
         });
         debugPrint("LIVE: Matches updated from ESPN");
         _recalculateAndSyncPoints();
@@ -438,7 +438,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _supportedTeam = userPreds.supportedTeam;
           _alerts = loadedAlerts;
           _rawMatches = loadedMatches;
-          _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+          _resolvedMatches = FIFARegulations.resolveMatchesPlaceholders(_rawMatches);
           // Stop loading as soon as core data is ready to show the UI
           _isLoading = false;
         });
@@ -856,176 +856,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return alertVal != null;
   }
 
-  List<WorldCupMatch> _resolveMatchesPlaceholders(
-    List<WorldCupMatch> rawMatches,
-  ) {
-    final Map<String, List<GroupEntry>> groupStandings = {};
-    for (final m in rawMatches) {
-      if (m.group == null || m.group!.isEmpty) continue;
-      final grp = m.group!;
-      groupStandings.putIfAbsent(grp, () => []);
-      final list = groupStandings[grp]!;
-      if (!list.any((e) => e.teamCode == m.t1)) list.add(GroupEntry(m.t1));
-      if (!list.any((e) => e.teamCode == m.t2)) list.add(GroupEntry(m.t2));
-    }
-
-    for (final m in rawMatches) {
-      if (m.group == null || m.group!.isEmpty || !m.isPlayed) continue;
-      final grp = m.group!;
-      final t1Entry = groupStandings[grp]!.firstWhere(
-        (e) => e.teamCode == m.t1,
-      );
-      final t2Entry = groupStandings[grp]!.firstWhere(
-        (e) => e.teamCode == m.t2,
-      );
-
-      t1Entry.played++;
-      t2Entry.played++;
-      t1Entry.goalsFor += m.t1Score!;
-      t1Entry.goalsAgainst += m.t2Score!;
-      t2Entry.goalsFor += m.t2Score!;
-      t2Entry.goalsAgainst += m.t1Score!;
-
-      if (m.t1Score! > m.t2Score!) {
-        t1Entry.wins++;
-        t2Entry.losses++;
-      } else if (m.t1Score! < m.t2Score!) {
-        t2Entry.wins++;
-        t1Entry.losses++;
-      } else {
-        t1Entry.draws++;
-        t2Entry.draws++;
-      }
-
-      if (m.stats != null) {
-        t1Entry.fairPlay -= FIFARegulations.calculateDisciplinaryDeduction(
-          m.stats!.yellowCardsT1,
-          m.stats!.redCardsT1,
-        );
-        t2Entry.fairPlay -= FIFARegulations.calculateDisciplinaryDeduction(
-          m.stats!.yellowCardsT2,
-          m.stats!.redCardsT2,
-        );
-      }
-    }
-
-    groupStandings.forEach((group, teamEntries) {
-      FIFARegulations.sortStandings(teamEntries, rawMatches);
-    });
-
-    final List<GroupEntry> thirdPlaces = [];
-    groupStandings.forEach((g, list) {
-      if (list.length >= 3) {
-        thirdPlaces.add(list[2]);
-      }
-    });
-    thirdPlaces.sort((a, b) {
-      if (b.points != a.points) return b.points.compareTo(a.points);
-      if (b.goalDifference != a.goalDifference) {
-        return b.goalDifference.compareTo(a.goalDifference);
-      }
-      if (b.goalsFor != a.goalsFor) return b.goalsFor.compareTo(a.goalsFor);
-      if (b.fairPlay != a.fairPlay) return b.fairPlay.compareTo(a.fairPlay);
-      final rankA = WCTeamProfileService.getFifaRanking(a.teamCode);
-      final rankB = WCTeamProfileService.getFifaRanking(b.teamCode);
-      if (rankA != rankB) return rankA.compareTo(rankB);
-      return a.teamCode.compareTo(b.teamCode);
-    });
-
-
-    List<WorldCupMatch> resolved = List.from(rawMatches);
-    final Map<String, String> matchWinners = {};
-    final Map<String, String> matchLosers = {};
-
-    for (int pass = 0; pass < 6; pass++) {
-      for (final m in resolved) {
-        if (m.isPlayed) {
-          final winner = m.getWinner();
-          if (winner.isNotEmpty) {
-            matchWinners[m.id] = winner;
-            matchLosers[m.id] = (winner == m.t1) ? m.t2 : m.t1;
-          } else {
-            matchWinners[m.id] = m.t1;
-            matchLosers[m.id] = m.t2;
-          }
-        }
-      }
-
-      for (int i = 0; i < resolved.length; i++) {
-        final m = resolved[i];
-        String newT1 = m.t1;
-        String newT2 = m.t2;
-
-        if (m.isKnockout) {
-          if (newT1.toLowerCase() == 'tbd') {
-            newT1 = 'TBD';
-          }
-          if (newT2.toLowerCase() == 'tbd') {
-            newT2 = 'TBD';
-          }
-        }
-
-        if (newT1.length == 2 &&
-            (newT1.startsWith('1') || newT1.startsWith('2'))) {
-          final pos = newT1.substring(0, 1);
-          final grp = newT1.substring(1, 2);
-          final groupList = groupStandings[grp];
-          if (groupList != null && groupList.isNotEmpty) {
-            final idx = int.parse(pos) - 1;
-            if (idx < groupList.length) newT1 = groupList[idx].teamCode;
-          }
-        }
-        if (newT2.length == 2 &&
-            (newT2.startsWith('1') || newT2.startsWith('2'))) {
-          final pos = newT2.substring(0, 1);
-          final grp = newT2.substring(1, 2);
-          final groupList = groupStandings[grp];
-          if (groupList != null && groupList.isNotEmpty) {
-            final idx = int.parse(pos) - 1;
-            if (idx < groupList.length) newT2 = groupList[idx].teamCode;
-          }
-        }
-
-        if (newT1.startsWith('3rd') && newT1.length > 3) {
-          final idx = int.parse(newT1.substring(3)) - 1;
-          if (idx >= 0 && idx < thirdPlaces.length) {
-            newT1 = thirdPlaces[idx].teamCode;
-          }
-        }
-        if (newT2.startsWith('3rd') && newT2.length > 3) {
-          final idx = int.parse(newT2.substring(3)) - 1;
-          if (idx >= 0 && idx < thirdPlaces.length) {
-            newT2 = thirdPlaces[idx].teamCode;
-          }
-        }
-
-        if (newT1.startsWith('w') && newT1.length > 1) {
-          final refId = 'm${newT1.substring(1)}';
-          if (matchWinners.containsKey(refId)) newT1 = matchWinners[refId]!;
-        }
-        if (newT2.startsWith('w') && newT2.length > 1) {
-          final refId = 'm${newT2.substring(1)}';
-          if (matchWinners.containsKey(refId)) newT2 = matchWinners[refId]!;
-        }
-
-        if (newT1.startsWith('l') && newT1.length > 1) {
-          final refId = 'm${newT1.substring(1)}';
-          if (matchLosers.containsKey(refId)) newT1 = matchLosers[refId]!;
-        }
-        if (newT2.startsWith('l') && newT2.length > 1) {
-          final refId = 'm${newT2.substring(1)}';
-          if (matchLosers.containsKey(refId)) newT2 = matchLosers[refId]!;
-        }
-
-        if (newT1 != m.t1 || newT2 != m.t2) {
-          resolved[i] = m.copyWith(t1: newT1, t2: newT2);
-        }
-      }
-    }
-
-    return resolved;
-  }
-
 
 
   Future<void> _saveAlert(String matchId, String alertType) async {
@@ -1165,7 +995,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   break;
                 }
               }
-              _resolvedMatches = _resolveMatchesPlaceholders(_rawMatches);
+              _resolvedMatches = FIFARegulations.resolveMatchesPlaceholders(_rawMatches);
             });
             await _recalculateAndSyncPoints();
           }

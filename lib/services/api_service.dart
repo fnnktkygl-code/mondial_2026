@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/match.dart';
 import '../app_constants.dart';
+import '../utils/fifa_rules.dart';
 import 'espn_api_service.dart';
 
 class ApiService {
@@ -48,6 +49,9 @@ class ApiService {
         } catch (_) {}
       }
     }
+
+    // Resolve any placeholders dynamically so they can match the remote data!
+    baseMatches = FIFARegulations.resolveMatchesPlaceholders(baseMatches);
 
     // 3. Fetch Remote Updates from ESPN and PATCH
     try {
