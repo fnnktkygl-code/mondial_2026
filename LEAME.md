@@ -8,6 +8,7 @@
 
 <br/>
 
+[![Despliegue Web](https://img.shields.io/badge/GitHub%20Pages-Desplegado%20Producci%C3%B3n-brightgreen?logo=github&style=flat-square)](https://fnnktkygl-code.github.io/mondial_2026/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x%20%7C%20Dart%203.x-02569B?logo=flutter&style=flat-square)](https://flutter.dev)
 [![Arquitectura](https://img.shields.io/badge/Arquitectura-Clean%20%26%20Reactive%20Pillars-emerald?style=flat-square)](ARCHITECTURE.md)
 [![Análisis Estático](https://img.shields.io/badge/Dart%20Analyze-0%20Errores%20%2F%200%20Avisos-brightgreen?style=flat-square)](ARCHITECTURE.md)
@@ -21,7 +22,7 @@
   Desarrollada bajo los más estrictos estándares de ingeniería de software (Clean Architecture, 0 avisos del linter, pruebas automatizadas al 100%, motor de cuotas dinámicas Elo, análisis tácticos con IA Gemini y localización trilingüe completa).
 </p>
 
-[**📐 Manual de Arquitectura**](ARCHITECTURE.md) • [**🇬🇧 English README**](README.md) • [**🇫🇷 Version Française (LISEZMOI.md)**](LISEZMOI.md) • [**📊 Datos del Torneo**](assets/initial_matches.json)
+[**🚀 Abrir Aplicación Web**](https://fnnktkygl-code.github.io/mondial_2026/) • [**📐 Manual de Arquitectura**](ARCHITECTURE.md) • [**🇬🇧 English README**](README.md) • [**🇫🇷 Version Française (LISEZMOI.md)**](LISEZMOI.md) • [**📊 Datos del Torneo**](assets/initial_matches.json)
 
 </div>
 
@@ -29,18 +30,51 @@
 
 ## 📱 Galería y Vistas de la Aplicación
 
+### 💻 Experiencia Desktop (Pantalla Grande)
+
 <div align="center">
   <table>
     <tr>
       <td width="50%" align="center">
-        <strong>🌳 Cuadro Eliminatorio Completamente Resuelto</strong><br/><br/>
-        <img src="docs/screenshots/tournament_bracket.png" alt="Cuadro del Mundial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
+        <strong>🌳 Cuadro Eliminatorio Completamente Resuelto (104 Partidos)</strong><br/><br/>
+        <img src="docs/screenshots/desktop_bracket.png" alt="Cuadro del Mundial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
         <sub>Árbol completo de dieciseisavos a la final, conectores vectoriales fluidos y resaltado de ganadores</sub>
       </td>
       <td width="50%" align="center">
-        <strong>⚽ Centro del Partido y Alineaciones</strong><br/><br/>
-        <img src="docs/screenshots/match_details.png" alt="Detalle del Partido Mundial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
-        <sub>Eventos en directo, goleadores, asistentes, prórrogas, cuotas Elo y análisis táctico con IA Gemini</sub>
+        <strong>🗓️ Calendario Interactivo y Navegación Dinámica</strong><br/><br/>
+        <img src="docs/screenshots/desktop_calendar.png" alt="Calendario Desktop Mundial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
+        <sub>Línea temporal de 104 partidos, seguimiento en directo, filtros por fase y conversión horaria local</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br/>
+
+### 📱 Experiencia Mobile (iPhone & Android — Galería de Vistas)
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_home.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Partidos en Directo" /><br/>
+        <strong>⚽ 1. Partidos</strong><br/>
+        <sub>Marcadores y Fechas</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_match_detail.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Detalle del Partido y Alineaciones" /><br/>
+        <strong>📊 2. Ficha de Partido</strong><br/>
+        <sub>Alineaciones y Cuotas Elo</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_groups.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Clasificaciones y Grupos" /><br/>
+        <strong>🏆 3. Grupos FIFA</strong><br/>
+        <sub>12 Grupos y Mejores 3.º</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_stats.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Goleadores y Asistencias" /><br/>
+        <strong>🎯 4. Bota y Asistencias</strong><br/>
+        <sub>Goleadores y Pases</sub>
       </td>
     </tr>
   </table>

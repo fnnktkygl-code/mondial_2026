@@ -8,6 +8,7 @@
 
 <br/>
 
+[![Déploiement Web](https://img.shields.io/badge/GitHub%20Pages-D%C3%A9ploy%C3%A9%20Production-brightgreen?logo=github&style=flat-square)](https://fnnktkygl-code.github.io/mondial_2026/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x%20%7C%20Dart%203.x-02569B?logo=flutter&style=flat-square)](https://flutter.dev)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%26%20Reactive%20Pillars-emerald?style=flat-square)](ARCHITECTURE.md)
 [![Analyse Statique](https://img.shields.io/badge/Dart%20Analyze-0%20Erreurs%20%2F%200%20Warnings-brightgreen?style=flat-square)](ARCHITECTURE.md)
@@ -21,7 +22,7 @@
   Conçue selon les standards d'ingénierie les plus stricts (Clean Architecture, zéro avertissement linter, tests automatisés à 100%, moteur Elo dynamique, prédictions tactiques par IA Gemini et support multilingue intégral).
 </p>
 
-[**📐 Manuel d'Architecture**](ARCHITECTURE.md) • [**🇬🇧 English README**](README.md) • [**🇪🇸 Versión en Español**](LEAME.md) • [**📊 Données du Tournoi**](assets/initial_matches.json)
+[**🚀 Lancer l'Application Web**](https://fnnktkygl-code.github.io/mondial_2026/) • [**📐 Manuel d'Architecture**](ARCHITECTURE.md) • [**🇬🇧 English README**](README.md) • [**🇪🇸 Versión en Español (LEAME.md)**](LEAME.md) • [**📊 Données du Tournoi**](assets/initial_matches.json)
 
 </div>
 
@@ -29,18 +30,51 @@
 
 ## 📱 Aperçu & Galerie Vitrine
 
+### 💻 Expérience Desktop (Grand Écran)
+
 <div align="center">
   <table>
     <tr>
       <td width="50%" align="center">
-        <strong>🌳 Tableau Final & Arbre Éliminatoire Résolu</strong><br/><br/>
-        <img src="docs/screenshots/tournament_bracket.png" alt="Tableau du tournoi Mondial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
-        <sub>Arbre complet des 16es à la Finale, connecteurs vectoriels fluides & surbrillance des vainqueurs</sub>
+        <strong>🌳 Tableau Final & Arbre Éliminatoire (104 Matchs)</strong><br/><br/>
+        <img src="docs/screenshots/desktop_bracket.png" alt="Tableau du tournoi Mondial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
+        <sub>Arbre complet des 16es à la Finale avec connecteurs vectoriels et mise en surbrillance des vainqueurs</sub>
       </td>
       <td width="50%" align="center">
-        <strong>⚽ Fiche de Match Détaillée & Compositions</strong><br/><br/>
-        <img src="docs/screenshots/match_details.png" alt="Détail du match Mondial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
-        <sub>Événements en direct, buteurs, passeurs, prolongations, cotes Elo & analyses Genie Gemini</sub>
+        <strong>🗓️ Calendrier des Matchs & Navigation Dynamique</strong><br/><br/>
+        <img src="docs/screenshots/desktop_calendar.png" alt="Calendrier Desktop Mondial 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
+        <sub>Vue chronologique des 104 matchs, scores en direct, filtres par phase et fuseau horaire local</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br/>
+
+### 📱 Expérience Mobile (iPhone & Android — Galerie Fonctionnelle)
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_home.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Accueil & Matchs" /><br/>
+        <strong>⚽ 1. Matchs en Direct</strong><br/>
+        <sub>Scores & Calendrier</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_match_detail.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Fiche de Match & Buteurs" /><br/>
+        <strong>📊 2. Fiche de Match</strong><br/>
+        <sub>Compositions & Cotes Elo</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_groups.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Classements & Poules" /><br/>
+        <strong>🏆 3. Groupes FIFA</strong><br/>
+        <sub>12 Poules & Meilleurs 3es</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_stats.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Stats & Buteurs" /><br/>
+        <strong>🎯 4. Soulier & Passeurs</strong><br/>
+        <sub>Buteurs & Assists</sub>
       </td>
     </tr>
   </table>

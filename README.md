@@ -8,6 +8,7 @@
 
 <br/>
 
+[![Web Deployment](https://img.shields.io/badge/GitHub%20Pages-Deployed%20Production-brightgreen?logo=github&style=flat-square)](https://fnnktkygl-code.github.io/mondial_2026/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x%20%7C%20Dart%203.x-02569B?logo=flutter&style=flat-square)](https://flutter.dev)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%26%20Reactive%20Pillars-emerald?style=flat-square)](ARCHITECTURE.md)
 [![Static Analysis](https://img.shields.io/badge/Dart%20Analyze-0%20Errors%20%2F%200%20Warnings-brightgreen?style=flat-square)](ARCHITECTURE.md)
@@ -21,7 +22,7 @@
   Engineered under strict software craftsmanship guidelines (Clean Architecture, zero linter diagnostics, 100% test pass rate, dynamic Elo odds engine, Gemini AI tactical analysis, and full trilingual localization).
 </p>
 
-[**📐 Architecture Guide**](ARCHITECTURE.md) • [**🇫🇷 Version Française (LISEZMOI.md)**](LISEZMOI.md) • [**🇪🇸 Versión en Español (LEAME.md)**](LEAME.md) • [**📊 Tournament Dataset**](assets/initial_matches.json)
+[**🚀 Launch Web App**](https://fnnktkygl-code.github.io/mondial_2026/) • [**📐 Architecture Guide**](ARCHITECTURE.md) • [**🇫🇷 Version Française (LISEZMOI.md)**](LISEZMOI.md) • [**🇪🇸 Versión en Español (LEAME.md)**](LEAME.md) • [**📊 Tournament Dataset**](assets/initial_matches.json)
 
 </div>
 
@@ -29,18 +30,51 @@
 
 ## 📱 App Showcase Gallery
 
+### 💻 Desktop Experience (Large Screen)
+
 <div align="center">
   <table>
     <tr>
       <td width="50%" align="center">
-        <strong>🌳 Fully Resolved Tournament Bracket</strong><br/><br/>
-        <img src="docs/screenshots/tournament_bracket.png" alt="World Cup 2026 Tournament Bracket" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
+        <strong>🌳 Fully Resolved Tournament Bracket (104 Matches)</strong><br/><br/>
+        <img src="docs/screenshots/desktop_bracket.png" alt="World Cup 2026 Tournament Bracket" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
         <sub>Complete knockout path from R32 to the Final, smooth vector connectors & winner highlights</sub>
       </td>
       <td width="50%" align="center">
-        <strong>⚽ Match Center & Tactical Lineups</strong><br/><br/>
-        <img src="docs/screenshots/match_details.png" alt="Match Details World Cup 2026" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
-        <sub>Live match events, goalscorers, playmakers, extra-time drama, Elo odds & Gemini AI insights</sub>
+        <strong>🗓️ Interactive Match Schedule & Timeline</strong><br/><br/>
+        <img src="docs/screenshots/desktop_calendar.png" alt="World Cup 2026 Desktop Calendar" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
+        <sub>Chronological 104-match overview, live score tracking, stage filters, and localized timezone formatting</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br/>
+
+### 📱 Mobile Experience (iPhone & Android — Functional Grid)
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_home.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Home & Matches" /><br/>
+        <strong>⚽ 1. Match Center</strong><br/>
+        <sub>Scores & Timeline</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_match_detail.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Match Detail & Lineups" /><br/>
+        <strong>📊 2. Match Details</strong><br/>
+        <sub>Lineups & Elo Odds</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_groups.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="FIFA Standings" /><br/>
+        <strong>🏆 3. Group Tables</strong><br/>
+        <sub>12 Pools & Top 3rds</sub>
+      </td>
+      <td align="center" width="25%">
+        <img src="docs/screenshots/mobile_stats.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Stats & Scorers" /><br/>
+        <strong>🎯 4. Golden Boot</strong><br/>
+        <sub>Scorers & Assists</sub>
       </td>
     </tr>
   </table>
