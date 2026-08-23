@@ -122,9 +122,15 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     return finalists.contains(m.getWinner());
   }
 
-  List<WorldCupMatch> _getMatchesForStage(String stageName) =>
-      widget.matches.where((m) => m.stage == stageName).toList()
-        ..sort((a, b) => a.id.compareTo(b.id));
+  List<WorldCupMatch> _getMatchesForStage(String stageName) {
+    final Map<String, WorldCupMatch> unique = {};
+    for (final m in widget.matches) {
+      if (m.stage == stageName) {
+        unique[m.id] = m;
+      }
+    }
+    return unique.values.toList()..sort((a, b) => a.id.compareTo(b.id));
+  }
 
   String _getFlagCdnUrl(String code) {
     String c = code.toLowerCase().replaceAll('g_', '');

@@ -204,6 +204,23 @@ class FIFARegulations {
   static List<WorldCupMatch> resolveMatchesPlaceholders(
     List<WorldCupMatch> rawMatches,
   ) {
+    // If all knockout matches already have concrete, final teams assigned, return directly!
+    final bool hasUnresolvedPlaceholders = rawMatches.any((m) {
+      if (!m.isKnockout) return false;
+      final t1 = m.t1.toLowerCase();
+      final t2 = m.t2.toLowerCase();
+      return t1 == 'tbd' || t2 == 'tbd' ||
+             t1.startsWith('w') || t2.startsWith('w') ||
+             t1.startsWith('l') || t2.startsWith('l') ||
+             t1.startsWith('3rd') || t2.startsWith('3rd') ||
+             (t1.length == 2 && (t1.startsWith('1') || t1.startsWith('2'))) ||
+             (t2.length == 2 && (t2.startsWith('1') || t2.startsWith('2')));
+    });
+
+    if (!hasUnresolvedPlaceholders) {
+      return rawMatches;
+    }
+
     final Map<String, List<GroupEntry>> groupStandings = {};
     for (final m in rawMatches) {
       if (m.group == null || m.group!.isEmpty) continue;

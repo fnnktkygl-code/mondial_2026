@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 import '../services/player_database_service.dart';
 import '../services/live_match_service.dart';
-import '../services/simulation_service.dart';
 import '../l10n/translations.dart';
 
 class GoalEvent {
@@ -357,45 +356,9 @@ class WorldCupMatch {
     };
   }
 
-  int? get t1Score {
-    final sim = SimulationService.instance.getSimulatedScore(id);
-    if (sim != null) return sim.t1;
-
-    final live = LiveMatchService.getLiveData(espnId);
-    if (live != null && live.score.isNotEmpty && live.score.contains('-')) {
-      return int.tryParse(live.score.split('-')[0].trim());
-    }
-    return _t1ScoreStatic;
-  }
-
-  int? get t2Score {
-    final sim = SimulationService.instance.getSimulatedScore(id);
-    if (sim != null) return sim.t2;
-
-    final live = LiveMatchService.getLiveData(espnId);
-    if (live != null && live.score.isNotEmpty && live.score.contains('-')) {
-      return int.tryParse(live.score.split('-')[1].trim());
-    }
-    return _t2ScoreStatic;
-  }
-
-  String? get status {
-    if (SimulationService.instance.getSimulatedScore(id) != null) {
-      return 'FINISHED';
-    }
-
-    final live = LiveMatchService.getLiveData(espnId);
-    if (live != null) {
-      if (live.status == 'post' || live.detail == 'STATUS_FULL_TIME' || live.detail == 'STATUS_FINAL') {
-        return 'FINISHED';
-      }
-      if (live.status == 'in' || live.detail.contains('HALFTIME') || live.detail == 'STATUS_IN_PROGRESS') {
-        return 'IN_PLAY';
-      }
-    }
-    return _statusStatic;
-  }
-
+  int? get t1Score => _t1ScoreStatic;
+  int? get t2Score => _t2ScoreStatic;
+  String? get status => _statusStatic;
   String? get liveMinute => _liveMinuteStatic;
 
   // FIX: Only consider a match played if scores are actually non-null and the match is finished/in-play
