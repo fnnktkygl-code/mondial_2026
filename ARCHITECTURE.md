@@ -32,10 +32,16 @@ Tout développement, audit et extension sur la plateforme **Prono Challenge (Mon
   - **72 Matchs de Poules** : 12 groupes de 4 équipes ($A$ à $L$), départage conforme aux règlements officiels de la FIFA (Points $\to$ Différence de buts $\to$ Buts marqués $\to$ Confrontation directe $\to$ Fair-Play disciplinaire).
   - **32 Matchs à Élimination Directe** : 16es de finale ($m73$-$m88$), 8es ($m89$-$m96$), Quarts ($m97$-$m100$), Demi-finales ($m101$-$m102$), 3e Place ($m103$) et Finale ($m104$).
   - **Zéro Équipe Fantôme (TBD)** : L'ensemble du tableau et de l'arbre final est entièrement résolu, cohérent et interconnecté de bout en bout.
+- **Principe d'Ingestion Systémique (Anti-Pansement)** :
+  - Interdiction absolue de corriger un nœud isolé sans recalculer et réaligner l'ensemble des dépendances amont/aval du graphe.
+  - Lorsqu'un jeu de données de référence est fourni, le pipeline d'ingestion régénère l'arbre complet avec sa source unique de vérité (`assets/initial_matches.json`).
+- **Invariance Topologique de Graphe (Graph Invariance)** :
+  - Tout nœud enfant dans un arbre de tournoi dépend strictement et sans exception des nœuds parents (`child.team ∈ {parent.winner, parent.loser}`).
+  - Des tests unitaires dédiés vérifient cette invariance topologique à chaque compilation, interdisant formellement qu'un champion soit couronné sans avoir gagné sa demi-finale et son quart.
 - **Moteur de Cotes & Score Elo Dynamique** :
   - Formule Elo officielle pondérée par l'importance du tournoi ($K=60$ pour la Coupe du Monde) :
-    $$R_{\\text{new}} = R_{\\text{old}} + K \\times (S - E)$$
-    $$E = \\frac{1}{1 + 10^{(R_{\\text{opp}} - R)/600}}$$
+    $$R_{\text{new}} = R_{\text{old}} + K \times (S - E)$$
+    $$E = \frac{1}{1 + 10^{(R_{\text{opp}} - R)/600}}$$
   - Les cotes $1X2$ et les probabilités de titre sont recalculées en temps réel après chaque match selon la performance sportive réelle.
 
 ---

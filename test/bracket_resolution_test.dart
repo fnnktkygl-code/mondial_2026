@@ -55,11 +55,63 @@ void main() {
       }
     });
 
-    test('Final match m104 crowns Spain as World Champion', () {
+    test('Topological Invariance: Every knockout match strictly features the verified winners/losers of its parent matches', () {
+      final matchMap = {for (final m in matches) m.id: m};
+      final routing = FIFARegulations.knockoutRouting;
+
+      for (final entry in routing.entries) {
+        final matchId = entry.key;
+        final parentCodes = entry.value;
+        final currentMatch = matchMap[matchId]!;
+
+        // Resolve expected team 1
+        String expectedT1;
+        if (parentCodes[0].startsWith('w')) {
+          final parentId = 'm${parentCodes[0].substring(1)}';
+          expectedT1 = matchMap[parentId]!.getWinner();
+        } else if (parentCodes[0].startsWith('l')) {
+          final parentId = 'm${parentCodes[0].substring(1)}';
+          final parent = matchMap[parentId]!;
+          expectedT1 = parent.getWinner() == parent.t1 ? parent.t2 : parent.t1;
+        } else {
+          continue; // Group placeholder
+        }
+
+        // Resolve expected team 2
+        String expectedT2;
+        if (parentCodes[1].startsWith('w')) {
+          final parentId = 'm${parentCodes[1].substring(1)}';
+          expectedT2 = matchMap[parentId]!.getWinner();
+        } else if (parentCodes[1].startsWith('l')) {
+          final parentId = 'm${parentCodes[1].substring(1)}';
+          final parent = matchMap[parentId]!;
+          expectedT2 = parent.getWinner() == parent.t1 ? parent.t2 : parent.t1;
+        } else {
+          continue; // Group placeholder
+        }
+
+        final actualTeams = {currentMatch.t1.toLowerCase(), currentMatch.t2.toLowerCase()};
+        final expectedTeams = {expectedT1.toLowerCase(), expectedT2.toLowerCase()};
+
+        expect(actualTeams, equals(expectedTeams),
+            reason: 'Match $matchId (${currentMatch.stage}) has topological mismatch! Expected $expectedTeams from parents, but found $actualTeams');
+      }
+    });
+
+    test('Final match m104 crowns Spain as World Champion and Argentina as Finalist', () {
       final finalMatch = matches.firstWhere((m) => m.id == 'm104');
       expect(finalMatch.stage, 'Final');
       expect(finalMatch.isPlayed, true);
       expect(finalMatch.getWinner(), 'es');
+      expect({finalMatch.t1.toLowerCase(), finalMatch.t2.toLowerCase()}, equals({'es', 'ar'}));
+    });
+
+    test('3rd place match m103 features France vs England with France winning', () {
+      final thirdMatch = matches.firstWhere((m) => m.id == 'm103');
+      expect(thirdMatch.stage, 'Play-off for third place');
+      expect(thirdMatch.isPlayed, true);
+      expect(thirdMatch.getWinner(), 'fr');
+      expect({thirdMatch.t1.toLowerCase(), thirdMatch.t2.toLowerCase()}, equals({'fr', 'en'}));
     });
   });
 }

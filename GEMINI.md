@@ -42,4 +42,16 @@ This project uses a strict separation between Staging and Production environment
 *   **Issue:** Using `ShaderMask` + `Flexible` + `Row` in the `AppBar` title can lead to massive layout overflows (98k+ pixels).
 *   **Solution:** Ensure the `Row` has `mainAxisSize: MainAxisSize.min` and the `Text` child has `softWrap: false` and `maxLines: 1` to force the `Flexible` constraint to apply correctly without trying to expand to infinity.
 
+### Data Ingestion & Integrity Standard (Anti-Pansement)
+*   **Issue:** Performing isolated micro-patches on a single node (e.g. setting only the final match `m104` to Spain vs Argentina while parent matches `m93` to `m102` have contradictory teams/scores) creates absurd topological disconnects (e.g. a team crowned Champion without being in the final).
+*   **Solution:** Never apply micro-patches when ground-truth datasets or screenshots are provided. Ingest and rebuild the entire data graph end-to-end (Source unique de vérité / SSOT).
+
+### Topological Invariance Testing
+*   **Issue:** Unit tests that only check superficial properties (e.g. `status == FINISHED`, `scores != null`) give a false sense of security while the relational tree is broken.
+*   **Solution:** Enforce automated Topological Invariance Tests in `test/` asserting that every child match (`m89..m104`) strictly contains the verified winners/losers of its parent matches.
+
+### Flutter Web Service Worker & CacheStorage Invalidation
+*   **Issue:** Flutter Web's `flutter_service_worker.js` caches JSON assets in the browser's `CacheStorage`. Standard browser history clearing does not delete PWA CacheStorage, serving obsolete data to the user.
+*   **Solution:** Include an automatic Service Worker unregister and `caches.delete()` script in `web/app.html` on boot and bump the local cache keys in `app_constants.dart`.
+
 
