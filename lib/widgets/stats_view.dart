@@ -724,6 +724,34 @@ class ScorersLeaderboardWidget extends StatelessWidget {
   }
 }
 
+class AssistsLeaderboardWidget extends StatelessWidget {
+  final List<WorldCupMatch> matches;
+  final String lang;
+
+  const AssistsLeaderboardWidget({
+    super.key,
+    required this.matches,
+    required this.lang,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final list = TournamentStats.compute(matches).assists;
+    final isFinished =
+        matches.any((m) => m.id == 'm104' && m.isPlayed);
+    return _LeaderboardView(
+      fullList: list,
+      matches: matches,
+      lang: lang,
+      suffixIcon: '🎯',
+      emptyIcon: '🎯',
+      emptyTitleKey: 'leaderboardUnavailable',
+      emptySubtitleKey: 'statsUnlockAssists',
+      isFinished: isFinished,
+    );
+  }
+}
+
 // ─── Team stats widget ────────────────────────────────────────────────────────
 
 class TeamStatsWidget extends StatefulWidget {

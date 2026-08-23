@@ -975,8 +975,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       );
     }
 
-    final errorMsg = _validatePredictionLogic();
-
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -1419,7 +1417,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
             ),
             Switch(
               value: _localBoosterActive,
-              activeColor: AppColors.warning,
+              activeThumbColor: AppColors.warning,
               onChanged: (val) {
                 if (val && !canAddBooster) {
                   _showInfoDialog(
@@ -1606,7 +1604,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (lineupBadge != null) lineupBadge,
+                ?lineupBadge,
               ],
             ),
           ),
@@ -1812,9 +1810,6 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
       return Center(child: Text(AppTranslations.get(widget.lang, 'scorerNotFound'), style: const TextStyle(color: AppColors.textDim)));
     }
 
-    final t1En = AppTranslations.getTeam('en', _matchState.t1);
-    final t2En = AppTranslations.getTeam('en', _matchState.t2);
-
     return ListView.builder(
       itemCount: players.length,
       itemBuilder: (context, index) {
@@ -1827,8 +1822,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
         Widget? statusBadge;
         if (_matchState.lineups != null && dbTeam != null) {
           final lineups = _matchState.lineups!;
-          final teamEnName = AppTranslations.getTeam('en', teamCode);
-          final lineupPlayers = teamEnName == t1En ? lineups.t1Players : lineups.t2Players;
+          final lineupPlayers = (teamCode == _matchState.t1) ? lineups.t1Players : lineups.t2Players;
           final normName = PlayerDatabaseService.normalize(p);
           final found = lineupPlayers.firstWhere(
             (lp) => PlayerDatabaseService.normalize(lp.name) == normName,
@@ -3826,7 +3820,7 @@ class _MatchDetailSheetState extends State<MatchDetailSheet> with TickerProvider
 
 class _LivePulseBadge extends StatefulWidget {
   final String? minute;
-  const _LivePulseBadge({super.key, this.minute});
+  const _LivePulseBadge({this.minute});
 
   @override
   State<_LivePulseBadge> createState() => _LivePulseBadgeState();

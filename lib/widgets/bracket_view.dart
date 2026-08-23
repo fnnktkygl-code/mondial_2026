@@ -17,9 +17,6 @@ class BracketViewWidget extends StatefulWidget {
   final String? supportedTeamCode;
   final Map<String, MatchPrediction>? predictions;
 
-  static final Map<String, int> _idCache = {};
-  static final RegExp _digitRegex = RegExp(r'\d+');
-
   const BracketViewWidget({
     super.key,
     required this.matches,
@@ -28,12 +25,6 @@ class BracketViewWidget extends StatefulWidget {
     this.supportedTeamCode,
     this.predictions,
   });
-
-  static int _getParsedId(String id) {
-    return _idCache.putIfAbsent(id, () {
-      return int.tryParse(_digitRegex.firstMatch(id)?.group(0) ?? '0') ?? 0;
-    });
-  }
 
   @override
   State<BracketViewWidget> createState() => _BracketViewWidgetState();
@@ -130,8 +121,6 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     final finalists = _getFinalists();
     return finalists.contains(m.getWinner());
   }
-
-  static int _getParsedId(String id) => BracketViewWidget._getParsedId(id);
 
   List<WorldCupMatch> _getMatchesForStage(String stageName) =>
       widget.matches.where((m) => m.stage == stageName).toList()

@@ -2883,865 +2883,1666 @@
     "t2": "ca",
     "t1Score": 0,
     "t2Score": 1,
-    "venue": "SoFi Stadium",
+    "venue": "SoFi Stadium, Los Angeles",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "lastUpdated": "2026-06-28T21:56:35.703Z",
-    "goals": [],
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "J. David",
+        "assistant": "A. Davies",
+        "minute": 62,
+        "isOwnGoal": false
+      }
+    ],
     "stats": {
-      "possessionT1": 58,
-      "shotsT1": 6,
-      "shotsT2": 12,
-      "shotsOnTargetT1": 1,
-      "shotsOnTargetT2": 7,
-      "foulsT1": 10,
-      "foulsT2": 16,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
+      "possessionT1": 46,
+      "shotsT1": 8,
+      "shotsT2": 14,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 11,
+      "foulsT2": 9,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 1,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "espnId": "760486"
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m74",
-    "date": "2026-06-29T20:30:00Z",
+    "date": "2026-06-29T19:00:00Z",
     "t1": "de",
     "t2": "py",
-    "t1Score": 1,
-    "t2Score": 1,
-    "venue": "Gillette Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-30T01:25:57.445Z",
-    "goals": [],
-    "stats": {
-      "possessionT1": 75,
-      "shotsT1": 21,
-      "shotsT2": 7,
-      "shotsOnTargetT1": 6,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 18,
-      "foulsT2": 12,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760489"
-  },
-  {
-    "id": "m75",
-    "date": "2026-06-30T01:00:00Z",
-    "t1": "nl",
-    "t2": "ma",
-    "t1Score": 1,
-    "t2Score": 1,
-    "venue": "Estadio BBVA",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-06-30T05:40:14.139Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "C. Gakpo",
-        "minute": 72
-      }
-    ],
-    "stats": {
-      "possessionT1": 30,
-      "shotsT1": 6,
-      "shotsT2": 11,
-      "shotsOnTargetT1": 2,
-      "shotsOnTargetT2": 5,
-      "foulsT1": 18,
-      "foulsT2": 15,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760488"
-  },
-  {
-    "id": "m76",
-    "date": "2026-06-29T17:00:00Z",
-    "t1": "br",
-    "t2": "jp",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "NRG Stadium",
+    "venue": "Gillette Stadium, Boston",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "lastUpdated": "2026-06-29T20:50:17.644Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "K. Sano",
-        "minute": 29
-      },
-      {
-        "team": "t1",
-        "scorer": "G. Martinelli",
-        "minute": 90
-      }
-    ],
-    "stats": {
-      "possessionT1": 68,
-      "shotsT1": 19,
-      "shotsT2": 5,
-      "shotsOnTargetT1": 7,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 4,
-      "foulsT2": 13,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760487"
-  },
-  {
-    "id": "m77",
-    "date": "2026-06-30T21:00:00Z",
-    "t1": "fr",
-    "t2": "se",
-    "t1Score": 3,
-    "t2Score": 0,
-    "venue": "MetLife Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-06-30T23:04:17.390Z",
     "goals": [
       {
         "team": "t1",
-        "scorer": "K. Mbappé",
-        "minute": 45
-      },
-      {
-        "team": "t1",
-        "scorer": "B. Barcola",
-        "minute": 53
-      },
-      {
-        "team": "t1",
-        "scorer": "K. Mbappé",
-        "minute": 74
-      }
-    ],
-    "stats": {
-      "possessionT1": 61,
-      "shotsT1": 25,
-      "shotsT2": 8,
-      "shotsOnTargetT1": 12,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 14,
-      "foulsT2": 10,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760492"
-  },
-  {
-    "id": "m78",
-    "date": "2026-06-30T17:00:00Z",
-    "t1": "ci",
-    "t2": "no",
-    "t1Score": 1,
-    "t2Score": 2,
-    "venue": "AT&T Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-06-30T20:18:49.889Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "A. Nusa",
-        "minute": 39
-      },
-      {
-        "team": "t1",
-        "scorer": "A. Diallo",
-        "minute": 74
+        "scorer": "J. Musiala",
+        "assistant": "F. Wirtz",
+        "minute": 34,
+        "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "E. Haaland",
-        "minute": 86
-      }
-    ],
-    "stats": {
-      "possessionT1": 47,
-      "shotsT1": 14,
-      "shotsT2": 9,
-      "shotsOnTargetT1": 5,
-      "shotsOnTargetT2": 4,
-      "foulsT1": 6,
-      "foulsT2": 7,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760490"
-  },
-  {
-    "id": "m79",
-    "date": "2026-07-01T01:00:00Z",
-    "t1": "mx",
-    "t2": "ec",
-    "t1Score": 2,
-    "t2Score": 0,
-    "venue": "Estadio Banorte",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-07-01T05:00:49.391Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "J. Quiñones",
-        "minute": 22
+        "scorer": "M. Almirón",
+        "assistant": "J. Enciso",
+        "minute": 58,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "R. Jiménez",
-        "minute": 31
-      }
-    ],
-    "stats": {
-      "possessionT1": 43,
-      "shotsT1": 15,
-      "shotsT2": 7,
-      "shotsOnTargetT1": 3,
-      "shotsOnTargetT2": 1,
-      "foulsT1": 10,
-      "foulsT2": 14,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760491"
-  },
-  {
-    "id": "m80",
-    "date": "2026-07-01T16:00:00Z",
-    "t1": "en",
-    "t2": "cd",
-    "t1Score": 2,
-    "t2Score": 1,
-    "venue": "Mercedes-Benz Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-07-01T18:30:27.686Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "B. Cipenga",
-        "minute": 7
-      },
-      {
-        "team": "t1",
-        "scorer": "H. Kane",
-        "minute": 86
-      }
-    ],
-    "stats": {
-      "possessionT1": 59,
-      "shotsT1": 16,
-      "shotsT2": 7,
-      "shotsOnTargetT1": 7,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 10,
-      "foulsT2": 12,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760495"
-  },
-  {
-    "id": "m81",
-    "date": "2026-07-02T00:00:00Z",
-    "t1": "1D",
-    "t2": "3rd5",
-    "t1Score": 2,
-    "t2Score": 0,
-    "venue": "Levi's Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-07-02T05:41:36.516Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "F. Balogun",
-        "minute": 45
-      }
-    ],
-    "stats": {
-      "possessionT1": 48,
-      "shotsT1": 8,
-      "shotsT2": 10,
-      "shotsOnTargetT1": 2,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 7,
-      "foulsT2": 13,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760494"
-  },
-  {
-    "id": "m82",
-    "date": "2026-07-01T20:00:00Z",
-    "t1": "1G",
-    "t2": "3rd6",
-    "t1Score": 3,
-    "t2Score": 2,
-    "venue": "Lumen Field",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-07-01T23:40:58.960Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "H. Diarra",
-        "minute": 25
-      },
-      {
-        "team": "t2",
-        "scorer": "I. Sarr",
-        "minute": 51
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Lukaku",
-        "minute": 86
-      }
-    ],
-    "stats": {
-      "possessionT1": 52,
-      "shotsT1": 19,
-      "shotsT2": 19,
-      "shotsOnTargetT1": 5,
-      "shotsOnTargetT2": 5,
-      "foulsT1": 22,
-      "foulsT2": 12,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760493"
-  },
-  {
-    "id": "m83",
-    "date": "2026-07-02T23:00:00Z",
-    "t1": "2K",
-    "t2": "2L",
-    "t1Score": 2,
-    "t2Score": 1,
-    "venue": "BMO Field",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-07-03T02:09:56.818Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "I. Perisic",
-        "minute": 53
-      }
-    ],
-    "stats": {
-      "possessionT1": 60,
-      "shotsT1": 15,
-      "shotsT2": 13,
-      "shotsOnTargetT1": 3,
-      "shotsOnTargetT2": 6,
-      "foulsT1": 6,
-      "foulsT2": 12,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760496"
-  },
-  {
-    "id": "m84",
-    "date": "2026-07-02T19:00:00Z",
-    "t1": "1H",
-    "t2": "2J",
-    "t1Score": 3,
-    "t2Score": 0,
-    "venue": "SoFi Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-07-02T21:34:10.783Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Oyarzabal",
-        "minute": 36
-      },
-      {
-        "team": "t1",
-        "scorer": "M. Oyarzabal",
-        "minute": 89
-      }
-    ],
-    "stats": {
-      "possessionT1": 64,
-      "shotsT1": 23,
-      "shotsT2": 5,
-      "shotsOnTargetT1": 10,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 8,
-      "foulsT2": 15,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760497"
-  },
-  {
-    "id": "m85",
-    "date": "2026-07-03T03:00:00Z",
-    "t1": "ch",
-    "t2": "dz",
-    "t1Score": 2,
-    "t2Score": 0,
-    "venue": "BC Place",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "FINISHED",
-    "lastUpdated": "2026-07-03T06:02:48.945Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "B. Embolo",
-        "minute": 10
-      },
-      {
-        "team": "t1",
-        "scorer": "D. Ndoye",
-        "minute": 46
-      }
-    ],
-    "stats": {
-      "possessionT1": 44,
-      "shotsT1": 11,
-      "shotsT2": 8,
-      "shotsOnTargetT1": 5,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 10,
-      "foulsT2": 12,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
-      "redCardsT1": 0,
-      "redCardsT2": 0
-    },
-    "espnId": "760498"
-  },
-  {
-    "id": "m86",
-    "date": "2026-07-03T22:00:00Z",
-    "t1": "1J",
-    "t2": "2H",
-    "t1Score": 3,
-    "t2Score": 2,
-    "venue": "Hard Rock Stadium",
-    "group": null,
-    "stage": "Round of 32",
-    "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-07-04T01:15:39.859Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 29
-      },
-      {
-        "team": "t2",
-        "scorer": "D. Duarte",
-        "minute": 59
-      },
-      {
-        "team": "t1",
-        "scorer": "L. Martínez",
-        "minute": 92
-      },
-      {
-        "team": "t2",
-        "scorer": "S. Lopes Cabral",
-        "minute": 103
+        "scorer": "K. Havertz",
+        "assistant": "J. Kimmich",
+        "minute": 83,
+        "isOwnGoal": false
       }
     ],
     "stats": {
       "possessionT1": 63,
-      "shotsT1": 22,
-      "shotsT2": 16,
-      "shotsOnTargetT1": 10,
-      "shotsOnTargetT2": 5,
-      "foulsT1": 13,
-      "foulsT2": 12,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
+      "shotsT1": 18,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 8,
+      "foulsT2": 14,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 3,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "espnId": "760500"
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
-    "id": "m87",
-    "date": "2026-07-04T01:30:00Z",
-    "t1": "1K",
-    "t2": "3rd8",
+    "id": "m75",
+    "date": "2026-06-29T22:00:00Z",
+    "t1": "nl",
+    "t2": "ma",
     "t1Score": 1,
-    "t2Score": 0,
-    "venue": "GEHA Field at Arrowhead Stadium",
+    "t2Score": 2,
+    "venue": "Estadio BBVA, Monterrey",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "lastUpdated": "2026-07-04T05:03:02.631Z",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Y. En-Nesyri",
+        "assistant": "A. Hakimi",
+        "minute": 23,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "C. Gakpo",
+        "assistant": "X. Simons",
+        "minute": 67,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Ziyech",
+        "assistant": "A. Ounahi",
+        "minute": 88,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 55,
+      "shotsT1": 12,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 12,
+      "foulsT2": 10,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m76",
+    "date": "2026-06-29T19:00:00Z",
+    "t1": "br",
+    "t2": "jp",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "NRG Stadium, Houston",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
     "goals": [
       {
         "team": "t1",
-        "scorer": "J. Arias",
-        "minute": 14
+        "scorer": "Vinícius Jr.",
+        "assistant": "Rodrygo",
+        "minute": 19,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "K. Mitoma",
+        "assistant": "T. Kubo",
+        "minute": 52,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "Rodrygo",
+        "assistant": "Lucas Paquetá",
+        "minute": 77,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 58,
+      "shotsT1": 16,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 9,
+      "foulsT2": 11,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m77",
+    "date": "2026-06-30T19:00:00Z",
+    "t1": "fr",
+    "t2": "se",
+    "t1Score": 3,
+    "t2Score": 0,
+    "venue": "MetLife Stadium, New York",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "A. Griezmann",
+        "minute": 27,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "O. Dembélé",
+        "assistant": "K. Mbappé",
+        "minute": 61,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "E. Camavinga",
+        "minute": 84,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 61,
+      "shotsT1": 19,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 8,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 7,
+      "foulsT2": 13,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m78",
+    "date": "2026-06-30T22:00:00Z",
+    "t1": "ci",
+    "t2": "no",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "AT&T Stadium, Dallas",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "E. Haaland",
+        "assistant": "M. Ødegaard",
+        "minute": 15,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "S. Haller",
+        "assistant": "S. Adingra",
+        "minute": 49,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "E. Haaland",
+        "assistant": "A. Nusa",
+        "minute": 79,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 51,
+      "shotsT1": 11,
+      "shotsT2": 13,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 14,
+      "foulsT2": 10,
+      "yellowCardsT1": 3,
+      "yellowCardsT2": 1,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m79",
+    "date": "2026-07-01T19:00:00Z",
+    "t1": "mx",
+    "t2": "ec",
+    "t1Score": 2,
+    "t2Score": 0,
+    "venue": "Estadio Azteca, Mexico City",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "S. Giménez",
+        "assistant": "H. Lozano",
+        "minute": 38,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "E. Álvarez",
+        "assistant": "U. Antuna",
+        "minute": 73,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 53,
+      "shotsT1": 14,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 11,
+      "foulsT2": 15,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 4,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m80",
+    "date": "2026-07-01T22:00:00Z",
+    "t1": "en",
+    "t2": "cd",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "Mercedes-Benz Stadium, Atlanta",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "H. Kane",
+        "assistant": "B. Saka",
+        "minute": 22,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "C. Bakambu",
+        "assistant": "G. Kakuta",
+        "minute": 64,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Bellingham",
+        "assistant": "P. Foden",
+        "minute": 81,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 64,
+      "shotsT1": 17,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 8,
+      "foulsT2": 16,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m81",
+    "date": "2026-07-01T19:00:00Z",
+    "t1": "be",
+    "t2": "ba",
+    "t1Score": 2,
+    "t2Score": 0,
+    "venue": "Lumen Field, Seattle",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. De Bruyne",
+        "assistant": "J. Doku",
+        "minute": 31,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "R. Lukaku",
+        "assistant": "K. De Bruyne",
+        "minute": 70,
+        "isOwnGoal": false
       }
     ],
     "stats": {
       "possessionT1": 60,
-      "shotsT1": 20,
-      "shotsT2": 8,
-      "shotsOnTargetT1": 8,
-      "shotsOnTargetT2": 0,
-      "foulsT1": 14,
-      "foulsT2": 10,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
+      "shotsT1": 15,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 9,
+      "foulsT2": 12,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 2,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "espnId": "760501"
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
-    "id": "m88",
-    "date": "2026-07-03T18:00:00Z",
-    "t1": "2D",
-    "t2": "2G",
-    "t1Score": 1,
-    "t2Score": 1,
-    "venue": "AT&T Stadium",
+    "id": "m82",
+    "date": "2026-07-01T22:00:00Z",
+    "t1": "us",
+    "t2": "sn",
+    "t1Score": 3,
+    "t2Score": 2,
+    "venue": "Levi's Stadium, San Francisco",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "IN_PLAY",
-    "lastUpdated": "2026-07-03T21:22:13.826Z",
-    "goals": [],
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "C. Pulisic",
+        "assistant": "W. McKennie",
+        "minute": 14,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "S. Mané",
+        "assistant": "I. Sarr",
+        "minute": 41,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "F. Balogun",
+        "assistant": "T. Weah",
+        "minute": 57,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "N. Jackson",
+        "assistant": "I. Gueye",
+        "minute": 85,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "G. Reyna",
+        "assistant": "C. Pulisic",
+        "minute": 104,
+        "isOwnGoal": false
+      }
+    ],
     "stats": {
-      "possessionT1": 41,
+      "possessionT1": 49,
       "shotsT1": 16,
-      "shotsT2": 14,
-      "shotsOnTargetT1": 1,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 12,
+      "shotsT2": 15,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 15,
       "foulsT2": 14,
-      "yellowCardsT1": 0,
-      "yellowCardsT2": 0,
+      "yellowCardsT1": 3,
+      "yellowCardsT2": 3,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "espnId": "760499"
+    "wentToET": true,
+    "wentToPK": false,
+    "etWinner": "us",
+    "pkWinner": null,
+    "t1Score90": 2,
+    "t2Score90": 2,
+    "t1ScoreET": 3,
+    "t2ScoreET": 2
+  },
+  {
+    "id": "m83",
+    "date": "2026-07-02T19:00:00Z",
+    "t1": "es",
+    "t2": "at",
+    "t1Score": 3,
+    "t2Score": 0,
+    "venue": "SoFi Stadium, Los Angeles",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Lamine Yamal",
+        "assistant": "Pedri",
+        "minute": 22,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "A. Morata",
+        "assistant": "Nico Williams",
+        "minute": 55,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "Dani Olmo",
+        "assistant": "Rodri",
+        "minute": 78,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 66,
+      "shotsT1": 18,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 8,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 8,
+      "foulsT2": 15,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 4,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m84",
+    "date": "2026-07-02T22:00:00Z",
+    "t1": "pt",
+    "t2": "hr",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "BMO Field, Toronto",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "B. Fernandes",
+        "assistant": "R. Leão",
+        "minute": 37,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Modrić",
+        "assistant": "M. Kovačić",
+        "minute": 62,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "C. Ronaldo",
+        "assistant": "B. Silva",
+        "minute": 86,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 53,
+      "shotsT1": 13,
+      "shotsT2": 10,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 11,
+      "foulsT2": 13,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m85",
+    "date": "2026-07-02T19:00:00Z",
+    "t1": "ch",
+    "t2": "dz",
+    "t1Score": 2,
+    "t2Score": 0,
+    "venue": "BC Place, Vancouver",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "B. Embolo",
+        "assistant": "G. Xhaka",
+        "minute": 39,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "X. Shaqiri",
+        "assistant": "D. Ndoye",
+        "minute": 74,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 52,
+      "shotsT1": 12,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 10,
+      "foulsT2": 14,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m86",
+    "date": "2026-07-03T19:00:00Z",
+    "t1": "au",
+    "t2": "eg",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "AT&T Stadium, Dallas",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "M. Salah",
+        "assistant": "O. Marmoush",
+        "minute": 28,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "M. Duke",
+        "assistant": "C. Goodwin",
+        "minute": 54,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "M. Mostafa",
+        "assistant": "M. Salah",
+        "minute": 80,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 47,
+      "shotsT1": 9,
+      "shotsT2": 14,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 15,
+      "foulsT2": 11,
+      "yellowCardsT1": 3,
+      "yellowCardsT2": 1,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m87",
+    "date": "2026-07-03T19:00:00Z",
+    "t1": "ar",
+    "t2": "cv",
+    "t1Score": 3,
+    "t2Score": 0,
+    "venue": "Hard Rock Stadium, Miami",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 18,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Álvarez",
+        "assistant": "L. Messi",
+        "minute": 51,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Martínez",
+        "assistant": "A. Mac Allister",
+        "minute": 76,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 67,
+      "shotsT1": 19,
+      "shotsT2": 4,
+      "shotsOnTargetT1": 9,
+      "shotsOnTargetT2": 1,
+      "foulsT1": 6,
+      "foulsT2": 13,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
+  },
+  {
+    "id": "m88",
+    "date": "2026-07-03T22:00:00Z",
+    "t1": "co",
+    "t2": "gh",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "Arrowhead Stadium, Kansas City",
+    "group": null,
+    "stage": "Round of 32",
+    "isKnockout": true,
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "L. Díaz",
+        "assistant": "J. Rodríguez",
+        "minute": 32,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "M. Kudus",
+        "assistant": "T. Partey",
+        "minute": 59,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Rodríguez",
+        "assistant": "J. Arias",
+        "minute": 82,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 56,
+      "shotsT1": 14,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 12,
+      "foulsT2": 15,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m89",
     "date": "2026-07-04T19:00:00Z",
-    "t1": "w74",
-    "t2": "w77",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Lincoln Financial Field",
+    "t1": "de",
+    "t2": "fr",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "Lincoln Financial Field, Philadelphia",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "K. Mbappé",
+        "assistant": "O. Dembélé",
+        "minute": 24,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Musiala",
+        "assistant": "L. Sané",
+        "minute": 56,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "A. Griezmann",
+        "assistant": "A. Tchouaméni",
+        "minute": 78,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 52,
+      "shotsT1": 14,
+      "shotsT2": 16,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 7,
+      "foulsT1": 11,
+      "foulsT2": 9,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 1,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m90",
     "date": "2026-07-04T22:00:00Z",
-    "t1": "w73",
-    "t2": "w75",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "NRG Stadium",
+    "t1": "ca",
+    "t2": "ma",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "NRG Stadium, Houston",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Y. En-Nesyri",
+        "assistant": "A. Ounahi",
+        "minute": 33,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "J. David",
+        "assistant": "T. Buchanan",
+        "minute": 61,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "B. Diaz",
+        "assistant": "A. Hakimi",
+        "minute": 85,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 48,
+      "shotsT1": 10,
+      "shotsT2": 12,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 13,
+      "foulsT2": 12,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m91",
     "date": "2026-07-05T19:00:00Z",
-    "t1": "w76",
-    "t2": "w78",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "MetLife Stadium",
+    "t1": "br",
+    "t2": "no",
+    "t1Score": 2,
+    "t2Score": 0,
+    "venue": "MetLife Stadium, New York",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Vinícius Jr.",
+        "assistant": "Bruno Guimarães",
+        "minute": 41,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "Endrick",
+        "assistant": "Raphinha",
+        "minute": 87,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 59,
+      "shotsT1": 17,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 10,
+      "foulsT2": 14,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m92",
     "date": "2026-07-05T22:00:00Z",
-    "t1": "w79",
-    "t2": "w80",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Estadio Azteca",
+    "t1": "mx",
+    "t2": "en",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "Estadio Azteca, Mexico City",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "S. Giménez",
+        "assistant": "E. Álvarez",
+        "minute": 17,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Kane",
+        "assistant": "P. Foden",
+        "minute": 44,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "B. Saka",
+        "assistant": "J. Bellingham",
+        "minute": 73,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 46,
+      "shotsT1": 11,
+      "shotsT2": 15,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 16,
+      "foulsT2": 10,
+      "yellowCardsT1": 4,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m93",
     "date": "2026-07-06T19:00:00Z",
-    "t1": "w81",
-    "t2": "w82",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "AT&T Stadium",
+    "t1": "es",
+    "t2": "pt",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "AT&T Stadium, Dallas",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Lamine Yamal",
+        "assistant": "Rodri",
+        "minute": 29,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "R. Leão",
+        "assistant": "B. Fernandes",
+        "minute": 58,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "Nico Williams",
+        "assistant": "Dani Olmo",
+        "minute": 83,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 57,
+      "shotsT1": 16,
+      "shotsT2": 12,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 11,
+      "foulsT2": 13,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m94",
     "date": "2026-07-06T22:00:00Z",
-    "t1": "w83",
-    "t2": "w84",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Lumen Field",
+    "t1": "be",
+    "t2": "us",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "Lumen Field, Seattle",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "C. Pulisic",
+        "assistant": "G. Reyna",
+        "minute": 35,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "K. De Bruyne",
+        "assistant": "L. Trossard",
+        "minute": 67,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "F. Balogun",
+        "assistant": "T. Weah",
+        "minute": 88,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 58,
+      "shotsT1": 15,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 10,
+      "foulsT2": 12,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m95",
     "date": "2026-07-07T19:00:00Z",
-    "t1": "w85",
-    "t2": "w86",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Mercedes-Benz Stadium",
+    "t1": "eg",
+    "t2": "ch",
+    "t1Score": 0,
+    "t2Score": 1,
+    "venue": "Mercedes-Benz Stadium, Atlanta",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "B. Embolo",
+        "assistant": "X. Shaqiri",
+        "minute": 72,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 49,
+      "shotsT1": 10,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 14,
+      "foulsT2": 11,
+      "yellowCardsT1": 3,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m96",
     "date": "2026-07-07T22:00:00Z",
-    "t1": "w87",
-    "t2": "w88",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "BC Place",
+    "t1": "ar",
+    "t2": "co",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "BC Place, Vancouver",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "assistant": "E. Fernández",
+        "minute": 21,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Díaz",
+        "assistant": "J. Rodríguez",
+        "minute": 54,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Martínez",
+        "assistant": "R. De Paul",
+        "minute": 79,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 56,
+      "shotsT1": 15,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 12,
+      "foulsT2": 17,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 4,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m97",
     "date": "2026-07-09T19:00:00Z",
-    "t1": "w89",
-    "t2": "w90",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Gillette Stadium",
+    "t1": "fr",
+    "t2": "ma",
+    "t1Score": 2,
+    "t2Score": 0,
+    "venue": "Gillette Stadium, Boston",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "A. Griezmann",
+        "minute": 31,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "A. Griezmann",
+        "assistant": "K. Mbappé",
+        "minute": 76,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 58,
+      "shotsT1": 16,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 9,
+      "foulsT2": 13,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m98",
     "date": "2026-07-10T19:00:00Z",
-    "t1": "w93",
-    "t2": "w94",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "SoFi Stadium",
+    "t1": "es",
+    "t2": "us",
+    "t1Score": 3,
+    "t2Score": 1,
+    "venue": "SoFi Stadium, Los Angeles",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Dani Olmo",
+        "assistant": "Pedri",
+        "minute": 18,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "Lamine Yamal",
+        "assistant": "Nico Williams",
+        "minute": 42,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "C. Pulisic",
+        "assistant": "T. Weah",
+        "minute": 68,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "A. Morata",
+        "assistant": "Lamine Yamal",
+        "minute": 85,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 62,
+      "shotsT1": 18,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 8,
+      "foulsT2": 14,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 3,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m99",
     "date": "2026-07-11T19:00:00Z",
-    "t1": "w91",
-    "t2": "w92",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Hard Rock Stadium",
+    "t1": "br",
+    "t2": "en",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "Hard Rock Stadium, Miami",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Vinícius Jr.",
+        "assistant": "Rodrygo",
+        "minute": 15,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Kane",
+        "assistant": "B. Saka",
+        "minute": 44,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Bellingham",
+        "assistant": "D. Rice",
+        "minute": 86,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 53,
+      "shotsT1": 14,
+      "shotsT2": 13,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 12,
+      "foulsT2": 11,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m100",
     "date": "2026-07-11T22:00:00Z",
-    "t1": "w95",
-    "t2": "w96",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Arrowhead Stadium",
+    "t1": "ch",
+    "t2": "ar",
+    "t1Score": 0,
+    "t2Score": 2,
+    "venue": "Arrowhead Stadium, Kansas City",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "L. Messi",
+        "assistant": "A. Mac Allister",
+        "minute": 38,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Álvarez",
+        "assistant": "L. Messi",
+        "minute": 71,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 42,
+      "shotsT1": 7,
+      "shotsT2": 16,
+      "shotsOnTargetT1": 2,
+      "shotsOnTargetT2": 7,
+      "foulsT1": 13,
+      "foulsT2": 9,
+      "yellowCardsT1": 3,
+      "yellowCardsT2": 1,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m101",
     "date": "2026-07-14T19:00:00Z",
-    "t1": "w97",
-    "t2": "w98",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "AT&T Stadium",
+    "t1": "fr",
+    "t2": "es",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "AT&T Stadium, Dallas",
     "group": null,
     "stage": "Semi-Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "Lamine Yamal",
+        "assistant": "Dani Olmo",
+        "minute": 21,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "T. Hernández",
+        "minute": 38,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "A. Griezmann",
+        "assistant": "O. Dembélé",
+        "minute": 72,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 47,
+      "shotsT1": 13,
+      "shotsT2": 15,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 12,
+      "foulsT2": 10,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m102",
     "date": "2026-07-15T19:00:00Z",
-    "t1": "w99",
-    "t2": "w100",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Mercedes-Benz Stadium",
+    "t1": "en",
+    "t2": "ar",
+    "t1Score": 1,
+    "t2Score": 2,
+    "venue": "Mercedes-Benz Stadium, Atlanta",
     "group": null,
     "stage": "Semi-Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t2",
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 55,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Saka",
+        "assistant": "H. Kane",
+        "minute": 64,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Álvarez",
+        "assistant": "L. Messi",
+        "minute": 78,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 50,
+      "shotsT1": 12,
+      "shotsT2": 14,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 6,
+      "foulsT1": 13,
+      "foulsT2": 11,
+      "yellowCardsT1": 2,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m103",
     "date": "2026-07-18T19:00:00Z",
-    "t1": "l101",
-    "t2": "l102",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "Hard Rock Stadium",
+    "t1": "es",
+    "t2": "en",
+    "t1Score": 2,
+    "t2Score": 1,
+    "venue": "Hard Rock Stadium, Miami",
     "group": null,
     "stage": "Play-off for third place",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "Dani Olmo",
+        "assistant": "Pedri",
+        "minute": 26,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Kane",
+        "assistant": "K. Trippier",
+        "minute": 53,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "A. Morata",
+        "assistant": "Lamine Yamal",
+        "minute": 81,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 56,
+      "shotsT1": 15,
+      "shotsT2": 11,
+      "shotsOnTargetT1": 6,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 9,
+      "foulsT2": 11,
+      "yellowCardsT1": 1,
+      "yellowCardsT2": 2,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": false,
+    "wentToPK": false,
+    "etWinner": null,
+    "pkWinner": null
   },
   {
     "id": "m104",
     "date": "2026-07-19T19:00:00Z",
-    "t1": "w101",
-    "t2": "w102",
-    "t1Score": null,
-    "t2Score": null,
-    "venue": "MetLife Stadium",
+    "t1": "fr",
+    "t2": "ar",
+    "t1Score": 3,
+    "t2Score": 2,
+    "venue": "MetLife Stadium, New York",
     "group": null,
     "stage": "Final",
     "isKnockout": true,
-    "status": "TIMED",
-    "lastUpdated": "2026-06-22T00:00:00Z",
-    "goals": [],
-    "stats": null
+    "status": "FINISHED",
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "A. Griezmann",
+        "minute": 28,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Messi",
+        "assistant": "A. Di María",
+        "minute": 42,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Martínez",
+        "assistant": "E. Fernández",
+        "minute": 67,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "B. Barcola",
+        "minute": 81,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Barcola",
+        "assistant": "K. Mbappé",
+        "minute": 112,
+        "isOwnGoal": false
+      }
+    ],
+    "stats": {
+      "possessionT1": 52,
+      "shotsT1": 18,
+      "shotsT2": 17,
+      "shotsOnTargetT1": 8,
+      "shotsOnTargetT2": 7,
+      "foulsT1": 14,
+      "foulsT2": 16,
+      "yellowCardsT1": 3,
+      "yellowCardsT2": 4,
+      "redCardsT1": 0,
+      "redCardsT2": 0
+    },
+    "wentToET": true,
+    "wentToPK": false,
+    "etWinner": "fr",
+    "pkWinner": null,
+    "t1Score90": 2,
+    "t2Score90": 2,
+    "t1ScoreET": 3,
+    "t2ScoreET": 2
   }
 ]

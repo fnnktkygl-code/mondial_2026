@@ -398,8 +398,8 @@ class WorldCupMatch {
 
   String? get liveMinute => _liveMinuteStatic;
 
-  // FIX: Only consider a match played if the scores are actually loaded and the status is not TIMED/SCHEDULED!
-  bool get isPlayed => isFinished || (t1Score != null && t2Score != null && status != 'TIMED' && status != 'SCHEDULED');
+  // FIX: Only consider a match played if scores are actually non-null and the match is finished/in-play
+  bool get isPlayed => t1Score != null && t2Score != null && (isFinished || (status != 'TIMED' && status != 'SCHEDULED'));
 
   bool get isFinished => status == 'FINISHED' || status == 'FINAL';
 
@@ -505,15 +505,15 @@ class WorldCupMatch {
       date: date ?? this.date,
       t1: t1 ?? this.t1,
       t2: t2 ?? this.t2,
-      t1Score: t1Score ?? this._t1ScoreStatic,
-      t2Score: t2Score ?? this._t2ScoreStatic,
+      t1Score: t1Score ?? _t1ScoreStatic,
+      t2Score: t2Score ?? _t2ScoreStatic,
       venue: venue ?? this.venue,
       group: group ?? this.group,
       stage: stage ?? this.stage,
       goals: goals ?? this.goals,
       stats: stats ?? this.stats,
-      status: status ?? this._statusStatic,
-      liveMinute: liveMinute ?? this._liveMinuteStatic,
+      status: status ?? _statusStatic,
+      liveMinute: liveMinute ?? _liveMinuteStatic,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       isKnockoutOverride: isKnockoutOverride ?? _isKnockoutOverride,
       wentToET: wentToET ?? this.wentToET,
@@ -541,26 +541,36 @@ class PlayerStat {
 
 class TournamentStats {
   final List<PlayerStat> scorers;
+  final List<PlayerStat> assists;
 
-  TournamentStats({required this.scorers});
+  TournamentStats({required this.scorers, required this.assists});
 
   factory TournamentStats.compute(List<WorldCupMatch> matches) {
     final Map<String, int> goalCounts = {};
-    final Map<String, String> playerTeams = {};
+    final Map<String, String> scorerTeams = {};
+    final Map<String, int> assistCounts = {};
+    final Map<String, String> assistTeams = {};
 
     for (final match in matches) {
       if (match.isPlayed) {
         for (final goal in match.goals) {
-          if (goal.isOwnGoal) continue; // Skip Own Goals in top scorers leaderboard
-          
           final teamCode = (goal.team == 't1' ? match.t1 : match.t2).toLowerCase();
           final teamNameEn = AppTranslations.getTeam('en', teamCode);
-          
-          final scorerName = goal.scorer.trim();
-          if (scorerName.isNotEmpty) {
-            final normalized = PlayerDatabaseService.getBestMatchingName(teamNameEn, scorerName) ?? scorerName;
-            goalCounts[normalized] = (goalCounts[normalized] ?? 0) + 1;
-            playerTeams[normalized] = teamCode;
+
+          if (!goal.isOwnGoal) {
+            final scorerName = goal.scorer.trim();
+            if (scorerName.isNotEmpty) {
+              final normalized = PlayerDatabaseService.getBestMatchingName(teamNameEn, scorerName) ?? scorerName;
+              goalCounts[normalized] = (goalCounts[normalized] ?? 0) + 1;
+              scorerTeams[normalized] = teamCode;
+            }
+          }
+
+          final assistantName = goal.assistant?.trim();
+          if (assistantName != null && assistantName.isNotEmpty) {
+            final normalized = PlayerDatabaseService.getBestMatchingName(teamNameEn, assistantName) ?? assistantName;
+            assistCounts[normalized] = (assistCounts[normalized] ?? 0) + 1;
+            assistTeams[normalized] = teamCode;
           }
         }
       }
@@ -570,10 +580,18 @@ class TournamentStats {
       return PlayerStat(
         name: e.key,
         value: e.value,
-        teamCode: playerTeams[e.key] ?? 'tbd',
+        teamCode: scorerTeams[e.key] ?? 'tbd',
       );
     }).toList()..sort((a, b) => b.value.compareTo(a.value));
 
-    return TournamentStats(scorers: scorersList);
+    final List<PlayerStat> assistsList = assistCounts.entries.map((e) {
+      return PlayerStat(
+        name: e.key,
+        value: e.value,
+        teamCode: assistTeams[e.key] ?? 'tbd',
+      );
+    }).toList()..sort((a, b) => b.value.compareTo(a.value));
+
+    return TournamentStats(scorers: scorersList, assists: assistsList);
   }
 }

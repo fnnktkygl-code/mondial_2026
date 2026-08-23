@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mondial_2026/models/match.dart';
 import 'package:mondial_2026/utils/fifa_rules.dart';
-import 'package:mondial_2026/widgets/group_table.dart';
 
 void main() {
   group('FIFARegulations Card Deduction Tests', () {

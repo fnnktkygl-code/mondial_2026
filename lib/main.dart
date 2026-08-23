@@ -30,7 +30,6 @@ import 'widgets/stats_view.dart';
 import 'widgets/challenge_view.dart';
 import 'widgets/profile_dialog.dart';
 import 'widgets/anthem_player_sheet.dart';
-import 'services/api_service.dart';
 import 'services/prediction_service.dart';
 import 'services/prediction_trends_service.dart';
 import 'services/simulation_service.dart';
@@ -1902,7 +1901,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 const SizedBox(width: 8),
                 _buildStandingsSubTabButton(
                   'thirds',
-                  AppTranslations.get(_lang, 'bestThirdsTab') ?? 'Meilleurs 3e',
+                  AppTranslations.get(_lang, 'bestThirdsTab'),
                   Icons.format_list_numbered,
                 ),
                 const SizedBox(width: 8),
@@ -1910,6 +1909,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   'scorers',
                   AppTranslations.get(_lang, 'scorersTab'),
                   Icons.sports_soccer,
+                ),
+                const SizedBox(width: 8),
+                _buildStandingsSubTabButton(
+                  'assists',
+                  AppTranslations.get(_lang, 'assistsTab'),
+                  Icons.track_changes,
                 ),
                 const SizedBox(width: 8),
                 _buildStandingsSubTabButton(
@@ -1967,6 +1972,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return BestThirdsTableWidget(matches: _resolvedMatches, lang: _lang);
     } else if (_standingsSubTab == 'scorers') {
       return ScorersLeaderboardWidget(matches: _resolvedMatches, lang: _lang);
+    } else if (_standingsSubTab == 'assists') {
+      return AssistsLeaderboardWidget(matches: _resolvedMatches, lang: _lang);
     } else if (_standingsSubTab == 'team') {
       return TeamStatsWidget(
         matches: _resolvedMatches,

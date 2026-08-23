@@ -65,7 +65,7 @@ class BestThirdsTableWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Text(
-            AppTranslations.get(lang, 'bestThirdsExplanation') ?? 'Les 8 meilleurs 3èmes sont qualifiés pour les huitièmes de finale.',
+            AppTranslations.get(lang, 'bestThirdsExplanation'),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 13,

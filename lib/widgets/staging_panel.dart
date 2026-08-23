@@ -169,7 +169,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
       if (!mounted) return;
 
       showModalBottomSheet(
-        context: context,
+        context: this.context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (context) {
@@ -928,7 +928,7 @@ class _StagingPanelWidgetState extends State<StagingPanelWidget> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              value: _selectedModel,
+              initialValue: _selectedModel,
               decoration: const InputDecoration(
                 labelText: 'Modèle Gemini',
                 border: OutlineInputBorder(),

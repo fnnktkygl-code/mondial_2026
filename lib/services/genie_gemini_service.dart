@@ -340,7 +340,7 @@ class GenieGeminiService {
           if (lastRunDay == todayStr) {
             debugPrint('GenieGeminiService: Already ran today ($todayStr). Skipping today\'s matches.');
           } else if (in429Cooldown) {
-            final remaining = 120 - DateTime.now().difference(last429At!).inMinutes;
+            final remaining = 120 - DateTime.now().difference(last429At).inMinutes;
             debugPrint('GenieGeminiService: In 429 cooldown. Retry in ~$remaining min.');
           } else {
             try {
@@ -661,13 +661,19 @@ class GenieGeminiService {
         final ga = isHome ? m.t2Score! : m.t1Score!;
         goalsFor += gf;
         goalsAgainst += ga;
-        if (ga == 0) cleanSheets++;
-        if (gf > ga) wins++;
-        else if (gf == ga) draws++;
-        else losses++;
+        if (ga == 0) {
+          cleanSheets++;
+        }
+        if (gf > ga) {
+          wins++;
+        } else if (gf == ga) {
+          draws++;
+        } else {
+          losses++;
+        }
 
         // Aggregate goalscorers
-        for (final g in (m.goals ?? [])) {
+        for (final g in m.goals) {
           if ((isHome && g.team == 't1') || (!isHome && g.team == 't2')) {
             if (!g.isOwnGoal) {
               scorers[g.scorer] = (scorers[g.scorer] ?? 0) + 1;
@@ -1322,14 +1328,12 @@ IMPORTANT: Your entire response MUST be a single valid JSON object (no markdown,
               ? "Un combat tactique équilibré. Je table sur un score de $t1Score-$t2Score."
               : "Victoire attendue de ${t1Score > t2Score ? team1Name : team2Name} par la plus petite des marges ($t1Score-$t2Score).");
 
-      rankingAnalysis = "Selon les classements FIFA, $team1Name (rang $rank1) fait face à $team2Name (rang $rank2). " +
-          (rank1 < rank2
-              ? "$team1Name part avec la faveur des chiffres grâce à son meilleur positionnement mondial."
-              : "$team2Name possède un léger avantage statistique au classement international.");
+      rankingAnalysis = 'Selon les classements FIFA, $team1Name (rang $rank1) fait face à $team2Name (rang $rank2). '
+          '${rank1 < rank2 ? "$team1Name part avec la faveur des chiffres grâce à son meilleur positionnement mondial." : "$team2Name possède un léger avantage statistique au classement international."}';
 
-      oddsAnalysis = "Les cotes du marché (Victoire 1: $odd1, Nul: $oddX, Victoire 2: $odd2) traduisent une probabilité de victoire de " +
-          "${(prob1 / totalProb * 100).round()}% pour $team1Name et ${(prob2 / totalProb * 100).round()}% pour $team2Name. Les bookmakers anticipent un affrontement " +
-          ((odd1 - odd2).abs() < 1.0 ? "extrêmement indécis." : "favorable au favori désigné.");
+      oddsAnalysis = 'Les cotes du marché (Victoire 1: $odd1, Nul: $oddX, Victoire 2: $odd2) traduisent une probabilité de victoire de '
+          '${(prob1 / totalProb * 100).round()}% pour $team1Name et ${(prob2 / totalProb * 100).round()}% pour $team2Name. Les bookmakers anticipent un affrontement '
+          '${(odd1 - odd2).abs() < 1.0 ? "extrêmement indécis." : "favorable au favori désigné."}';
 
       historyAnalysis = matchupFact ?? "Les confrontations historiques entre ces deux nations sont trop rares pour dégager une tendance nette, ce qui laisse place à toutes les spéculations.";
 
@@ -1351,14 +1355,12 @@ IMPORTANT: Your entire response MUST be a single valid JSON object (no markdown,
               ? "Un duelo táctico muy equilibrado. Pronostico un resultado de $t1Score-$t2Score."
               : "Victoria esperada de ${t1Score > t2Score ? team1Name : team2Name} por un margen estrecho ($t1Score-$t2Score).");
 
-      rankingAnalysis = "El ranking FIFA sitúa a $team1Name (puesto $rank1) frente a $team2Name (puesto $rank2). " +
-          (rank1 < rank2
-              ? "$team1Name parte con ventaja estadística sobre el papel."
-              : "$team2Name tiene la superioridad en el ranking internacional.");
+      rankingAnalysis = 'El ranking FIFA sitúa a $team1Name (puesto $rank1) frente a $team2Name (puesto $rank2). '
+          '${rank1 < rank2 ? "$team1Name parte con ventaja estadística sobre el papel." : "$team2Name tiene la superioridad en el ranking internacional."}';
 
-      oddsAnalysis = "Las cuotas (Victoria 1: $odd1, Empate: $oddX, Victoria 2: $odd2) representan una probabilidad implícita del " +
-          "${(prob1 / totalProb * 100).round()}% para $team1Name y ${(prob2 / totalProb * 100).round()}% para $team2Name. Esto sugiere un encuentro " +
-          ((odd1 - odd2).abs() < 1.0 ? "muy equilibrado y difícil de predecir." : "donde el favorito tiene claras opciones.");
+      oddsAnalysis = 'Las cuotas (Victoria 1: $odd1, Empate: $oddX, Victoria 2: $odd2) representan una probabilidad implícita del '
+          '${(prob1 / totalProb * 100).round()}% para $team1Name y ${(prob2 / totalProb * 100).round()}% para $team2Name. Esto sugiere un encuentro '
+          '${(odd1 - odd2).abs() < 1.0 ? "muy equilibrado y difícil de predecir." : "donde el favorito tiene claras opciones."}';
 
       historyAnalysis = matchupFact ?? "No hay suficientes datos históricos de enfrentamientos entre ambos para prever un patrón claro de comportamiento táctico.";
 
@@ -1381,14 +1383,12 @@ IMPORTANT: Your entire response MUST be a single valid JSON object (no markdown,
               ? "A highly tactical draw. I predict a $t1Score-$t2Score final score."
               : "Expected victory for ${t1Score > t2Score ? team1Name : team2Name} by a narrow margin ($t1Score-$t2Score).");
 
-      rankingAnalysis = "The FIFA Rankings place $team1Name at #$rank1 and $team2Name at #$rank2. " +
-          (rank1 < rank2
-              ? "$team1Name has a clear statistical advantage based on their worldwide position."
-              : "$team2Name holds the edge in the global standings.");
+      rankingAnalysis = 'The FIFA Rankings place $team1Name at #$rank1 and $team2Name at #$rank2. '
+          '${rank1 < rank2 ? "$team1Name has a clear statistical advantage based on their worldwide position." : "$team2Name holds the edge in the global standings."}';
 
-      oddsAnalysis = "Market odds (1: $odd1, X: $oddX, 2: $odd2) show an implied probability of " +
-          "${(prob1 / totalProb * 100).round()}% for $team1Name and ${(prob2 / totalProb * 100).round()}% for $team2Name. The bookmakers expect a " +
-          ((odd1 - odd2).abs() < 1.0 ? "very close and competitive match." : "match favoring the designated favorite.");
+      oddsAnalysis = 'Market odds (1: $odd1, X: $oddX, 2: $odd2) show an implied probability of '
+          '${(prob1 / totalProb * 100).round()}% for $team1Name and ${(prob2 / totalProb * 100).round()}% for $team2Name. The bookmakers expect a '
+          '${(odd1 - odd2).abs() < 1.0 ? "very close and competitive match." : "match favoring the designated favorite."}';
 
       historyAnalysis = matchupFact ?? "Head-to-head records between these two sides are sparse, leaving the tactical outcome wide open.";
 
