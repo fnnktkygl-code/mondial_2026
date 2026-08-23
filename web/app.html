@@ -42,22 +42,28 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script>
-    // Automatically unregister stale service workers and purge CacheStorage
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
+    (async function() {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (let r of registrations) {
+            await r.unregister();
+          }
         }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) {
-          caches.delete(name);
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (let k of keys) {
+            await caches.delete(k);
+          }
         }
-      });
-    }
+      } catch (e) {
+        console.warn("Cache purge error:", e);
+      }
+      
+      const script = document.createElement('script');
+      script.src = "flutter_bootstrap.js?t=" + Date.now();
+      document.body.appendChild(script);
+    })();
   </script>
-  <script src="flutter_bootstrap.js?v=20260823_spain" async></script>
 </body>
 </html>

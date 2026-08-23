@@ -30,6 +30,16 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     List<WorldCupMatch> baseMatches = [];
 
+    // Clean up any stale match cache keys from older builds
+    try {
+      final keys = prefs.getKeys();
+      for (final k in keys) {
+        if (k.startsWith('wc2026_matches_') && k != _cacheKey) {
+          await prefs.remove(k);
+        }
+      }
+    } catch (_) {}
+
     // 1. Load Base Schedule from Assets
     try {
       final jsonStr = await rootBundle.loadString('assets/initial_matches.json');
@@ -38,29 +48,28 @@ class ApiService {
       debugPrint("API: Asset load error: $e");
     }
 
-    // 2. Try Cache (if not forcing refresh)
-    if (!forceRefresh) {
-      final cachedJson = prefs.getString(_cacheKey);
-      if (cachedJson != null) {
-        try {
-          final cachedMatches = _parseMatchesJson(cachedJson);
-          // We merge the cache into the base schedule to ensure we have all matches
-          baseMatches = _patchMatches(baseMatches, cachedMatches);
-        } catch (_) {}
-      }
-    }
-
-    // Resolve any placeholders dynamically so they can match the remote data!
+    // Resolve placeholders directly from the verified initial asset
     baseMatches = FIFARegulations.resolveMatchesPlaceholders(baseMatches);
 
-    // If the base asset is already fully completed (archive mode: 104 finished matches),
-    // we use it directly and refresh cache so stale storage never overrides completed matches!
+    // If base asset is fully completed (archive mode: 104 finished matches),
+    // always return it directly to guarantee 100% data fidelity!
     final int baseFinishedCount = baseMatches.where((m) => m.isPlayed).length;
     if (baseFinishedCount >= 104) {
       final jsonToCache = jsonEncode(baseMatches.map((m) => m.toJson()).toList());
       await prefs.setString(_cacheKey, jsonToCache);
       await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
       return baseMatches;
+    }
+
+    // 2. Try Cache (if not forcing refresh)
+    if (!forceRefresh) {
+      final cachedJson = prefs.getString(_cacheKey);
+      if (cachedJson != null) {
+        try {
+          final cachedMatches = _parseMatchesJson(cachedJson);
+          baseMatches = _patchMatches(baseMatches, cachedMatches);
+        } catch (_) {}
+      }
     }
 
     // 3. Fetch Remote Updates from ESPN and PATCH
