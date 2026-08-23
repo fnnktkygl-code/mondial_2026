@@ -4302,9 +4302,9 @@
     "id": "m101",
     "date": "2026-07-14T19:00:00Z",
     "t1": "fr",
-    "t2": "en",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t2": "es",
+    "t1Score": 1,
+    "t2Score": 2,
     "venue": "AT&T Stadium, Dallas",
     "group": null,
     "stage": "Semi-Final",
@@ -4312,24 +4312,24 @@
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "Lamine Yamal",
-        "assistant": "Dani Olmo",
-        "minute": 21,
-        "isOwnGoal": false
-      },
-      {
         "team": "t1",
         "scorer": "K. Mbappé",
-        "assistant": "T. Hernández",
-        "minute": 38,
+        "assistant": "A. Griezmann",
+        "minute": 25,
         "isOwnGoal": false
       },
       {
-        "team": "t1",
-        "scorer": "A. Griezmann",
-        "assistant": "O. Dembélé",
-        "minute": 72,
+        "team": "t2",
+        "scorer": "Lamine Yamal",
+        "assistant": "Pedri",
+        "minute": 41,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "Dani Olmo",
+        "assistant": "Nico Williams",
+        "minute": 73,
         "isOwnGoal": false
       }
     ],
@@ -4354,10 +4354,10 @@
   {
     "id": "m102",
     "date": "2026-07-15T19:00:00Z",
-    "t1": "es",
+    "t1": "en",
     "t2": "ar",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 1,
+    "t2Score": 2,
     "venue": "Mercedes-Benz Stadium, Atlanta",
     "group": null,
     "stage": "Semi-Final",
@@ -4365,24 +4365,24 @@
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "L. Messi",
-        "assistant": "R. De Paul",
-        "minute": 55,
+        "team": "t1",
+        "scorer": "H. Kane",
+        "assistant": "B. Saka",
+        "minute": 32,
         "isOwnGoal": false
       },
       {
-        "team": "t1",
-        "scorer": "B. Saka",
-        "assistant": "H. Kane",
-        "minute": 64,
+        "team": "t2",
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 58,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "J. Álvarez",
-        "assistant": "L. Messi",
-        "minute": 78,
+        "assistant": "E. Fernández",
+        "minute": 84,
         "isOwnGoal": false
       }
     ],
@@ -4407,8 +4407,8 @@
   {
     "id": "m103",
     "date": "2026-07-18T19:00:00Z",
-    "t1": "en",
-    "t2": "ar",
+    "t1": "fr",
+    "t2": "en",
     "t1Score": 2,
     "t2Score": 1,
     "venue": "Hard Rock Stadium, Miami",
@@ -4419,23 +4419,23 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "Dani Olmo",
-        "assistant": "Pedri",
-        "minute": 26,
+        "scorer": "O. Dembélé",
+        "assistant": "A. Tchouaméni",
+        "minute": 19,
         "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "H. Kane",
-        "assistant": "K. Trippier",
-        "minute": 53,
+        "scorer": "J. Bellingham",
+        "assistant": "P. Foden",
+        "minute": 54,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "A. Morata",
-        "assistant": "Lamine Yamal",
-        "minute": 81,
+        "scorer": "K. Mbappé",
+        "assistant": "E. Camavinga",
+        "minute": 82,
         "isOwnGoal": false
       }
     ],
@@ -4461,7 +4461,7 @@
     "id": "m104",
     "date": "2026-07-19T19:00:00Z",
     "t1": "es",
-    "t2": "fr",
+    "t2": "ar",
     "t1Score": 2,
     "t2Score": 1,
     "venue": "MetLife Stadium, New York",
@@ -4472,37 +4472,23 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "K. Mbappé",
-        "assistant": "A. Griezmann",
-        "minute": 28,
+        "scorer": "Nico Williams",
+        "assistant": "Lamine Yamal",
+        "minute": 37,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "L. Messi",
-        "assistant": "A. Di María",
-        "minute": 42,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Martínez",
-        "assistant": "E. Fernández",
-        "minute": 67,
+        "assistant": "Á. Di María",
+        "minute": 64,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "K. Mbappé",
-        "assistant": "B. Barcola",
-        "minute": 81,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "B. Barcola",
-        "assistant": "K. Mbappé",
-        "minute": 112,
+        "scorer": "M. Merino",
+        "assistant": "Dani Olmo",
+        "minute": 114,
         "isOwnGoal": false
       }
     ],
@@ -4519,9 +4505,9 @@
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
+    "wentToET": true,
     "wentToPK": false,
-    "etWinner": null,
+    "etWinner": "es",
     "pkWinner": null,
     "t1Score90": 2,
     "t2Score90": 2,
