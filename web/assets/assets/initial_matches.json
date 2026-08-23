@@ -2922,7 +2922,7 @@
     "t2": "py",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "Gillette Stadium, Boston",
+    "venue": "Gillette Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -2951,22 +2951,23 @@
       }
     ],
     "stats": {
-      "possessionT1": 63,
-      "shotsT1": 18,
+      "possessionT1": 75,
+      "shotsT1": 21,
       "shotsT2": 7,
-      "shotsOnTargetT1": 7,
+      "shotsOnTargetT1": 6,
       "shotsOnTargetT2": 3,
-      "foulsT1": 8,
-      "foulsT2": 14,
-      "yellowCardsT1": 1,
-      "yellowCardsT2": 3,
+      "foulsT1": 18,
+      "foulsT2": 12,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": true,
+    "wentToET": false,
     "wentToPK": false,
-    "etWinner": "de",
-    "pkWinner": null
+    "etWinner": null,
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.094Z"
   },
   {
     "id": "m75",
@@ -2975,7 +2976,7 @@
     "t2": "ma",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Estadio BBVA, Monterrey",
+    "venue": "Estadio BBVA",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3004,22 +3005,23 @@
       }
     ],
     "stats": {
-      "possessionT1": 55,
-      "shotsT1": 12,
+      "possessionT1": 29,
+      "shotsT1": 6,
       "shotsT2": 11,
-      "shotsOnTargetT1": 4,
+      "shotsOnTargetT1": 2,
       "shotsOnTargetT2": 5,
-      "foulsT1": 12,
-      "foulsT2": 10,
-      "yellowCardsT1": 2,
-      "yellowCardsT2": 2,
+      "foulsT1": 18,
+      "foulsT2": 15,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": true,
+    "wentToET": false,
     "wentToPK": false,
-    "etWinner": "ma",
-    "pkWinner": null
+    "etWinner": null,
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.094Z"
   },
   {
     "id": "m76",
@@ -3230,7 +3232,7 @@
     "id": "m80",
     "date": "2026-07-01T22:00:00Z",
     "t1": "en",
-    "t2": "cd",
+    "t2": "ba",
     "t1Score": 2,
     "t2Score": 1,
     "venue": "Mercedes-Benz Stadium, Atlanta",
@@ -3283,7 +3285,7 @@
     "id": "m81",
     "date": "2026-07-01T19:00:00Z",
     "t1": "be",
-    "t2": "ba",
+    "t2": "dz",
     "t1Score": 2,
     "t2Score": 0,
     "venue": "Lumen Field, Seattle",
@@ -3387,9 +3389,9 @@
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": true,
+    "wentToET": false,
     "wentToPK": false,
-    "etWinner": "us",
+    "etWinner": null,
     "pkWinner": null,
     "t1Score90": 2,
     "t2Score90": 2,
@@ -3506,7 +3508,7 @@
     "id": "m85",
     "date": "2026-07-02T19:00:00Z",
     "t1": "ch",
-    "t2": "dz",
+    "t2": "cd",
     "t1Score": 2,
     "t2Score": 0,
     "venue": "BC Place, Vancouver",
@@ -3555,7 +3557,7 @@
     "t2": "eg",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "AT&T Stadium, Dallas",
+    "venue": "AT&T Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3584,22 +3586,23 @@
       }
     ],
     "stats": {
-      "possessionT1": 47,
-      "shotsT1": 9,
+      "possessionT1": 41,
+      "shotsT1": 16,
       "shotsT2": 14,
-      "shotsOnTargetT1": 3,
-      "shotsOnTargetT2": 6,
-      "foulsT1": 15,
-      "foulsT2": 11,
-      "yellowCardsT1": 3,
-      "yellowCardsT2": 1,
+      "shotsOnTargetT1": 1,
+      "shotsOnTargetT2": 3,
+      "foulsT1": 12,
+      "foulsT2": 14,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": true,
+    "wentToET": false,
     "wentToPK": false,
-    "etWinner": "eg",
-    "pkWinner": null
+    "etWinner": null,
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.094Z"
   },
   {
     "id": "m87",
@@ -3608,7 +3611,7 @@
     "t2": "cv",
     "t1Score": 3,
     "t2Score": 2,
-    "venue": "Hard Rock Stadium, Miami",
+    "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3617,51 +3620,51 @@
       {
         "team": "t1",
         "scorer": "L. Messi",
-        "assistant": "R. De Paul",
-        "minute": 18,
-        "isOwnGoal": false
+        "minute": 29
       },
       {
-        "team": "t1",
-        "scorer": "J. Álvarez",
-        "assistant": "L. Messi",
-        "minute": 51,
-        "isOwnGoal": false
+        "team": "t2",
+        "scorer": "D. Duarte",
+        "minute": 59
       },
       {
         "team": "t1",
         "scorer": "L. Martínez",
-        "assistant": "A. Mac Allister",
-        "minute": 76,
-        "isOwnGoal": false
+        "minute": 92
+      },
+      {
+        "team": "t2",
+        "scorer": "S. Lopes Cabral",
+        "minute": 103
       }
     ],
     "stats": {
-      "possessionT1": 67,
-      "shotsT1": 19,
-      "shotsT2": 4,
-      "shotsOnTargetT1": 9,
-      "shotsOnTargetT2": 1,
-      "foulsT1": 6,
-      "foulsT2": 13,
-      "yellowCardsT1": 1,
-      "yellowCardsT2": 2,
+      "possessionT1": 63,
+      "shotsT1": 22,
+      "shotsT2": 16,
+      "shotsOnTargetT1": 10,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 13,
+      "foulsT2": 12,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.094Z"
   },
   {
     "id": "m88",
     "date": "2026-07-03T22:00:00Z",
     "t1": "co",
     "t2": "gh",
-    "t1Score": 2,
-    "t2Score": 1,
-    "venue": "Arrowhead Stadium, Kansas City",
+    "t1Score": 1,
+    "t2Score": 0,
+    "venue": "GEHA Field at Arrowhead Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3669,43 +3672,28 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "L. Díaz",
-        "assistant": "J. Rodríguez",
-        "minute": 32,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "M. Kudus",
-        "assistant": "T. Partey",
-        "minute": 59,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "J. Rodríguez",
-        "assistant": "J. Arias",
-        "minute": 82,
-        "isOwnGoal": false
+        "scorer": "J. Arias",
+        "minute": 14
       }
     ],
     "stats": {
-      "possessionT1": 56,
-      "shotsT1": 14,
-      "shotsT2": 9,
-      "shotsOnTargetT1": 6,
-      "shotsOnTargetT2": 3,
-      "foulsT1": 12,
-      "foulsT2": 15,
-      "yellowCardsT1": 2,
-      "yellowCardsT2": 3,
+      "possessionT1": 60,
+      "shotsT1": 20,
+      "shotsT2": 8,
+      "shotsOnTargetT1": 8,
+      "shotsOnTargetT2": 0,
+      "foulsT1": 14,
+      "foulsT2": 10,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.094Z"
   },
   {
     "id": "m89",
@@ -3765,9 +3753,9 @@
     "date": "2026-07-04T22:00:00Z",
     "t1": "ca",
     "t2": "ma",
-    "t1Score": 1,
-    "t2Score": 2,
-    "venue": "NRG Stadium, Houston",
+    "t1Score": 0,
+    "t2Score": 3,
+    "venue": "NRG Stadium",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -3775,43 +3763,38 @@
     "goals": [
       {
         "team": "t2",
-        "scorer": "Y. En-Nesyri",
-        "assistant": "A. Ounahi",
-        "minute": 33,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "J. David",
-        "assistant": "T. Buchanan",
-        "minute": 61,
-        "isOwnGoal": false
+        "scorer": "A. Ounahi",
+        "minute": 50
       },
       {
         "team": "t2",
-        "scorer": "B. Diaz",
-        "assistant": "A. Hakimi",
-        "minute": 85,
-        "isOwnGoal": false
+        "scorer": "A. Ounahi",
+        "minute": 82
+      },
+      {
+        "team": "t2",
+        "scorer": "S. Rahimi",
+        "minute": 90
       }
     ],
     "stats": {
-      "possessionT1": 48,
+      "possessionT1": 44,
       "shotsT1": 10,
-      "shotsT2": 12,
-      "shotsOnTargetT1": 4,
-      "shotsOnTargetT2": 5,
-      "foulsT1": 13,
-      "foulsT2": 12,
-      "yellowCardsT1": 2,
-      "yellowCardsT2": 2,
+      "shotsT2": 5,
+      "shotsOnTargetT1": 3,
+      "shotsOnTargetT2": 4,
+      "foulsT1": 24,
+      "foulsT2": 14,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.094Z"
   },
   {
     "id": "m91",
@@ -3820,7 +3803,7 @@
     "t2": "no",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "MetLife Stadium, New York",
+    "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -3849,22 +3832,23 @@
       }
     ],
     "stats": {
-      "possessionT1": 59,
-      "shotsT1": 17,
-      "shotsT2": 8,
-      "shotsOnTargetT1": 7,
-      "shotsOnTargetT2": 2,
-      "foulsT1": 10,
-      "foulsT2": 14,
-      "yellowCardsT1": 1,
-      "yellowCardsT2": 3,
+      "possessionT1": 33,
+      "shotsT1": 14,
+      "shotsT2": 9,
+      "shotsOnTargetT1": 4,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 7,
+      "foulsT2": 6,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.095Z"
   },
   {
     "id": "m92",
@@ -3873,51 +3857,41 @@
     "t2": "en",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Estadio Azteca, Mexico City",
+    "venue": "Estadio Banorte",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
     "status": "FINISHED",
     "goals": [
       {
+        "team": "t2",
+        "scorer": "J. Bellingham",
+        "minute": 38
+      },
+      {
         "team": "t1",
-        "scorer": "S. Giménez",
-        "assistant": "E. Álvarez",
-        "minute": 17,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "H. Kane",
-        "assistant": "P. Foden",
-        "minute": 44,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "B. Saka",
-        "assistant": "J. Bellingham",
-        "minute": 73,
-        "isOwnGoal": false
+        "scorer": "J. Quiñones",
+        "minute": 42
       }
     ],
     "stats": {
-      "possessionT1": 46,
-      "shotsT1": 11,
-      "shotsT2": 15,
-      "shotsOnTargetT1": 4,
-      "shotsOnTargetT2": 6,
-      "foulsT1": 16,
-      "foulsT2": 10,
-      "yellowCardsT1": 4,
-      "yellowCardsT2": 2,
+      "possessionT1": 66,
+      "shotsT1": 20,
+      "shotsT2": 6,
+      "shotsOnTargetT1": 5,
+      "shotsOnTargetT2": 5,
+      "foulsT1": 14,
+      "foulsT2": 7,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.095Z"
   },
   {
     "id": "m93",
@@ -3926,7 +3900,7 @@
     "t2": "pt",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "AT&T Stadium, Dallas",
+    "venue": "AT&T Stadium",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -3934,43 +3908,28 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "Lamine Yamal",
-        "assistant": "Rodri",
-        "minute": 29,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "R. Leão",
-        "assistant": "B. Fernandes",
-        "minute": 58,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "Nico Williams",
-        "assistant": "Dani Olmo",
-        "minute": 83,
-        "isOwnGoal": false
+        "scorer": "M. Merino",
+        "minute": 90
       }
     ],
     "stats": {
-      "possessionT1": 57,
-      "shotsT1": 16,
-      "shotsT2": 12,
+      "possessionT1": 55,
+      "shotsT1": 15,
+      "shotsT2": 10,
       "shotsOnTargetT1": 6,
-      "shotsOnTargetT2": 4,
-      "foulsT1": 11,
-      "foulsT2": 13,
-      "yellowCardsT1": 2,
-      "yellowCardsT2": 3,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 13,
+      "foulsT2": 9,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.095Z"
   },
   {
     "id": "m94",
@@ -3978,8 +3937,8 @@
     "t1": "be",
     "t2": "us",
     "t1Score": 1,
-    "t2Score": 4,
-    "venue": "Lumen Field, Seattle",
+    "t2Score": 2,
+    "venue": "Lumen Field",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -4022,30 +3981,31 @@
       }
     ],
     "stats": {
-      "possessionT1": 58,
+      "possessionT1": 44,
       "shotsT1": 15,
-      "shotsT2": 11,
-      "shotsOnTargetT1": 5,
-      "shotsOnTargetT2": 5,
-      "foulsT1": 10,
-      "foulsT2": 12,
-      "yellowCardsT1": 2,
-      "yellowCardsT2": 2,
+      "shotsT2": 7,
+      "shotsOnTargetT1": 7,
+      "shotsOnTargetT2": 2,
+      "foulsT1": 9,
+      "foulsT2": 11,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.095Z"
   },
   {
     "id": "m95",
     "date": "2026-07-07T19:00:00Z",
-    "t1": "eg",
-    "t2": "ch",
-    "t1Score": 0,
-    "t2Score": 1,
+    "t1": "ch",
+    "t2": "eg",
+    "t1Score": 2,
+    "t2Score": 0,
     "venue": "Mercedes-Benz Stadium, Atlanta",
     "group": null,
     "stage": "Round of 16",
@@ -4296,51 +4256,53 @@
     "t1": "ch",
     "t2": "ar",
     "t1Score": 1,
-    "t2Score": 3,
-    "venue": "Arrowhead Stadium, Kansas City",
+    "t2Score": 2,
+    "venue": "GEHA Field at Arrowhead Stadium",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "L. Messi",
-        "assistant": "A. Mac Allister",
-        "minute": 38,
-        "isOwnGoal": false
+        "team": "t1",
+        "scorer": "D. Ndoye",
+        "minute": 67
       },
       {
         "team": "t2",
         "scorer": "J. Álvarez",
-        "assistant": "L. Messi",
-        "minute": 71,
-        "isOwnGoal": false
+        "minute": 112
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Martínez",
+        "minute": 120
       }
     ],
     "stats": {
-      "possessionT1": 42,
-      "shotsT1": 7,
-      "shotsT2": 16,
-      "shotsOnTargetT1": 2,
+      "possessionT1": 41,
+      "shotsT1": 11,
+      "shotsT2": 22,
+      "shotsOnTargetT1": 5,
       "shotsOnTargetT2": 7,
-      "foulsT1": 13,
-      "foulsT2": 9,
-      "yellowCardsT1": 3,
-      "yellowCardsT2": 1,
+      "foulsT1": 18,
+      "foulsT2": 14,
+      "yellowCardsT1": 0,
+      "yellowCardsT2": 0,
       "redCardsT1": 0,
       "redCardsT2": 0
     },
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "lastUpdated": "2026-08-23T10:47:33.095Z"
   },
   {
     "id": "m101",
     "date": "2026-07-14T19:00:00Z",
     "t1": "fr",
-    "t2": "es",
+    "t2": "en",
     "t1Score": 2,
     "t2Score": 1,
     "venue": "AT&T Stadium, Dallas",
@@ -4392,10 +4354,10 @@
   {
     "id": "m102",
     "date": "2026-07-15T19:00:00Z",
-    "t1": "en",
+    "t1": "es",
     "t2": "ar",
-    "t1Score": 1,
-    "t2Score": 2,
+    "t1Score": 2,
+    "t2Score": 1,
     "venue": "Mercedes-Benz Stadium, Atlanta",
     "group": null,
     "stage": "Semi-Final",
@@ -4445,8 +4407,8 @@
   {
     "id": "m103",
     "date": "2026-07-18T19:00:00Z",
-    "t1": "es",
-    "t2": "en",
+    "t1": "en",
+    "t2": "ar",
     "t1Score": 2,
     "t2Score": 1,
     "venue": "Hard Rock Stadium, Miami",
@@ -4498,10 +4460,10 @@
   {
     "id": "m104",
     "date": "2026-07-19T19:00:00Z",
-    "t1": "fr",
-    "t2": "ar",
-    "t1Score": 3,
-    "t2Score": 2,
+    "t1": "es",
+    "t2": "fr",
+    "t1Score": 2,
+    "t2Score": 1,
     "venue": "MetLife Stadium, New York",
     "group": null,
     "stage": "Final",
@@ -4557,9 +4519,9 @@
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": true,
+    "wentToET": false,
     "wentToPK": false,
-    "etWinner": "fr",
+    "etWinner": null,
     "pkWinner": null,
     "t1Score90": 2,
     "t2Score90": 2,

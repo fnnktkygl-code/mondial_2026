@@ -301,39 +301,39 @@ class _BracketViewWidgetState extends State<BracketViewWidget>
     // R32: m73-m88, R16: m89-m96, QF: m97-m100, SF: m101-m102, Final: m104
     // Left half: first 8 R32 → first 4 R16 → first 2 QF → SF1
     // Right half: last 8 R32 → last 4 R16 → last 2 QF → SF2
-    final leftR32 = r32Matches.where((m) => ['m74','m77','m73','m75','m81','m82','m83','m84'].contains(m.id)).toList()
+    final leftR32 = r32Matches.where((m) => ['m74','m77','m73','m75','m76','m78','m79','m80'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m74','m77','m73','m75','m81','m82','m83','m84'];
+        final order = ['m74','m77','m73','m75','m76','m78','m79','m80'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final rightR32 = r32Matches.where((m) => ['m76','m78','m79','m80','m85','m86','m87','m88'].contains(m.id)).toList()
+    final rightR32 = r32Matches.where((m) => ['m83','m84','m81','m82','m85','m86','m87','m88'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m76','m78','m79','m80','m85','m86','m87','m88'];
+        final order = ['m83','m84','m81','m82','m85','m86','m87','m88'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final leftR16 = r16Matches.where((m) => ['m89','m90','m93','m94'].contains(m.id)).toList()
+    final leftR16 = r16Matches.where((m) => ['m89','m90','m91','m92'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m89','m90','m93','m94'];
+        final order = ['m89','m90','m91','m92'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final rightR16 = r16Matches.where((m) => ['m91','m92','m95','m96'].contains(m.id)).toList()
+    final rightR16 = r16Matches.where((m) => ['m93','m94','m95','m96'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m91','m92','m95','m96'];
+        final order = ['m93','m94','m95','m96'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final leftQF = qfMatches.where((m) => ['m97','m98'].contains(m.id)).toList()
+    final leftQF = qfMatches.where((m) => ['m97','m99'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m97','m98'];
+        final order = ['m97','m99'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       
-    final rightQF = qfMatches.where((m) => ['m99','m100'].contains(m.id)).toList()
+    final rightQF = qfMatches.where((m) => ['m98','m100'].contains(m.id)).toList()
       ..sort((a, b) {
-        final order = ['m99','m100'];
+        final order = ['m98','m100'];
         return order.indexOf(a.id).compareTo(order.indexOf(b.id));
       });
       

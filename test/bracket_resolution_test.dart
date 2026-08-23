@@ -55,12 +55,11 @@ void main() {
       }
     });
 
-    test('Final match m104 crowns the World Champion with celebrations', () {
+    test('Final match m104 crowns Spain as World Champion', () {
       final finalMatch = matches.firstWhere((m) => m.id == 'm104');
       expect(finalMatch.stage, 'Final');
       expect(finalMatch.isPlayed, true);
-      expect(finalMatch.getWinner(), 'fr');
-      expect(finalMatch.wentToET, true);
+      expect(finalMatch.getWinner(), 'es');
     });
   });
 }
