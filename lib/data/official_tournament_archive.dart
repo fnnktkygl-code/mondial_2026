@@ -2891,7 +2891,7 @@ class OfficialTournamentArchive {
     "t2": "ca",
     "t1Score": 0,
     "t2Score": 1,
-    "venue": "SoFi Stadium, Los Angeles",
+    "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -2927,7 +2927,7 @@ class OfficialTournamentArchive {
     "id": "m74",
     "date": "2026-06-29T19:00:00Z",
     "t1": "de",
-    "t2": "cd",
+    "t2": "py",
     "t1Score": 2,
     "t2Score": 1,
     "venue": "Gillette Stadium",
@@ -2984,7 +2984,7 @@ class OfficialTournamentArchive {
     "t2": "ma",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Estadio BBVA",
+    "venue": "SoFi Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -2993,23 +2993,7 @@ class OfficialTournamentArchive {
       {
         "team": "t1",
         "scorer": "C. Gakpo",
-        "assistant": "X. Simons",
-        "minute": 19,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "Y. En-Nesyri",
-        "assistant": "A. Hakimi",
-        "minute": 64,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "H. Ziyech",
-        "assistant": "A. Ounahi",
-        "minute": 115,
-        "isOwnGoal": false
+        "minute": 72
       }
     ],
     "stats": {
@@ -3029,7 +3013,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m76",
@@ -3038,7 +3022,7 @@ class OfficialTournamentArchive {
     "t2": "jp",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "NRG Stadium, Houston",
+    "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3091,7 +3075,7 @@ class OfficialTournamentArchive {
     "t2": "se",
     "t1Score": 3,
     "t2Score": 0,
-    "venue": "MetLife Stadium, New York",
+    "venue": "AT&T Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3144,7 +3128,7 @@ class OfficialTournamentArchive {
     "t2": "no",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "AT&T Stadium, Dallas",
+    "venue": "Arrowhead Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3197,7 +3181,7 @@ class OfficialTournamentArchive {
     "t2": "gh",
     "t1Score": 2,
     "t2Score": 0,
-    "venue": "Estadio Azteca, Mexico City",
+    "venue": "Estadio Azteca",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3243,7 +3227,7 @@ class OfficialTournamentArchive {
     "t2": "ec",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "Mercedes-Benz Stadium, Atlanta",
+    "venue": "Lumen Field",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3296,7 +3280,7 @@ class OfficialTournamentArchive {
     "t2": "dz",
     "t1Score": 2,
     "t2Score": 0,
-    "venue": "Lumen Field, Seattle",
+    "venue": "Mercedes-Benz Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3342,7 +3326,7 @@ class OfficialTournamentArchive {
     "t2": "sn",
     "t1Score": 3,
     "t2Score": 2,
-    "venue": "Levi's Stadium, San Francisco",
+    "venue": "Lincoln Financial Field",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3413,7 +3397,7 @@ class OfficialTournamentArchive {
     "t2": "at",
     "t1Score": 3,
     "t2Score": 0,
-    "venue": "SoFi Stadium, Los Angeles",
+    "venue": "NRG Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3466,7 +3450,7 @@ class OfficialTournamentArchive {
     "t2": "hr",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "BMO Field, Toronto",
+    "venue": "BC Place",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3516,10 +3500,10 @@ class OfficialTournamentArchive {
     "id": "m85",
     "date": "2026-07-02T19:00:00Z",
     "t1": "ch",
-    "t2": "py",
+    "t2": "cd",
     "t1Score": 2,
     "t2Score": 0,
-    "venue": "BC Place, Vancouver",
+    "venue": "Levi's Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3565,34 +3549,12 @@ class OfficialTournamentArchive {
     "t2": "eg",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "AT&T Stadium",
+    "venue": "Lincoln Financial Field",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Duke",
-        "assistant": "C. Goodwin",
-        "minute": 28,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "Mostafa Mohamed",
-        "assistant": "M. Salah",
-        "minute": 83,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "M. Salah",
-        "assistant": "O. Marmoush",
-        "minute": 112,
-        "isOwnGoal": false
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 41,
       "shotsT1": 16,
@@ -3610,7 +3572,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m87",
@@ -3619,7 +3581,7 @@ class OfficialTournamentArchive {
     "t2": "cv",
     "t1Score": 3,
     "t2Score": 2,
-    "venue": "Hard Rock Stadium",
+    "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3663,7 +3625,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m88",
@@ -3672,7 +3634,7 @@ class OfficialTournamentArchive {
     "t2": "ba",
     "t1Score": 1,
     "t2Score": 0,
-    "venue": "GEHA Field at Arrowhead Stadium",
+    "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
@@ -3710,7 +3672,7 @@ class OfficialTournamentArchive {
     "t2": "fr",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Lincoln Financial Field, Philadelphia",
+    "venue": "Lincoln Financial Field",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -3818,25 +3780,9 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t1",
-        "scorer": "Vinícius Jr.",
-        "assistant": "Rodrygo",
-        "minute": 32,
-        "isOwnGoal": false
-      },
-      {
         "team": "t2",
         "scorer": "E. Haaland",
-        "assistant": "M. Ødegaard",
-        "minute": 67,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "Rodrygo",
-        "assistant": "Bruno Guimarães",
-        "minute": 88,
-        "isOwnGoal": false
+        "minute": 90
       }
     ],
     "stats": {
@@ -3856,7 +3802,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m92",
@@ -3865,7 +3811,7 @@ class OfficialTournamentArchive {
     "t2": "en",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Estadio Banorte",
+    "venue": "Estadio Azteca",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -3899,7 +3845,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m93",
@@ -3937,7 +3883,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m94",
@@ -3953,39 +3899,19 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "C. Pulisic",
-        "assistant": "T. Weah",
-        "minute": 14,
-        "isOwnGoal": false
+        "team": "t1",
+        "scorer": "C. De Ketelaere",
+        "minute": 9
       },
       {
         "team": "t1",
-        "scorer": "K. De Bruyne",
-        "assistant": "L. Trossard",
-        "minute": 38,
-        "isOwnGoal": false
+        "scorer": "H. Vanaken",
+        "minute": 57
       },
       {
-        "team": "t2",
-        "scorer": "F. Balogun",
-        "assistant": "G. Reyna",
-        "minute": 52,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "T. Weah",
-        "assistant": "C. Pulisic",
-        "minute": 74,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "C. Pulisic",
-        "assistant": "W. McKennie",
-        "minute": 89,
-        "isOwnGoal": false
+        "team": "t1",
+        "scorer": "R. Lukaku",
+        "minute": 90
       }
     ],
     "stats": {
@@ -4005,7 +3931,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m95",
@@ -4014,7 +3940,7 @@ class OfficialTournamentArchive {
     "t2": "eg",
     "t1Score": 2,
     "t2Score": 0,
-    "venue": "Mercedes-Benz Stadium, Atlanta",
+    "venue": "Mercedes-Benz Stadium",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -4053,7 +3979,7 @@ class OfficialTournamentArchive {
     "t2": "co",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "BC Place, Vancouver",
+    "venue": "BC Place",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
@@ -4106,7 +4032,7 @@ class OfficialTournamentArchive {
     "t2": "ma",
     "t1Score": 2,
     "t2Score": 0,
-    "venue": "Gillette Stadium, Boston",
+    "venue": "Gillette Stadium",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
@@ -4152,7 +4078,7 @@ class OfficialTournamentArchive {
     "t2": "us",
     "t1Score": 3,
     "t2Score": 1,
-    "venue": "SoFi Stadium, Los Angeles",
+    "venue": "SoFi Stadium",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
@@ -4212,7 +4138,7 @@ class OfficialTournamentArchive {
     "t2": "en",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Hard Rock Stadium, Miami",
+    "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
@@ -4265,7 +4191,7 @@ class OfficialTournamentArchive {
     "t2": "ar",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "GEHA Field at Arrowhead Stadium",
+    "venue": "Arrowhead Stadium",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
@@ -4304,7 +4230,7 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z"
   },
   {
     "id": "m101",
@@ -4313,7 +4239,7 @@ class OfficialTournamentArchive {
     "t2": "es",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "AT&T Stadium, Dallas",
+    "venue": "AT&T Stadium",
     "group": null,
     "stage": "Semi-Final",
     "isKnockout": true,
@@ -4366,7 +4292,7 @@ class OfficialTournamentArchive {
     "t2": "ar",
     "t1Score": 1,
     "t2Score": 2,
-    "venue": "Mercedes-Benz Stadium, Atlanta",
+    "venue": "Mercedes-Benz Stadium",
     "group": null,
     "stage": "Semi-Final",
     "isKnockout": true,
@@ -4419,7 +4345,7 @@ class OfficialTournamentArchive {
     "t2": "en",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "Hard Rock Stadium, Miami",
+    "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Play-off for third place",
     "isKnockout": true,
@@ -4472,7 +4398,7 @@ class OfficialTournamentArchive {
     "t2": "ar",
     "t1Score": 2,
     "t2Score": 1,
-    "venue": "MetLife Stadium, New York",
+    "venue": "MetLife Stadium",
     "group": null,
     "stage": "Final",
     "isKnockout": true,
