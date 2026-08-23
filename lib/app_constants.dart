@@ -157,7 +157,7 @@ String getTeamLogoPath(String code) {
 const String kLanguageFlagUrl = 'https://flagcdn.com/w40/';
 
 // ─── SharedPreferences keys ──────────────────────────────────────────────────
-const String kMatchesCacheKey = 'wc2026_matches_archive_v4';
+const String kMatchesCacheKey = 'wc2026_matches_archive_spain_final_v5';
 const String kPredictionsKey = 'wc2026_user_predictions';
 const String kGroupsKey = 'wc2026_user_challenge_groups';
 const String kUserIdKey = 'wc2026_anon_user_id';
