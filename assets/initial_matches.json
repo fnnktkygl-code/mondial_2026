@@ -2920,36 +2920,14 @@
     "date": "2026-06-29T19:00:00Z",
     "t1": "de",
     "t2": "py",
-    "t1Score": 2,
+    "t1Score": 1,
     "t2Score": 1,
     "venue": "Gillette Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "K. Havertz",
-        "assistant": "J. Musiala",
-        "minute": 34,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "M. Almirón",
-        "assistant": "J. Enciso",
-        "minute": 71,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "N. Füllkrug",
-        "assistant": "L. Sané",
-        "minute": 108,
-        "isOwnGoal": false
-      }
-    ],
+    "status": "IN_PLAY",
+    "goals": [],
     "stats": {
       "possessionT1": 75,
       "shotsT1": 21,
@@ -2967,7 +2945,7 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:34:37.021Z"
   },
   {
     "id": "m75",
@@ -2975,33 +2953,17 @@
     "t1": "nl",
     "t2": "ma",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 1,
     "venue": "Estadio BBVA",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "FINISHED",
+    "status": "IN_PLAY",
     "goals": [
       {
         "team": "t1",
         "scorer": "C. Gakpo",
-        "assistant": "X. Simons",
-        "minute": 19,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "Y. En-Nesyri",
-        "assistant": "A. Hakimi",
-        "minute": 64,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "H. Ziyech",
-        "assistant": "A. Ounahi",
-        "minute": 115,
-        "isOwnGoal": false
+        "minute": 72
       }
     ],
     "stats": {
@@ -3021,7 +2983,7 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:34:37.021Z"
   },
   {
     "id": "m76",
@@ -3556,35 +3518,13 @@
     "t1": "au",
     "t2": "eg",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 1,
     "venue": "AT&T Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Duke",
-        "assistant": "C. Goodwin",
-        "minute": 28,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "Mostafa Mohamed",
-        "assistant": "M. Salah",
-        "minute": 83,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "M. Salah",
-        "assistant": "O. Marmoush",
-        "minute": 112,
-        "isOwnGoal": false
-      }
-    ],
+    "status": "IN_PLAY",
+    "goals": [],
     "stats": {
       "possessionT1": 41,
       "shotsT1": 16,
@@ -3602,7 +3542,7 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:34:37.021Z"
   },
   {
     "id": "m87",
@@ -3615,7 +3555,7 @@
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
-    "status": "FINISHED",
+    "status": "IN_PLAY",
     "goals": [
       {
         "team": "t1",
@@ -3655,7 +3595,7 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T11:34:37.021Z"
   },
   {
     "id": "m88",
@@ -3801,8 +3741,8 @@
     "date": "2026-07-05T19:00:00Z",
     "t1": "br",
     "t2": "no",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 1,
+    "t2Score": 2,
     "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 16",
@@ -3810,25 +3750,9 @@
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t1",
-        "scorer": "Vinícius Jr.",
-        "assistant": "Rodrygo",
-        "minute": 32,
-        "isOwnGoal": false
-      },
-      {
         "team": "t2",
         "scorer": "E. Haaland",
-        "assistant": "M. Ødegaard",
-        "minute": 67,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "Rodrygo",
-        "assistant": "Bruno Guimarães",
-        "minute": 88,
-        "isOwnGoal": false
+        "minute": 90
       }
     ],
     "stats": {
@@ -3848,15 +3772,15 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:34:37.022Z"
   },
   {
     "id": "m92",
     "date": "2026-07-05T22:00:00Z",
     "t1": "mx",
     "t2": "en",
-    "t1Score": 1,
-    "t2Score": 2,
+    "t1Score": 2,
+    "t2Score": 3,
     "venue": "Estadio Banorte",
     "group": null,
     "stage": "Round of 16",
@@ -3891,15 +3815,15 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:34:37.022Z"
   },
   {
     "id": "m93",
     "date": "2026-07-06T19:00:00Z",
     "t1": "es",
     "t2": "pt",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 1,
+    "t2Score": 0,
     "venue": "AT&T Stadium",
     "group": null,
     "stage": "Round of 16",
@@ -3929,15 +3853,15 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:34:37.022Z"
   },
   {
     "id": "m94",
     "date": "2026-07-06T22:00:00Z",
     "t1": "be",
     "t2": "us",
-    "t1Score": 1,
-    "t2Score": 2,
+    "t1Score": 4,
+    "t2Score": 1,
     "venue": "Lumen Field",
     "group": null,
     "stage": "Round of 16",
@@ -3945,39 +3869,19 @@
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "C. Pulisic",
-        "assistant": "T. Weah",
-        "minute": 14,
-        "isOwnGoal": false
+        "team": "t1",
+        "scorer": "C. De Ketelaere",
+        "minute": 9
       },
       {
         "team": "t1",
-        "scorer": "K. De Bruyne",
-        "assistant": "L. Trossard",
-        "minute": 38,
-        "isOwnGoal": false
+        "scorer": "H. Vanaken",
+        "minute": 57
       },
       {
-        "team": "t2",
-        "scorer": "F. Balogun",
-        "assistant": "G. Reyna",
-        "minute": 52,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "T. Weah",
-        "assistant": "C. Pulisic",
-        "minute": 74,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "C. Pulisic",
-        "assistant": "W. McKennie",
-        "minute": 89,
-        "isOwnGoal": false
+        "team": "t1",
+        "scorer": "R. Lukaku",
+        "minute": 90
       }
     ],
     "stats": {
@@ -3997,7 +3901,7 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:34:37.022Z"
   },
   {
     "id": "m95",
@@ -4256,12 +4160,12 @@
     "t1": "ch",
     "t2": "ar",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 3,
     "venue": "GEHA Field at Arrowhead Stadium",
     "group": null,
     "stage": "Quarter-Final",
     "isKnockout": true,
-    "status": "FINISHED",
+    "status": "IN_PLAY",
     "goals": [
       {
         "team": "t1",
@@ -4296,7 +4200,7 @@
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.095Z"
+    "lastUpdated": "2026-08-23T11:34:37.022Z"
   },
   {
     "id": "m101",
