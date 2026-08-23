@@ -23,10 +23,20 @@
 
 ### 🖥️ Expérience Desktop & Tablette
 
-| 🏆 Tableau Éliminatoire & Champion du Monde | 📅 Calendrier & Résultats des 104 Matchs |
-| :---: | :---: |
-| <img src="docs/screenshots/desktop_bracket.png" alt="Tableau complet du tournoi" width="100%"/> | <img src="docs/screenshots/desktop_calendar.png" alt="Calendrier des 104 matchs" width="100%"/> |
-| *Arbre à élimination directe 32 équipes avec scores réels et connecteurs* | *Filtres par phase, groupe, date et stade avec scores en direct* |
+<table>
+  <tr>
+    <th width="50%" align="center">🏆 Tableau Éliminatoire & Champion du Monde</th>
+    <th width="50%" align="center">📅 Calendrier & Résultats des 104 Matchs</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/desktop_bracket.png" alt="Tableau complet du tournoi" width="100%"/></td>
+    <td align="center"><img src="docs/screenshots/desktop_calendar.png" alt="Calendrier des 104 matchs" width="100%"/></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Arbre à élimination directe 32 équipes avec scores réels et connecteurs</em></td>
+    <td align="center"><em>Filtres par phase, groupe, date et stade avec scores en direct</em></td>
+  </tr>
+</table>
 
 ### 📱 Expérience Mobile
 

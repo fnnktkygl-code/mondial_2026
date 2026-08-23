@@ -23,10 +23,20 @@
 
 ### 🖥️ Experiencia en Escritorio y Tableta
 
-| 🏆 Cuadro Eliminatorio y Campeón | 📅 Calendario de 104 Partidos |
-| :---: | :---: |
-| <img src="docs/screenshots/desktop_bracket.png" alt="Cuadro de eliminatorias" width="100%"/> | <img src="docs/screenshots/desktop_calendar.png" alt="Calendario de partidos" width="100%"/> |
-| *Árbol de 32 equipos con resultados reales y conectores* | *Filtros por fase, grupo, fecha y estadio con marcadores en vivo* |
+<table>
+  <tr>
+    <th width="50%" align="center">🏆 Cuadro Eliminatorio y Campeón Mundial</th>
+    <th width="50%" align="center">📅 Calendario y Resultados de 104 Partidos</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/desktop_bracket.png" alt="Cuadro completo del torneo" width="100%"/></td>
+    <td align="center"><img src="docs/screenshots/desktop_calendar.png" alt="Calendario de 104 partidos" width="100%"/></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Árbol eliminatorio de 32 equipos con resultados reales y conectores</em></td>
+    <td align="center"><em>Filtros por fase, grupo, fecha y estadio con marcadores en directo</em></td>
+  </tr>
+</table>
 
 ### 📱 Experiencia Móvil
 

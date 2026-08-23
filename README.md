@@ -23,10 +23,20 @@
 
 ### 🖥️ Desktop & Tablet Experience
 
-| 🏆 Dynamic Knockout Bracket & Champion | 📅 104-Match Schedule & Live Results |
-| :---: | :---: |
-| <img src="docs/screenshots/desktop_bracket.png" alt="Complete Tournament Bracket" width="100%"/> | <img src="docs/screenshots/desktop_calendar.png" alt="104 Matches Calendar" width="100%"/> |
-| *Full 32-team knockout tree with real scores and champions* | *Filter by stage, group, date, and venue with live scoreboards* |
+<table>
+  <tr>
+    <th width="50%" align="center">🏆 Dynamic Knockout Bracket & Champion</th>
+    <th width="50%" align="center">📅 104-Match Schedule & Live Results</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/desktop_bracket.png" alt="Complete Tournament Bracket" width="100%"/></td>
+    <td align="center"><img src="docs/screenshots/desktop_calendar.png" alt="104 Matches Calendar" width="100%"/></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Full 32-team knockout tree with real scores and champions</em></td>
+    <td align="center"><em>Filter by stage, group, date, and venue with live scoreboards</em></td>
+  </tr>
+</table>
 
 ### 📱 Mobile Experience
 
