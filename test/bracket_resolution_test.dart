@@ -106,11 +106,11 @@ void main() {
       expect({finalMatch.t1.toLowerCase(), finalMatch.t2.toLowerCase()}, equals({'es', 'ar'}));
     });
 
-    test('3rd place match m103 features France vs England with France winning', () {
+    test('3rd place match m103 features France vs England with England winning (Bronze medal)', () {
       final thirdMatch = matches.firstWhere((m) => m.id == 'm103');
       expect(thirdMatch.stage, 'Play-off for third place');
       expect(thirdMatch.isPlayed, true);
-      expect(thirdMatch.getWinner(), 'fr');
+      expect(thirdMatch.getWinner(), 'en');
       expect({thirdMatch.t1.toLowerCase(), thirdMatch.t2.toLowerCase()}, equals({'fr', 'en'}));
     });
   });

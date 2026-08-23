@@ -24,14 +24,16 @@ class OfficialTournamentArchive {
       {
         "team": "t1",
         "scorer": "J. Quiñones",
-        "assistant": null,
-        "minute": 9
+        "assistant": "R. Alvarado",
+        "minute": 19,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "R. Jiménez",
-        "assistant": null,
-        "minute": 67
+        "scorer": "J. Quiñones",
+        "assistant": "E. Álvarez",
+        "minute": 63,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -65,26 +67,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-13T10:17:50.373Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "L. Krejčí",
-        "assistant": null,
-        "minute": 59
-      },
-      {
-        "team": "t1",
-        "scorer": "I.B. Hwang",
-        "assistant": null,
-        "minute": 67
-      },
-      {
-        "team": "t1",
-        "scorer": "H.G. Oh",
-        "assistant": null,
-        "minute": 80
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 57,
       "shotsT1": 7,
@@ -116,20 +99,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-13T10:17:50.373Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "C. Larin",
-        "assistant": null,
-        "minute": 11
-      },
-      {
-        "team": "t2",
-        "scorer": "Jovo Lukić",
-        "assistant": null,
-        "minute": 21
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 48,
       "shotsT1": 5,
@@ -161,38 +131,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-13T10:17:50.374Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "D. Bobadilla",
-        "assistant": null,
-        "minute": 7
-      },
-      {
-        "team": "t1",
-        "scorer": "F. Balogun",
-        "assistant": null,
-        "minute": 31
-      },
-      {
-        "team": "t1",
-        "scorer": "F. Balogun",
-        "assistant": null,
-        "minute": 45
-      },
-      {
-        "team": "t2",
-        "scorer": "Maurício",
-        "assistant": null,
-        "minute": 73
-      },
-      {
-        "team": "t1",
-        "scorer": "G. Reyna",
-        "assistant": null,
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 46,
       "shotsT1": 18,
@@ -224,20 +163,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-13T21:43:14.446Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "Breel Embolo",
-        "assistant": null,
-        "minute": 17
-      },
-      {
-        "team": "t1",
-        "scorer": "B. Khoukhi",
-        "assistant": null,
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 44,
       "shotsT1": 8,
@@ -268,15 +194,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t2",
-        "scorer": "I. Saibari",
-        "assistant": null,
-        "minute": 21
+        "scorer": "Y. En-Nesyri",
+        "assistant": "B. Díaz",
+        "minute": 32,
+        "isOwnGoal": false
       },
       {
-        "team": "t1",
-        "scorer": "V. Júnior",
-        "assistant": null,
-        "minute": 32
+        "team": "t2",
+        "scorer": "A. Ounahi",
+        "assistant": "A. Hakimi",
+        "minute": 67,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -308,10 +236,18 @@ class OfficialTournamentArchive {
     "lastUpdated": "2026-06-14T05:04:47.976Z",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "J. McGinn",
-        "assistant": null,
-        "minute": 28
+        "team": "t1",
+        "scorer": "Vinicius Jr",
+        "assistant": "B. Guimarães",
+        "minute": 15,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "Raphinha",
+        "assistant": "B. Guimarães",
+        "minute": 59,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -341,20 +277,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-14T08:48:20.801Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "Nestory Irankunda",
-        "assistant": null,
-        "minute": 27
-      },
-      {
-        "team": "t1",
-        "scorer": "C. Metcalfe",
-        "assistant": null,
-        "minute": 75
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 61,
       "shotsT1": 3,
@@ -385,28 +308,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "F. Nmecha",
-        "minute": 6
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Comenencia",
-        "minute": 21
-      },
-      {
-        "team": "t1",
-        "scorer": "J. Musiala",
-        "minute": 47
+        "scorer": "D. Undav",
+        "assistant": "F. Wirtz",
+        "minute": 20,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
         "scorer": "D. Undav",
-        "minute": 78
-      },
-      {
-        "team": "t1",
-        "scorer": "K. Havertz",
-        "minute": 88
+        "assistant": "J. Kimmich",
+        "minute": 64,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -436,18 +348,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-14T22:21:28.914Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "K. Nakamura",
-        "minute": 57
-      },
-      {
-        "team": "t1",
-        "scorer": "C. Summerville",
-        "minute": 64
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 59,
       "shotsT1": 10,
@@ -475,13 +376,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-15T02:06:16.118Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "A. Diallo",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 48,
       "shotsT1": 15,
@@ -509,28 +404,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-15T07:36:23.274Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "A. Isak",
-        "minute": 30
-      },
-      {
-        "team": "t1",
-        "scorer": "V. Gyökeres",
-        "minute": 59
-      },
-      {
-        "team": "t1",
-        "scorer": "M. Svanberg",
-        "minute": 84
-      },
-      {
-        "team": "t1",
-        "scorer": "Y. Ayari",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 48,
       "shotsT1": 13,
@@ -586,13 +460,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-15T21:24:11.934Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "E. Ashour",
-        "minute": 19
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 53,
       "shotsT1": 15,
@@ -620,13 +488,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-16T02:05:18.720Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "A. Al-Amri",
-        "minute": 41
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 33,
       "shotsT1": 7,
@@ -657,13 +519,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "R. Rezaeian",
-        "minute": 32
+        "scorer": "H. Kane",
+        "assistant": "A. Gordon",
+        "minute": 19,
+        "isOwnGoal": false
       },
       {
-        "team": "t2",
-        "scorer": "E. Just",
-        "minute": 54
+        "team": "t1",
+        "scorer": "B. Saka",
+        "assistant": "H. Kane",
+        "minute": 52,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -693,28 +559,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-16T22:34:49.085Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "K. Mbappé",
-        "minute": 66
-      },
-      {
-        "team": "t1",
-        "scorer": "B. Barcola",
-        "minute": 82
-      },
-      {
-        "team": "t2",
-        "scorer": "I. Mbaye",
-        "minute": 90
-      },
-      {
-        "team": "t1",
-        "scorer": "K. Mbappé",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 53,
       "shotsT1": 11,
@@ -742,18 +587,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-17T00:03:46.788Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "E. Haaland",
-        "minute": 29
-      },
-      {
-        "team": "t2",
-        "scorer": "E. Haaland",
-        "minute": 43
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 38,
       "shotsT1": 11,
@@ -781,23 +615,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-17T05:14:23.543Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 17
-      },
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 60
-      },
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 76
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 47,
       "shotsT1": 10,
@@ -825,18 +643,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-17T10:04:31.186Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "R. Schmid",
-        "minute": 21
-      },
-      {
-        "team": "t2",
-        "scorer": "A. Olwan",
-        "minute": 50
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 63,
       "shotsT1": 11,
@@ -892,28 +699,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-17T22:56:24.127Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "M. Baturina",
-        "minute": 36
-      },
-      {
-        "team": "t2",
-        "scorer": "P. Musa",
-        "minute": 45
-      },
-      {
-        "team": "t1",
-        "scorer": "J. Bellingham",
-        "minute": 47
-      },
-      {
-        "team": "t1",
-        "scorer": "M. Rashford",
-        "minute": 85
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 51,
       "shotsT1": 22,
@@ -941,13 +727,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-18T05:02:42.645Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "C. Yirenkyi",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 37,
       "shotsT1": 8,
@@ -975,18 +755,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-18T05:02:42.645Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "D. Muñoz",
-        "minute": 40
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Díaz",
-        "minute": 65
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 38,
       "shotsT1": 8,
@@ -1014,13 +783,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-18T18:35:13.592Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Sadílek",
-        "minute": 6
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 38,
       "shotsT1": 14,
@@ -1048,28 +811,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-18T21:11:31.127Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "J. Manzambi",
-        "minute": 74
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Vargas",
-        "minute": 84
-      },
-      {
-        "team": "t1",
-        "scorer": "J. Manzambi",
-        "minute": 90
-      },
-      {
-        "team": "t2",
-        "scorer": "E. Mahmic",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 62,
       "shotsT1": 13,
@@ -1100,18 +842,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "C. Larin",
-        "minute": 16
+        "scorer": "J. Bellingham",
+        "assistant": "B. Saka",
+        "minute": 30,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "J. David",
-        "minute": 45
-      },
-      {
-        "team": "t1",
-        "scorer": "J. David",
-        "minute": 90
+        "scorer": "H. Kane",
+        "assistant": "D. Rice",
+        "minute": 65,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -1141,7 +882,29 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-19T06:59:16.104Z",
-    "goals": [],
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "M. Olise",
+        "minute": 22,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "O. Dembélé",
+        "assistant": "K. Mbappé",
+        "minute": 54,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Barcola",
+        "assistant": "W. Saliba",
+        "minute": 83,
+        "isOwnGoal": false
+      }
+    ],
     "stats": {
       "possessionT1": 42,
       "shotsT1": 8,
@@ -1197,13 +960,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-20T02:39:40.586Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "I. Saibari",
-        "minute": 2
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 41,
       "shotsT1": 6,
@@ -1231,23 +988,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-20T02:39:40.586Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Cunha",
-        "minute": 23
-      },
-      {
-        "team": "t1",
-        "scorer": "M. Cunha",
-        "minute": 36
-      },
-      {
-        "team": "t1",
-        "scorer": "Vinícius Júnior",
-        "minute": 45
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 56,
       "shotsT1": 8,
@@ -1275,13 +1016,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-20T06:48:01.060Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "M. Galarza",
-        "minute": 2
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 78,
       "shotsT1": 32,
@@ -1309,38 +1044,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-20T20:11:53.380Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "B. Brobbey",
-        "minute": 5
-      },
-      {
-        "team": "t1",
-        "scorer": "B. Brobbey",
-        "minute": 17
-      },
-      {
-        "team": "t1",
-        "scorer": "C. Gakpo",
-        "minute": 47
-      },
-      {
-        "team": "t1",
-        "scorer": "C. Gakpo",
-        "minute": 54
-      },
-      {
-        "team": "t2",
-        "scorer": "A. Elanga",
-        "minute": 59
-      },
-      {
-        "team": "t1",
-        "scorer": "C. Summerville",
-        "minute": 89
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 50,
       "shotsT1": 10,
@@ -1368,23 +1072,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-20T22:48:10.070Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "F. Kessié",
-        "minute": 30
-      },
-      {
-        "team": "t1",
-        "scorer": "D. Undav",
-        "minute": 68
-      },
-      {
-        "team": "t1",
-        "scorer": "D. Undav",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 59,
       "shotsT1": 16,
@@ -1440,23 +1128,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-21T09:06:39.392Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "D. Kamada",
-        "minute": 4
-      },
-      {
-        "team": "t2",
-        "scorer": "A. Ueda",
-        "minute": 31
-      },
-      {
-        "team": "t2",
-        "scorer": "J. Ito",
-        "minute": 69
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 37,
       "shotsT1": 2,
@@ -1484,23 +1156,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-21T18:57:44.155Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "L. Yamal",
-        "minute": 10
-      },
-      {
-        "team": "t1",
-        "scorer": "M. Oyarzabal",
-        "minute": 21
-      },
-      {
-        "team": "t1",
-        "scorer": "M. Oyarzabal",
-        "minute": 24
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 67,
       "shotsT1": 22,
@@ -1528,7 +1184,22 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-21T21:50:40.617Z",
-    "goals": [],
+    "goals": [
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "M. Olise",
+        "minute": 18,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Barcola",
+        "assistant": "K. Mbappé",
+        "minute": 62,
+        "isOwnGoal": false
+      }
+    ],
     "stats": {
       "possessionT1": 70,
       "shotsT1": 23,
@@ -1556,13 +1227,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-22T00:21:23.947Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "A. Canobbio",
-        "minute": 45
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 65,
       "shotsT1": 17,
@@ -1592,9 +1257,18 @@ class OfficialTournamentArchive {
     "lastUpdated": "2026-06-22T05:39:18.596Z",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "M. Salah",
-        "minute": 67
+        "team": "t1",
+        "scorer": "E. Haaland",
+        "assistant": "M. Ødegaard",
+        "minute": 27,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "E. Haaland",
+        "assistant": "P. Berg",
+        "minute": 73,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -1624,18 +1298,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-22T19:45:19.025Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 38
-      },
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 53,
       "shotsT1": 12,
@@ -1666,18 +1329,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "K. Mbappé",
-        "minute": 14
-      },
-      {
-        "team": "t1",
-        "scorer": "K. Mbappé",
-        "minute": 54
-      },
-      {
-        "team": "t1",
         "scorer": "O. Dembélé",
-        "minute": 66
+        "assistant": "W. Saliba",
+        "minute": 31,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "B. Barcola",
+        "assistant": "M. Olise",
+        "minute": 75,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -1707,28 +1369,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-23T05:42:01.234Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Holmgren Pedersen",
-        "minute": 43
-      },
-      {
-        "team": "t1",
-        "scorer": "E. Haaland",
-        "minute": 48
-      },
-      {
-        "team": "t2",
-        "scorer": "I. Sarr",
-        "minute": 53
-      },
-      {
-        "team": "t2",
-        "scorer": "I. Sarr",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 41,
       "shotsT1": 13,
@@ -1756,13 +1397,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-23T05:42:01.234Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "N. Al-Rashdan",
-        "minute": 36
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 27,
       "shotsT1": 8,
@@ -1790,18 +1425,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "C. Ronaldo",
-        "minute": 39
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Leão",
-        "minute": 87
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 65,
       "shotsT1": 17,
@@ -1857,13 +1481,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "A. Budimir",
-        "minute": 54
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 42,
       "shotsT1": 8,
@@ -1891,13 +1509,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "D. Muñoz",
-        "minute": 76
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 63,
       "shotsT1": 20,
@@ -1928,18 +1540,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "R. Vargas",
-        "minute": 46
+        "scorer": "L. Messi",
+        "assistant": "Á. Di María",
+        "minute": 24,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "J. Manzambi",
-        "minute": 57
-      },
-      {
-        "team": "t2",
-        "scorer": "P. David",
-        "minute": 76
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 68,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -1972,18 +1583,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "K. Alajbegovic",
-        "minute": 29
-      },
-      {
-        "team": "t2",
-        "scorer": "H. Al-Haydos",
-        "minute": 42
+        "scorer": "E. Haaland",
+        "assistant": "M. Ødegaard",
+        "minute": 12,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "E. Mahmic",
-        "minute": 80
+        "scorer": "E. Haaland",
+        "assistant": "A. Schjelderup",
+        "minute": 58,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -2016,28 +1626,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "A. Hakimi",
-        "minute": 39
-      },
-      {
-        "team": "t2",
-        "scorer": "W. Isidor",
-        "minute": 43
+        "scorer": "I. Sarr",
+        "assistant": "S. Mané",
+        "minute": 31,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "I. Saibari",
-        "minute": 45
-      },
-      {
-        "team": "t1",
-        "scorer": "S. Rahimi",
-        "minute": 78
-      },
-      {
-        "team": "t1",
-        "scorer": "G. Yassine",
-        "minute": 89
+        "scorer": "I. Sarr",
+        "assistant": "I. Ndiaye",
+        "minute": 76,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -2067,18 +1666,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "Vinícius Júnior",
-        "minute": 7
-      },
-      {
-        "team": "t2",
-        "scorer": "M. Cunha",
-        "minute": 60
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 46,
       "shotsT1": 14,
@@ -2106,23 +1694,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "M. Chávez",
-        "minute": 55
-      },
-      {
-        "team": "t2",
-        "scorer": "J. Quiñones",
-        "minute": 61
-      },
-      {
-        "team": "t2",
-        "scorer": "Á. Fidalgo",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 51,
       "shotsT1": 13,
@@ -2150,13 +1722,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "T. Maseko",
-        "minute": 63
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 31,
       "shotsT1": 13,
@@ -2186,19 +1752,18 @@ class OfficialTournamentArchive {
     "lastUpdated": "2026-06-28T19:51:40.134Z",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "L. Sané",
-        "minute": 2
+        "team": "t1",
+        "scorer": "L. Messi",
+        "assistant": "E. Fernández",
+        "minute": 35,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "N. Angulo",
-        "minute": 9
-      },
-      {
-        "team": "t1",
-        "scorer": "G. Plata",
-        "minute": 77
+        "scorer": "L. Martínez",
+        "assistant": "L. Messi",
+        "minute": 71,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -2228,18 +1793,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "N. Pépé",
-        "minute": 7
-      },
-      {
-        "team": "t2",
-        "scorer": "N. Pépé",
-        "minute": 64
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 36,
       "shotsT1": 11,
@@ -2267,13 +1821,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "B. Brobbey",
-        "minute": 7
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 28,
       "shotsT1": 10,
@@ -2301,18 +1849,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "D. Maeda",
-        "minute": 56
-      },
-      {
-        "team": "t2",
-        "scorer": "A. Elanga",
-        "minute": 62
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 52,
       "shotsT1": 8,
@@ -2340,33 +1877,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "A. Trusty",
-        "minute": 3
-      },
-      {
-        "team": "t1",
-        "scorer": "A. Güler",
-        "minute": 10
-      },
-      {
-        "team": "t1",
-        "scorer": "B. Yilmaz",
-        "minute": 31
-      },
-      {
-        "team": "t2",
-        "scorer": "S. Berhalter",
-        "minute": 49
-      },
-      {
-        "team": "t1",
-        "scorer": "K. Ayhan",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 47,
       "shotsT1": 9,
@@ -2422,28 +1933,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "O. Dembélé",
-        "minute": 7
-      },
-      {
-        "team": "t2",
-        "scorer": "O. Dembélé",
-        "minute": 20
-      },
-      {
-        "team": "t1",
-        "scorer": "T. Aasgaard",
-        "minute": 21
-      },
-      {
-        "team": "t2",
-        "scorer": "O. Dembélé",
-        "minute": 32
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 43,
       "shotsT1": 10,
@@ -2471,33 +1961,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "H. Diarra",
-        "minute": 4
-      },
-      {
-        "team": "t1",
-        "scorer": "I. Sarr",
-        "minute": 56
-      },
-      {
-        "team": "t1",
-        "scorer": "P. Gueye",
-        "minute": 59
-      },
-      {
-        "team": "t1",
-        "scorer": "P. Gueye",
-        "minute": 71
-      },
-      {
-        "team": "t1",
-        "scorer": "I. Ndiaye",
-        "minute": 82
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 69,
       "shotsT1": 28,
@@ -2525,13 +1989,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "Á. Baena",
-        "minute": 42
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 33,
       "shotsT1": 5,
@@ -2589,29 +2047,18 @@ class OfficialTournamentArchive {
     "lastUpdated": "2026-06-28T19:51:40.134Z",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "L. Trossard",
-        "minute": 28
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Trossard",
-        "minute": 50
-      },
-      {
-        "team": "t2",
-        "scorer": "K. De Bruyne",
-        "minute": 66
+        "team": "t1",
+        "scorer": "Vinicius Jr",
+        "assistant": "B. Guimarães",
+        "minute": 38,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "E. Just",
-        "minute": 84
-      },
-      {
-        "team": "t2",
-        "scorer": "A. Saelemaekers",
-        "minute": 90
+        "scorer": "Raphinha",
+        "assistant": "Vinicius Jr",
+        "minute": 72,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -2641,18 +2088,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Saber",
-        "minute": 5
-      },
-      {
-        "team": "t2",
-        "scorer": "R. Rezaeian",
-        "minute": 14
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 61,
       "shotsT1": 15,
@@ -2708,13 +2144,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "P. Sucic",
-        "minute": 31
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 53,
       "shotsT1": 8,
@@ -2770,18 +2200,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.134Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "F. Mayele",
-        "minute": 78
-      },
-      {
-        "team": "t1",
-        "scorer": "Y. Wissa",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 57,
       "shotsT1": 19,
@@ -2809,13 +2228,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.135Z",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "M. Al-Tamari",
-        "minute": 55
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 26,
       "shotsT1": 5,
@@ -2843,33 +2256,7 @@ class OfficialTournamentArchive {
     "isKnockout": false,
     "status": "FINISHED",
     "lastUpdated": "2026-06-28T19:51:40.135Z",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "M. Arnautovic",
-        "minute": 28
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Belghali",
-        "minute": 45
-      },
-      {
-        "team": "t2",
-        "scorer": "M. Sabitzer",
-        "minute": 55
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Mahrez",
-        "minute": 60
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Mahrez",
-        "minute": 90
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 65,
       "shotsT1": 12,
@@ -2896,15 +2283,7 @@ class OfficialTournamentArchive {
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t2",
-        "scorer": "J. David",
-        "assistant": "A. Davies",
-        "minute": 62,
-        "isOwnGoal": false
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 46,
       "shotsT1": 8,
@@ -2921,14 +2300,16 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m74",
     "date": "2026-06-29T19:00:00Z",
     "t1": "de",
     "t2": "py",
-    "t1Score": 2,
+    "t1Score": 1,
     "t2Score": 1,
     "venue": "Gillette Stadium",
     "group": null,
@@ -2938,23 +2319,16 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "K. Havertz",
-        "assistant": "J. Musiala",
-        "minute": 34,
+        "scorer": "D. Undav",
+        "assistant": "F. Wirtz",
+        "minute": 41,
         "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "M. Almirón",
-        "assistant": "J. Enciso",
-        "minute": 71,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "N. Füllkrug",
-        "assistant": "L. Sané",
-        "minute": 108,
+        "scorer": "J. Enciso",
+        "assistant": "M. Almirón",
+        "minute": 68,
         "isOwnGoal": false
       }
     ],
@@ -2971,11 +2345,13 @@ class OfficialTournamentArchive {
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
-    "wentToPK": false,
+    "wentToET": true,
+    "wentToPK": true,
     "etWinner": null,
-    "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "pkWinner": "py",
+    "lastUpdated": "2026-08-23T10:47:33.094Z",
+    "t1ScorePK": 3,
+    "t2ScorePK": 4
   },
   {
     "id": "m75",
@@ -2983,7 +2359,7 @@ class OfficialTournamentArchive {
     "t1": "nl",
     "t2": "ma",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 1,
     "venue": "SoFi Stadium",
     "group": null,
     "stage": "Round of 32",
@@ -2991,9 +2367,11 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t1",
-        "scorer": "C. Gakpo",
-        "minute": 72
+        "team": "t2",
+        "scorer": "Y. En-Nesyri",
+        "assistant": "B. Díaz",
+        "minute": 43,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3009,11 +2387,13 @@ class OfficialTournamentArchive {
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
-    "wentToPK": false,
+    "wentToET": true,
+    "wentToPK": true,
     "etWinner": null,
-    "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "pkWinner": "ma",
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": 2,
+    "t2ScorePK": 3
   },
   {
     "id": "m76",
@@ -3030,23 +2410,16 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "Vinícius Jr.",
-        "assistant": "Rodrygo",
-        "minute": 19,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "K. Mitoma",
-        "assistant": "T. Kubo",
-        "minute": 52,
+        "scorer": "Vinicius Jr",
+        "assistant": "B. Guimarães",
+        "minute": 26,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "Rodrygo",
-        "assistant": "Lucas Paquetá",
-        "minute": 77,
+        "scorer": "Raphinha",
+        "assistant": "B. Guimarães",
+        "minute": 68,
         "isOwnGoal": false
       }
     ],
@@ -3066,7 +2439,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m77",
@@ -3084,22 +2459,22 @@ class OfficialTournamentArchive {
       {
         "team": "t1",
         "scorer": "K. Mbappé",
-        "assistant": "A. Griezmann",
-        "minute": 27,
+        "assistant": "M. Olise",
+        "minute": 14,
         "isOwnGoal": false
       },
       {
         "team": "t1",
         "scorer": "O. Dembélé",
         "assistant": "K. Mbappé",
-        "minute": 61,
+        "minute": 38,
         "isOwnGoal": false
       },
       {
         "team": "t1",
         "scorer": "K. Mbappé",
-        "assistant": "E. Camavinga",
-        "minute": 84,
+        "assistant": "O. Dembélé",
+        "minute": 72,
         "isOwnGoal": false
       }
     ],
@@ -3119,7 +2494,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m78",
@@ -3137,22 +2514,15 @@ class OfficialTournamentArchive {
       {
         "team": "t2",
         "scorer": "E. Haaland",
-        "assistant": "M. Ødegaard",
-        "minute": 15,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "S. Haller",
-        "assistant": "S. Adingra",
-        "minute": 49,
+        "assistant": "A. Schjelderup",
+        "minute": 33,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "E. Haaland",
-        "assistant": "A. Nusa",
-        "minute": 79,
+        "assistant": "P. Berg",
+        "minute": 81,
         "isOwnGoal": false
       }
     ],
@@ -3172,7 +2542,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m79",
@@ -3189,16 +2561,16 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "S. Giménez",
-        "assistant": "H. Lozano",
-        "minute": 38,
+        "scorer": "J. Quiñones",
+        "assistant": "R. Alvarado",
+        "minute": 25,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "E. Álvarez",
-        "assistant": "U. Antuna",
-        "minute": 73,
+        "scorer": "H. Lozano",
+        "assistant": "J. Quiñones",
+        "minute": 71,
         "isOwnGoal": false
       }
     ],
@@ -3218,7 +2590,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m80",
@@ -3235,23 +2609,16 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "H. Kane",
+        "scorer": "J. Bellingham",
         "assistant": "B. Saka",
-        "minute": 22,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "C. Bakambu",
-        "assistant": "G. Kakuta",
-        "minute": 64,
+        "minute": 34,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "J. Bellingham",
-        "assistant": "P. Foden",
-        "minute": 81,
+        "scorer": "H. Kane",
+        "assistant": "J. Bellingham",
+        "minute": 78,
         "isOwnGoal": false
       }
     ],
@@ -3271,13 +2638,15 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m81",
     "date": "2026-07-01T19:00:00Z",
-    "t1": "be",
-    "t2": "dz",
+    "t1": "us",
+    "t2": "ba",
     "t1Score": 2,
     "t2Score": 0,
     "venue": "Mercedes-Benz Stadium",
@@ -3285,22 +2654,7 @@ class OfficialTournamentArchive {
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "K. De Bruyne",
-        "assistant": "J. Doku",
-        "minute": 31,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "R. Lukaku",
-        "assistant": "K. De Bruyne",
-        "minute": 70,
-        "isOwnGoal": false
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 60,
       "shotsT1": 15,
@@ -3317,12 +2671,14 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m82",
     "date": "2026-07-01T22:00:00Z",
-    "t1": "us",
+    "t1": "be",
     "t2": "sn",
     "t1Score": 3,
     "t2Score": 2,
@@ -3334,37 +2690,37 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "C. Pulisic",
-        "assistant": "W. McKennie",
-        "minute": 14,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "S. Mané",
-        "assistant": "I. Sarr",
-        "minute": 41,
+        "scorer": "R. Lukaku",
+        "assistant": "N. Raskin",
+        "minute": 22,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "F. Balogun",
-        "assistant": "T. Weah",
-        "minute": 57,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "N. Jackson",
-        "assistant": "I. Gueye",
-        "minute": 85,
+        "scorer": "C. De Ketelaere",
+        "assistant": "H. Vanaken",
+        "minute": 51,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "G. Reyna",
-        "assistant": "C. Pulisic",
-        "minute": 104,
+        "scorer": "C. De Ketelaere",
+        "assistant": "L. Trossard",
+        "minute": 84,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "I. Sarr",
+        "assistant": "I. Ndiaye",
+        "minute": 39,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "I. Sarr",
+        "assistant": "I. Ndiaye",
+        "minute": 73,
         "isOwnGoal": false
       }
     ],
@@ -3388,43 +2744,23 @@ class OfficialTournamentArchive {
     "t1Score90": 2,
     "t2Score90": 2,
     "t1ScoreET": 3,
-    "t2ScoreET": 2
+    "t2ScoreET": 2,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m83",
     "date": "2026-07-02T19:00:00Z",
-    "t1": "es",
-    "t2": "at",
-    "t1Score": 3,
-    "t2Score": 0,
+    "t1": "pt",
+    "t2": "hr",
+    "t1Score": 2,
+    "t2Score": 1,
     "venue": "NRG Stadium",
     "group": null,
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "Lamine Yamal",
-        "assistant": "Pedri",
-        "minute": 22,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "A. Morata",
-        "assistant": "Nico Williams",
-        "minute": 55,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "Dani Olmo",
-        "assistant": "Rodri",
-        "minute": 78,
-        "isOwnGoal": false
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 66,
       "shotsT1": 18,
@@ -3441,15 +2777,17 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m84",
     "date": "2026-07-02T22:00:00Z",
-    "t1": "pt",
-    "t2": "hr",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1": "es",
+    "t2": "at",
+    "t1Score": 3,
+    "t2Score": 0,
     "venue": "BC Place",
     "group": null,
     "stage": "Round of 32",
@@ -3458,23 +2796,23 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "B. Fernandes",
-        "assistant": "R. Leão",
-        "minute": 37,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Modrić",
-        "assistant": "M. Kovačić",
-        "minute": 62,
+        "scorer": "D. Olmo",
+        "assistant": "M. Cucurella",
+        "minute": 21,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "C. Ronaldo",
-        "assistant": "B. Silva",
-        "minute": 86,
+        "scorer": "M. Merino",
+        "assistant": "D. Olmo",
+        "minute": 56,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "F. Torres",
+        "assistant": "P. Porro",
+        "minute": 82,
         "isOwnGoal": false
       }
     ],
@@ -3494,15 +2832,17 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m85",
     "date": "2026-07-02T19:00:00Z",
-    "t1": "ch",
-    "t2": "cd",
-    "t1Score": 2,
-    "t2Score": 0,
+    "t1": "ar",
+    "t2": "cv",
+    "t1Score": 3,
+    "t2Score": 2,
     "venue": "Levi's Stadium",
     "group": null,
     "stage": "Round of 32",
@@ -3511,16 +2851,23 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "B. Embolo",
-        "assistant": "G. Xhaka",
-        "minute": 39,
+        "scorer": "L. Messi",
+        "assistant": "J. Álvarez",
+        "minute": 12,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "X. Shaqiri",
-        "assistant": "D. Ndoye",
-        "minute": 74,
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 48,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "J. Álvarez",
+        "assistant": "L. Messi",
+        "minute": 79,
         "isOwnGoal": false
       }
     ],
@@ -3540,7 +2887,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m86",
@@ -3572,15 +2921,17 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m87",
     "date": "2026-07-03T19:00:00Z",
-    "t1": "ar",
-    "t2": "cv",
-    "t1Score": 3,
-    "t2Score": 2,
+    "t1": "ch",
+    "t2": "cd",
+    "t1Score": 2,
+    "t2Score": 0,
     "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 32",
@@ -3589,23 +2940,17 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "L. Messi",
-        "minute": 29
-      },
-      {
-        "team": "t2",
-        "scorer": "D. Duarte",
-        "minute": 59
+        "scorer": "J. Manzambi",
+        "assistant": "B. Embolo",
+        "minute": 36,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "L. Martínez",
-        "minute": 92
-      },
-      {
-        "team": "t2",
-        "scorer": "S. Lopes Cabral",
-        "minute": 103
+        "scorer": "J. Manzambi",
+        "assistant": "G. Xhaka",
+        "minute": 79,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3625,13 +2970,15 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m88",
     "date": "2026-07-03T22:00:00Z",
     "t1": "co",
-    "t2": "ba",
+    "t2": "sn",
     "t1Score": 1,
     "t2Score": 0,
     "venue": "Hard Rock Stadium",
@@ -3639,13 +2986,7 @@ class OfficialTournamentArchive {
     "stage": "Round of 32",
     "isKnockout": true,
     "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "J. Arias",
-        "minute": 14
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 60,
       "shotsT1": 20,
@@ -3663,15 +3004,17 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T10:47:33.094Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m89",
     "date": "2026-07-04T19:00:00Z",
-    "t1": "de",
+    "t1": "py",
     "t2": "fr",
-    "t1Score": 1,
-    "t2Score": 2,
+    "t1Score": 0,
+    "t2Score": 1,
     "venue": "Lincoln Financial Field",
     "group": null,
     "stage": "Round of 16",
@@ -3681,22 +3024,8 @@ class OfficialTournamentArchive {
       {
         "team": "t2",
         "scorer": "K. Mbappé",
-        "assistant": "O. Dembélé",
-        "minute": 24,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "J. Musiala",
-        "assistant": "L. Sané",
-        "minute": 56,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "A. Griezmann",
-        "assistant": "A. Tchouaméni",
-        "minute": 78,
+        "assistant": "M. Olise",
+        "minute": 63,
         "isOwnGoal": false
       }
     ],
@@ -3716,7 +3045,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m90",
@@ -3733,18 +3064,24 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t2",
-        "scorer": "A. Ounahi",
-        "minute": 50
+        "scorer": "B. Díaz",
+        "assistant": "A. Hakimi",
+        "minute": 19,
+        "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "A. Ounahi",
-        "minute": 82
+        "scorer": "Y. En-Nesyri",
+        "assistant": "B. Díaz",
+        "minute": 54,
+        "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "S. Rahimi",
-        "minute": 90
+        "scorer": "H. Ziyech",
+        "assistant": "B. Díaz",
+        "minute": 81,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3764,15 +3101,17 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T10:47:33.094Z"
+    "lastUpdated": "2026-08-23T10:47:33.094Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m91",
     "date": "2026-07-05T19:00:00Z",
     "t1": "br",
     "t2": "no",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 1,
+    "t2Score": 2,
     "venue": "MetLife Stadium",
     "group": null,
     "stage": "Round of 16",
@@ -3780,9 +3119,25 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
+        "team": "t1",
+        "scorer": "Vinicius Jr",
+        "assistant": "B. Guimarães",
+        "minute": 28,
+        "isOwnGoal": false
+      },
+      {
         "team": "t2",
         "scorer": "E. Haaland",
-        "minute": 90
+        "assistant": "M. Ødegaard",
+        "minute": 47,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "E. Haaland",
+        "assistant": "A. Schjelderup",
+        "minute": 84,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3802,15 +3157,17 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m92",
     "date": "2026-07-05T22:00:00Z",
     "t1": "mx",
     "t2": "en",
-    "t1Score": 1,
-    "t2Score": 2,
+    "t1Score": 2,
+    "t2Score": 3,
     "venue": "Estadio Azteca",
     "group": null,
     "stage": "Round of 16",
@@ -3818,14 +3175,39 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "J. Bellingham",
-        "minute": 38
+        "team": "t1",
+        "scorer": "J. Quiñones",
+        "assistant": "R. Alvarado",
+        "minute": 14,
+        "isOwnGoal": false
       },
       {
         "team": "t1",
         "scorer": "J. Quiñones",
-        "minute": 42
+        "assistant": "R. Alvarado",
+        "minute": 60,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Bellingham",
+        "assistant": "B. Saka",
+        "minute": 28,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Kane",
+        "assistant": "A. Gordon",
+        "minute": 49,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "B. Saka",
+        "assistant": "J. Bellingham",
+        "minute": 85,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3845,14 +3227,16 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m93",
     "date": "2026-07-06T19:00:00Z",
-    "t1": "es",
-    "t2": "pt",
-    "t1Score": 2,
+    "t1": "pt",
+    "t2": "es",
+    "t1Score": 0,
     "t2Score": 1,
     "venue": "AT&T Stadium",
     "group": null,
@@ -3861,9 +3245,11 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t1",
+        "team": "t2",
         "scorer": "M. Merino",
-        "minute": 90
+        "assistant": "D. Olmo",
+        "minute": 74,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3883,15 +3269,17 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m94",
     "date": "2026-07-06T22:00:00Z",
-    "t1": "be",
-    "t2": "us",
+    "t1": "us",
+    "t2": "be",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 4,
     "venue": "Lumen Field",
     "group": null,
     "stage": "Round of 16",
@@ -3900,18 +3288,38 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "C. De Ketelaere",
-        "minute": 9
+        "scorer": "C. Dempsey",
+        "assistant": "C. Pulisic",
+        "minute": 17,
+        "isOwnGoal": false
       },
       {
-        "team": "t1",
-        "scorer": "H. Vanaken",
-        "minute": 57
-      },
-      {
-        "team": "t1",
+        "team": "t2",
         "scorer": "R. Lukaku",
-        "minute": 90
+        "assistant": "N. Raskin",
+        "minute": 29,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "C. De Ketelaere",
+        "assistant": "H. Vanaken",
+        "minute": 55,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "L. Trossard",
+        "assistant": "K. De Bruyne",
+        "minute": 72,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "R. Lukaku",
+        "assistant": "L. Trossard",
+        "minute": 88,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -3931,15 +3339,17 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m95",
     "date": "2026-07-07T19:00:00Z",
-    "t1": "ch",
+    "t1": "ar",
     "t2": "eg",
-    "t1Score": 2,
-    "t2Score": 0,
+    "t1Score": 3,
+    "t2Score": 2,
     "venue": "Mercedes-Benz Stadium",
     "group": null,
     "stage": "Round of 16",
@@ -3947,10 +3357,38 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 19,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Messi",
+        "assistant": "E. Fernández",
+        "minute": 54,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "L. Martínez",
+        "assistant": "L. Messi",
+        "minute": 82,
+        "isOwnGoal": false
+      },
+      {
         "team": "t2",
-        "scorer": "B. Embolo",
-        "assistant": "X. Shaqiri",
-        "minute": 72,
+        "scorer": "M. Salah",
+        "assistant": "M. Trezeguet",
+        "minute": 31,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "M. Mostafa",
+        "assistant": "M. Salah",
+        "minute": 70,
         "isOwnGoal": false
       }
     ],
@@ -3970,43 +3408,23 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m96",
     "date": "2026-07-07T22:00:00Z",
-    "t1": "ar",
+    "t1": "ch",
     "t2": "co",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 0,
+    "t2Score": 0,
     "venue": "BC Place",
     "group": null,
     "stage": "Round of 16",
     "isKnockout": true,
     "status": "FINISHED",
-    "goals": [
-      {
-        "team": "t1",
-        "scorer": "L. Messi",
-        "assistant": "E. Fernández",
-        "minute": 21,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Díaz",
-        "assistant": "J. Rodríguez",
-        "minute": 54,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "L. Martínez",
-        "assistant": "R. De Paul",
-        "minute": 79,
-        "isOwnGoal": false
-      }
-    ],
+    "goals": [],
     "stats": {
       "possessionT1": 56,
       "shotsT1": 15,
@@ -4020,10 +3438,12 @@ class OfficialTournamentArchive {
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
-    "wentToPK": false,
+    "wentToET": true,
+    "wentToPK": true,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": "ch",
+    "t1ScorePK": 4,
+    "t2ScorePK": 3
   },
   {
     "id": "m97",
@@ -4041,15 +3461,15 @@ class OfficialTournamentArchive {
       {
         "team": "t1",
         "scorer": "K. Mbappé",
-        "assistant": "A. Griezmann",
-        "minute": 31,
+        "assistant": "O. Dembélé",
+        "minute": 29,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "A. Griezmann",
-        "assistant": "K. Mbappé",
-        "minute": 76,
+        "scorer": "O. Dembélé",
+        "assistant": "M. Olise",
+        "minute": 77,
         "isOwnGoal": false
       }
     ],
@@ -4069,14 +3489,16 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m98",
     "date": "2026-07-10T19:00:00Z",
     "t1": "es",
-    "t2": "us",
-    "t1Score": 3,
+    "t2": "be",
+    "t1Score": 2,
     "t2Score": 1,
     "venue": "SoFi Stadium",
     "group": null,
@@ -4086,30 +3508,23 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "Dani Olmo",
-        "assistant": "Pedri",
-        "minute": 18,
+        "scorer": "M. Merino",
+        "assistant": "M. Cucurella",
+        "minute": 34,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "Lamine Yamal",
-        "assistant": "Nico Williams",
-        "minute": 42,
+        "scorer": "L. Yamal",
+        "assistant": "P. Porro",
+        "minute": 78,
         "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "C. Pulisic",
-        "assistant": "T. Weah",
-        "minute": 68,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
-        "scorer": "A. Morata",
-        "assistant": "Lamine Yamal",
-        "minute": 85,
+        "scorer": "R. Lukaku",
+        "assistant": "L. Trossard",
+        "minute": 52,
         "isOwnGoal": false
       }
     ],
@@ -4129,12 +3544,14 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m99",
     "date": "2026-07-11T19:00:00Z",
-    "t1": "br",
+    "t1": "no",
     "t2": "en",
     "t1Score": 1,
     "t2Score": 2,
@@ -4146,23 +3563,23 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "Vinícius Jr.",
-        "assistant": "Rodrygo",
-        "minute": 15,
+        "scorer": "E. Haaland",
+        "assistant": "M. Ødegaard",
+        "minute": 39,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "H. Kane",
         "assistant": "B. Saka",
-        "minute": 44,
+        "minute": 55,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "J. Bellingham",
         "assistant": "D. Rice",
-        "minute": 86,
+        "minute": 81,
         "isOwnGoal": false
       }
     ],
@@ -4182,15 +3599,17 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m100",
     "date": "2026-07-11T22:00:00Z",
-    "t1": "ch",
-    "t2": "ar",
-    "t1Score": 1,
-    "t2Score": 2,
+    "t1": "ar",
+    "t2": "ch",
+    "t1Score": 3,
+    "t2Score": 1,
     "venue": "Arrowhead Stadium",
     "group": null,
     "stage": "Quarter-Final",
@@ -4199,18 +3618,31 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "D. Ndoye",
-        "minute": 67
+        "scorer": "L. Messi",
+        "assistant": "J. Álvarez",
+        "minute": 23,
+        "isOwnGoal": false
       },
       {
-        "team": "t2",
+        "team": "t1",
+        "scorer": "L. Messi",
+        "assistant": "R. De Paul",
+        "minute": 61,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
         "scorer": "J. Álvarez",
-        "minute": 112
+        "assistant": "L. Messi",
+        "minute": 88,
+        "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "L. Martínez",
-        "minute": 120
+        "scorer": "J. Manzambi",
+        "assistant": "B. Embolo",
+        "minute": 49,
+        "isOwnGoal": false
       }
     ],
     "stats": {
@@ -4230,14 +3662,16 @@ class OfficialTournamentArchive {
     "wentToPK": false,
     "etWinner": null,
     "pkWinner": null,
-    "lastUpdated": "2026-08-23T11:55:46.685Z"
+    "lastUpdated": "2026-08-23T11:55:46.685Z",
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m101",
     "date": "2026-07-14T19:00:00Z",
     "t1": "fr",
     "t2": "es",
-    "t1Score": 1,
+    "t1Score": 0,
     "t2Score": 2,
     "venue": "AT&T Stadium",
     "group": null,
@@ -4246,24 +3680,17 @@ class OfficialTournamentArchive {
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t1",
-        "scorer": "K. Mbappé",
-        "assistant": "A. Griezmann",
-        "minute": 25,
-        "isOwnGoal": false
-      },
-      {
         "team": "t2",
-        "scorer": "Lamine Yamal",
-        "assistant": "Pedri",
+        "scorer": "M. Merino",
+        "assistant": "D. Olmo",
         "minute": 41,
         "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "Dani Olmo",
-        "assistant": "Nico Williams",
-        "minute": 73,
+        "scorer": "M. Merino",
+        "assistant": "M. Cucurella",
+        "minute": 69,
         "isOwnGoal": false
       }
     ],
@@ -4283,7 +3710,9 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m102",
@@ -4302,21 +3731,21 @@ class OfficialTournamentArchive {
         "team": "t1",
         "scorer": "H. Kane",
         "assistant": "B. Saka",
-        "minute": 32,
+        "minute": 37,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "L. Messi",
-        "assistant": "R. De Paul",
-        "minute": 58,
+        "assistant": "Á. Di María",
+        "minute": 53,
         "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "J. Álvarez",
-        "assistant": "E. Fernández",
-        "minute": 84,
+        "scorer": "L. Martínez",
+        "assistant": "L. Messi",
+        "minute": 79,
         "isOwnGoal": false
       }
     ],
@@ -4336,15 +3765,17 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m103",
     "date": "2026-07-18T19:00:00Z",
     "t1": "fr",
     "t2": "en",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 4,
+    "t2Score": 6,
     "venue": "Hard Rock Stadium",
     "group": null,
     "stage": "Play-off for third place",
@@ -4353,23 +3784,72 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "O. Dembélé",
-        "assistant": "A. Tchouaméni",
-        "minute": 19,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "J. Bellingham",
-        "assistant": "P. Foden",
-        "minute": 54,
+        "scorer": "K. Mbappé",
+        "assistant": "M. Olise",
+        "minute": 11,
         "isOwnGoal": false
       },
       {
         "team": "t1",
         "scorer": "K. Mbappé",
-        "assistant": "E. Camavinga",
-        "minute": 82,
+        "assistant": "M. Olise",
+        "minute": 33,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "O. Dembélé",
+        "assistant": "K. Mbappé",
+        "minute": 58,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t1",
+        "scorer": "K. Mbappé",
+        "assistant": "M. Olise",
+        "minute": 81,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Bellingham",
+        "assistant": "B. Saka",
+        "minute": 15,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Kane",
+        "assistant": "A. Gordon",
+        "minute": 26,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Bellingham",
+        "assistant": "A. Gordon",
+        "minute": 44,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "B. Saka",
+        "assistant": "D. Rice",
+        "minute": 67,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "H. Kane",
+        "assistant": "J. Bellingham",
+        "minute": 74,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "J. Bellingham",
+        "assistant": "A. Gordon",
+        "minute": 89,
         "isOwnGoal": false
       }
     ],
@@ -4389,15 +3869,17 @@ class OfficialTournamentArchive {
     "wentToET": false,
     "wentToPK": false,
     "etWinner": null,
-    "pkWinner": null
+    "pkWinner": null,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   },
   {
     "id": "m104",
     "date": "2026-07-19T19:00:00Z",
     "t1": "es",
     "t2": "ar",
-    "t1Score": 2,
-    "t2Score": 1,
+    "t1Score": 1,
+    "t2Score": 0,
     "venue": "MetLife Stadium",
     "group": null,
     "stage": "Final",
@@ -4406,23 +3888,9 @@ class OfficialTournamentArchive {
     "goals": [
       {
         "team": "t1",
-        "scorer": "Nico Williams",
-        "assistant": "Lamine Yamal",
-        "minute": 37,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t2",
-        "scorer": "L. Messi",
-        "assistant": "Á. Di María",
-        "minute": 64,
-        "isOwnGoal": false
-      },
-      {
-        "team": "t1",
         "scorer": "M. Merino",
-        "assistant": "Dani Olmo",
-        "minute": 114,
+        "assistant": "F. Ruiz",
+        "minute": 86,
         "isOwnGoal": false
       }
     ],
@@ -4439,14 +3907,16 @@ class OfficialTournamentArchive {
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": true,
+    "wentToET": false,
     "wentToPK": false,
-    "etWinner": "es",
+    "etWinner": null,
     "pkWinner": null,
     "t1Score90": 2,
     "t2Score90": 2,
     "t1ScoreET": 3,
-    "t2ScoreET": 2
+    "t2ScoreET": 2,
+    "t1ScorePK": null,
+    "t2ScorePK": null
   }
 ];
 }
