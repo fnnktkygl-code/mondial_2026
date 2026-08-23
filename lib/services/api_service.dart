@@ -8,6 +8,8 @@ import '../app_constants.dart';
 import '../utils/fifa_rules.dart';
 import 'espn_api_service.dart';
 
+import '../data/official_tournament_archive.dart';
+
 class ApiService {
   static const String _cacheKey = kMatchesCacheKey;
   static const String _lastUpdatedKey = 'wc_matches_last_updated';
@@ -17,79 +19,15 @@ class ApiService {
 
   /// Fetch live matches from ESPN to update scores/stats in real-time.
   static Future<List<WorldCupMatch>> fetchEspnLive() async {
-    return EspnApiService.fetchLiveMatches();
+    return [];
   }
 
-  /// Load tournament matches. Priority:
-  /// 1. Local SharedPreferences cache (if fresh enough)
-  /// 2. Remote ESPN sync merged into schedule
-  /// 3. Bundled asset initial_matches.json
+  /// Load tournament matches from official immutable static archive.
   static Future<List<WorldCupMatch>> loadMatches({
     bool forceRefresh = false,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<WorldCupMatch> baseMatches = [];
-
-    // Clean up any stale match cache keys from older builds
-    try {
-      final keys = prefs.getKeys();
-      for (final k in keys) {
-        if (k.startsWith('wc2026_matches_') && k != _cacheKey) {
-          await prefs.remove(k);
-        }
-      }
-    } catch (_) {}
-
-    // 1. Load Base Schedule from Assets
-    try {
-      final jsonStr = await rootBundle.loadString('assets/initial_matches.json');
-      baseMatches = _parseMatchesJson(jsonStr);
-    } catch (e) {
-      debugPrint("API: Asset load error: $e");
-    }
-
-    // Resolve placeholders directly from the verified initial asset
-    baseMatches = FIFARegulations.resolveMatchesPlaceholders(baseMatches);
-
-    // If base asset is fully completed (archive mode: 104 finished matches),
-    // always return it directly to guarantee 100% data fidelity!
-    final int baseFinishedCount = baseMatches.where((m) => m.isPlayed).length;
-    if (baseFinishedCount >= 104) {
-      final jsonToCache = jsonEncode(baseMatches.map((m) => m.toJson()).toList());
-      await prefs.setString(_cacheKey, jsonToCache);
-      await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
-      return baseMatches;
-    }
-
-    // 2. Try Cache (if not forcing refresh)
-    if (!forceRefresh) {
-      final cachedJson = prefs.getString(_cacheKey);
-      if (cachedJson != null) {
-        try {
-          final cachedMatches = _parseMatchesJson(cachedJson);
-          baseMatches = _patchMatches(baseMatches, cachedMatches);
-        } catch (_) {}
-      }
-    }
-
-    // 3. Fetch Remote Updates from ESPN and PATCH
-    try {
-      final remoteUpdates = await fetchRemoteMatches();
-      if (remoteUpdates.isNotEmpty) {
-        final patched = _patchMatches(baseMatches, remoteUpdates);
-        
-        // Save patched results to cache
-        final jsonToCache = jsonEncode(patched.map((m) => m.toJson()).toList());
-        await prefs.setString(_cacheKey, jsonToCache);
-        await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
-        
-        return patched;
-      }
-    } catch (e) {
-      debugPrint("API: Remote sync error: $e");
-    }
-
-    return baseMatches;
+    final matches = OfficialTournamentArchive.getMatches();
+    return FIFARegulations.resolveMatchesPlaceholders(matches);
   }
 
   /// Merges remote results into the base schedule using team matching and date logic.
