@@ -53,6 +53,16 @@ class ApiService {
     // Resolve any placeholders dynamically so they can match the remote data!
     baseMatches = FIFARegulations.resolveMatchesPlaceholders(baseMatches);
 
+    // If the base asset is already fully completed (archive mode: 104 finished matches),
+    // we use it directly and refresh cache so stale storage never overrides completed matches!
+    final int baseFinishedCount = baseMatches.where((m) => m.isPlayed).length;
+    if (baseFinishedCount >= 104) {
+      final jsonToCache = jsonEncode(baseMatches.map((m) => m.toJson()).toList());
+      await prefs.setString(_cacheKey, jsonToCache);
+      await prefs.setString(_lastUpdatedKey, DateTime.now().toIso8601String());
+      return baseMatches;
+    }
+
     // 3. Fetch Remote Updates from ESPN and PATCH
     try {
       final remoteUpdates = await fetchRemoteMatches();

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mondial_2026/models/match.dart';
+import 'package:mondial_2026/utils/fifa_rules.dart';
 
 void main() {
   group('104 Matches Dataset & Bracket Resolution Tests', () {
@@ -36,6 +37,20 @@ void main() {
         expect(m.t2 != 'TBD' && m.t2.isNotEmpty, true, reason: 'Match ${m.id} t2 is TBD');
         expect(m.t1Score != null, true, reason: 'Match ${m.id} t1Score is null');
         expect(m.t2Score != null, true, reason: 'Match ${m.id} t2Score is null');
+        expect(m.getWinner().isNotEmpty, true, reason: 'Match ${m.id} has no winner');
+      }
+    });
+
+    test('FIFARegulations.resolveMatchesPlaceholders produces completely resolved teams for all 32 knockout matches', () {
+      final resolved = FIFARegulations.resolveMatchesPlaceholders(matches);
+      final knockout = resolved.where((m) => m.isKnockout).toList();
+      expect(knockout.length, 32);
+
+      for (final m in knockout) {
+        expect(m.t1.startsWith('w') || m.t1.startsWith('l') || m.t1.startsWith('3rd') || m.t1 == 'TBD', false,
+            reason: 'Match ${m.id} t1 is unresolved placeholder: ${m.t1}');
+        expect(m.t2.startsWith('w') || m.t2.startsWith('l') || m.t2.startsWith('3rd') || m.t2 == 'TBD', false,
+            reason: 'Match ${m.id} t2 is unresolved placeholder: ${m.t2}');
         expect(m.getWinner().isNotEmpty, true, reason: 'Match ${m.id} has no winner');
       }
     });

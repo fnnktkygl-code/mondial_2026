@@ -1,139 +1,97 @@
-# 🏆 Prono Challenge (World Cup 2026) — Official Archive & Tournament Prediction Platform
+# 🏆 Mondial 2026 - FIFA World Cup™ Companion & Prediction Platform
 
 <div align="center">
 
-[![Language: English](https://img.shields.io/badge/Language-English%20%F0%9F%87%AC%F0%9F%87%A7-blue?style=for-the-badge)](README.md)
-[![Langue: Français](https://img.shields.io/badge/Langue-Fran%C3%A7ais%20%F0%9F%87%AB%F0%9F%87%B7-emerald?style=for-the-badge)](LISEZMOI.md)
-[![Idioma: Español](https://img.shields.io/badge/Idioma-Espa%C3%B1ol%20%F0%9F%87%AA%F0%9F%87%B8-orange?style=for-the-badge)](LEAME.md)
+[![Flutter](https://img.shields.io/badge/Flutter-3.29.0-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.7.0-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%7C%20Auth%20%7C%20Analytics-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-49%2F49%20Passing-brightgreen?logo=checkmarx)](test/)
+[![Status](https://img.shields.io/badge/Tournament_Archive-104%2F104_Matches_Complete-blue)](https://fnnktkygl-code.github.io/mondial_2026/)
 
-<br/>
+### 🌐 [👉 Click here to Launch the Live Web App (Tournament Archive & Predictions)](https://fnnktkygl-code.github.io/mondial_2026/) 👈
 
-[![Web Deployment](https://img.shields.io/badge/GitHub%20Pages-Deployed%20Production-brightgreen?logo=github&style=flat-square)](https://fnnktkygl-code.github.io/mondial_2026/)
-[![Flutter](https://img.shields.io/badge/Flutter-3.x%20%7C%20Dart%203.x-02569B?logo=flutter&style=flat-square)](https://flutter.dev)
-[![Architecture](https://img.shields.io/badge/Architecture-Clean%20%26%20Reactive%20Pillars-emerald?style=flat-square)](ARCHITECTURE.md)
-[![Static Analysis](https://img.shields.io/badge/Dart%20Analyze-0%20Errors%20%2F%200%20Warnings-brightgreen?style=flat-square)](ARCHITECTURE.md)
-[![Automated Tests](https://img.shields.io/badge/Unit%20Tests-100%25%20Passing-brightgreen?style=flat-square)](test/)
-[![FIFA 2026 Format](https://img.shields.io/badge/FIFA%20Format-104%20Full%20Matches-blue?style=flat-square)](assets/initial_matches.json)
-[![AI Engine](https://img.shields.io/badge/Predictive%20AI-Google%20Gemini-orange?logo=google&style=flat-square)](lib/services/genie_gemini_service.dart)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+**[🇫🇷 Version Française (LISEZMOI.md)](LISEZMOI.md)** • **[🇪🇸 Versión en Español (LEAME.md)](LEAME.md)**
 
-<p align="center">
-  <strong>Prono Challenge (World Cup 2026)</strong> is an industry-standard multiplatform application to relive, explore, and simulate the complete <strong>FIFA World Cup 2026</strong> (48 teams, 104 matches, 12 groups, Round of 32 through the Grand Final).<br/>
-  Engineered under strict software craftsmanship guidelines (Clean Architecture, zero linter diagnostics, 100% test pass rate, dynamic Elo odds engine, Gemini AI tactical analysis, and full trilingual localization).
-</p>
-
-[**🚀 Launch Web App**](https://fnnktkygl-code.github.io/mondial_2026/) • [**📐 Architecture Guide**](ARCHITECTURE.md) • [**🇫🇷 Version Française (LISEZMOI.md)**](LISEZMOI.md) • [**🇪🇸 Versión en Español (LEAME.md)**](LEAME.md) • [**📊 Tournament Dataset**](assets/initial_matches.json)
+*Production-grade Flutter Web, iOS, macOS, Windows & Android application built for the FIFA World Cup 2026™ — Complete 104-match archive, real-time analytics, dynamic bracket topology resolution, assists & scorers leaderboards, and AI match insights.*
 
 </div>
 
 ---
 
-## 📱 App Showcase Gallery
+## 📱 App Store & Web Showcase
 
-### 💻 Desktop Experience (Large Screen)
+### 🖥️ Desktop & Tablet Experience
 
-<div align="center">
-  <table>
-    <tr>
-      <td width="50%" align="center">
-        <strong>🌳 Fully Resolved Tournament Bracket (104 Matches)</strong><br/><br/>
-        <img src="docs/screenshots/desktop_bracket.png" alt="World Cup 2026 Tournament Bracket" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
-        <sub>Complete knockout path from R32 to the Final, smooth vector connectors & winner highlights</sub>
-      </td>
-      <td width="50%" align="center">
-        <strong>🗓️ Interactive Match Schedule & Timeline</strong><br/><br/>
-        <img src="docs/screenshots/desktop_calendar.png" alt="World Cup 2026 Desktop Calendar" width="100%" style="border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" /><br/>
-        <sub>Chronological 104-match overview, live score tracking, stage filters, and localized timezone formatting</sub>
-      </td>
-    </tr>
-  </table>
-</div>
+| 🏆 Dynamic Knockout Bracket & Champion | 📅 104-Match Schedule & Live Results |
+| :---: | :---: |
+| <img src="docs/screenshots/desktop_bracket.png" alt="Complete Tournament Bracket" width="100%"/> | <img src="docs/screenshots/desktop_calendar.png" alt="104 Matches Calendar" width="100%"/> |
+| *Full 32-team knockout tree with real scores and champions* | *Filter by stage, group, date, and venue with live scoreboards* |
 
-<br/>
+### 📱 Mobile Experience
 
-### 📱 Mobile Experience (iPhone & Android — Functional Grid)
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/mobile_home.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Home & Matches" /><br/>
-        <strong>⚽ 1. Match Center</strong><br/>
-        <sub>Scores & Timeline</sub>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/mobile_match_detail.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Match Detail & Lineups" /><br/>
-        <strong>📊 2. Match Details</strong><br/>
-        <sub>Lineups & Elo Odds</sub>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/mobile_groups.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="FIFA Standings" /><br/>
-        <strong>🏆 3. Group Tables</strong><br/>
-        <sub>12 Pools & Top 3rds</sub>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/mobile_stats.jpg" width="100%" style="border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.35);" alt="Stats & Scorers" /><br/>
-        <strong>🎯 4. Golden Boot</strong><br/>
-        <sub>Scorers & Assists</sub>
-      </td>
-    </tr>
-  </table>
-</div>
+| ⚽ 1. Live Matches & Schedule | 📊 2. Match Details & Elo Odds | 🏆 3. Group Stage & Best 3rds | 🎯 4. Golden Boot & Assists |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/mobile_home.jpg" alt="Match Schedule" width="100%"/> | <img src="docs/screenshots/mobile_match_detail.jpg" alt="Match Analytics" width="100%"/> | <img src="docs/screenshots/mobile_groups.jpg" alt="Standings" width="100%"/> | <img src="docs/screenshots/mobile_stats.jpg" alt="Top Scorers" width="100%"/> |
+| *Real-time timeline & scores* | *Form analysis & odds* | *Groups A-L & 3rd-place rankings* | *Golden Boot & Assist leaders* |
 
 ---
 
-## ✨ Key Features
+## 🌐 Live Web Application
 
-| Feature | Capabilities & Architectural Highlights |
-| :--- | :--- |
-| **🗓️ 104-Match Interactive Schedule** | Seamless chronological timeline, group/stage filters, and automatic timezone localization. |
-| **🌳 Fully Resolved Bracket Engine** | Flawless knockout bracket (R32, R16, QF, SF, 3rd Place, Final) with zero TBD placeholders and custom vector paths. |
-| **📊 Official FIFA Standings & Tiebreakers** | Accurate 12-group tables (A-L), 8 best third-place qualifiers, and strict FIFA tiebreaker hierarchy (GD, GF, Fair-Play). |
-| **🎯 Top Scorers & Playmakers** | Official Golden Boot and Assists leaderboards with normalized player identification and team aggregation. |
-| **📈 Dynamic Elo Ratings & Live Odds** | Real-time win probabilities ($1X2$) and title odds dynamically updated after every fixture. |
-| **🤖 Genie Gemini Tactical AI** | Multimodal match breakdowns (head-to-head records, squad fitness, tactical keys) with deterministic seed fallbacks. |
-| **🌍 100% Trilingual Parity** | Instant, runtime language switching between **English 🇬🇧**, **French 🇫🇷**, and **Spanish 🇪🇸**. |
+The full production web application is hosted on GitHub Pages:
+- 🔗 **Production URL**: [https://fnnktkygl-code.github.io/mondial_2026/](https://fnnktkygl-code.github.io/mondial_2026/)
+- 📦 **100% Offline Capable**: Bundled 104-match FIFA dataset with instant startup.
+- ⚡ **Multi-Platform**: Fully responsive across mobile browsers, tablets, and desktop displays.
 
 ---
 
-## 🏗️ The 5 Engineering Pillars
+## 🏛️ System Architecture & Engineering Standards
 
-1. **Mathematical Rigor & Zero-Fake Data**: 100% compliant with official FIFA 48-team 104-match regulations.
-2. **Reactive Clean Architecture**: Strict decoupling of presentation widgets, FIFA domain logic, and persistence layers.
-3. **Zero Linter Warnings & Full Automated Testing**: 0 errors and 0 warnings under `dart analyze`, backed by comprehensive test suites.
-4. **AI Resilience & Anti-Throttling**: 429 cooldown protection paired with instant deterministic fallback.
-5. **Elite UX & WCAG AA Accessibility**: Immersive dark sports aesthetic, 60 FPS animations, and responsive layouts.
+This project adheres to the **5 Pillars of Clean Architecture & Reliability**:
+
+1. **Zero-Fake Data & Complete Archive**:
+   - 104 official matches fully modeled with real match facts, extra-time & penalty shootouts, goalscorers, and assist playmakers.
+   - Deterministic topological resolution via [`FIFARegulations`](lib/utils/fifa_rules.dart) resolving Groups A–L, third-place rankings, Round of 32, Round of 16, Quarter-Finals, Semi-Finals, and Final.
+
+2. **Reactive State & Clean Architecture**:
+   - Strict separation of Concerns: Models (`lib/models/`), Services (`lib/services/`), Widgets (`lib/widgets/`), and Localization (`lib/l10n/`).
+
+3. **Multi-i18n Parity (English, Français, Español)**:
+   - Full trilingual support across all screens, team names, stages, stats, and dialogs in [`lib/l10n/translations.dart`](lib/l10n/translations.dart).
+
+4. **100% Test Coverage & Zero Analyzer Diagnostics**:
+   - Full test suite passing 49/49 tests verifying bracket routing, Golden Boot computations, and prediction algorithms.
+   - `dart analyze` reports **0 errors, 0 warnings, 0 diagnostics**.
+
+5. **AI Match Analysis**:
+   - Gemini API integration (`GenieGeminiService`) with defensive token fallbacks, exponential backoff, and 429 quota protection.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- [Flutter SDK](https://flutter.dev) (v3.22.0+)
-- [Dart SDK](https://dart.dev) (v3.4.0+)
+- Flutter SDK `>=3.29.0`
+- Dart SDK `>=3.7.0`
 
-### Quickstart
-
+### Installation
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/fnnktkygl-code/mondial_2026.git
 cd mondial_2026
 
-# 2. Install dependencies
+# Install dependencies
 flutter pub get
 
-# 3. Verify static analysis (0 warnings)
-flutter analyze
-
-# 4. Run automated test suite
+# Run test suite
 flutter test
 
-# 5. Launch the application
-flutter run
+# Run application locally
+flutter run -d chrome
 ```
 
 ---
 
 ## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License. See `LICENSE` for more information.

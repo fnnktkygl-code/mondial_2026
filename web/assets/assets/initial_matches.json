@@ -2930,8 +2930,8 @@
     "goals": [
       {
         "team": "t1",
-        "scorer": "J. Musiala",
-        "assistant": "F. Wirtz",
+        "scorer": "K. Havertz",
+        "assistant": "J. Musiala",
         "minute": 34,
         "isOwnGoal": false
       },
@@ -2939,14 +2939,14 @@
         "team": "t2",
         "scorer": "M. Almirón",
         "assistant": "J. Enciso",
-        "minute": 58,
+        "minute": 71,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "K. Havertz",
-        "assistant": "J. Kimmich",
-        "minute": 83,
+        "scorer": "N. Füllkrug",
+        "assistant": "L. Sané",
+        "minute": 108,
         "isOwnGoal": false
       }
     ],
@@ -2963,9 +2963,9 @@
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
+    "wentToET": true,
     "wentToPK": false,
-    "etWinner": null,
+    "etWinner": "de",
     "pkWinner": null
   },
   {
@@ -2982,24 +2982,24 @@
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "Y. En-Nesyri",
-        "assistant": "A. Hakimi",
-        "minute": 23,
-        "isOwnGoal": false
-      },
-      {
         "team": "t1",
         "scorer": "C. Gakpo",
         "assistant": "X. Simons",
-        "minute": 67,
+        "minute": 19,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "Y. En-Nesyri",
+        "assistant": "A. Hakimi",
+        "minute": 64,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "H. Ziyech",
         "assistant": "A. Ounahi",
-        "minute": 88,
+        "minute": 115,
         "isOwnGoal": false
       }
     ],
@@ -3016,9 +3016,9 @@
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
+    "wentToET": true,
     "wentToPK": false,
-    "etWinner": null,
+    "etWinner": "ma",
     "pkWinner": null
   },
   {
@@ -3562,24 +3562,24 @@
     "status": "FINISHED",
     "goals": [
       {
-        "team": "t2",
-        "scorer": "M. Salah",
-        "assistant": "O. Marmoush",
+        "team": "t1",
+        "scorer": "M. Duke",
+        "assistant": "C. Goodwin",
         "minute": 28,
         "isOwnGoal": false
       },
       {
-        "team": "t1",
-        "scorer": "M. Duke",
-        "assistant": "C. Goodwin",
-        "minute": 54,
+        "team": "t2",
+        "scorer": "Mostafa Mohamed",
+        "assistant": "M. Salah",
+        "minute": 83,
         "isOwnGoal": false
       },
       {
         "team": "t2",
-        "scorer": "M. Mostafa",
-        "assistant": "M. Salah",
-        "minute": 80,
+        "scorer": "M. Salah",
+        "assistant": "O. Marmoush",
+        "minute": 112,
         "isOwnGoal": false
       }
     ],
@@ -3596,9 +3596,9 @@
       "redCardsT1": 0,
       "redCardsT2": 0
     },
-    "wentToET": false,
+    "wentToET": true,
     "wentToPK": false,
-    "etWinner": null,
+    "etWinner": "eg",
     "pkWinner": null
   },
   {
@@ -3607,7 +3607,7 @@
     "t1": "ar",
     "t2": "cv",
     "t1Score": 3,
-    "t2Score": 0,
+    "t2Score": 2,
     "venue": "Hard Rock Stadium, Miami",
     "group": null,
     "stage": "Round of 32",
@@ -3819,7 +3819,7 @@
     "t1": "br",
     "t2": "no",
     "t1Score": 2,
-    "t2Score": 0,
+    "t2Score": 1,
     "venue": "MetLife Stadium, New York",
     "group": null,
     "stage": "Round of 16",
@@ -3829,15 +3829,22 @@
       {
         "team": "t1",
         "scorer": "Vinícius Jr.",
-        "assistant": "Bruno Guimarães",
-        "minute": 41,
+        "assistant": "Rodrygo",
+        "minute": 32,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "E. Haaland",
+        "assistant": "M. Ødegaard",
+        "minute": 67,
         "isOwnGoal": false
       },
       {
         "team": "t1",
-        "scorer": "Endrick",
-        "assistant": "Raphinha",
-        "minute": 87,
+        "scorer": "Rodrygo",
+        "assistant": "Bruno Guimarães",
+        "minute": 88,
         "isOwnGoal": false
       }
     ],
@@ -3971,7 +3978,7 @@
     "t1": "be",
     "t2": "us",
     "t1Score": 1,
-    "t2Score": 2,
+    "t2Score": 4,
     "venue": "Lumen Field, Seattle",
     "group": null,
     "stage": "Round of 16",
@@ -3981,22 +3988,36 @@
       {
         "team": "t2",
         "scorer": "C. Pulisic",
-        "assistant": "G. Reyna",
-        "minute": 35,
+        "assistant": "T. Weah",
+        "minute": 14,
         "isOwnGoal": false
       },
       {
         "team": "t1",
         "scorer": "K. De Bruyne",
         "assistant": "L. Trossard",
-        "minute": 67,
+        "minute": 38,
         "isOwnGoal": false
       },
       {
         "team": "t2",
         "scorer": "F. Balogun",
-        "assistant": "T. Weah",
-        "minute": 88,
+        "assistant": "G. Reyna",
+        "minute": 52,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "T. Weah",
+        "assistant": "C. Pulisic",
+        "minute": 74,
+        "isOwnGoal": false
+      },
+      {
+        "team": "t2",
+        "scorer": "C. Pulisic",
+        "assistant": "W. McKennie",
+        "minute": 89,
         "isOwnGoal": false
       }
     ],
@@ -4274,8 +4295,8 @@
     "date": "2026-07-11T22:00:00Z",
     "t1": "ch",
     "t2": "ar",
-    "t1Score": 0,
-    "t2Score": 2,
+    "t1Score": 1,
+    "t2Score": 3,
     "venue": "Arrowhead Stadium, Kansas City",
     "group": null,
     "stage": "Quarter-Final",

@@ -297,14 +297,15 @@ class FIFARegulations {
         String newT1 = m.t1;
         String newT2 = m.t2;
 
-        // Always reset to original routing placeholders to prevent stale cached team codes
+        // Only reset if the routing points to group/3rd placeholders (not w## or l##)
         if (knockoutRouting.containsKey(m.id)) {
           final routing = knockoutRouting[m.id]!;
-          // Only reset if the routing points to group/3rd placeholders (not w## or l##)
-          // For R32 matches, the routing contains group placeholders like '1D', '3rd5'
-          // For R16+, the routing contains w## references like 'w74', 'w77'
-          newT1 = routing[0];
-          newT2 = routing[1];
+          if (!routing[0].startsWith('w') && !routing[0].startsWith('l')) {
+            newT1 = routing[0];
+          }
+          if (!routing[1].startsWith('w') && !routing[1].startsWith('l')) {
+            newT2 = routing[1];
+          }
         }
 
         if (newT1.toLowerCase() == 'tbd') newT1 = 'TBD';
@@ -374,34 +375,40 @@ class FIFARegulations {
         String newT1 = m.t1;
         String newT2 = m.t2;
 
-        // Re-apply routing for matches that reference winners/losers (R16, QF, SF, F)
         if (knockoutRouting.containsKey(m.id)) {
           final routing = knockoutRouting[m.id]!;
-          // Only override if the routing is a w## or l## reference
-          if (routing[0].startsWith('w') || routing[0].startsWith('l')) {
-            newT1 = routing[0];
-          }
-          if (routing[1].startsWith('w') || routing[1].startsWith('l')) {
-            newT2 = routing[1];
-          }
-        }
 
-        if (newT1.startsWith('w') && newT1.length > 1) {
-          final refId = 'm${newT1.substring(1)}';
-          if (matchWinners.containsKey(refId)) newT1 = matchWinners[refId]!;
-        }
-        if (newT2.startsWith('w') && newT2.length > 1) {
-          final refId = 'm${newT2.substring(1)}';
-          if (matchWinners.containsKey(refId)) newT2 = matchWinners[refId]!;
-        }
+          if (routing[0].startsWith('w') && routing[0].length > 1) {
+            final refId = 'm${routing[0].substring(1)}';
+            if (matchWinners.containsKey(refId)) {
+              newT1 = matchWinners[refId]!;
+            } else if (newT1.isEmpty || newT1.toUpperCase() == 'TBD' || newT1.startsWith('w')) {
+              newT1 = routing[0];
+            }
+          } else if (routing[0].startsWith('l') && routing[0].length > 1) {
+            final refId = 'm${routing[0].substring(1)}';
+            if (matchLosers.containsKey(refId)) {
+              newT1 = matchLosers[refId]!;
+            } else if (newT1.isEmpty || newT1.toUpperCase() == 'TBD' || newT1.startsWith('l')) {
+              newT1 = routing[0];
+            }
+          }
 
-        if (newT1.startsWith('l') && newT1.length > 1) {
-          final refId = 'm${newT1.substring(1)}';
-          if (matchLosers.containsKey(refId)) newT1 = matchLosers[refId]!;
-        }
-        if (newT2.startsWith('l') && newT2.length > 1) {
-          final refId = 'm${newT2.substring(1)}';
-          if (matchLosers.containsKey(refId)) newT2 = matchLosers[refId]!;
+          if (routing[1].startsWith('w') && routing[1].length > 1) {
+            final refId = 'm${routing[1].substring(1)}';
+            if (matchWinners.containsKey(refId)) {
+              newT2 = matchWinners[refId]!;
+            } else if (newT2.isEmpty || newT2.toUpperCase() == 'TBD' || newT2.startsWith('w')) {
+              newT2 = routing[1];
+            }
+          } else if (routing[1].startsWith('l') && routing[1].length > 1) {
+            final refId = 'm${routing[1].substring(1)}';
+            if (matchLosers.containsKey(refId)) {
+              newT2 = matchLosers[refId]!;
+            } else if (newT2.isEmpty || newT2.toUpperCase() == 'TBD' || newT2.startsWith('l')) {
+              newT2 = routing[1];
+            }
+          }
         }
 
         if (newT1 != m.t1 || newT2 != m.t2) {
