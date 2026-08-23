@@ -8,7 +8,7 @@
     },
     "update_url": {
       "defaultValue": {
-        "value": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk"
+        "value": "https://fnnktkygl-code.github.io/mondial_2026/"
       },
       "valueType": "STRING"
     }

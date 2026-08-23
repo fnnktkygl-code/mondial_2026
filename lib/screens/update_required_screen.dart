@@ -16,18 +16,15 @@ class _UpdateRequiredScreenState extends State<UpdateRequiredScreen> {
   Future<void> _launchUpdateUrl() async {
     setState(() => _isLoading = true);
     try {
-      // Résoudre l'URL directe via GitHub API (évite la redirection vers la page HTML)
       final String updateUrl = await WCUpdateService.getUpdateUrl();
       final Uri uri = Uri.parse(updateUrl.trim());
 
-      // On utilise direct LaunchMode.externalApplication pour ouvrir le navigateur par défaut
-      // qui va gérer le téléchargement de l'APK de manière fiable et sécurisée.
-      bool launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      bool launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
       if (!launched) {
         debugPrint('Impossible d\'ouvrir $uri');
       }
     } catch (e) {
-      debugPrint('Erreur lors du lancement du téléchargement: $e');
+      debugPrint('Erreur lors du lancement de la mise à jour: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -86,7 +83,7 @@ class _UpdateRequiredScreenState extends State<UpdateRequiredScreen> {
                           ),
                         )
                       : const Text(
-                          "Télécharger la mise à jour",
+                          "Accéder à la dernière version",
                           style: TextStyle(
                             fontSize: 18,
                             color: AppColors.background,

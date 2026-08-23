@@ -5,6 +5,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prono Challenge — Coupe du Monde 2026</title>
+  
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0A0E1A" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Prono Challenge" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -525,42 +536,82 @@
     .scoring-label { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); font-weight: 500; }
     .scoring-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--accent); }
 
-    /* ─── CTA ─────────────────────────────────────────────── */
-    #cta { text-align: center; padding: 140px 24px; }
+    /* ─── CTA & PWA HUB ──────────────────────────────────── */
+    #cta { text-align: center; padding: 120px 24px; }
     .cta-glow {
       display: inline-block;
       background: linear-gradient(145deg, var(--card), var(--card-deep));
       border: 1.5px solid var(--border-mid);
-      border-radius: 48px; padding: 80px 40px; max-width: 860px; width: 100%;
+      border-radius: 48px; padding: 70px 40px; max-width: 900px; width: 100%;
       position: relative; overflow: hidden;
       box-shadow: 0 40px 100px rgba(0,0,0,0.5);
     }
-    .cta-logo { width: 120px; height: 120px; border-radius: 28px; margin-bottom: 24px; box-shadow: 0 0 40px var(--accent-glow); }
-    .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: none; }
+    .cta-logo { width: 110px; height: 110px; border-radius: 28px; margin-bottom: 24px; box-shadow: 0 0 40px var(--accent-glow); }
+    .cta-title { font-weight: 800; font-size: clamp(32px, 5vw, 50px); line-height: 1; letter-spacing: -0.03em; margin-bottom: 16px; text-transform: none; }
     
-    .cta-sub { color: var(--text-2); font-size: 18px; margin-bottom: 40px; }
+    .cta-sub { color: var(--text-2); font-size: 17px; max-width: 620px; margin: 0 auto 36px; line-height: 1.6; }
     .download-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
     .dl-btn {
       display: flex; align-items: center; gap: 12px;
       background: var(--text-1); color: #000; font-weight: 700; font-size: 15px;
-      padding: 14px 28px; border-radius: 18px; text-decoration: none;
-      transition: transform .15s, box-shadow .2s;
-      min-width: 210px; text-align: left;
+      padding: 16px 28px; border-radius: 20px; text-decoration: none;
+      transition: transform .15s, box-shadow .2s, border-color .2s;
+      min-width: 230px; text-align: left; cursor: pointer; border: none; font-family: inherit;
     }
     .dl-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
-    .dl-btn.web { background: var(--accent); }
-    .dl-btn.android { background: #E2E8F0; }
-    .dl-btn.macos { background: #1A1C23; color: #FFF; border: 1px solid var(--border-mid); }
-    .dl-btn.ios { background: #FFF; }
-    .dl-btn .store-icon { font-size: 24px; }
-    .dl-btn-sub { font-size: 10px; font-weight: 600; text-transform: uppercase; opacity: 0.7; display: block; }
+    .dl-btn.web { background: var(--accent); color: #000; }
+    .dl-btn.web:hover { box-shadow: 0 10px 30px var(--accent-glow); }
+    .dl-btn.install { background: #3B82F6; color: #FFF; }
+    .dl-btn.install:hover { box-shadow: 0 10px 30px rgba(59,130,246,0.35); }
+    .dl-btn.guide { background: rgba(255,255,255,0.06); color: var(--text-1); border: 1.5px solid var(--border-mid); }
+    .dl-btn.guide:hover { border-color: var(--accent); background: var(--accent-dim); }
+    .dl-btn .store-icon { font-size: 26px; line-height: 1; }
+    .dl-btn-sub { font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; display: block; letter-spacing: 0.04em; }
     .dl-btn-main { font-size: 16px; font-weight: 800; display: block; }
+
+    /* ─── PWA QUICK GUIDE CARDS ───────────────────────────── */
+    .pwa-guide-box {
+      margin-top: 50px;
+      background: rgba(10, 14, 26, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      text-align: left;
+    }
+    .pwa-guide-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;
+    }
+    .pwa-guide-title {
+      font-size: 17px; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 8px;
+    }
+    .pwa-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .pwa-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pwa-card-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700; color: var(--accent);
+    }
+    .pwa-card-text {
+      font-size: 13px; color: var(--text-2); line-height: 1.5;
+    }
+    .pwa-card-text strong { color: #FFF; font-weight: 600; }
 
     /* ─── FOOTER ─────────────────────────────────────────── */
     footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
     footer strong { color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; }
 
-    /* ─── INVITE MODAL ────────────────────────────────────── */
+    /* ─── MODALS ─────────────────────────────────────────── */
     .modal-overlay {
       position: fixed; inset: 0; z-index: 1000;
       background: rgba(10, 14, 26, 0.9);
@@ -577,36 +628,38 @@
       background: linear-gradient(145deg, var(--card), var(--card-deep));
       border: 1.5px solid var(--border-mid);
       border-radius: var(--radius-lg);
-      padding: 40px 32px;
-      max-width: 500px; width: 100%;
+      padding: 36px 28px;
+      max-width: 520px; width: 100%;
       text-align: center;
       box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 40px var(--accent-glow);
       transform: scale(0.9);
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .modal-overlay.active .modal-card {
       transform: scale(1);
     }
     .modal-icon {
-      width: 72px; height: 72px;
+      width: 68px; height: 68px;
       background: var(--accent-dim);
       border: 1px solid rgba(16,185,129,.3);
       border-radius: 20px;
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px;
+      margin: 0 auto 20px;
       color: var(--accent);
       font-size: 32px;
       box-shadow: 0 0 20px var(--accent-glow);
     }
     .modal-title {
       font-family: 'Syne', sans-serif;
-      font-weight: 800; font-size: 28px;
+      font-weight: 800; font-size: 26px;
       margin-bottom: 12px;
       color: var(--text-1);
     }
     .modal-desc {
       color: var(--text-2);
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.5;
       margin-bottom: 24px;
     }
@@ -615,7 +668,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 16px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -672,6 +725,8 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      cursor: pointer;
+      border: none;
       transition: box-shadow 0.2s, transform 0.15s;
     }
     .modal-btn-primary:hover {
@@ -691,6 +746,7 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
     }
     .modal-btn-secondary:hover {
@@ -734,9 +790,9 @@
     <div class="nav-links">
       <a href="#features">Fonctionnalités</a>
       <a href="#scoring">Points</a>
-      <a href="#cta">Télécharger</a>
+      <a href="#cta">Installer & Jouer</a>
     </div>
-    <a href="#cta" class="nav-cta">JOUER</a>
+    <a href="app.html" class="nav-cta">LANCER L'APP</a>
   </div>
 </nav>
 
@@ -761,16 +817,16 @@
   </h1>
 
   <p class="hero-sub">
-    Vivez la Coupe du Monde 2026 comme jamais. Prédictions en direct, groupes privés et classement mondial. Le tournoi est entre vos mains.
+    Vivez la Coupe du Monde 2026 en direct. Prédictions, ligues privées et classement mondial. Accessible instantanément sur le Web et installable sur votre écran d'accueil en un clic.
   </p>
 
   <div class="hero-actions">
-    <a href="#cta" class="btn-primary">
-      <span>📱</span> Obtenir l'app officielle
+    <a href="app.html" class="btn-primary">
+      <span>🌐</span> Lancer la Web App
     </a>
-    <a href="app.html" class="btn-secondary">
-      <span>🌐</span> Jouer sur navigateur
-    </a>
+    <button id="hero-install-btn" class="btn-secondary" onclick="triggerPwaInstall()">
+      <span>📲</span> Installer l'application
+    </button>
   </div>
 
   <!-- Device mockups -->
@@ -1097,37 +1153,61 @@
     <div class="cta-glow reveal">
       <img src="assets/app_icon.png" alt="App Icon" class="cta-logo">
       <h2 class="cta-title"><span class="host-gradient">Prono Challenge</span></h2>
-      <p class="cta-sub">Télécharge Prono Challenge et commence tes prédictions dès aujourd'hui.</p>
+      <p class="cta-sub">Accédez à l'application instantanément sur votre navigateur ou installez la Web App sur votre écran d'accueil pour une expérience fluide en plein écran.</p>
+      
       <div class="download-buttons">
         <a href="app.html" class="dl-btn web">
           <span class="store-icon">🌐</span>
           <span>
-            <span class="dl-btn-sub">Jouer maintenant</span>
-            <span class="dl-btn-main">Web App</span>
+            <span class="dl-btn-sub">Accès instantané</span>
+            <span class="dl-btn-main">Lancer la Web App</span>
           </span>
         </a>
-        <a href="https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk" class="dl-btn android" target="_blank" rel="noopener noreferrer">
-          <span class="store-icon">🤖</span>
+        <button id="cta-install-btn" class="dl-btn install" onclick="triggerPwaInstall()">
+          <span class="store-icon">📲</span>
           <span>
-            <span class="dl-btn-sub">Télécharger l'APK</span>
-            <span class="dl-btn-main">Android SDK</span>
+            <span class="dl-btn-sub">PWA Chrome / Android</span>
+            <span class="dl-btn-main">Installer l'application</span>
           </span>
-        </a>
-        <a href="https://github.com/fnnktkygl-code/mondial_2026/releases/download/v1.2.0/PronoChallenge-macOS.zip" class="dl-btn macos" target="_blank" rel="noopener noreferrer">
-          <span class="store-icon">💻</span>
+        </button>
+        <button class="dl-btn guide" onclick="openPwaModal()">
+          <span class="store-icon">💡</span>
           <span>
-            <span class="dl-btn-sub">Télécharger pour</span>
-            <span class="dl-btn-main">macOS</span>
+            <span class="dl-btn-sub">Guide d'installation</span>
+            <span class="dl-btn-main">Comment installer ?</span>
           </span>
-        </a>
-        <a href="javascript:void(0)" class="dl-btn ios disabled" style="opacity: 0.6; cursor: not-allowed;">
-          <span class="store-icon">🍎</span>
-          <span>
-            <span class="dl-btn-sub">Bientôt disponible</span>
-            <span class="dl-btn-main">sur iOS</span>
-          </span>
-        </a>
+        </button>
       </div>
+
+      <!-- Guide PWA intégré -->
+      <div class="pwa-guide-box">
+        <div class="pwa-guide-header">
+          <div class="pwa-guide-title">
+            <span>⚡</span> Installation facile en 2 clics (PWA)
+          </div>
+        </div>
+        <div class="pwa-grid">
+          <div class="pwa-card">
+            <div class="pwa-card-badge">🤖 Android (Chrome)</div>
+            <div class="pwa-card-text">
+              Cliquez sur <strong>Installer l'application</strong> ci-dessus ou ouvrez le menu <strong>⋮</strong> en haut à droite > <strong>Installer l'application</strong>.
+            </div>
+          </div>
+          <div class="pwa-card">
+            <div class="pwa-card-badge">🍎 iPhone (Safari)</div>
+            <div class="pwa-card-text">
+              Appuyez sur le bouton <strong>Partager</strong> (icône carré avec flèche ⎋) puis sélectionnez <strong>Sur l'écran d'accueil</strong>.
+            </div>
+          </div>
+          <div class="pwa-card">
+            <div class="pwa-card-badge">💻 PC / Mac (Chrome / Edge)</div>
+            <div class="pwa-card-text">
+              Cliquez sur l'icône <strong>⊕ (Installer)</strong> située à droite de la barre d'adresse pour l'avoir en fenêtre dédiée.
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1136,9 +1216,76 @@
 <footer>
   <div class="container">
     <p>⚽ <strong class="syne host-gradient">Prono Challenge</strong> — Coupe du Monde 2026</p>
-    <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">Développé avec passion pour les fans du ballon rond.</p>
+    <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">Développé avec passion pour les fans du ballon rond · 100% Web App & PWA</p>
   </div>
 </footer>
+
+<!-- Modal Guide PWA -->
+<div id="pwa-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon">📲</div>
+    <h2 class="modal-title">Installer la Web App</h2>
+    <p class="modal-desc">Profitez d'une expérience fluide en plein écran, avec icône sur votre écran d'accueil et lancement instantané.</p>
+    
+    <div class="pwa-grid" style="text-align: left; margin-bottom: 24px;">
+      <div class="pwa-card">
+        <div class="pwa-card-badge">🤖 Android (Chrome)</div>
+        <div class="pwa-card-text">
+          1. Ouvrez dans <strong>Google Chrome</strong><br/>
+          2. Cliquez sur <strong>⋮</strong> (en haut à droite)<br/>
+          3. Appuyez sur <strong>Installer l'application</strong>
+        </div>
+      </div>
+      <div class="pwa-card">
+        <div class="pwa-card-badge">🍎 iPhone & iPad (Safari)</div>
+        <div class="pwa-card-text">
+          1. Ouvrez le lien dans <strong>Safari</strong><br/>
+          2. Appuyez sur le bouton <strong>Partager ⎋</strong><br/>
+          3. Choisissez <strong>Sur l'écran d'accueil</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-primary" onclick="triggerPwaInstall(); closePwaModal();">
+        <span>📲</span>
+        <span>Lancer l'installation</span>
+      </button>
+      <a href="app.html" class="modal-btn-secondary">
+        <span>🌐</span>
+        <span>Continuer sur le navigateur</span>
+      </a>
+    </div>
+
+    <button class="modal-btn-close" onclick="closePwaModal()">Fermer</button>
+  </div>
+</div>
+
+<!-- Modal d'invitation de groupe -->
+<div id="invite-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon">🏆</div>
+    <h2 class="modal-title">Invitation Groupe</h2>
+    <p class="modal-desc">Vous avez été invité à rejoindre un groupe privé sur Prono Challenge pour la Coupe du Monde 2026.</p>
+    
+    <div class="code-box">
+      <div class="code-details">
+        <div class="code-label">Lien d'invitation</div>
+        <div id="invite-code-val" class="code-val">Chargement...</div>
+      </div>
+      <button id="invite-copy-btn" class="copy-btn" onclick="copyInviteLink()">Copier le lien</button>
+    </div>
+    
+    <div class="modal-actions">
+      <a href="#" id="invite-web-app-btn" class="modal-btn-primary">
+        <span>🚀</span>
+        <span>Rejoindre sur la Web App</span>
+      </a>
+    </div>
+    
+    <button class="modal-btn-close" onclick="closeInviteModal()">Fermer et explorer</button>
+  </div>
+</div>
 
 <script>
   // Scroll reveal
@@ -1168,41 +1315,45 @@
       console.error("Preserving parameters error:", e);
     }
   })();
-</script>
 
-<!-- Modal d'invitation de groupe -->
-<div id="invite-modal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-icon">🏆</div>
-    <h2 class="modal-title">Invitation Groupe</h2>
-    <p class="modal-desc">Vous avez été invité à rejoindre un groupe privé sur Prono Challenge pour la Coupe du Monde 2026.</p>
-    
-    <div class="code-box">
-      <div class="code-details">
-        <div class="code-label">Lien d'invitation</div>
-        <div id="invite-code-val" class="code-val">Chargement...</div>
-      </div>
-      <button id="invite-copy-btn" class="copy-btn" onclick="copyInviteLink()">Copier le lien</button>
-    </div>
-    
-    <div class="modal-actions">
-      <a href="#" id="invite-open-app-btn" class="modal-btn-primary" onclick="openApp(event)">
-        <span>📱</span>
-        <span>Ouvrir l'application</span>
-      </a>
-      <a href="#" id="invite-web-app-btn" class="modal-btn-secondary">
-        <span>🌐</span>
-        <span>Jouer sur le Web</span>
-      </a>
-    </div>
-    
-    <div id="invite-status-text" class="status-alert"></div>
-    
-    <button class="modal-btn-close" onclick="closeInviteModal()">Fermer et explorer</button>
-  </div>
-</div>
+  // ─── PWA INSTALL LOGIC (Chrome Android / Desktop) ───────────────────
+  let deferredPrompt = null;
 
-<script>
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtns = document.querySelectorAll('#hero-install-btn, #cta-install-btn');
+    installBtns.forEach(btn => {
+      if (btn) {
+        btn.style.opacity = "1";
+      }
+    });
+  });
+
+  async function triggerPwaInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        console.log('Installation PWA acceptée');
+      }
+      deferredPrompt = null;
+    } else {
+      openPwaModal();
+    }
+  }
+
+  function openPwaModal() {
+    const modal = document.getElementById("pwa-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  function closePwaModal() {
+    const modal = document.getElementById("pwa-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  // ─── INVITATION MODAL LOGIC ───────────────────────────────────────
   let currentPayload = '';
 
   function getQueryParam(param) {
@@ -1246,26 +1397,6 @@
     }).catch(err => {
       console.error("Could not copy text: ", err);
     });
-  }
-
-  function openApp(event) {
-    if (event) event.preventDefault();
-    if (!currentPayload) return;
-    
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (isAndroid) {
-      const intentUrl = "intent://group?group=" + currentPayload + "#Intent;scheme=mondial2026;package=com.mondial2026.mondial_2026;end";
-      window.location.href = intentUrl;
-    } else {
-      const scheme = "mondial2026://group?group=" + currentPayload;
-      window.location.href = scheme;
-    }
-    
-    const statusText = document.getElementById("invite-status-text");
-    if (statusText) {
-      statusText.style.display = "block";
-      statusText.innerText = "Ouverture en cours... Si rien ne se passe, vérifiez que l'application Prono Challenge est installée, ou copiez le lien ci-dessus pour le coller dans l'application.";
-    }
   }
 
   function closeInviteModal() {

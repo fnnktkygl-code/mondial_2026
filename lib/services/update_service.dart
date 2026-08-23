@@ -46,10 +46,8 @@ class WCUpdateService {
     }
   }
 
-  /// Récupérer le lien de téléchargement direct de l'APK.
-  /// Priorité : Firebase Remote Config → API GitHub (URL directe CDN) → fallback.
-  /// L'URL directe CDN évite la chaîne de redirections GitHub qui ouvrirait
-  /// la page HTML de la release au lieu de déclencher le téléchargement APK.
+  /// Récupérer l'URL de mise à jour (Web App).
+  /// Priorité : Firebase Remote Config → fallback URL Web App.
   static Future<String> getUpdateUrl() async {
     // 1. Firebase Remote Config (prioritaire)
     try {
@@ -60,33 +58,8 @@ class WCUpdateService {
       debugPrint("Erreur lors de la récupération de update_url (Firebase): $e");
     }
 
-    // 2. API GitHub → URL directe CDN de l'asset APK
-    try {
-      const apiUrl = 'https://api.github.com/repos/fnnktkygl-code/mondial_2026/releases/latest';
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {'Accept': 'application/vnd.github+json'},
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final assets = data['assets'] as List<dynamic>? ?? [];
-        for (final asset in assets) {
-          final name = asset['name'] as String? ?? '';
-          if (name.endsWith('.apk')) {
-            final downloadUrl = asset['browser_download_url'] as String? ?? '';
-            if (downloadUrl.isNotEmpty) {
-              debugPrint('URL directe APK depuis GitHub API: $downloadUrl');
-              return downloadUrl;
-            }
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Erreur lors de la récupération de l\'URL APK via GitHub API: $e');
-    }
-
-    // 3. Fallback : URL de redirection (peut ouvrir le navigateur)
-    return 'https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk';
+    // 2. Fallback URL officielle Web App
+    return 'https://fnnktkygl-code.github.io/mondial_2026/';
   }
 
   /// Ancienne méthode non-bloquante (facultative) conservée si vous l'utilisez ailleurs

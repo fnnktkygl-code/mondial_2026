@@ -13,13 +13,13 @@
 
 **[🇬🇧 English Version (README.md)](README.md)** • **[🇪🇸 Versión en Español (LEAME.md)](LEAME.md)**
 
-*Application Flutter multiplateforme (Web, iOS, macOS, Windows & Android) de standard industriel pour la Coupe du Monde FIFA 2026™ — Archive complète des 104 matchs, tableau final à élimination directe résolu, classements des buteurs & passeurs décisifs, et analyses IA.*
+*Application Flutter Web & Progressive Web App (PWA) de standard industriel pour la Coupe du Monde FIFA 2026™ — Archive complète des 104 matchs, tableau final à élimination directe résolu, classements des buteurs & passeurs décisifs, installation instantanée sur l'écran d'accueil via Chrome Android et analyses IA.*
 
 </div>
 
 ---
 
-## 📱 Vitrine App Store & Web
+## 📱 Vitrine Web App & PWA
 
 ### 🖥️ Expérience Desktop & Tablette
 

@@ -13,13 +13,13 @@
 
 **[🇬🇧 English Version (README.md)](README.md)** • **[🇫🇷 Version Française (LISEZMOI.md)](LISEZMOI.md)**
 
-*Aplicación Flutter multiplataforma (Web, iOS, macOS, Windows y Android) de estándar industrial para la Copa Mundial de la FIFA 2026™ — Archivo completo de 104 partidos, cuadro eliminatorio resuelto, tablas de goleadores y asistentes, y análisis táctico con IA.*
+*Aplicación Flutter Web y Progressive Web App (PWA) de estándar industrial para la Copa Mundial de la FIFA 2026™ — Archivo completo de 104 partidos, cuadro eliminatorio resuelto, tablas de goleadores y asistentes, instalación instantánea en pantalla de inicio vía Chrome Android y análisis táctico con IA.*
 
 </div>
 
 ---
 
-## 📱 Galería App Store y Web
+## 📱 Galería Web App y PWA
 
 ### 🖥️ Experiencia en Escritorio y Tableta
 

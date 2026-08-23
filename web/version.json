@@ -1,7 +1,7 @@
 {
   "version": "1.5.7",
   "buildNumber": 31,
-  "url": "https://github.com/fnnktkygl-code/mondial_2026/releases/latest/download/app-release.apk",
+  "url": "https://fnnktkygl-code.github.io/mondial_2026/",
   "releaseNotes": {
     "fr": "Correction ultime : Résolution de la synchronisation des scores en direct pour les 8es, quarts et demi-finales.",
     "en": "Ultimate fix: Knockout stage live score synchronization.",

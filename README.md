@@ -13,13 +13,13 @@
 
 **[🇫🇷 Version Française (LISEZMOI.md)](LISEZMOI.md)** • **[🇪🇸 Versión en Español (LEAME.md)](LEAME.md)**
 
-*Production-grade Flutter Web, iOS, macOS, Windows & Android application built for the FIFA World Cup 2026™ — Complete 104-match archive, real-time analytics, dynamic bracket topology resolution, assists & scorers leaderboards, and AI match insights.*
+*Production-grade Flutter Web & Progressive Web App (PWA) built for the FIFA World Cup 2026™ — Complete 104-match archive, real-time analytics, dynamic bracket topology resolution, assists & scorers leaderboards, instant home-screen install on Chrome Android & desktop, and AI match insights.*
 
 </div>
 
 ---
 
-## 📱 App Store & Web Showcase
+## 📱 Web App & PWA Showcase
 
 ### 🖥️ Desktop & Tablet Experience
 

@@ -12,7 +12,7 @@ This project uses a strict separation between Staging and Production environment
 
 ### Production (Release)
 - **App Launch:** The app should be built without the staging flag. The Staging Panel will be completely hidden.
-  `flutter build apk` (or simply `flutter run` without the dart-define flag)
+  `flutter build web` (or simply `flutter run -d chrome` without the dart-define flag)
 - **Firestore Rules:** Production uses strict security rules. Always ensure the default rules are deployed:
   `firebase deploy --only firestore:rules`
 
