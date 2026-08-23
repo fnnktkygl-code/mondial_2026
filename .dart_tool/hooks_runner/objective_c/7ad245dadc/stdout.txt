@@ -1,0 +1,57 @@
+Running `(cd /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/; ANDROID_HOME=/Users/richard/Library/Android/sdk TMPDIR=/var/folders/5m/8grtglmj2s5046ng6xxf40f00000gn/T/ PATH=/Users/richard/.gemini/antigravity/bin:/Users/richard/Library/Application Support/Antigravity/bin:/Users/richard/.local/bin:/Users/richard/.local/bin:/Users/richard/.antigravity-ide/antigravity-ide/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/.antigravity/antigravity/bin:/Users/richard/Library/Android/sdk/platform-tools:/Users/richard/Library/Android/sdk/cmdline-tools/latest/bin:/Users/richard/Library/Android/sdk/emulator:/Users/richard/bin:/Users/richard/.nvm/versions/node/v20.20.0/bin:/Users/richard/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/Users/richard/Desktop/flutter/bin HOME=/Users/richard /Users/richard/Desktop/flutter/bin/cache/dart-sdk/bin/dart '--packages=/Users/richard/Developer/Mondial 2026/.dart_tool/package_config.json' '/Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/objective_c/7ad245dadc/hook.dill' '--config=/Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/objective_c/7ad245dadc/input.json' )`.
+INFO: 2026-08-23 23:47:40.771392: Using compiler /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang from BuildInput.cCompiler.cc.
+
+INFO: 2026-08-23 23:47:40.775124: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/include/dart_api_dl.c -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/include/dart_api_dl.c.o
+
+INFO: 2026-08-23 23:47:40.776501: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c.c -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c.c.o
+
+INFO: 2026-08-23 23:47:40.776679: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -x objective-c -fobjc-arc -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/input_stream_adapter.m -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/input_stream_adapter.m.o
+
+INFO: 2026-08-23 23:47:40.776976: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -x objective-c -fobjc-arc -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/observer.m -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/observer.m.o
+
+.m.o
+
+INFO: 2026-08-23 23:47:40.777078: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -x objective-c -fobjc-arc -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/ns_number.m -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/ns_number.m.o
+
+INFO: 2026-08-23 23:47:40.777185: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -x objective-c -fobjc-arc -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/protocol.m -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/protocol.m.o
+
+INFO: 2026-08-23 23:47:40.777282: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 -x objective-c -fobjc-arc -c /Users/richard/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c_bindings_generated.m -fpic -gline-tables-only -I src -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c_bindings_generated.m.o
+
+INFO: 2026-08-23 23:47:41.049030: 
+INFO: 2026-08-23 23:47:41.049191: 
+INFO: 2026-08-23 23:47:41.049259: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/include/dart_api_dl.c.o
+
+INFO: 2026-08-23 23:47:41.049593: 
+INFO: 2026-08-23 23:47:41.049623: 
+INFO: 2026-08-23 23:47:41.049634: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c.c.o
+
+INFO: 2026-08-23 23:47:41.050185: 
+INFO: 2026-08-23 23:47:41.050257: 
+INFO: 2026-08-23 23:47:41.050278: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/observer.m.o
+
+INFO: 2026-08-23 23:47:41.054174: 
+INFO: 2026-08-23 23:47:41.054264: 
+INFO: 2026-08-23 23:47:41.054284: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/protocol.m.o
+
+INFO: 2026-08-23 23:47:41.333901: 
+INFO: 2026-08-23 23:47:41.333965: 
+INFO: 2026-08-23 23:47:41.334012: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/ns_number.m.o
+
+INFO: 2026-08-23 23:47:41.343122: 
+INFO: 2026-08-23 23:47:41.343201: 
+INFO: 2026-08-23 23:47:41.343253: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c.m.o
+
+INFO: 2026-08-23 23:47:41.345139: 
+INFO: 2026-08-23 23:47:41.345166: 
+INFO: 2026-08-23 23:47:41.345177: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/input_stream_adapter.m.o
+
+INFO: 2026-08-23 23:47:41.362888: 
+INFO: 2026-08-23 23:47:41.362912: 
+INFO: 2026-08-23 23:47:41.362922: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c_bindings_generated.m.o
+
+INFO: 2026-08-23 23:47:41.363318: Running: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -shared -Wl,-encryptable -undefined dynamic_lookup -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-darwin -mmacos-version-min=13 /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/include/dart_api_dl.c.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c.c.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/input_stream_adapter.m.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c.m.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/observer.m.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/ns_number.m.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/protocol.m.o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/obj/src/objective_c_bindings_generated.m.o -o /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/objective_c.dylib
+
+INFO: 2026-08-23 23:47:41.522688: 
+INFO: 2026-08-23 23:47:41.522745: 
+INFO: 2026-08-23 23:47:41.522757: Generated /Users/richard/Developer/Mondial 2026/.dart_tool/hooks_runner/shared/objective_c/build/7ad245dadc/objective_c.dylib
+
